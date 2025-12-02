@@ -3,6 +3,7 @@ const isProd = process.env.NODE_ENV === "production";
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  typedRoutes: true,
   eslint: {
     dirs: ["src"],
   },
@@ -10,7 +11,6 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   experimental: {
-    typedRoutes: true,
     optimizePackageImports: [
       "@radix-ui/themes",
       "@radix-ui/react-icons",
