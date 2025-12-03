@@ -1,5 +1,3 @@
-
-
 export function QFHero() {
   return (
     <div className="relative w-full overflow-hidden rounded-3xl bg-gradient-to-r from-[#624AF2] to-[#533BE5] p-8 text-white shadow-lg sm:p-12">
@@ -18,5 +16,5 @@ export function QFHero() {
         </div>
       </div>
     </div>
-  );
+  )
 }
