@@ -8,8 +8,8 @@ const MOCK_PROJECTS = [
     description:
       "The Commons Simulator is a gamified simulation tool powered by a cadCAD backend that was developed by the Commons Stack's Decentralized Dev community.",
     raised: 1200,
-    totalRaised: '$38.03',
-    contributorCount: 25,
+    totalRaised: 38.03,
+    contributors: 25,
     image:
       'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
     slug: 'the-giveth-community-of-makers',
@@ -20,8 +20,8 @@ const MOCK_PROJECTS = [
     author: 'Green Earth',
     description: 'Planting trees to restore the earth.',
     raised: 850,
-    totalRaised: '$38.03',
-    contributorCount: 25,
+    totalRaised: 38.03,
+    contributors: 25,
     image:
       'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=1000',
     slug: 'reforestation-project',
@@ -32,8 +32,8 @@ const MOCK_PROJECTS = [
     author: 'EduDAO',
     description: 'Teaching the next generation of web3 developers.',
     raised: 3200,
-    totalRaised: '$38.03',
-    contributorCount: 25,
+    totalRaised: 38.03,
+    contributors: 25,
     image:
       'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1000',
     slug: 'web3-education',
@@ -44,8 +44,8 @@ const MOCK_PROJECTS = [
     author: 'Local Roots',
     description: 'Growing food for the community.',
     raised: 450,
-    totalRaised: '$38.03',
-    contributorCount: 25,
+    totalRaised: 38.03,
+    contributors: 25,
     image:
       'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&q=80&w=1000',
     slug: 'community-garden',
@@ -56,8 +56,8 @@ const MOCK_PROJECTS = [
     author: 'Sun Energy',
     description: 'Bringing light to those in need.',
     raised: 5600,
-    totalRaised: '$38.03',
-    contributorCount: 25,
+    totalRaised: 38.03,
+    contributors: 25,
     image:
       'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1000',
     slug: 'solar-power',
@@ -68,8 +68,8 @@ const MOCK_PROJECTS = [
     author: 'Water for Life',
     description: 'Providing clean water to remote areas.',
     raised: 2100,
-    totalRaised: '$38.03',
-    contributorCount: 25,
+    totalRaised: 38.03,
+    contributors: 25,
     image:
       'https://images.unsplash.com/photo-1538300342682-cf57afb97285?auto=format&fit=crop&q=80&w=1000',
     slug: 'clean-water',

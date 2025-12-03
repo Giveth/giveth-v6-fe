@@ -1,121 +1,123 @@
 'use client'
 
-import { useState } from 'react'
+import { MixerHorizontalIcon, RocketIcon } from '@radix-ui/react-icons'
 import { ProjectCard } from '@/components/qf/ProjectCard'
-
-// Mock Data
-const PROJECTS = [
-  {
-    id: '1',
-    title: 'Diamante Luz Center for Regenerative Living',
-    author: 'Diamante Luz',
-    image:
-      'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
-    raised: 1200,
-    slug: '1',
-  },
-  {
-    id: '2',
-    title: 'Reforestation with biodiversity AgroForest',
-    author: 'Green Earth',
-    image:
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=1000',
-    raised: 850,
-    slug: '2',
-  },
-  {
-    id: '3',
-    title: 'Web3 Education for All',
-    author: 'EduDAO',
-    image:
-      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1000',
-    raised: 3200,
-    slug: '3',
-  },
-  {
-    id: '4',
-    title: 'Community Garden Project',
-    author: 'Local Roots',
-    image:
-      'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&q=80&w=1000',
-    raised: 450,
-    slug: '4',
-  },
-  {
-    id: '5',
-    title: 'Solar Power for Remote Villages',
-    author: 'Sun Energy',
-    image:
-      'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1000',
-    raised: 5600,
-    slug: '5',
-  },
-  {
-    id: '6',
-    title: 'Clean Water Initiative',
-    author: 'Water for Life',
-    image:
-      'https://images.unsplash.com/photo-1538300342682-cf57afb97285?auto=format&fit=crop&q=80&w=1000',
-    raised: 2100,
-    slug: '6',
-  },
-]
-
-const CATEGORIES = [
-  'All',
-  'Education',
-  'Environment',
-  'Community',
-  'Technology',
-]
+import { QFHero } from '@/components/qf/QFHero'
+import { QFStats } from '@/components/qf/QFStats'
+import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState('All')
+  const { data, isLoading, error } = useActiveQfRounds()
+
+  // Get the first active round and its projects
+  const activeRound = data?.activeQfRounds?.[0]
+  const projects =
+    activeRound?.projectQfRounds?.map((pqr: any) => ({
+      id: String(pqr.project?.id || ''),
+      title: pqr.project?.title || '',
+      author:
+        pqr.project?.adminUser?.name ||
+        pqr.project?.adminUser?.firstName ||
+        'Anonymous',
+      description: pqr.project?.descriptionSummary || '',
+      raised: pqr.sumDonationValueUsd || 0,
+      totalRaised: pqr.sumDonationValueUsd || 0,
+      contributors: pqr.countUniqueDonors || 0,
+      image:
+        pqr.project?.image ||
+        'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
+      slug: pqr.project?.slug || '',
+    })) || []
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-[#fcfcff] pb-20">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <p className="text-xl font-bold text-red-600">
+              Error loading QF rounds
+            </p>
+            <p className="text-sm text-gray-500 mt-2">Please try again later</p>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-[#fcfcff] pb-20">
       {/* Hero Section */}
-      <div className="bg-[#1b1657] px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h1 className="mb-4 text-4xl font-bold text-white sm:text-5xl">
-          Quadratic Funding Round 3
-        </h1>
-        <p className="mx-auto max-w-2xl text-lg text-gray-300">
-          Support public goods and see your impact multiplied. Your donation is
-          matched by the QF pool.
-        </p>
+      <div className="bg-white px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <QFHero round={activeRound} isLoading={isLoading} />
+          <QFStats round={activeRound} isLoading={isLoading} />
+        </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Filters */}
-        <div className="mb-10 flex flex-wrap justify-center gap-3">
-          {CATEGORIES.map(category => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`rounded-full px-6 py-2 text-sm font-bold transition-all ${
-                activeCategory === category
-                  ? 'bg-[#fd67ac] text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {category}
+        {/* Explore Header */}
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Explore{' '}
+            <span className="text-gray-400">
+              {isLoading ? '...' : `${projects.length} projects`}
+            </span>
+          </h2>
+
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+              <RocketIcon className="h-4 w-4" />
+              Highest GIVpower
+              <MixerHorizontalIcon className="ml-2 h-4 w-4 rotate-90" />
             </button>
-          ))}
+            <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+              Filters
+              <MixerHorizontalIcon className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="h-96 rounded-3xl bg-gray-100 animate-pulse"
+              />
+            ))}
+          </div>
+        )}
 
         {/* Projects Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {PROJECTS.map(project => (
-            <ProjectCard key={project.id} {...project} />
-          ))}
-        </div>
+        {!isLoading && projects.length > 0 && (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project: any) => (
+              <ProjectCard key={project.id} {...project} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && projects.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-xl font-bold text-gray-900">
+              No active QF rounds at the moment
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Check back later for new rounds
+            </p>
+          </div>
+        )}
 
         {/* Load More */}
-        <div className="mt-16 text-center">
-          <button className="rounded-full border-2 border-[#d81a72] px-8 py-3 text-sm font-bold text-[#d81a72] transition-colors hover:bg-[#d81a72] hover:text-white">
-            Load More Projects
-          </button>
-        </div>
+        {!isLoading && projects.length > 0 && (
+          <div className="mt-16 text-center">
+            <button className="rounded-full border-2 border-[#d81a72] px-8 py-3 text-sm font-bold text-[#d81a72] transition-colors hover:bg-[#d81a72] hover:text-white">
+              Load More Projects
+            </button>
+          </div>
+        )}
       </div>
     </main>
   )
