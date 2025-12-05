@@ -12,11 +12,12 @@ import { QFHero } from '@/components/qf/QFHero'
 import { QFStats } from '@/components/qf/QFStats'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 import { useSearchProjects } from '@/hooks/useSearchProjects'
+import { ProjectSortField, SortDirection } from '@/lib/enums'
 
 export default function Home() {
   const searchParams = useSearchParams()
   const searchTerm = searchParams.get('search') || ''
-  const sortParam = searchParams.get('sort') || 'relevance'
+  const sortParam = searchParams.get('sort') || ProjectSortField.Relevance
 
   // Determine if we're in search mode
   const isSearchMode = searchTerm.length >= 2
@@ -35,8 +36,8 @@ export default function Home() {
     error: searchError,
   } = useSearchProjects({
     searchTerm,
-    sortBy: sortParam as 'relevance' | 'createdAt' | 'totalDonations',
-    sortDirection: 'desc',
+    sortBy: sortParam as ProjectSortField,
+    sortDirection: SortDirection.DESC,
     enabled: isSearchMode,
   })
 
@@ -147,9 +148,9 @@ export default function Home() {
             {/* Sort Pills */}
             <div className="mt-6 flex flex-wrap gap-2">
               <Link
-                href={`/?search=${encodeURIComponent(searchTerm)}&sort=relevance`}
+                href={`/?search=${encodeURIComponent(searchTerm)}&sort=${ProjectSortField.Relevance}`}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  sortParam === 'relevance'
+                  sortParam === ProjectSortField.Relevance
                     ? 'bg-[#d81a72] text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
@@ -157,9 +158,9 @@ export default function Home() {
                 Most Relevant
               </Link>
               <Link
-                href={`/?search=${encodeURIComponent(searchTerm)}&sort=totalDonations`}
+                href={`/?search=${encodeURIComponent(searchTerm)}&sort=${ProjectSortField.TotalDonations}`}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  sortParam === 'totalDonations'
+                  sortParam === ProjectSortField.TotalDonations
                     ? 'bg-[#d81a72] text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
@@ -167,9 +168,9 @@ export default function Home() {
                 Most Funded
               </Link>
               <Link
-                href={`/?search=${encodeURIComponent(searchTerm)}&sort=createdAt`}
+                href={`/?search=${encodeURIComponent(searchTerm)}&sort=${ProjectSortField.CreatedAt}`}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  sortParam === 'createdAt'
+                  sortParam === ProjectSortField.CreatedAt
                     ? 'bg-[#d81a72] text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}

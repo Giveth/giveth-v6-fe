@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { ProjectSortField, SortDirection } from '@/lib/enums'
 import { graphQLClient } from '@/lib/graphql/client'
 import { ProjectsDocument } from '@/lib/graphql/generated/graphql'
 
@@ -6,8 +7,8 @@ export interface SearchProjectsOptions {
   searchTerm: string
   skip?: number
   take?: number
-  sortBy?: 'relevance' | 'createdAt' | 'totalDonations'
-  sortDirection?: 'asc' | 'desc'
+  sortBy?: ProjectSortField
+  sortDirection?: SortDirection
   enabled?: boolean
 }
 
@@ -16,8 +17,8 @@ export const useSearchProjects = (options: SearchProjectsOptions) => {
     searchTerm,
     skip = 0,
     take = 20,
-    sortBy = 'relevance',
-    sortDirection = 'desc',
+    sortBy = ProjectSortField.Relevance,
+    sortDirection = SortDirection.DESC,
     enabled = true,
   } = options
 

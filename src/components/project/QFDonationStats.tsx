@@ -1,3 +1,5 @@
+import { ChainType } from '@/lib/enums'
+
 interface QFDonationStatsProps {
   project: {
     totalDonations: number
@@ -13,9 +15,9 @@ interface QFDonationStatsProps {
 export function QFDonationStats({ project }: QFDonationStatsProps) {
   const getNetworkIcon = (chainType: string) => {
     switch (chainType) {
-      case 'EVM':
+      case ChainType.EVM:
         return '⚡'
-      case 'SOLANA':
+      case ChainType.SOLANA:
         return '◎'
       default:
         return '🔗'
@@ -24,9 +26,9 @@ export function QFDonationStats({ project }: QFDonationStatsProps) {
 
   const getNetworkColor = (chainType: string) => {
     switch (chainType) {
-      case 'EVM':
+      case ChainType.EVM:
         return 'text-purple-500'
-      case 'SOLANA':
+      case ChainType.SOLANA:
         return 'text-green-500'
       default:
         return 'text-blue-500'
