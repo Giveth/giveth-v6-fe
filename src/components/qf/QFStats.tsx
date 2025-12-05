@@ -1,7 +1,11 @@
 import { useQfRoundStats } from '@/hooks/useQfRoundStats'
+import { type QfRoundEntity } from '@/lib/graphql/generated/graphql'
 
 interface QFStatsProps {
-  round?: any
+  round?: Pick<
+    QfRoundEntity,
+    'id' | 'allocatedFundUSD' | 'beginDate' | 'endDate'
+  >
   isLoading?: boolean
 }
 

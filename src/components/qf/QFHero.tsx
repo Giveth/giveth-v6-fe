@@ -1,5 +1,7 @@
+import { type QfRoundEntity } from '@/lib/graphql/generated/graphql'
+
 interface QFHeroProps {
-  round?: any
+  round?: Pick<QfRoundEntity, 'name' | 'endDate'>
   isLoading?: boolean
 }
 

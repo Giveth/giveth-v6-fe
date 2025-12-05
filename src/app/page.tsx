@@ -7,7 +7,7 @@ import {
   MixerHorizontalIcon,
   RocketIcon,
 } from '@radix-ui/react-icons'
-import { ProjectCard } from '@/components/qf/ProjectCard'
+import { ProjectCard, type ProjectCardProps } from '@/components/qf/ProjectCard'
 import { QFHero } from '@/components/qf/QFHero'
 import { QFStats } from '@/components/qf/QFStats'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
@@ -43,7 +43,7 @@ export default function Home() {
   // Get the first active round and its projects for non-search mode
   const activeRound = qfData?.activeQfRounds?.[0]
   const qfProjects =
-    activeRound?.projectQfRounds?.map((pqr: any) => ({
+    activeRound?.projectQfRounds?.map(pqr => ({
       id: String(pqr.project?.id || ''),
       title: pqr.project?.title || '',
       author:
@@ -61,11 +61,14 @@ export default function Home() {
     })) || []
 
   // Transform search results to project card format
-  const searchProjects =
-    searchData?.searchProjects?.projects?.map((project: any) => ({
+  const searchProjectsList =
+    searchData?.projects?.projects?.map(project => ({
       id: String(project.id || ''),
       title: project.title || '',
-      author: 'Project Creator',
+      author:
+        project.adminUser?.name ||
+        project.adminUser?.firstName ||
+        'Project Creator',
       description: project.descriptionSummary || '',
       raised: project.totalDonations || 0,
       totalRaised: project.totalDonations || 0,
@@ -80,9 +83,9 @@ export default function Home() {
   // Choose which projects to display
   const isLoading = isSearchMode ? searchLoading : qfLoading
   const error = isSearchMode ? searchError : qfError
-  const projects = isSearchMode ? searchProjects : qfProjects
+  const projects = isSearchMode ? searchProjectsList : qfProjects
   const totalResults = isSearchMode
-    ? searchData?.searchProjects?.total || 0
+    ? searchData?.projects?.total || 0
     : projects.length
 
   if (error) {
@@ -218,7 +221,7 @@ export default function Home() {
         {/* Projects Grid */}
         {!isLoading && projects.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project: any) => (
+            {projects.map((project: ProjectCardProps) => (
               <ProjectCard key={project.id} {...project} />
             ))}
           </div>

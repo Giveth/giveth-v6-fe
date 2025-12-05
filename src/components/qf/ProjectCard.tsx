@@ -9,7 +9,7 @@ import { useCart } from '@/context/CartContext'
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000'
 
-interface ProjectCardProps {
+export interface ProjectCardProps {
   id: string
   title: string
   image?: string | null
