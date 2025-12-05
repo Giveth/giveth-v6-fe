@@ -17,9 +17,9 @@ export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(() => getQueryClient())
 
   return (
-    <ThirdwebProvider>
-      <Theme accentColor="iris" grayColor="sand" radius="large">
-        <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <ThirdwebProvider>
+        <Theme accentColor="iris" grayColor="sand" radius="large">
           {children}
           {process.env.NODE_ENV === 'development' && (
             <ReactQueryDevtools
@@ -28,8 +28,8 @@ export function Providers({ children }: ProvidersProps) {
               buttonPosition="bottom-right"
             />
           )}
-        </QueryClientProvider>
-      </Theme>
-    </ThirdwebProvider>
+        </Theme>
+      </ThirdwebProvider>
+    </QueryClientProvider>
   )
 }

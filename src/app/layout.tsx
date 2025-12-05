@@ -1,10 +1,13 @@
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+
+import '@radix-ui/themes/styles.css'
+
+import { Providers } from '@/app/providers'
 import { Footer } from '@/components/layout/footer'
 import { NewHeader } from '@/components/layout/NewHeader'
 import { CartProvider } from '@/context/CartContext'
-import { Providers } from '@/lib/react-query/providers'
-import '@radix-ui/themes/styles.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
