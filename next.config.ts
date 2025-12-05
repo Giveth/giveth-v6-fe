@@ -4,9 +4,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
-  eslint: {
-    dirs: ['src'],
-  },
   typescript: {
     ignoreBuildErrors: false,
   },
