@@ -1,15 +1,18 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { CheckCircledIcon, Cross2Icon, HandIcon } from '@radix-ui/react-icons'
 import { ShoppingCartIcon } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000'
+
 interface ProjectCardProps {
   id: string
   title: string
-  image: string
+  image?: string | null
   raised: number
   author: string
   slug: string
@@ -25,12 +28,21 @@ export function ProjectCard({
   raised,
   author,
   slug,
-  description = 'The Commons Simulator is a gamified simulation tool powered by a cadCAD backend that was developed by the Commons Stack’s Decentralized Dev community.',
+  description = "The Commons Simulator is a gamified simulation tool powered by a cadCAD backend that was developed by the Commons Stack's Decentralized Dev community.",
   contributors = 25,
   totalRaised = 38.03,
 }: ProjectCardProps) {
   const { addToCart, isInCart, removeFromCart } = useCart()
   const inCart = isInCart(id)
+  const [imgSrc, setImgSrc] = useState(image || FALLBACK_IMAGE)
+  const [imgError, setImgError] = useState(false)
+
+  const handleImageError = () => {
+    if (!imgError) {
+      setImgError(true)
+      setImgSrc(FALLBACK_IMAGE)
+    }
+  }
 
   const handleCartAction = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -38,7 +50,7 @@ export function ProjectCard({
     if (inCart) {
       removeFromCart(id)
     } else {
-      addToCart({ id, title, slug, image })
+      addToCart({ id, title, slug, image: imgSrc })
     }
   }
 
@@ -50,8 +62,9 @@ export function ProjectCard({
       {/* Image Container */}
       <div className="relative aspect-[2/1] w-full overflow-hidden bg-gray-100">
         <img
-          src={image}
+          src={imgSrc}
           alt={title}
+          onError={handleImageError}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
