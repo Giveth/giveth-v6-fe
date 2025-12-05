@@ -12,6 +12,7 @@ import { QFHero } from '@/components/qf/QFHero'
 import { QFStats } from '@/components/qf/QFStats'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 import { useSearchProjects } from '@/hooks/useSearchProjects'
+import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants'
 import { ProjectSortField, SortDirection } from '@/lib/enums'
 
 export default function Home() {
@@ -55,9 +56,7 @@ export default function Home() {
       raised: pqr.sumDonationValueUsd || 0,
       totalRaised: pqr.sumDonationValueUsd || 0,
       contributors: pqr.countUniqueDonors || 0,
-      image:
-        pqr.project?.image ||
-        'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
+      image: pqr.project?.image || PROJECT_FALLBACK_IMAGE,
       slug: pqr.project?.slug || '',
     })) || []
 
@@ -74,9 +73,7 @@ export default function Home() {
       raised: project.totalDonations || 0,
       totalRaised: project.totalDonations || 0,
       contributors: project.countUniqueDonors || 0,
-      image:
-        project.image ||
-        'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
+      image: project.image || PROJECT_FALLBACK_IMAGE,
       slug: project.slug || '',
       searchRank: project.searchRank,
     })) || []
