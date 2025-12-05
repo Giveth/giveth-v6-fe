@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { BellIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import { CartModal } from '@/components/cart/CartModal'
+import { GivethLogo } from '@/components/icons/GivethLogo'
+import { ConnectWalletButton } from '@/components/wallet/ConnectWalletButton'
 import { useCart } from '@/context/CartContext'
 
 export function NewHeader() {
@@ -16,8 +18,8 @@ export function NewHeader() {
         {/* Left: Logo and Nav */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1b1657]">
-              <div className="h-4 w-4 rounded-full bg-white relative top-1 left-1"></div>
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm">
+              <GivethLogo width={40} height={40} />
             </div>
           </Link>
 
@@ -118,17 +120,7 @@ export function NewHeader() {
             <span className="font-bold text-gray-900">{cartItems.length}</span>
           </button>
 
-          <div className="hidden items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm ring-1 ring-gray-200 sm:flex">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-lime-400 to-green-500" />
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-gray-900">
-                0xF278...7a2cc
-              </span>
-              <span className="text-[10px] text-[#1b1657]">
-                Connected to xDai
-              </span>
-            </div>
-          </div>
+          <ConnectWalletButton />
         </div>
       </header>
 
