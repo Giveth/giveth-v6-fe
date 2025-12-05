@@ -1,18 +1,26 @@
 import { useCart } from '@/context/CartContext'
 
-export function ProjectStatsCard() {
+interface ProjectStatsCardProps {
+  project: {
+    id: string
+    title: string
+    slug: string
+    image?: string | null
+    totalDonations: number
+    countUniqueDonors?: number | null
+  }
+}
+
+export function ProjectStatsCard({ project }: ProjectStatsCardProps) {
   const { addToCart, isInCart } = useCart()
-  // Hardcoded ID for demo purposes, matching the one in SimilarProjects or just a constant
-  const projectId = '1'
-  const inCart = isInCart(projectId)
+  const inCart = isInCart(project.id)
 
   const handleAddToCart = () => {
     addToCart({
-      id: projectId,
-      title: 'Diamante Luz Center for Regenerative Living',
-      slug: '1',
-      image:
-        'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
+      id: project.id,
+      title: project.title,
+      slug: project.slug,
+      image: project.image || '',
     })
   }
 
@@ -21,9 +29,14 @@ export function ProjectStatsCard() {
       <div className="mb-1 text-xs font-medium text-gray-500">
         Total amount raised
       </div>
-      <div className="mb-1 text-4xl font-bold text-gray-900">$1,200</div>
+      <div className="mb-1 text-4xl font-bold text-gray-900">
+        ${project.totalDonations.toLocaleString()}
+      </div>
       <div className="mb-6 text-sm text-gray-500">
-        Raised from <span className="font-bold text-gray-900">25</span>{' '}
+        Raised from{' '}
+        <span className="font-bold text-gray-900">
+          {project.countUniqueDonors || 0}
+        </span>{' '}
         contributors
       </div>
 
