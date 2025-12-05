@@ -1,42 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
-import { graphql } from '@/lib/graphql/generated'
-
-const searchProjectsQuery = graphql(`
-  query SearchProjects(
-    $searchTerm: String!
-    $skip: Int
-    $take: Int
-    $sortBy: String
-    $sortDirection: String
-  ) {
-    searchProjects(
-      searchTerm: $searchTerm
-      skip: $skip
-      take: $take
-      sortBy: $sortBy
-      sortDirection: $sortDirection
-    ) {
-      projects {
-        id
-        title
-        slug
-        description
-        descriptionSummary
-        image
-        vouched
-        totalDonations
-        totalReactions
-        countUniqueDonors
-        qualityScore
-        searchRank
-        createdAt
-        updatedAt
-      }
-      total
-    }
-  }
-`)
+import { ProjectsDocument } from '@/lib/graphql/generated/graphql'
 
 export interface SearchProjectsOptions {
   searchTerm: string
@@ -60,12 +24,14 @@ export const useSearchProjects = (options: SearchProjectsOptions) => {
   return useQuery({
     queryKey: ['searchProjects', searchTerm, skip, take, sortBy, sortDirection],
     queryFn: async () => {
-      return graphQLClient.request(searchProjectsQuery, {
-        searchTerm,
+      return graphQLClient.request(ProjectsDocument, {
         skip,
         take,
-        sortBy,
-        sortDirection,
+        orderBy: sortBy,
+        orderDirection: sortDirection,
+        filters: {
+          searchTerm,
+        },
       })
     },
     enabled: enabled && searchTerm.length >= 2,
