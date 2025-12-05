@@ -319,6 +319,33 @@ export type ProjectQfRoundEntity = {
   sumDonationValueUsd: Scalars['Float']['output'];
 };
 
+export type SearchResultProjectEntity = {
+  __typename?: 'SearchResultProjectEntity';
+  countUniqueDonors?: Maybe<Scalars['Int']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  descriptionSummary?: Maybe<Scalars['String']['output']>;
+  givbacksEligibilityStatus: GivbacksEligibilityStatusType;
+  id: Scalars['ID']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  impactLocation?: Maybe<Scalars['String']['output']>;
+  qualityScore: Scalars['Float']['output'];
+  reviewStatus: Scalars['String']['output'];
+  searchRank: Scalars['Float']['output'];
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  totalDonations: Scalars['Float']['output'];
+  totalReactions: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  vouched: Scalars['Boolean']['output'];
+};
+
+export type PaginatedSearchResultsEntity = {
+  __typename?: 'PaginatedSearchResultsEntity';
+  projects: Array<SearchResultProjectEntity>;
+  total: Scalars['Int']['output'];
+};
+
 export type QfRoundEntity = {
   __typename?: 'QfRoundEntity';
   allocatedFund: Scalars['Float']['output'];
@@ -377,6 +404,7 @@ export type Query = {
   qfRoundBySlug: QfRoundEntity;
   qfRoundStats: QfRoundStatsEntity;
   qfRounds: PaginatedQfRoundsEntity;
+  searchProjects: PaginatedSearchResultsEntity;
   tokens: Array<TokenEntity>;
   tokensByNetwork: Array<TokenEntity>;
   user?: Maybe<UserEntity>;
@@ -459,6 +487,15 @@ export type QueryQfRoundStatsArgs = {
 
 export type QueryQfRoundsArgs = {
   skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
+export type QuerySearchProjectsArgs = {
+  searchTerm: Scalars['String']['input'];
+  skip?: Scalars['Int']['input'];
+  sortBy?: Scalars['String']['input'];
+  sortDirection?: Scalars['String']['input'];
   take?: Scalars['Int']['input'];
 };
 
@@ -602,12 +639,47 @@ export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean, beginDate: any, endDate: any, projectQfRounds?: Array<{ __typename?: 'ProjectQfRoundEntity', sumDonationValueUsd: number, countUniqueDonors: number, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, descriptionSummary?: string | null, adminUser?: { __typename?: 'UserEntity', name?: string | null, firstName?: string | null, lastName?: string | null } | null } | null }> | null }> };
 
+export type ProjectBySlugQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, totalDonations: number, countUniqueDonors?: number | null, givbacksEligibilityStatus: GivbacksEligibilityStatusType, vouched: boolean, adminUser?: { __typename?: 'UserEntity', name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', address: string, chainType: string, networkId: number, title?: string | null }> | null, categories?: Array<{ __typename?: 'CategoryEntity', name: string }> | null } };
+
+export type DonationsByProjectQueryVariables = Exact<{
+  projectId: Scalars['Int']['input'];
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type DonationsByProjectQuery = { __typename?: 'Query', donationsByProject: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, currency: string, valueUsd?: number | null, createdAt: any, transactionNetworkId: number, fromWalletAddress: string, user?: { __typename?: 'UserEntity', name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null }> } };
+
+export type ProjectsQueryVariables = Exact<{
+  take?: InputMaybe<Scalars['Int']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, totalDonations: number, adminUser?: { __typename?: 'UserEntity', name?: string | null, firstName?: string | null, lastName?: string | null } | null }> } };
+
 export type QfRoundStatsQueryVariables = Exact<{
   qfRoundId: Scalars['Int']['input'];
 }>;
 
 
 export type QfRoundStatsQuery = { __typename?: 'Query', qfRoundStats: { __typename?: 'QfRoundStatsEntity', totalDonationsUsd: number, donationsCount: number, uniqueDonors: number, qfRound: { __typename?: 'QfRoundEntity', id: string, allocatedFundUSD?: number | null, allocatedTokenSymbol?: string | null, beginDate: any, endDate: any } } };
+
+export type SearchProjectsQueryVariables = Exact<{
+  searchTerm: Scalars['String']['input'];
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type SearchProjectsQuery = { __typename?: 'Query', searchProjects: { __typename?: 'PaginatedSearchResultsEntity', total: number, projects: Array<{ __typename?: 'SearchResultProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, vouched: boolean, totalDonations: number, totalReactions: number, countUniqueDonors?: number | null, qualityScore: number, searchRank: number, createdAt: any, updatedAt: any }> } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -656,6 +728,78 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<ActiveQfRoundsQuery, ActiveQfRoundsQueryVariables>;
+export const ProjectBySlugDocument = new TypedDocumentString(`
+    query ProjectBySlug($slug: String!) {
+  projectBySlug(slug: $slug) {
+    id
+    title
+    slug
+    description
+    descriptionSummary
+    image
+    impactLocation
+    totalDonations
+    countUniqueDonors
+    adminUser {
+      name
+      firstName
+      lastName
+      avatar
+    }
+    addresses {
+      address
+      chainType
+      networkId
+      title
+    }
+    categories {
+      name
+    }
+    givbacksEligibilityStatus
+    vouched
+  }
+}
+    `) as unknown as TypedDocumentString<ProjectBySlugQuery, ProjectBySlugQueryVariables>;
+export const DonationsByProjectDocument = new TypedDocumentString(`
+    query DonationsByProject($projectId: Int!, $skip: Int, $take: Int) {
+  donationsByProject(projectId: $projectId, skip: $skip, take: $take) {
+    donations {
+      id
+      amount
+      currency
+      valueUsd
+      createdAt
+      transactionNetworkId
+      fromWalletAddress
+      user {
+        name
+        firstName
+        lastName
+        avatar
+      }
+    }
+    total
+  }
+}
+    `) as unknown as TypedDocumentString<DonationsByProjectQuery, DonationsByProjectQueryVariables>;
+export const ProjectsDocument = new TypedDocumentString(`
+    query Projects($take: Int, $skip: Int) {
+  projects(take: $take, skip: $skip) {
+    projects {
+      id
+      title
+      slug
+      image
+      totalDonations
+      adminUser {
+        name
+        firstName
+        lastName
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ProjectsQuery, ProjectsQueryVariables>;
 export const QfRoundStatsDocument = new TypedDocumentString(`
     query QfRoundStats($qfRoundId: Int!) {
   qfRoundStats(qfRoundId: $qfRoundId) {
@@ -672,3 +816,26 @@ export const QfRoundStatsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<QfRoundStatsQuery, QfRoundStatsQueryVariables>;
+export const SearchProjectsDocument = new TypedDocumentString(`
+    query SearchProjects($searchTerm: String!, $skip: Int, $take: Int, $sortBy: String, $sortDirection: String) {
+  searchProjects(searchTerm: $searchTerm, skip: $skip, take: $take, sortBy: $sortBy, sortDirection: $sortDirection) {
+    projects {
+      id
+      title
+      slug
+      description
+      descriptionSummary
+      image
+      vouched
+      totalDonations
+      totalReactions
+      countUniqueDonors
+      qualityScore
+      searchRank
+      createdAt
+      updatedAt
+    }
+    total
+  }
+}
+    `) as unknown as TypedDocumentString<SearchProjectsQuery, SearchProjectsQueryVariables>;

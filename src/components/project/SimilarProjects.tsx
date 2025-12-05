@@ -1,37 +1,10 @@
 import { ProjectCard } from '@/components/qf/ProjectCard'
-
-// Mock Data for Similar Projects
-const SIMILAR_PROJECTS = [
-  {
-    id: '2',
-    title: 'Reforestation with biodiversity AgroForest',
-    author: 'Green Earth',
-    image:
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=1000',
-    raised: 850,
-    slug: '2',
-  },
-  {
-    id: '3',
-    title: 'Web3 Education for All',
-    author: 'EduDAO',
-    image:
-      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1000',
-    raised: 3200,
-    slug: '3',
-  },
-  {
-    id: '4',
-    title: 'Community Garden Project',
-    author: 'Local Roots',
-    image:
-      'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&q=80&w=1000',
-    raised: 450,
-    slug: '4',
-  },
-]
+import { useProjects } from '@/hooks/useProject'
 
 export function SimilarProjects() {
+  const { data } = useProjects(0, 3)
+  const projects = data?.projects.projects || []
+
   return (
     <div>
       <div>
@@ -62,8 +35,20 @@ export function SimilarProjects() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {SIMILAR_PROJECTS.map(project => (
-          <ProjectCard key={project.id} {...project} />
+        {projects.map(project => (
+          <ProjectCard
+            key={project.id}
+            id={project.id}
+            title={project.title}
+            author={
+              project.adminUser?.name ||
+              project.adminUser?.firstName ||
+              'Unknown'
+            }
+            image={project.image || ''}
+            raised={project.totalDonations}
+            slug={project.slug}
+          />
         ))}
       </div>
     </div>

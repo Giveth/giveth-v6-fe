@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { BellIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import { CartModal } from '@/components/cart/CartModal'
 import { GivethLogo } from '@/components/icons/GivethLogo'
@@ -11,6 +12,35 @@ import { useCart } from '@/context/CartContext'
 export function NewHeader() {
   const { cartItems } = useCart()
   const [isCartModalOpen, setIsCartModalOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Initialize search value from URL params on mount
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search')
+    if (searchFromUrl) {
+      setSearchValue(searchFromUrl)
+    }
+  }, [searchParams])
+
+  const handleSearch = useCallback(() => {
+    if (searchValue.trim().length >= 2) {
+      const params = new URLSearchParams()
+      params.set('search', searchValue.trim())
+      params.set('sort', 'relevance')
+      router.push(`/?${params.toString()}`)
+    }
+  }, [searchValue, router])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        handleSearch()
+      }
+    },
+    [handleSearch],
+  )
 
   return (
     <>
@@ -75,9 +105,18 @@ export function NewHeader() {
             <input
               type="text"
               placeholder="Search projects"
+              value={searchValue}
+              onChange={e => setSearchValue(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full rounded-full bg-gray-100 py-2.5 pl-5 pr-10 text-sm outline-none focus:ring-2 focus:ring-[#fd67ac]/20"
             />
-            <MagnifyingGlassIcon className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <button
+              onClick={handleSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Search"
+            >
+              <MagnifyingGlassIcon className="h-5 w-5" />
+            </button>
           </div>
         </div>
 

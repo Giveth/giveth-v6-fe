@@ -1,17 +1,48 @@
 'use client'
 
-import { MixerHorizontalIcon, RocketIcon } from '@radix-ui/react-icons'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import {
+  Cross2Icon,
+  MixerHorizontalIcon,
+  RocketIcon,
+} from '@radix-ui/react-icons'
 import { ProjectCard } from '@/components/qf/ProjectCard'
 import { QFHero } from '@/components/qf/QFHero'
 import { QFStats } from '@/components/qf/QFStats'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
+import { useSearchProjects } from '@/hooks/useSearchProjects'
 
 export default function Home() {
-  const { data, isLoading, error } = useActiveQfRounds()
+  const searchParams = useSearchParams()
+  const searchTerm = searchParams.get('search') || ''
+  const sortParam = searchParams.get('sort') || 'relevance'
 
-  // Get the first active round and its projects
-  const activeRound = data?.activeQfRounds?.[0]
-  const projects =
+  // Determine if we're in search mode
+  const isSearchMode = searchTerm.length >= 2
+
+  // Fetch QF rounds data (always needed for hero/stats when not searching)
+  const {
+    data: qfData,
+    isLoading: qfLoading,
+    error: qfError,
+  } = useActiveQfRounds()
+
+  // Fetch search results (only when searching)
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    error: searchError,
+  } = useSearchProjects({
+    searchTerm,
+    sortBy: sortParam as 'relevance' | 'createdAt' | 'totalDonations',
+    sortDirection: 'desc',
+    enabled: isSearchMode,
+  })
+
+  // Get the first active round and its projects for non-search mode
+  const activeRound = qfData?.activeQfRounds?.[0]
+  const qfProjects =
     activeRound?.projectQfRounds?.map((pqr: any) => ({
       id: String(pqr.project?.id || ''),
       title: pqr.project?.title || '',
@@ -29,13 +60,40 @@ export default function Home() {
       slug: pqr.project?.slug || '',
     })) || []
 
+  // Transform search results to project card format
+  const searchProjects =
+    searchData?.searchProjects?.projects?.map((project: any) => ({
+      id: String(project.id || ''),
+      title: project.title || '',
+      author: 'Project Creator',
+      description: project.descriptionSummary || '',
+      raised: project.totalDonations || 0,
+      totalRaised: project.totalDonations || 0,
+      contributors: project.countUniqueDonors || 0,
+      image:
+        project.image ||
+        'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000',
+      slug: project.slug || '',
+      searchRank: project.searchRank,
+    })) || []
+
+  // Choose which projects to display
+  const isLoading = isSearchMode ? searchLoading : qfLoading
+  const error = isSearchMode ? searchError : qfError
+  const projects = isSearchMode ? searchProjects : qfProjects
+  const totalResults = isSearchMode
+    ? searchData?.searchProjects?.total || 0
+    : projects.length
+
   if (error) {
     return (
       <main className="min-h-screen bg-[#fcfcff] pb-20">
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <p className="text-xl font-bold text-red-600">
-              Error loading QF rounds
+              {isSearchMode
+                ? 'Error searching projects'
+                : 'Error loading QF rounds'}
             </p>
             <p className="text-sm text-gray-500 mt-2">Please try again later</p>
           </div>
@@ -46,36 +104,104 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#fcfcff] pb-20">
-      {/* Hero Section */}
-      <div className="bg-white px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-8">
-          <QFHero round={activeRound} isLoading={isLoading} />
-          <QFStats round={activeRound} isLoading={isLoading} />
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Explore Header */}
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Explore{' '}
-            <span className="text-gray-400">
-              {isLoading ? '...' : `${projects.length} projects`}
-            </span>
-          </h2>
-
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-              <RocketIcon className="h-4 w-4" />
-              Highest GIVpower
-              <MixerHorizontalIcon className="ml-2 h-4 w-4 rotate-90" />
-            </button>
-            <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-              Filters
-              <MixerHorizontalIcon className="h-4 w-4" />
-            </button>
+      {/* Hero Section - Only show when not searching */}
+      {!isSearchMode && (
+        <div className="bg-white px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <QFHero round={activeRound} isLoading={qfLoading} />
+            <QFStats round={activeRound} isLoading={qfLoading} />
           </div>
         </div>
+      )}
+
+      {/* Search Results Header - Only show when searching */}
+      {isSearchMode && (
+        <div className="bg-gradient-to-r from-[#d81a72]/10 to-[#fd67ac]/10 px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Search Results
+                </h1>
+                <p className="mt-2 text-lg text-gray-600">
+                  Found{' '}
+                  <span className="font-bold text-[#d81a72]">
+                    {totalResults}
+                  </span>{' '}
+                  projects matching &quot;
+                  <span className="font-medium">{searchTerm}</span>&quot;
+                </p>
+              </div>
+              <Link
+                href="/"
+                className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+              >
+                <Cross2Icon className="h-4 w-4" />
+                Clear Search
+              </Link>
+            </div>
+
+            {/* Sort Pills */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link
+                href={`/?search=${encodeURIComponent(searchTerm)}&sort=relevance`}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  sortParam === 'relevance'
+                    ? 'bg-[#d81a72] text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Most Relevant
+              </Link>
+              <Link
+                href={`/?search=${encodeURIComponent(searchTerm)}&sort=totalDonations`}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  sortParam === 'totalDonations'
+                    ? 'bg-[#d81a72] text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Most Funded
+              </Link>
+              <Link
+                href={`/?search=${encodeURIComponent(searchTerm)}&sort=createdAt`}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  sortParam === 'createdAt'
+                    ? 'bg-[#d81a72] text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Newest
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        {/* Explore Header - Only show when not searching */}
+        {!isSearchMode && (
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Explore{' '}
+              <span className="text-gray-400">
+                {isLoading ? '...' : `${projects.length} projects`}
+              </span>
+            </h2>
+
+            <div className="flex gap-3">
+              <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                <RocketIcon className="h-4 w-4" />
+                Highest GIVpower
+                <MixerHorizontalIcon className="ml-2 h-4 w-4 rotate-90" />
+              </button>
+              <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                Filters
+                <MixerHorizontalIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (
@@ -102,11 +228,23 @@ export default function Home() {
         {!isLoading && projects.length === 0 && (
           <div className="text-center py-16">
             <p className="text-xl font-bold text-gray-900">
-              No active QF rounds at the moment
+              {isSearchMode
+                ? `No projects found matching "${searchTerm}"`
+                : 'No active QF rounds at the moment'}
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              Check back later for new rounds
+              {isSearchMode
+                ? 'Try a different search term'
+                : 'Check back later for new rounds'}
             </p>
+            {isSearchMode && (
+              <Link
+                href="/"
+                className="mt-4 inline-block rounded-full bg-[#d81a72] px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-[#b0155c]"
+              >
+                Browse All Projects
+              </Link>
+            )}
           </div>
         )}
 
