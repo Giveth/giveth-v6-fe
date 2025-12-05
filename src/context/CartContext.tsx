@@ -6,7 +6,7 @@ export interface Project {
   id: string
   title: string
   slug: string
-  image: string
+  image?: string | null
 }
 
 interface CartContextType {

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Cross2Icon } from '@radix-ui/react-icons'
+import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 
 interface CartModalProps {
@@ -60,7 +61,7 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                     key={project.id}
                     className="group relative flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 transition-all hover:border-gray-200"
                   >
-                    <img
+                    <ProjectImage
                       src={project.image}
                       alt={project.title}
                       className="h-16 w-16 rounded-xl object-cover"
@@ -116,7 +117,7 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                         key={project.id}
                         className="group relative flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 transition-all hover:border-gray-200"
                       >
-                        <img
+                        <ProjectImage
                           src={project.image}
                           alt={project.title}
                           className="h-16 w-16 rounded-xl object-cover"

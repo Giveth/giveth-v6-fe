@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Cross2Icon } from '@radix-ui/react-icons'
+import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 
 export default function DonationPage() {
@@ -178,7 +179,7 @@ export default function DonationPage() {
                 >
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex items-center gap-4">
-                      <img
+                      <ProjectImage
                         src={item.image}
                         alt={item.title}
                         className="h-12 w-12 rounded-lg object-cover"
