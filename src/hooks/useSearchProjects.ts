@@ -1,7 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { ProjectSortField, SortDirection } from '@/lib/enums'
 import { graphQLClient } from '@/lib/graphql/client'
-import { ProjectsDocument } from '@/lib/graphql/generated/graphql'
+import type { InputMaybe } from '@/lib/graphql/generated/graphql'
+import {
+  ProjectsDocument,
+  ProjectSortField,
+  SortDirection,
+} from '@/lib/graphql/generated/graphql'
 
 export interface SearchProjectsOptions {
   searchTerm: string
@@ -17,8 +21,8 @@ export const useSearchProjects = (options: SearchProjectsOptions) => {
     searchTerm,
     skip = 0,
     take = 20,
-    sortBy = ProjectSortField.Relevance,
-    sortDirection = SortDirection.DESC,
+    sortBy = ProjectSortField.CreatedAt,
+    sortDirection = SortDirection.Desc,
     enabled = true,
   } = options
 
@@ -26,10 +30,10 @@ export const useSearchProjects = (options: SearchProjectsOptions) => {
     queryKey: ['searchProjects', searchTerm, skip, take, sortBy, sortDirection],
     queryFn: async () => {
       return graphQLClient.request(ProjectsDocument, {
-        skip,
-        take,
-        orderBy: sortBy,
-        orderDirection: sortDirection,
+        skip: skip as InputMaybe<number>,
+        take: take as InputMaybe<number>,
+        orderBy: sortBy as InputMaybe<ProjectSortField>,
+        orderDirection: sortDirection as InputMaybe<SortDirection>,
         filters: {
           searchTerm,
         },
