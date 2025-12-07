@@ -176,3 +176,52 @@ export const qfRoundStatsQuery = graphql(`
     }
   }
 `)
+
+export const meQuery = graphql(`
+  query Me {
+    me {
+      id
+      email
+      name
+      firstName
+      lastName
+      avatar
+      primaryEns
+      url
+      totalDonated
+      totalReceived
+      wallets {
+        id
+        address
+        isPrimary
+        chainType
+      }
+    }
+  }
+`)
+
+export const userStatsQuery = graphql(`
+  query UserStats($id: Int!) {
+    userStats(id: $id) {
+      id
+      email
+      name
+      firstName
+      lastName
+      avatar
+      primaryEns
+      url
+      totalDonated
+      totalReceived
+      donationsCount
+      projectsCount
+      likedProjectsCount
+      wallets {
+        id
+        address
+        isPrimary
+        chainType
+      }
+    }
+  }
+`)
