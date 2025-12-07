@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { BellIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
+import { SiweAuthButton } from '@/components/auth/SiweAuthButton'
 import { CartModal } from '@/components/cart/CartModal'
 import { GivethLogo } from '@/components/icons/GivethLogo'
-import { ConnectWalletButton } from '@/components/wallet/ConnectWalletButton'
 import { useCart } from '@/context/CartContext'
 
-export function NewHeader() {
+export function Header() {
   const { cartItems } = useCart()
   const [isCartModalOpen, setIsCartModalOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -122,8 +122,9 @@ export function NewHeader() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
+          {}
           <Link
-            href="#"
+            href="/create/project"
             className="hidden text-sm font-bold text-[#d81a72] hover:text-[#b0155c] sm:block"
           >
             Create A Project
@@ -159,7 +160,7 @@ export function NewHeader() {
             <span className="font-bold text-gray-900">{cartItems.length}</span>
           </button>
 
-          <ConnectWalletButton />
+          <SiweAuthButton />
         </div>
       </header>
 
