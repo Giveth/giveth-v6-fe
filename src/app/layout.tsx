@@ -1,12 +1,10 @@
-import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-
-import '@radix-ui/themes/styles.css'
-
 import { Providers } from '@/app/providers'
 import { Footer } from '@/components/layout/footer'
-import { NewHeader } from '@/components/layout/NewHeader'
+import { Header } from '@/components/layout/header'
 import { CartProvider } from '@/context/CartContext'
+import '@radix-ui/themes/styles.css'
+import type { Metadata } from 'next'
 
 import './globals.css'
 
@@ -27,7 +25,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <CartProvider>
-            <NewHeader />
+            <Header />
             {children}
             <Footer />
           </CartProvider>

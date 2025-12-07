@@ -13,7 +13,10 @@ import { QFStats } from '@/components/qf/QFStats'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 import { useSearchProjects } from '@/hooks/useSearchProjects'
 import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants'
-import { ProjectSortField, SortDirection } from '@/lib/enums'
+import {
+  ProjectSortField,
+  SortDirection,
+} from '@/lib/graphql/generated/graphql'
 
 export default function Home() {
   const searchParams = useSearchParams()
@@ -38,7 +41,7 @@ export default function Home() {
   } = useSearchProjects({
     searchTerm,
     sortBy: sortParam as ProjectSortField,
-    sortDirection: SortDirection.DESC,
+    sortDirection: SortDirection.Desc,
     enabled: isSearchMode,
   })
 

@@ -1,14 +1,10 @@
 interface ProjectHeroProps {
   title: string
   image?: string | null
-  descriptionSummary?: string | null
+  adminUser?: string | null
 }
 
-export function ProjectHero({
-  title,
-  image,
-  descriptionSummary,
-}: ProjectHeroProps) {
+export function ProjectHero({ title, image, adminUser }: ProjectHeroProps) {
   return (
     <div className="relative h-[320px] w-full overflow-hidden rounded-3xl bg-black">
       {/* Background Image/Video Placeholder */}
@@ -30,10 +26,8 @@ export function ProjectHero({
         <h1 className="mb-2 text-3xl font-bold text-white sm:text-4xl">
           {title}
         </h1>
-        {descriptionSummary && (
-          <p className="text-lg font-medium text-white/80">
-            {descriptionSummary}
-          </p>
+        {adminUser && (
+          <p className="text-lg font-medium text-white/80">by {adminUser}</p>
         )}
       </div>
     </div>

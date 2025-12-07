@@ -65,7 +65,11 @@ export default function ProjectPage() {
             <ProjectHero
               title={project.title}
               image={project.image}
-              descriptionSummary={project.descriptionSummary}
+              adminUser={
+                project.adminUser?.name ||
+                `${project.adminUser?.firstName || ''} ${project.adminUser?.lastName || ''}`.trim() ||
+                undefined
+              }
             />
           </div>
 
