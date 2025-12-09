@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'cdn.statically.io' },
       { protocol: 'https', hostname: 'ipfs.io' },
       { protocol: 'https', hostname: '**.ipfs.w3s.link' },
+      { protocol: 'https', hostname: 'giveth.mypinata.cloud' },
     ],
   },
   logging: {
