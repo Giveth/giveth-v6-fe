@@ -51,7 +51,7 @@ export const projectBySlugQuery = graphql(`
       totalDonations
       countUniqueDonors
       vouched
-      givbacksEligibilityStatus
+      isGivbacksEligible
       adminUser {
         id
         name
@@ -75,6 +75,69 @@ export const projectBySlugQuery = graphql(`
         networkId
         title
         chainType
+      }
+    }
+  }
+`)
+
+export const qfRoundBySlugQuery = `
+  query QfRoundBySlug($slug: String!) {
+    qfRoundBySlug(slug: $slug) {
+      id
+      name
+      title
+      description
+      slug
+      bannerFull
+      bannerBgImage
+      bannerMobile
+      sponsorsImgs
+      beginDate
+      endDate
+      projectQfRounds {
+        sumDonationValueUsd
+        countUniqueDonors
+        project {
+          id
+          title
+          slug
+          image
+          descriptionSummary
+          adminUser {
+            name
+            firstName
+            lastName
+          }
+        }
+      }
+    }
+  }
+`
+
+export const activeQfRoundsQuery = graphql(`
+  query ActiveQfRounds {
+    activeQfRounds {
+      id
+      name
+      slug
+      isActive
+      beginDate
+      endDate
+      projectQfRounds {
+        sumDonationValueUsd
+        countUniqueDonors
+        project {
+          id
+          title
+          slug
+          image
+          descriptionSummary
+          adminUser {
+            name
+            firstName
+            lastName
+          }
+        }
       }
     }
   }
@@ -130,7 +193,7 @@ export const projectsQuery = graphql(`
         countUniqueDonors
         qualityScore
         vouched
-        givbacksEligibilityStatus
+        isGivbacksEligible
         searchRank
         adminUser {
           id
@@ -216,6 +279,81 @@ export const userStatsQuery = graphql(`
       donationsCount
       projectsCount
       likedProjectsCount
+      wallets {
+        id
+        address
+        isPrimary
+        chainType
+      }
+    }
+  }
+`)
+
+export const myProjectsQuery = graphql(`
+  query MyProjects(
+    $skip: Int = 0
+    $take: Int = 10
+    $orderBy: ProjectSortField = CreatedAt
+    $orderDirection: SortDirection = DESC
+  ) {
+    myProjects(
+      skip: $skip
+      take: $take
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+    ) {
+      total
+      projects {
+        id
+        title
+        slug
+        createdAt
+        reviewStatus
+        isGivbacksEligible
+        vouched
+        totalDonations
+      }
+    }
+  }
+`)
+
+export const myDonationsQuery = graphql(`
+  query MyDonations($skip: Int = 0, $take: Int = 20) {
+    myDonations(skip: $skip, take: $take) {
+      total
+      donations {
+        id
+        amount
+        valueUsd
+        currency
+        status
+        transactionId
+        transactionNetworkId
+        createdAt
+        project {
+          id
+          title
+          slug
+        }
+      }
+    }
+  }
+`)
+
+export const profileQuery = graphql(`
+  query MeProfile {
+    me {
+      id
+      email
+      firstName
+      lastName
+      name
+      avatar
+      url
+      location
+      twitterName
+      telegramName
+      isEmailVerified
       wallets {
         id
         address

@@ -1,5 +1,7 @@
 import { GraphQLClient } from 'graphql-request'
 import { SiweMessage } from 'siwe'
+import { verifySiweTokenMutation } from '@/lib/graphql/mutations'
+import { meQuery } from '@/lib/graphql/queries'
 
 interface SiweAuthResponse {
   jwt: string
@@ -33,39 +35,6 @@ interface User {
     chainType: string
   }>
 }
-
-const VERIFY_SIWE_MUTATION = `
-  mutation VerifySiweToken($jwt: String!) {
-    verifySiweToken(jwt: $jwt) {
-      success
-      token
-      user {
-        id
-        email
-        name
-        avatar
-        primaryWallet
-      }
-      error
-    }
-  }
-`
-
-const ME_QUERY = `
-  query Me {
-    me {
-      id
-      email
-      name
-      avatar
-      wallets {
-        address
-        isPrimary
-        chainType
-      }
-    }
-  }
-`
 
 export class SiweService {
   private siweAuthServiceUrl: string
@@ -151,7 +120,7 @@ export class SiweService {
   async verifyTokenWithCore(jwt: string): Promise<CoreAuthResponse> {
     try {
       const result = await this.graphqlClient.request<CoreAuthResponse>(
-        VERIFY_SIWE_MUTATION,
+        verifySiweTokenMutation,
         { jwt },
       )
 
@@ -172,7 +141,7 @@ export class SiweService {
         },
       })
 
-      const response = await client.request<{ me: User }>(ME_QUERY)
+      const response = await client.request<{ me: User }>(meQuery)
 
       if (response.me) {
         // Find primary wallet from user's wallets
