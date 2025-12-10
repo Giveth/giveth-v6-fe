@@ -45,7 +45,7 @@ export default function ProjectPage() {
               Vouched
             </span>
           )}
-          {project.givbacksEligibilityStatus === 'VERIFIED' && (
+          {project.isGivbacksEligible && (
             <span className="inline-flex items-center gap-1 rounded-full bg-white border border-gray-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#d81a72] shadow-sm">
               <span className="mr-1">👋</span>
               GIVbacks Eligible
