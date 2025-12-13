@@ -1,13 +1,20 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { BellIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import { SiweAuthButton } from '@/components/auth/SiweAuthButton'
 import { CartModal } from '@/components/cart/CartModal'
 import { GivethLogo } from '@/components/icons/GivethLogo'
 import { useCart } from '@/context/CartContext'
+import { useSiweAuth } from '@/hooks/useSiweAuth'
 
 export function Header() {
   const { cartItems } = useCart()
@@ -15,6 +22,8 @@ export function Header() {
   const [searchValue, setSearchValue] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { isConnected, isAuthenticated, isLoading, signIn } = useSiweAuth()
+  const [isSigningInForCreate, setIsSigningInForCreate] = useState(false)
 
   // Initialize search value from URL params on mount
   useEffect(() => {
@@ -34,12 +43,32 @@ export function Header() {
   }, [searchValue, router])
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
+    (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         handleSearch()
       }
     },
     [handleSearch],
+  )
+
+  const handleCreateProjectClick = useCallback(
+    async (event: MouseEvent<HTMLAnchorElement>) => {
+      if (!isConnected || isAuthenticated) {
+        return
+      }
+
+      event.preventDefault()
+      try {
+        setIsSigningInForCreate(true)
+        await signIn()
+        router.push('/create/project')
+      } catch (error) {
+        console.error('Failed to sign in before creating project', error)
+      } finally {
+        setIsSigningInForCreate(false)
+      }
+    },
+    [isAuthenticated, isConnected, router, signIn],
   )
 
   return (
@@ -121,26 +150,20 @@ export function Header() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-4">
-          {}
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/create/project"
-            className="hidden text-sm font-bold text-[#d81a72] hover:text-[#b0155c] sm:block"
+            onClick={handleCreateProjectClick}
+            className="hidden text-base font-extrabold text-[#d81a72] hover:text-[#b0155c] sm:block"
+            aria-busy={isLoading || isSigningInForCreate}
           >
-            Create A Project
+            {isSigningInForCreate ? 'Connecting wallet…' : 'Create A Project'}
           </Link>
-
-          <button className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100">
-            <BellIcon className="h-5 w-5 text-[#d81a72]" />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#d81a72] ring-2 ring-white" />
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#fd67ac] text-[10px] font-bold text-white">
-              12
-            </span>
-          </button>
 
           <button
             onClick={() => setIsCartModalOpen(true)}
-            className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"
+            className="flex items-center gap-3 rounded-full bg-white px-5 py-3 shadow-[0_14px_36px_rgba(83,38,236,0.08)] ring-1 ring-[#ebe9ff] hover:bg-gray-50"
+            aria-label="Open cart"
           >
             <svg
               width="20"
@@ -157,7 +180,9 @@ export function Header() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="font-bold text-gray-900">{cartItems.length}</span>
+            <span className="text-lg font-semibold text-gray-900">
+              {cartItems.length}
+            </span>
           </button>
 
           <SiweAuthButton />
