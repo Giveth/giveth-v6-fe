@@ -5,6 +5,7 @@ import {
   ProjectBySlugDocument,
   ProjectsDocument,
 } from '@/lib/graphql/generated/graphql'
+import { similarProjectsBySlugQuery } from '@/lib/graphql/queries'
 
 export const useProjectBySlug = (slug: string) => {
   return useQuery({
@@ -20,14 +21,16 @@ export const useProjectDonations = (
   projectId: number,
   skip: number = 0,
   take: number = 10,
+  qfRoundId?: number,
 ) => {
   return useQuery({
-    queryKey: ['donationsByProject', projectId, skip, take],
+    queryKey: ['donationsByProject', projectId, skip, take, qfRoundId],
     queryFn: async () => {
       return graphQLClient.request(DonationsByProjectDocument, {
         projectId,
         skip,
         take,
+        qfRoundId,
       })
     },
     enabled: !!projectId,
@@ -43,5 +46,23 @@ export const useProjects = (skip: number = 0, take: number = 10) => {
         take,
       })
     },
+  })
+}
+
+export const useSimilarProjectsBySlug = (
+  slug: string,
+  skip: number = 0,
+  take: number = 3,
+) => {
+  return useQuery({
+    queryKey: ['similarProjectsBySlug', slug, skip, take],
+    queryFn: async () => {
+      return graphQLClient.request(similarProjectsBySlugQuery, {
+        slug,
+        skip,
+        take,
+      })
+    },
+    enabled: !!slug,
   })
 }
