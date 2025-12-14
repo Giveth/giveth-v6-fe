@@ -24,6 +24,14 @@ export type AddWalletInput = {
   address: Scalars['String']['input'];
 };
 
+export type AllocatedGivbacksEntity = {
+  __typename?: 'AllocatedGivbacksEntity';
+  allocatedGivTokens: Scalars['Float']['output'];
+  date: Scalars['DateTime']['output'];
+  givPrice: Scalars['Float']['output'];
+  usdValueSentAmountInPowerRound: Scalars['Float']['output'];
+};
+
 export type AuthUser = {
   __typename?: 'AuthUser';
   avatar?: Maybe<Scalars['String']['output']>;
@@ -45,14 +53,61 @@ export type CategoryEntity = {
   value?: Maybe<Scalars['String']['output']>;
 };
 
+export type CauseEntity = {
+  __typename?: 'CauseEntity';
+  addresses?: Maybe<Array<ProjectAddressEntity>>;
+  adminUser?: Maybe<UserEntity>;
+  categories?: Maybe<Array<CategoryEntity>>;
+  countUniqueDonors?: Maybe<Scalars['Int']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  descriptionSummary?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  impactLocation?: Maybe<Scalars['String']['output']>;
+  isGivbacksEligible: Scalars['Boolean']['output'];
+  projectQfRounds: Array<ProjectQfRoundEntity>;
+  projectType: ProjectType;
+  qfRoundMatchingProjects?: Maybe<Array<QfRoundMatchingProjectEntity>>;
+  qualityScore: Scalars['Float']['output'];
+  reviewStatus: ReviewStatus;
+  /** Search relevance score, only populated when using searchTerm filter */
+  searchRank?: Maybe<Scalars['Float']['output']>;
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  totalDonations: Scalars['Float']['output'];
+  totalReactions: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  vouched: Scalars['Boolean']['output'];
+};
+
 export enum ChainType {
   Evm = 'EVM',
   Solana = 'SOLANA'
 }
 
+export type CommentEntity = {
+  __typename?: 'CommentEntity';
+  content?: Maybe<Scalars['String']['output']>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+};
+
+export type CommentsSectionEntity = {
+  __typename?: 'CommentsSectionEntity';
+  comments?: Maybe<Array<CommentEntity>>;
+};
+
 export type ConfirmEmailVerificationInput = {
   email: Scalars['String']['input'];
   verifyCode: Scalars['String']['input'];
+};
+
+export type CountryEntity = {
+  __typename?: 'CountryEntity';
+  code: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type CreateDonationInput = {
@@ -76,7 +131,28 @@ export type CreateProjectInput = {
   description: Scalars['String']['input'];
   image?: InputMaybe<Scalars['String']['input']>;
   impactLocation?: InputMaybe<Scalars['String']['input']>;
+  projectType?: InputMaybe<ProjectType>;
   title: Scalars['String']['input'];
+};
+
+export type CreateProjectUpdateInput = {
+  achievedMilestones?: InputMaybe<Scalars['String']['input']>;
+  content: Scalars['String']['input'];
+  contentSummary?: InputMaybe<Scalars['String']['input']>;
+  facebook?: InputMaybe<Scalars['String']['input']>;
+  foundationDate?: InputMaybe<Scalars['DateTime']['input']>;
+  instagram?: InputMaybe<Scalars['String']['input']>;
+  isMain?: InputMaybe<Scalars['Boolean']['input']>;
+  isNonProfitOrganization?: InputMaybe<Scalars['Boolean']['input']>;
+  linkedin?: InputMaybe<Scalars['String']['input']>;
+  managingFundDescription?: InputMaybe<Scalars['String']['input']>;
+  mission?: InputMaybe<Scalars['String']['input']>;
+  organizationCountry?: InputMaybe<Scalars['String']['input']>;
+  organizationDescription?: InputMaybe<Scalars['String']['input']>;
+  organizationWebsite?: InputMaybe<Scalars['String']['input']>;
+  title: Scalars['String']['input'];
+  twitter?: InputMaybe<Scalars['String']['input']>;
+  youtube?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateQfRoundInput = {
@@ -115,6 +191,13 @@ export type CreateUserInput = {
   walletAddress: Scalars['String']['input'];
 };
 
+export type DonationCurrencyStatsEntity = {
+  __typename?: 'DonationCurrencyStatsEntity';
+  currency?: Maybe<Scalars['String']['output']>;
+  currencyPercentage?: Maybe<Scalars['Float']['output']>;
+  uniqueDonorCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type DonationEntity = {
   __typename?: 'DonationEntity';
   amount: Scalars['Float']['output'];
@@ -122,6 +205,7 @@ export type DonationEntity = {
   chainType: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
   currency: Scalars['String']['output'];
+  donationPercentage?: Maybe<Scalars['Float']['output']>;
   fromWalletAddress: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   nonce?: Maybe<Scalars['Float']['output']>;
@@ -132,9 +216,17 @@ export type DonationEntity = {
   tokenAddress?: Maybe<Scalars['String']['output']>;
   transactionId: Scalars['String']['output'];
   transactionNetworkId: Scalars['Int']['output'];
+  useDonationBox: Scalars['Boolean']['output'];
   user?: Maybe<UserEntity>;
   valueUsd?: Maybe<Scalars['Float']['output']>;
   verifyErrorMessage?: Maybe<Scalars['String']['output']>;
+};
+
+export type DonationMetricsEntity = {
+  __typename?: 'DonationMetricsEntity';
+  averagePercentageToGiveth: Scalars['Float']['output'];
+  totalDonationsToGiveth: Scalars['Int']['output'];
+  totalUsdValueToGiveth: Scalars['Float']['output'];
 };
 
 export type DonationStatsEntity = {
@@ -162,6 +254,104 @@ export type EstimatedMatchingEntity = {
   qfRoundId: Scalars['Int']['output'];
 };
 
+export type FeaturedUpdateEntity = {
+  __typename?: 'FeaturedUpdateEntity';
+  position?: Maybe<Scalars['Int']['output']>;
+  projectId: Scalars['Int']['output'];
+  projectUpdateId: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type FormRelatedAddressEntity = {
+  __typename?: 'FormRelatedAddressEntity';
+  address?: Maybe<Scalars['String']['output']>;
+  chainType?: Maybe<Scalars['String']['output']>;
+  memo?: Maybe<Scalars['String']['output']>;
+  networkId?: Maybe<Scalars['Float']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+};
+
+export type FormRelatedAddressInput = {
+  address?: InputMaybe<Scalars['String']['input']>;
+  chainType?: InputMaybe<Scalars['String']['input']>;
+  memo?: InputMaybe<Scalars['String']['input']>;
+  networkId?: InputMaybe<Scalars['Float']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GetPowerBoostingInput = {
+  orderBy?: InputMaybe<PowerBoostingOrderByInput>;
+  projectId?: InputMaybe<Scalars['Int']['input']>;
+  skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+  userId?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type GivPowersEntity = {
+  __typename?: 'GivPowersEntity';
+  powerBoostings: Array<PowerBoostingEntity>;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type GivbacksEligibilityFormEntity = {
+  __typename?: 'GivbacksEligibilityFormEntity';
+  commentsSection?: Maybe<CommentsSectionEntity>;
+  createdAt: Scalars['DateTime']['output'];
+  email?: Maybe<Scalars['String']['output']>;
+  emailConfirmationSent: Scalars['Boolean']['output'];
+  emailConfirmationSentAt?: Maybe<Scalars['DateTime']['output']>;
+  emailConfirmationToken?: Maybe<Scalars['String']['output']>;
+  emailConfirmationTokenExpiredAt?: Maybe<Scalars['DateTime']['output']>;
+  emailConfirmed: Scalars['Boolean']['output'];
+  emailConfirmedAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['Int']['output'];
+  isTermAndConditionsAccepted: Scalars['Boolean']['output'];
+  lastStep?: Maybe<Scalars['String']['output']>;
+  managingFunds?: Maybe<ManagingFundsEntity>;
+  milestones?: Maybe<MilestonesEntity>;
+  personalInfo?: Maybe<PersonalInfoEntity>;
+  projectContacts?: Maybe<Array<ProjectContactsEntity>>;
+  projectId: Scalars['Int']['output'];
+  projectRegistry?: Maybe<ProjectRegistryEntity>;
+  reviewerId?: Maybe<Scalars['Int']['output']>;
+  status: GivbacksEligibilityStatus;
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['Int']['output'];
+  verifiedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export enum GivbacksEligibilityStatus {
+  Draft = 'DRAFT',
+  Rejected = 'REJECTED',
+  Submitted = 'SUBMITTED',
+  Verified = 'VERIFIED'
+}
+
+export type GivbacksEligibilityUpdateInput = {
+  givbacksEligibilityId: Scalars['Int']['input'];
+  isTermAndConditionsAccepted?: InputMaybe<Scalars['Boolean']['input']>;
+  lastStep?: InputMaybe<Scalars['String']['input']>;
+  managingFunds?: InputMaybe<ManagingFundsInput>;
+  milestones?: InputMaybe<MilestonesInput>;
+  personalInfo?: InputMaybe<PersonalInfoInput>;
+  projectContacts?: InputMaybe<Array<ProjectContactsInput>>;
+  projectRegistry?: InputMaybe<ProjectRegistryInput>;
+};
+
+export type LikeResponseEntity = {
+  __typename?: 'LikeResponseEntity';
+  liked: Scalars['Boolean']['output'];
+  reactionId?: Maybe<Scalars['Int']['output']>;
+};
+
+export type MainCategoryDonationsEntity = {
+  __typename?: 'MainCategoryDonationsEntity';
+  id: Scalars['Int']['output'];
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  totalUsd: Scalars['Float']['output'];
+};
+
 export type MainCategoryEntity = {
   __typename?: 'MainCategoryEntity';
   banner?: Maybe<Scalars['String']['output']>;
@@ -172,27 +362,84 @@ export type MainCategoryEntity = {
   title: Scalars['String']['output'];
 };
 
+export type ManagingFundsEntity = {
+  __typename?: 'ManagingFundsEntity';
+  description?: Maybe<Scalars['String']['output']>;
+  relatedAddresses?: Maybe<Array<FormRelatedAddressEntity>>;
+};
+
+export type ManagingFundsInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  relatedAddresses?: InputMaybe<Array<FormRelatedAddressInput>>;
+};
+
+export type MilestonesEntity = {
+  __typename?: 'MilestonesEntity';
+  achievedMilestones?: Maybe<Scalars['String']['output']>;
+  achievedMilestonesProofs?: Maybe<Array<Scalars['String']['output']>>;
+  foundationDate?: Maybe<Scalars['String']['output']>;
+  impact?: Maybe<Scalars['String']['output']>;
+  mission?: Maybe<Scalars['String']['output']>;
+  plans?: Maybe<Scalars['String']['output']>;
+  problem?: Maybe<Scalars['String']['output']>;
+};
+
+export type MilestonesInput = {
+  achievedMilestones?: InputMaybe<Scalars['String']['input']>;
+  achievedMilestonesProofs?: InputMaybe<Array<Scalars['String']['input']>>;
+  foundationDate?: InputMaybe<Scalars['String']['input']>;
+  impact?: InputMaybe<Scalars['String']['input']>;
+  mission?: InputMaybe<Scalars['String']['input']>;
+  plans?: InputMaybe<Scalars['String']['input']>;
+  problem?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  addNewSocialProfile: Scalars['String']['output'];
   addProjectAddress: ProjectEntity;
   addProjectToQfRound: Scalars['Boolean']['output'];
+  addProjectUpdate: ProjectUpdateEntity;
   addWallet: UserEntity;
   calculateQfRoundMatching: QfRoundMatchingEntity;
   confirmEmailVerification: UserEntity;
   createAvatarUploadUrl: Scalars['String']['output'];
+  createCause: CauseEntity;
   createDonation: DonationEntity;
+  createGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   createProject: ProjectEntity;
   createQfRound: QfRoundEntity;
   createUser: UserEntity;
+  deleteProjectUpdate: Scalars['Boolean']['output'];
+  editProjectUpdate: ProjectUpdateEntity;
+  givbacksEligibilityConfirmEmail: GivbacksEligibilityFormEntity;
+  givbacksEligibilitySendEmailConfirmation: GivbacksEligibilityFormEntity;
+  likeProject: LikeResponseEntity;
+  likeProjectUpdate: LikeResponseEntity;
   removeProjectFromQfRound: Scalars['Boolean']['output'];
+  removeSocialProfile: Scalars['Boolean']['output'];
   removeWallet: UserEntity;
   requestEmailVerification: EmailVerificationRequestEntity;
+  setFeaturedProjectUpdate: Scalars['Boolean']['output'];
+  setMultiplePowerBoosting: Array<PowerBoostingEntity>;
   setPrimaryWallet: UserEntity;
+  setSinglePowerBoosting: Array<PowerBoostingEntity>;
+  unlikeProject: Scalars['Boolean']['output'];
+  unlikeProjectUpdate: Scalars['Boolean']['output'];
+  updateCause: CauseEntity;
+  updateDonationStatus: DonationEntity;
+  updateGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   updateProject: ProjectEntity;
   updateQfRound: QfRoundEntity;
   updateUser: UserEntity;
   verifyDonation: DonationEntity;
   verifySiweToken: SiweAuthResponse;
+};
+
+
+export type MutationAddNewSocialProfileArgs = {
+  projectVerificationId: Scalars['Int']['input'];
+  socialNetwork: Scalars['String']['input'];
 };
 
 
@@ -208,6 +455,12 @@ export type MutationAddProjectAddressArgs = {
 export type MutationAddProjectToQfRoundArgs = {
   projectId: Scalars['Int']['input'];
   qfRoundId: Scalars['Int']['input'];
+};
+
+
+export type MutationAddProjectUpdateArgs = {
+  input: CreateProjectUpdateInput;
+  projectId: Scalars['Int']['input'];
 };
 
 
@@ -231,8 +484,18 @@ export type MutationCreateAvatarUploadUrlArgs = {
 };
 
 
+export type MutationCreateCauseArgs = {
+  input: CreateProjectInput;
+};
+
+
 export type MutationCreateDonationArgs = {
   input: CreateDonationInput;
+};
+
+
+export type MutationCreateGivbacksEligibilityFormArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
@@ -251,9 +514,45 @@ export type MutationCreateUserArgs = {
 };
 
 
+export type MutationDeleteProjectUpdateArgs = {
+  updateId: Scalars['Int']['input'];
+};
+
+
+export type MutationEditProjectUpdateArgs = {
+  input: UpdateProjectUpdateInput;
+  updateId: Scalars['Int']['input'];
+};
+
+
+export type MutationGivbacksEligibilityConfirmEmailArgs = {
+  emailConfirmationToken: Scalars['String']['input'];
+};
+
+
+export type MutationGivbacksEligibilitySendEmailConfirmationArgs = {
+  givbacksEligibilityFormId: Scalars['Int']['input'];
+};
+
+
+export type MutationLikeProjectArgs = {
+  projectId: Scalars['Int']['input'];
+};
+
+
+export type MutationLikeProjectUpdateArgs = {
+  projectUpdateId: Scalars['Int']['input'];
+};
+
+
 export type MutationRemoveProjectFromQfRoundArgs = {
   projectId: Scalars['Int']['input'];
   qfRoundId: Scalars['Int']['input'];
+};
+
+
+export type MutationRemoveSocialProfileArgs = {
+  socialProfileId: Scalars['Int']['input'];
 };
 
 
@@ -267,8 +566,54 @@ export type MutationRequestEmailVerificationArgs = {
 };
 
 
+export type MutationSetFeaturedProjectUpdateArgs = {
+  position?: InputMaybe<Scalars['Int']['input']>;
+  projectId: Scalars['Int']['input'];
+  projectUpdateId: Scalars['Int']['input'];
+};
+
+
+export type MutationSetMultiplePowerBoostingArgs = {
+  percentages: Array<Scalars['Float']['input']>;
+  projectIds: Array<Scalars['Int']['input']>;
+};
+
+
 export type MutationSetPrimaryWalletArgs = {
   walletId: Scalars['Int']['input'];
+};
+
+
+export type MutationSetSinglePowerBoostingArgs = {
+  percentage: Scalars['Float']['input'];
+  projectId: Scalars['Int']['input'];
+};
+
+
+export type MutationUnlikeProjectArgs = {
+  reactionId: Scalars['Int']['input'];
+};
+
+
+export type MutationUnlikeProjectUpdateArgs = {
+  reactionId: Scalars['Int']['input'];
+};
+
+
+export type MutationUpdateCauseArgs = {
+  causeId: Scalars['Int']['input'];
+  input: UpdateProjectInput;
+};
+
+
+export type MutationUpdateDonationStatusArgs = {
+  donationId: Scalars['Int']['input'];
+  status?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationUpdateGivbacksEligibilityFormArgs = {
+  givbacksEligibilityUpdateInput: GivbacksEligibilityUpdateInput;
 };
 
 
@@ -302,6 +647,7 @@ export type PaginatedDonationsEntity = {
   __typename?: 'PaginatedDonationsEntity';
   donations: Array<DonationEntity>;
   total: Scalars['Int']['output'];
+  totalUsdBalance?: Maybe<Scalars['Float']['output']>;
 };
 
 export type PaginatedProjectsEntity = {
@@ -315,6 +661,47 @@ export type PaginatedQfRoundsEntity = {
   rounds: Array<QfRoundEntity>;
   total: Scalars['Int']['output'];
 };
+
+export type PersonalInfoEntity = {
+  __typename?: 'PersonalInfoEntity';
+  email?: Maybe<Scalars['String']['output']>;
+  fullName?: Maybe<Scalars['String']['output']>;
+  walletAddress?: Maybe<Scalars['String']['output']>;
+};
+
+export type PersonalInfoInput = {
+  email?: InputMaybe<Scalars['String']['input']>;
+  fullName?: InputMaybe<Scalars['String']['input']>;
+  walletAddress?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type PowerBoostingEntity = {
+  __typename?: 'PowerBoostingEntity';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['Int']['output'];
+  percentage: Scalars['Float']['output'];
+  project?: Maybe<ProjectEntity>;
+  projectId: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  user?: Maybe<UserEntity>;
+  userId: Scalars['Int']['output'];
+};
+
+export type PowerBoostingOrderByInput = {
+  direction?: PowerBoostingOrderDirection;
+  field?: PowerBoostingOrderField;
+};
+
+export enum PowerBoostingOrderDirection {
+  Asc = 'ASC',
+  Desc = 'DESC'
+}
+
+export enum PowerBoostingOrderField {
+  CreatedAt = 'CreatedAt',
+  Percentage = 'Percentage',
+  UpdatedAt = 'UpdatedAt'
+}
 
 export type ProjectAddressEntity = {
   __typename?: 'ProjectAddressEntity';
@@ -333,6 +720,17 @@ export type ProjectAddressInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type ProjectContactsEntity = {
+  __typename?: 'ProjectContactsEntity';
+  name?: Maybe<Scalars['String']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+};
+
+export type ProjectContactsInput = {
+  name?: InputMaybe<Scalars['String']['input']>;
+  url?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type ProjectEntity = {
   __typename?: 'ProjectEntity';
   addresses?: Maybe<Array<ProjectAddressEntity>>;
@@ -346,6 +744,9 @@ export type ProjectEntity = {
   image?: Maybe<Scalars['String']['output']>;
   impactLocation?: Maybe<Scalars['String']['output']>;
   isGivbacksEligible: Scalars['Boolean']['output'];
+  projectQfRounds: Array<ProjectQfRoundEntity>;
+  projectType: ProjectType;
+  qfRoundMatchingProjects?: Maybe<Array<QfRoundMatchingProjectEntity>>;
   qualityScore: Scalars['Float']['output'];
   reviewStatus: ReviewStatus;
   /** Search relevance score, only populated when using searchTerm filter */
@@ -364,6 +765,7 @@ export type ProjectFiltersInput = {
   category?: InputMaybe<Scalars['String']['input']>;
   isGivbacksEligible?: InputMaybe<Scalars['Boolean']['input']>;
   mainCategory?: InputMaybe<Scalars['String']['input']>;
+  projectType?: InputMaybe<ProjectType>;
   qfRoundId?: InputMaybe<Scalars['Int']['input']>;
   searchTerm?: InputMaybe<Scalars['String']['input']>;
   vouched?: InputMaybe<Scalars['Boolean']['input']>;
@@ -382,8 +784,28 @@ export type ProjectQfRoundEntity = {
   id: Scalars['ID']['output'];
   project?: Maybe<ProjectEntity>;
   projectId: Scalars['Int']['output'];
+  qfRound?: Maybe<QfRoundEntity>;
   qfRoundId: Scalars['Int']['output'];
   sumDonationValueUsd: Scalars['Float']['output'];
+};
+
+export type ProjectRegistryEntity = {
+  __typename?: 'ProjectRegistryEntity';
+  attachments?: Maybe<Array<Scalars['String']['output']>>;
+  isNonProfitOrganization?: Maybe<Scalars['Boolean']['output']>;
+  organizationCountry?: Maybe<Scalars['String']['output']>;
+  organizationDescription?: Maybe<Scalars['String']['output']>;
+  organizationName?: Maybe<Scalars['String']['output']>;
+  organizationWebsite?: Maybe<Scalars['String']['output']>;
+};
+
+export type ProjectRegistryInput = {
+  attachments?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNonProfitOrganization?: InputMaybe<Scalars['Boolean']['input']>;
+  organizationCountry?: InputMaybe<Scalars['String']['input']>;
+  organizationDescription?: InputMaybe<Scalars['String']['input']>;
+  organizationName?: InputMaybe<Scalars['String']['input']>;
+  organizationWebsite?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** Fields to sort projects by */
@@ -394,6 +816,52 @@ export enum ProjectSortField {
   TotalDonations = 'TotalDonations',
   UpdatedAt = 'UpdatedAt'
 }
+
+export enum ProjectType {
+  Cause = 'CAUSE',
+  Project = 'PROJECT'
+}
+
+export type ProjectUpdateEntity = {
+  __typename?: 'ProjectUpdateEntity';
+  achievedMilestones?: Maybe<Scalars['String']['output']>;
+  content: Scalars['String']['output'];
+  contentSummary?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  facebook?: Maybe<Scalars['String']['output']>;
+  foundationDate?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  instagram?: Maybe<Scalars['String']['output']>;
+  isMain: Scalars['Boolean']['output'];
+  isNonProfitOrganization: Scalars['Boolean']['output'];
+  linkedin?: Maybe<Scalars['String']['output']>;
+  managingFundDescription?: Maybe<Scalars['String']['output']>;
+  mission?: Maybe<Scalars['String']['output']>;
+  organizationCountry?: Maybe<Scalars['String']['output']>;
+  organizationDescription?: Maybe<Scalars['String']['output']>;
+  organizationWebsite?: Maybe<Scalars['String']['output']>;
+  projectId: Scalars['Int']['output'];
+  title: Scalars['String']['output'];
+  totalReactions: Scalars['Int']['output'];
+  twitter?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['Int']['output'];
+  youtube?: Maybe<Scalars['String']['output']>;
+};
+
+export type ProjectUpdateQueryInput = {
+  isMain?: InputMaybe<Scalars['Boolean']['input']>;
+  order?: InputMaybe<SortDirection>;
+  projectId: Scalars['Int']['input'];
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type ProjectUpdatesResult = {
+  __typename?: 'ProjectUpdatesResult';
+  projectUpdates: Array<ProjectUpdateEntity>;
+  totalCount: Scalars['Int']['output'];
+};
 
 export type QfRoundEntity = {
   __typename?: 'QfRoundEntity';
@@ -418,7 +886,6 @@ export type QfRoundEntity = {
   minimumPassportScore: Scalars['Float']['output'];
   minimumValidUsdValue: Scalars['Float']['output'];
   name: Scalars['String']['output'];
-  projectQfRounds?: Maybe<Array<ProjectQfRoundEntity>>;
   qfStrategy: Scalars['String']['output'];
   slug: Scalars['String']['output'];
   sponsorsImgs: Array<Scalars['String']['output']>;
@@ -434,6 +901,23 @@ export type QfRoundMatchingEntity = {
   totalMatchingPool: Scalars['Float']['output'];
 };
 
+export type QfRoundMatchingProjectEntity = {
+  __typename?: 'QfRoundMatchingProjectEntity';
+  deltaMatch?: Maybe<Scalars['Float']['output']>;
+  deltaTqf?: Maybe<Scalars['Float']['output']>;
+  deltaTqfCocm?: Maybe<Scalars['Float']['output']>;
+  id: Scalars['ID']['output'];
+  matchingAmount: Scalars['Float']['output'];
+  matchingAmountQf?: Maybe<Scalars['Float']['output']>;
+  matchingAmountTqf?: Maybe<Scalars['Float']['output']>;
+  matchingAmountTqfCocm?: Maybe<Scalars['Float']['output']>;
+  matchingAmountUsd?: Maybe<Scalars['Float']['output']>;
+  matchingPercent?: Maybe<Scalars['Float']['output']>;
+  projectId: Scalars['Int']['output'];
+  qfRoundId?: Maybe<Scalars['Int']['output']>;
+  qfRoundMatchingId: Scalars['Int']['output'];
+};
+
 export type QfRoundStatsEntity = {
   __typename?: 'QfRoundStatsEntity';
   donationsCount: Scalars['Int']['output'];
@@ -445,11 +929,31 @@ export type QfRoundStatsEntity = {
 export type Query = {
   __typename?: 'Query';
   activeQfRounds: Array<QfRoundEntity>;
+  allocatedGivbacks?: Maybe<AllocatedGivbacksEntity>;
   archivedQfRounds: PaginatedQfRoundsEntity;
   categories: Array<CategoryEntity>;
+  cause?: Maybe<CauseEntity>;
+  causeBySlug?: Maybe<CauseEntity>;
+  causes: Array<CauseEntity>;
+  doesDonatedToProjectInQfRound: Scalars['Boolean']['output'];
   donation: DonationEntity;
+  donationMetrics: DonationMetricsEntity;
   donationsByProject: PaginatedDonationsEntity;
+  donationsByUser: PaginatedDonationsEntity;
+  donationsTotalUsdPerDate?: Maybe<ResourcePerDateRangeEntity>;
   estimatedMatching: EstimatedMatchingEntity;
+  featuredProjectUpdate?: Maybe<FeaturedUpdateEntity>;
+  featuredProjects: PaginatedProjectsEntity;
+  getAllowedCountries: Array<CountryEntity>;
+  getCurrentGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
+  getDonationById?: Maybe<DonationEntity>;
+  getDonationStats: Array<DonationCurrencyStatsEntity>;
+  getPowerBoosting: GivPowersEntity;
+  getProjectReactions: Array<ReactionEntity>;
+  getTopPowerRank: Scalars['Float']['output'];
+  isValidCauseTitle: Scalars['Boolean']['output'];
+  isValidCauseTitleForEdit: Scalars['Boolean']['output'];
+  isValidWalletAddress: Scalars['Boolean']['output'];
   mainCategories: Array<MainCategoryEntity>;
   me: UserEntity;
   myDonations: PaginatedDonationsEntity;
@@ -457,17 +961,33 @@ export type Query = {
   project: ProjectEntity;
   projectBySlug: ProjectEntity;
   projectDonationStats: DonationStatsEntity;
+  projectUpdates: ProjectUpdatesResult;
   /** Get paginated projects with optional filters including search term and active QF round filter */
   projects: PaginatedProjectsEntity;
   qfRound: QfRoundEntity;
   qfRoundBySlug: QfRoundEntity;
   qfRoundStats: QfRoundStatsEntity;
   qfRounds: PaginatedQfRoundsEntity;
+  recentDonations?: Maybe<Array<DonationEntity>>;
+  refreshUserScores?: Maybe<UserEntity>;
+  similarProjectsBySlug: PaginatedProjectsEntity;
+  subscribeOnboarding: Scalars['Boolean']['output'];
   tokens: Array<TokenEntity>;
   tokensByNetwork: Array<TokenEntity>;
+  totalDonationsNumberPerDate?: Maybe<ResourcePerDateRangeEntity>;
+  totalDonationsPerCategory?: Maybe<Array<MainCategoryDonationsEntity>>;
+  totalDonorsCountPerDate?: Maybe<ResourcePerDateRangeEntity>;
   user?: Maybe<UserEntity>;
   userByAddress?: Maybe<UserEntity>;
   userStats?: Maybe<UserStatsEntity>;
+  validateEmail: Scalars['Boolean']['output'];
+  walletAddressIsPurpleListed: Scalars['Boolean']['output'];
+  walletAddressUsed: WalletAddressUsedEntity;
+};
+
+
+export type QueryAllocatedGivbacksArgs = {
+  refreshCache?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -477,15 +997,61 @@ export type QueryArchivedQfRoundsArgs = {
 };
 
 
+export type QueryCauseArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
+export type QueryCauseBySlugArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
+export type QueryCausesArgs = {
+  filters?: InputMaybe<ProjectFiltersInput>;
+  skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
+export type QueryDoesDonatedToProjectInQfRoundArgs = {
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
+  userId: Scalars['Int']['input'];
+};
+
+
 export type QueryDonationArgs = {
   id: Scalars['Int']['input'];
 };
 
 
+export type QueryDonationMetricsArgs = {
+  endDate: Scalars['String']['input'];
+  startDate: Scalars['String']['input'];
+};
+
+
 export type QueryDonationsByProjectArgs = {
   projectId: Scalars['Int']['input'];
+  qfRoundId?: InputMaybe<Scalars['Int']['input']>;
   skip?: Scalars['Int']['input'];
   take?: Scalars['Int']['input'];
+};
+
+
+export type QueryDonationsByUserArgs = {
+  skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+  userId: Scalars['Int']['input'];
+};
+
+
+export type QueryDonationsTotalUsdPerDateArgs = {
+  fromDate?: InputMaybe<Scalars['String']['input']>;
+  networkId?: InputMaybe<Scalars['Int']['input']>;
+  onlyVerified?: InputMaybe<Scalars['Boolean']['input']>;
+  toDate?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -494,6 +1060,61 @@ export type QueryEstimatedMatchingArgs = {
   donorAddress: Scalars['String']['input'];
   projectId: Scalars['Int']['input'];
   qfRoundId: Scalars['Int']['input'];
+};
+
+
+export type QueryFeaturedProjectUpdateArgs = {
+  projectId: Scalars['Int']['input'];
+};
+
+
+export type QueryFeaturedProjectsArgs = {
+  skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
+export type QueryGetCurrentGivbacksEligibilityFormArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
+export type QueryGetDonationByIdArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
+export type QueryGetDonationStatsArgs = {
+  fromDate?: InputMaybe<Scalars['String']['input']>;
+  networkId?: InputMaybe<Scalars['Int']['input']>;
+  toDate?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGetPowerBoostingArgs = {
+  input: GetPowerBoostingInput;
+};
+
+
+export type QueryGetProjectReactionsArgs = {
+  projectId: Scalars['Int']['input'];
+};
+
+
+export type QueryIsValidCauseTitleArgs = {
+  causeId?: InputMaybe<Scalars['Int']['input']>;
+  title: Scalars['String']['input'];
+};
+
+
+export type QueryIsValidCauseTitleForEditArgs = {
+  causeId: Scalars['Int']['input'];
+  title: Scalars['String']['input'];
+};
+
+
+export type QueryIsValidWalletAddressArgs = {
+  address: Scalars['String']['input'];
 };
 
 
@@ -528,6 +1149,11 @@ export type QueryProjectDonationStatsArgs = {
 };
 
 
+export type QueryProjectUpdatesArgs = {
+  input: ProjectUpdateQueryInput;
+};
+
+
 export type QueryProjectsArgs = {
   filters?: InputMaybe<ProjectFiltersInput>;
   orderBy?: ProjectSortField;
@@ -558,8 +1184,53 @@ export type QueryQfRoundsArgs = {
 };
 
 
+export type QueryRecentDonationsArgs = {
+  take?: Scalars['Int']['input'];
+};
+
+
+export type QueryRefreshUserScoresArgs = {
+  address: Scalars['String']['input'];
+};
+
+
+export type QuerySimilarProjectsBySlugArgs = {
+  skip?: Scalars['Int']['input'];
+  slug: Scalars['String']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
+export type QuerySubscribeOnboardingArgs = {
+  email: Scalars['String']['input'];
+};
+
+
 export type QueryTokensByNetworkArgs = {
   networkId: Scalars['Int']['input'];
+};
+
+
+export type QueryTotalDonationsNumberPerDateArgs = {
+  fromDate?: InputMaybe<Scalars['String']['input']>;
+  networkId?: InputMaybe<Scalars['Int']['input']>;
+  onlyVerified?: InputMaybe<Scalars['Boolean']['input']>;
+  toDate?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTotalDonationsPerCategoryArgs = {
+  fromDate?: InputMaybe<Scalars['String']['input']>;
+  networkId?: InputMaybe<Scalars['Int']['input']>;
+  onlyVerified?: InputMaybe<Scalars['Boolean']['input']>;
+  toDate?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTotalDonorsCountPerDateArgs = {
+  fromDate?: InputMaybe<Scalars['String']['input']>;
+  networkId?: InputMaybe<Scalars['Int']['input']>;
+  toDate?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -577,8 +1248,44 @@ export type QueryUserStatsArgs = {
   id: Scalars['Int']['input'];
 };
 
+
+export type QueryValidateEmailArgs = {
+  email: Scalars['String']['input'];
+};
+
+
+export type QueryWalletAddressIsPurpleListedArgs = {
+  address: Scalars['String']['input'];
+};
+
+
+export type QueryWalletAddressUsedArgs = {
+  address: Scalars['String']['input'];
+};
+
+export type ReactionEntity = {
+  __typename?: 'ReactionEntity';
+  id: Scalars['Int']['output'];
+  projectId?: Maybe<Scalars['Int']['output']>;
+  projectUpdateId?: Maybe<Scalars['Int']['output']>;
+  reaction: Scalars['String']['output'];
+  userId: Scalars['Int']['output'];
+};
+
 export type RequestEmailVerificationInput = {
   email: Scalars['String']['input'];
+};
+
+export type ResourcePerDateRangeEntity = {
+  __typename?: 'ResourcePerDateRangeEntity';
+  total?: Maybe<Scalars['Float']['output']>;
+  totalPerMonthAndYear?: Maybe<Array<ResourcesTotalPerMonthAndYearEntity>>;
+};
+
+export type ResourcesTotalPerMonthAndYearEntity = {
+  __typename?: 'ResourcesTotalPerMonthAndYearEntity';
+  date?: Maybe<Scalars['String']['output']>;
+  total?: Maybe<Scalars['Float']['output']>;
 };
 
 export enum ReviewStatus {
@@ -595,7 +1302,6 @@ export type SiweAuthResponse = {
   user?: Maybe<AuthUser>;
 };
 
-/** Sort direction (asc or desc) */
 export enum SortDirection {
   Asc = 'ASC',
   Desc = 'DESC'
@@ -622,6 +1328,26 @@ export type UpdateProjectInput = {
   image?: InputMaybe<Scalars['String']['input']>;
   impactLocation?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateProjectUpdateInput = {
+  achievedMilestones?: InputMaybe<Scalars['String']['input']>;
+  content?: InputMaybe<Scalars['String']['input']>;
+  contentSummary?: InputMaybe<Scalars['String']['input']>;
+  facebook?: InputMaybe<Scalars['String']['input']>;
+  foundationDate?: InputMaybe<Scalars['DateTime']['input']>;
+  instagram?: InputMaybe<Scalars['String']['input']>;
+  isMain?: InputMaybe<Scalars['Boolean']['input']>;
+  isNonProfitOrganization?: InputMaybe<Scalars['Boolean']['input']>;
+  linkedin?: InputMaybe<Scalars['String']['input']>;
+  managingFundDescription?: InputMaybe<Scalars['String']['input']>;
+  mission?: InputMaybe<Scalars['String']['input']>;
+  organizationCountry?: InputMaybe<Scalars['String']['input']>;
+  organizationDescription?: InputMaybe<Scalars['String']['input']>;
+  organizationWebsite?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  twitter?: InputMaybe<Scalars['String']['input']>;
+  youtube?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateQfRoundInput = {
@@ -725,6 +1451,12 @@ export type VerifyDonationInput = {
   donationId: Scalars['Int']['input'];
 };
 
+export type WalletAddressUsedEntity = {
+  __typename?: 'WalletAddressUsedEntity';
+  hasDonated: Scalars['Boolean']['output'];
+  hasRelatedProject: Scalars['Boolean']['output'];
+};
+
 export type CategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -740,17 +1472,25 @@ export type ProjectBySlugQueryVariables = Exact<{
 }>;
 
 
-export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, image?: string | null, descriptionSummary?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null } };
+export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null, project?: { __typename?: 'ProjectEntity', id: string, qfRoundMatchingProjects?: Array<{ __typename?: 'QfRoundMatchingProjectEntity', qfRoundId?: number | null, matchingAmount: number }> | null } | null }> } };
+
+export type QfRoundBySlugQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null } };
 
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean, beginDate: any, endDate: any, projectQfRounds?: Array<{ __typename?: 'ProjectQfRoundEntity', sumDonationValueUsd: number, countUniqueDonors: number, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, descriptionSummary?: string | null, adminUser?: { __typename?: 'UserEntity', name?: string | null, firstName?: string | null, lastName?: string | null } | null } | null }> | null }> };
+export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean, beginDate: any, endDate: any }> };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
   skip?: InputMaybe<Scalars['Int']['input']>;
   take?: InputMaybe<Scalars['Int']['input']>;
+  qfRoundId?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
@@ -765,7 +1505,24 @@ export type ProjectsQueryVariables = Exact<{
 }>;
 
 
-export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, qualityScore: number, vouched: boolean, isGivbacksEligible: boolean, searchRank?: number | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null }> } };
+export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, qualityScore: number, vouched: boolean, isGivbacksEligible: boolean, searchRank?: number | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
+
+export type SimilarProjectsBySlugQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type SimilarProjectsBySlugQuery = { __typename?: 'Query', similarProjectsBySlug: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, qualityScore: number, searchRank?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null }> } };
+
+export type ArchivedQfRoundsQueryVariables = Exact<{
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean, beginDate: any, endDate: any }> } };
 
 export type QfRoundStatsQueryVariables = Exact<{
   qfRoundId: Scalars['Int']['input'];
@@ -869,8 +1626,8 @@ export const ProjectBySlugDocument = new TypedDocumentString(`
     title
     slug
     description
-    image
     descriptionSummary
+    image
     impactLocation
     createdAt
     updatedAt
@@ -902,9 +1659,44 @@ export const ProjectBySlugDocument = new TypedDocumentString(`
       title
       chainType
     }
+    projectQfRounds {
+      id
+      qfRoundId
+      qfRound {
+        id
+        name
+        slug
+        isActive
+      }
+      project {
+        id
+        qfRoundMatchingProjects {
+          qfRoundId
+          matchingAmount
+        }
+      }
+    }
   }
 }
     `) as unknown as TypedDocumentString<ProjectBySlugQuery, ProjectBySlugQueryVariables>;
+export const QfRoundBySlugDocument = new TypedDocumentString(`
+    query QfRoundBySlug($slug: String!) {
+  qfRoundBySlug(slug: $slug) {
+    id
+    name
+    title
+    description
+    slug
+    bannerFull
+    bannerBgImage
+    bannerMobile
+    sponsorsImgs
+    beginDate
+    endDate
+    allocatedFundUSD
+  }
+}
+    `) as unknown as TypedDocumentString<QfRoundBySlugQuery, QfRoundBySlugQueryVariables>;
 export const ActiveQfRoundsDocument = new TypedDocumentString(`
     query ActiveQfRounds {
   activeQfRounds {
@@ -914,28 +1706,17 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
     isActive
     beginDate
     endDate
-    projectQfRounds {
-      sumDonationValueUsd
-      countUniqueDonors
-      project {
-        id
-        title
-        slug
-        image
-        descriptionSummary
-        adminUser {
-          name
-          firstName
-          lastName
-        }
-      }
-    }
   }
 }
     `) as unknown as TypedDocumentString<ActiveQfRoundsQuery, ActiveQfRoundsQueryVariables>;
 export const DonationsByProjectDocument = new TypedDocumentString(`
-    query DonationsByProject($projectId: Int!, $skip: Int, $take: Int) {
-  donationsByProject(projectId: $projectId, skip: $skip, take: $take) {
+    query DonationsByProject($projectId: Int!, $skip: Int, $take: Int, $qfRoundId: Int) {
+  donationsByProject(
+    projectId: $projectId
+    skip: $skip
+    take: $take
+    qfRoundId: $qfRoundId
+  ) {
     donations {
       id
       amount
@@ -1002,11 +1783,76 @@ export const ProjectsDocument = new TypedDocumentString(`
         title
         chainType
       }
+      projectQfRounds {
+        id
+        qfRoundId
+        sumDonationValueUsd
+        countUniqueDonors
+      }
     }
     total
   }
 }
     `) as unknown as TypedDocumentString<ProjectsQuery, ProjectsQueryVariables>;
+export const SimilarProjectsBySlugDocument = new TypedDocumentString(`
+    query SimilarProjectsBySlug($slug: String!, $skip: Int = 0, $take: Int = 10) {
+  similarProjectsBySlug(slug: $slug, skip: $skip, take: $take) {
+    projects {
+      id
+      title
+      slug
+      image
+      descriptionSummary
+      totalDonations
+      countUniqueDonors
+      qualityScore
+      searchRank
+      vouched
+      isGivbacksEligible
+      adminUser {
+        id
+        name
+        firstName
+        lastName
+        avatar
+      }
+      categories {
+        id
+        name
+        value
+        mainCategory {
+          id
+          title
+          slug
+        }
+      }
+      addresses {
+        id
+        address
+        networkId
+        title
+        chainType
+      }
+    }
+    total
+  }
+}
+    `) as unknown as TypedDocumentString<SimilarProjectsBySlugQuery, SimilarProjectsBySlugQueryVariables>;
+export const ArchivedQfRoundsDocument = new TypedDocumentString(`
+    query ArchivedQfRounds($skip: Int = 0, $take: Int = 20) {
+  archivedQfRounds(skip: $skip, take: $take) {
+    rounds {
+      id
+      name
+      slug
+      isActive
+      beginDate
+      endDate
+    }
+    total
+  }
+}
+    `) as unknown as TypedDocumentString<ArchivedQfRoundsQuery, ArchivedQfRoundsQueryVariables>;
 export const QfRoundStatsDocument = new TypedDocumentString(`
     query QfRoundStats($qfRoundId: Int!) {
   qfRoundStats(qfRoundId: $qfRoundId) {

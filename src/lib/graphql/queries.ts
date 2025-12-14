@@ -43,8 +43,8 @@ export const projectBySlugQuery = graphql(`
       title
       slug
       description
-      image
       descriptionSummary
+      image
       impactLocation
       createdAt
       updatedAt
@@ -76,11 +76,28 @@ export const projectBySlugQuery = graphql(`
         title
         chainType
       }
+      projectQfRounds {
+        id
+        qfRoundId
+        qfRound {
+          id
+          name
+          slug
+          isActive
+        }
+        project {
+          id
+          qfRoundMatchingProjects {
+            qfRoundId
+            matchingAmount
+          }
+        }
+      }
     }
   }
 `)
 
-export const qfRoundBySlugQuery = `
+export const qfRoundBySlugQuery = graphql(`
   query QfRoundBySlug($slug: String!) {
     qfRoundBySlug(slug: $slug) {
       id
@@ -94,25 +111,10 @@ export const qfRoundBySlugQuery = `
       sponsorsImgs
       beginDate
       endDate
-      projectQfRounds {
-        sumDonationValueUsd
-        countUniqueDonors
-        project {
-          id
-          title
-          slug
-          image
-          descriptionSummary
-          adminUser {
-            name
-            firstName
-            lastName
-          }
-        }
-      }
+      allocatedFundUSD
     }
   }
-`
+`)
 
 export const activeQfRoundsQuery = graphql(`
   query ActiveQfRounds {
@@ -123,29 +125,23 @@ export const activeQfRoundsQuery = graphql(`
       isActive
       beginDate
       endDate
-      projectQfRounds {
-        sumDonationValueUsd
-        countUniqueDonors
-        project {
-          id
-          title
-          slug
-          image
-          descriptionSummary
-          adminUser {
-            name
-            firstName
-            lastName
-          }
-        }
-      }
     }
   }
 `)
 
 export const donationsByProjectQuery = graphql(`
-  query DonationsByProject($projectId: Int!, $skip: Int, $take: Int) {
-    donationsByProject(projectId: $projectId, skip: $skip, take: $take) {
+  query DonationsByProject(
+    $projectId: Int!
+    $skip: Int
+    $take: Int
+    $qfRoundId: Int
+  ) {
+    donationsByProject(
+      projectId: $projectId
+      skip: $skip
+      take: $take
+      qfRoundId: $qfRoundId
+    ) {
       donations {
         id
         amount
@@ -219,6 +215,73 @@ export const projectsQuery = graphql(`
           title
           chainType
         }
+        projectQfRounds {
+          id
+          qfRoundId
+          sumDonationValueUsd
+          countUniqueDonors
+        }
+      }
+      total
+    }
+  }
+`)
+
+export const similarProjectsBySlugQuery = graphql(`
+  query SimilarProjectsBySlug($slug: String!, $skip: Int = 0, $take: Int = 10) {
+    similarProjectsBySlug(slug: $slug, skip: $skip, take: $take) {
+      projects {
+        id
+        title
+        slug
+        image
+        descriptionSummary
+        totalDonations
+        countUniqueDonors
+        qualityScore
+        searchRank
+        vouched
+        isGivbacksEligible
+        adminUser {
+          id
+          name
+          firstName
+          lastName
+          avatar
+        }
+        categories {
+          id
+          name
+          value
+          mainCategory {
+            id
+            title
+            slug
+          }
+        }
+        addresses {
+          id
+          address
+          networkId
+          title
+          chainType
+        }
+      }
+      total
+    }
+  }
+`)
+
+export const archivedQfRoundsQuery = graphql(`
+  query ArchivedQfRounds($skip: Int = 0, $take: Int = 20) {
+    archivedQfRounds(skip: $skip, take: $take) {
+      rounds {
+        id
+        name
+        slug
+        isActive
+        beginDate
+        endDate
       }
       total
     }
