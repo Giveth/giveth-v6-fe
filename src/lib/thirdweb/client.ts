@@ -1,6 +1,8 @@
-import { createThirdwebClient } from 'thirdweb'
+import { createThirdwebClient, defineChain } from 'thirdweb'
 import {
+  arbitrumSepolia,
   base,
+  baseSepolia,
   gnosis,
   mainnet,
   optimism,
@@ -15,12 +17,17 @@ import {
 } from 'thirdweb/wallets'
 import { env } from '@/lib/env'
 
+const celoAlfajores = defineChain(44787)
+
 export const supportedChains: Chain[] = [
   gnosis,
   mainnet,
   optimism,
   base,
   polygon,
+  celoAlfajores,
+  arbitrumSepolia,
+  baseSepolia,
 ]
 
 const baseWallets: Wallet[] = [
