@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/qf',
+        permanent: false,
+      },
+    ]
+  },
   typescript: {
     ignoreBuildErrors: false,
   },

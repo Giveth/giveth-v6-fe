@@ -1,6 +1,6 @@
-import { ActiveRounds } from '../components/hub/active-rounds'
-import { ClosedRounds } from '../components/hub/closed-rounds'
-import { HubHero } from '../components/hub/hub-hero'
+import { ActiveRounds } from '../../components/hub/active-rounds'
+import { ClosedRounds } from '../../components/hub/closed-rounds'
+import { HubHero } from '../../components/hub/hub-hero'
 
 export default function HubPage() {
   return (
