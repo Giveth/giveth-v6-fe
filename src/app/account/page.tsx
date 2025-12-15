@@ -1,9 +1,9 @@
-import { CtaSection } from '@/components/cta-section'
-import { DashboardTabs } from '@/components/dashboard-tabs'
-import { DonationTabs } from '@/components/donation-tabs'
-import { DonationsTable } from '@/components/donations-table'
-import { ProfileSection } from '@/components/profile-section'
-import { RaffleCard } from '@/components/raffle-card'
+import { CtaSection } from '@/components/account/cta-section'
+import { DashboardTabs } from '@/components/account/dashboard-tabs'
+import { DonationTabs } from '@/components/account/donation-tabs'
+import { DonationsTable } from '@/components/account/donations-table'
+import { ProfileSection } from '@/components/account/profile-section'
+import { RaffleCard } from '@/components/account/raffle-card'
 
 export default function HomePage() {
   return (
