@@ -1,14 +1,51 @@
-import { ChevronDown, ChevronRight, Plus, Share2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
+import { useCart } from '@/context/CartContext'
 
 interface DonationCardProps {
   project: {
     id: string
+    title: string
+    slug: string
+    image?: string | null
     totalDonations: number
     countUniqueDonors?: number | null | undefined
+    projectQfRounds?: Array<{
+      qfRound?: {
+        id: string
+        name: string
+        isActive?: boolean
+      } | null
+    }> | null
   }
 }
 
 export function DonationCard({ project }: DonationCardProps) {
+  const { addToCart, removeFromCart, isInCart } = useCart()
+  const isProjectInCart = isInCart(project.id)
+
+  const handleCartAction = () => {
+    if (isProjectInCart) {
+      removeFromCart(project.id)
+    } else {
+      // Find the first active QF round, or the first one if none are active
+      const activeQfRound = project.projectQfRounds?.find(
+        pqr => pqr.qfRound?.isActive,
+      )?.qfRound
+      const firstQfRound = project.projectQfRounds?.[0]?.qfRound
+
+      const qfRound = activeQfRound || firstQfRound
+
+      addToCart({
+        id: project.id,
+        title: project.title,
+        slug: project.slug,
+        image: project.image,
+        roundId: qfRound?.id ? parseInt(qfRound.id) : undefined,
+        roundName: qfRound?.name,
+      })
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl border border-[#ebecf2] p-6">
       {/* Round Selector */}
@@ -33,9 +70,25 @@ export function DonationCard({ project }: DonationCardProps) {
       </div>
 
       {/* Add to Cart Button */}
-      <button className="w-full flex items-center justify-center gap-2 bg-[#e1458d] hover:bg-[#d13a7e] text-white font-medium py-3 rounded-full mb-3 transition-colors">
-        <Plus className="w-4 h-4" />
-        Add To Cart
+      <button
+        onClick={handleCartAction}
+        className={`w-full h-[48px] rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+          isProjectInCart
+            ? 'border-2 border-[#e1458d] text-[#e1458d] hover:bg-[#fff5f8]'
+            : 'bg-white border-2 border-[#e1458d] text-[#e1458d] hover:bg-[#e1458d] hover:text-white'
+        }`}
+      >
+        {isProjectInCart ? (
+          <>
+            <X className="w-4 h-4" />
+            Remove From Cart
+          </>
+        ) : (
+          <>
+            <Plus className="w-4 h-4" />
+            Add To Cart
+          </>
+        )}
       </button>
 
       {/* Share Button */}
