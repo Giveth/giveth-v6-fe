@@ -125,6 +125,7 @@ export default function QFRoundPage() {
           projects={projects}
           isLoading={isProjectsLoading}
           roundId={roundId}
+          roundName={qfRound.title || qfRound.name}
           totalProjects={totalProjects}
           currentSortField={sortField}
           currentSortDirection={sortDirection}

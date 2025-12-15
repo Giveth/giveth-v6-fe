@@ -7,6 +7,8 @@ export interface Project {
   title: string
   slug: string
   image?: string | null
+  roundId?: number
+  roundName?: string
 }
 
 interface CartContextType {

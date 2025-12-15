@@ -9,9 +9,14 @@ import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 interface QFProjectCardProps {
   project: ProjectEntity
   roundId?: number
+  roundName?: string
 }
 
-export function QFProjectCard({ project, roundId }: QFProjectCardProps) {
+export function QFProjectCard({
+  project,
+  roundId,
+  roundName,
+}: QFProjectCardProps) {
   const { cartItems, addToCart, removeFromCart } = useCart()
 
   const projectId = String(project.id)
@@ -27,6 +32,8 @@ export function QFProjectCard({ project, roundId }: QFProjectCardProps) {
         title: project.title,
         slug: project.slug,
         image: project.image,
+        roundId,
+        roundName,
       })
     }
   }

@@ -1,8 +1,8 @@
 'use client'
 
 import {
-  type ProjectSortField,
   type ProjectEntity,
+  type ProjectSortField,
 } from '@/lib/graphql/generated/graphql'
 import { QFProjectCard } from './components/qf-project-card'
 import {
@@ -15,6 +15,7 @@ interface QFProjectsGridProps {
   projects: ProjectEntity[]
   isLoading?: boolean
   roundId?: number
+  roundName?: string
   // Sort Props
   currentSortField: ProjectSortField
   currentSortDirection: 'ASC' | 'DESC'
@@ -29,6 +30,7 @@ export function QFProjectsGrid({
   projects,
   isLoading,
   roundId,
+  roundName,
   currentSortField,
   currentSortDirection,
   onSortChange,
@@ -76,7 +78,12 @@ export function QFProjectsGrid({
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {projects.map(project => (
-          <QFProjectCard key={project.id} project={project} roundId={roundId} />
+          <QFProjectCard
+            key={project.id}
+            project={project}
+            roundId={roundId}
+            roundName={roundName}
+          />
         ))}
       </div>
 
