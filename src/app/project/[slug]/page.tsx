@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Footer } from '@/components/footer'
 import { AboutTab } from '@/components/project/about-tab'
 import { AllTimeDonations } from '@/components/project/all-time-donations'
 import { DonationCard } from '@/components/project/donation-card'
@@ -149,8 +148,6 @@ export default function ProjectPage() {
         {/* Similar Projects */}
         <SimilarProjects projectSlug={slug} />
       </div>
-
-      <Footer />
     </div>
   )
 }

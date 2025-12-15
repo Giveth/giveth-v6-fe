@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ExternalLink } from 'lucide-react'
-import { Footer } from '@/components/footer'
 import { type QFFiltersState } from '@/components/qf/components/qf-project-filters'
 import { QFHero } from '@/components/qf/qf-hero'
 import { QFProjectsGrid } from '@/components/qf/qf-projects-grid'
@@ -134,8 +133,6 @@ export default function QFRoundPage() {
           onFilterChange={setFilters}
         />
       </main>
-
-      <Footer />
     </div>
   )
 }

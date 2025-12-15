@@ -1,4 +1,3 @@
-import { Footer } from '../components/footer'
 import { ActiveRounds } from '../components/hub/active-rounds'
 import { ClosedRounds } from '../components/hub/closed-rounds'
 import { HubHero } from '../components/hub/hub-hero'
@@ -49,8 +48,6 @@ export default function HubPage() {
         <ActiveRounds />
         <ClosedRounds />
       </main>
-
-      <Footer />
     </div>
   )
 }
