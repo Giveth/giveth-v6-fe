@@ -1,7 +1,7 @@
 import { Inter } from 'next/font/google'
 import { Providers } from '@/app/providers'
+import { Header } from '@/components/header'
 import { Footer } from '@/components/layout/footer'
-import { Header } from '@/components/layout/header'
 import { CartProvider } from '@/context/CartContext'
 import '@radix-ui/themes/styles.css'
 import type { Metadata } from 'next'

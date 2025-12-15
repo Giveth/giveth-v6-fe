@@ -8,7 +8,6 @@ import { AllTimeDonations } from '@/components/project/all-time-donations'
 import { DonationCard } from '@/components/project/donation-card'
 import { GivbacksInfoBox } from '@/components/project/givbacks-info-box'
 import { ProjectDonationsTable } from '@/components/project/project-donations-table'
-import { ProjectHeader } from '@/components/project/project-header'
 import { ProjectHero } from '@/components/project/project-hero'
 import { ProjectTabs } from '@/components/project/project-tabs'
 import { QFRoundSidebar } from '@/components/project/qf-round-sidebar'
@@ -37,8 +36,6 @@ export default function ProjectPage() {
     )
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      <ProjectHeader />
-
       {/* Blue Banner */}
       <div className="bg-[#1b1657] text-white py-3 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">

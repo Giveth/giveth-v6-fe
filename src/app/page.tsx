@@ -1,14 +1,11 @@
 import { Footer } from '../components/footer'
 import { ActiveRounds } from '../components/hub/active-rounds'
 import { ClosedRounds } from '../components/hub/closed-rounds'
-import { HubHeader } from '../components/hub/hub-header'
 import { HubHero } from '../components/hub/hub-hero'
 
 export default function HubPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      <HubHeader />
-
       {/* Matching Banner */}
       <div className="bg-[#1b1657] py-2.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">

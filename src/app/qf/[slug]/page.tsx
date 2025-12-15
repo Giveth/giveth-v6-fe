@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ExternalLink } from 'lucide-react'
 import { Footer } from '@/components/footer'
-import { ProjectHeader } from '@/components/project/project-header'
 import { type QFFiltersState } from '@/components/qf/components/qf-project-filters'
 import { QFHero } from '@/components/qf/qf-hero'
 import { QFProjectsGrid } from '@/components/qf/qf-projects-grid'
@@ -88,8 +87,6 @@ export default function QFRoundPage() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      <ProjectHeader />
-
       {/* Matching Banner */}
       <div className="bg-[#1b1657] py-3 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-white text-sm">
