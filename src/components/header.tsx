@@ -20,7 +20,7 @@ export function Header() {
   const cartRef = useRef<HTMLDivElement>(null)
   const { cartItems } = useCart()
   const pathname = usePathname()
-  const isCartPage = pathname === '/cart'
+  const isCartPage = pathname.startsWith('/cart')
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

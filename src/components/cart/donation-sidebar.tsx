@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -53,10 +54,12 @@ export function DonationSidebar() {
         </div>
 
         {/* Donate Button */}
-        <Button className="w-full mt-5 bg-[#e1458d] hover:bg-[#c93a7a] text-white font-medium py-6 rounded-full flex items-center justify-center gap-2">
-          Donate Now
-          <ArrowRight className="w-4 h-4" />
-        </Button>
+        <Link href={{ pathname: '/cart/pending' }}>
+          <Button className="w-full mt-5 bg-[#e1458d] hover:bg-[#c93a7a] text-white font-medium py-6 rounded-full flex items-center justify-center gap-2">
+            Donate Now
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </Link>
       </div>
 
       {/* Anonymous Option */}
