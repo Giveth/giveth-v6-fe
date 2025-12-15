@@ -1,4 +1,3 @@
-import { CartHeader } from '@/components/cart/cart-header'
 import { DonationRound } from '@/components/cart/donation-round'
 import { DonationSidebar } from '@/components/cart/donation-sidebar'
 
@@ -71,8 +70,6 @@ const bestRoundProjects = [
 export default function CartPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      <CartHeader />
-
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-6">
           {/* Left Column - Donation Rounds */}
