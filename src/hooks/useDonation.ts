@@ -49,10 +49,17 @@ export interface DonationState {
   supportsEIP7702: boolean
 }
 
+export interface DonationResult {
+  success: boolean
+  transactionHash?: string
+  bundleId?: string
+  error?: string
+}
+
 export interface UseDonationReturn {
   state: DonationState
-  donate: (details: DonationDetails) => Promise<void>
-  batchDonate: (details: BatchDonationDetails) => Promise<void>
+  donate: (details: DonationDetails) => Promise<DonationResult>
+  batchDonate: (details: BatchDonationDetails) => Promise<DonationResult>
   reset: () => void
 }
 
@@ -80,14 +87,14 @@ export function useDonation(): UseDonationReturn {
    * Execute a single donation
    */
   const donate = useCallback(
-    async (details: DonationDetails) => {
+    async (details: DonationDetails): Promise<DonationResult> => {
       if (!account) {
         setState(prev => ({
           ...prev,
           status: 'error',
           error: 'Please connect your wallet',
         }))
-        return
+        return { success: false, error: 'Please connect your wallet' }
       }
 
       try {
@@ -157,7 +164,10 @@ export function useDonation(): UseDonationReturn {
             status: 'success',
             transactionHash: finalReceipt.transactionHash,
           }))
-          return
+          return {
+            success: true,
+            transactionHash: finalReceipt.transactionHash,
+          }
         }
 
         // For ERC20 tokens, need approval first
@@ -210,6 +220,11 @@ export function useDonation(): UseDonationReturn {
               status: 'success',
               transactionHash: txHash,
             }))
+            return {
+              success: true,
+              transactionHash: txHash,
+              bundleId,
+            }
           } else {
             throw new Error('Batch transaction failed')
           }
@@ -243,17 +258,24 @@ export function useDonation(): UseDonationReturn {
             status: 'success',
             transactionHash: receipt.transactionHash,
           }))
+          return {
+            success: true,
+            transactionHash: receipt.transactionHash,
+          }
         }
       } catch (error) {
         console.error('Donation failed:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to process donation'
         setState(prev => ({
           ...prev,
           status: 'error',
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Failed to process donation',
+          error: errorMessage,
         }))
+        return {
+          success: false,
+          error: errorMessage,
+        }
       }
     },
     [account],
@@ -263,14 +285,14 @@ export function useDonation(): UseDonationReturn {
    * Execute batch donations to multiple projects
    */
   const batchDonate = useCallback(
-    async (details: BatchDonationDetails) => {
+    async (details: BatchDonationDetails): Promise<DonationResult> => {
       if (!account) {
         setState(prev => ({
           ...prev,
           status: 'error',
           error: 'Please connect your wallet',
         }))
-        return
+        return { success: false, error: 'Please connect your wallet' }
       }
 
       try {
@@ -333,7 +355,10 @@ export function useDonation(): UseDonationReturn {
             status: 'success',
             transactionHash: finalReceipt.transactionHash,
           }))
-          return
+          return {
+            success: true,
+            transactionHash: finalReceipt.transactionHash,
+          }
         }
 
         // For ERC20, prepare batch donation
@@ -397,50 +422,64 @@ export function useDonation(): UseDonationReturn {
               status: 'success',
               transactionHash: txHash,
             }))
+            return {
+              success: true,
+              transactionHash: txHash,
+              bundleId,
+            }
           } else {
             throw new Error('Batch transaction failed')
           }
-        } else {
-          // Fallback to sequential transactions
-          console.warn(
-            'Wallet does not support EIP-5792. Falling back to sequential transactions.',
-          )
+        }
 
-          // 1. Approve tokens
-          setState(prev => ({ ...prev, status: 'awaiting_approval' }))
-          const approvalReceipt = await sendTransaction({
-            transaction: approvalTx,
-            account,
-          })
-          await waitForReceipt(approvalReceipt)
+        // Fallback to sequential transactions
+        console.warn(
+          'Wallet does not support EIP-5792. Falling back to sequential transactions.',
+        )
 
-          // 2. Execute batch donation
-          setState(prev => ({ ...prev, status: 'processing' }))
-          const donationReceipt = await sendTransaction({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            transaction: batchDonationTx as any,
-            account,
-          })
+        // 1. Approve tokens
+        setState(prev => ({ ...prev, status: 'awaiting_approval' }))
+        const approvalReceipt = await sendTransaction({
+          transaction: approvalTx,
+          account,
+        })
+        await waitForReceipt(approvalReceipt)
 
-          setState(prev => ({ ...prev, status: 'confirming' }))
-          const receipt = await waitForReceipt(donationReceipt)
+        // 2. Execute batch donation
+        setState(prev => ({ ...prev, status: 'processing' }))
+        const donationReceipt = await sendTransaction({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          transaction: batchDonationTx as any,
+          account,
+        })
 
-          setState(prev => ({
-            ...prev,
-            status: 'success',
-            transactionHash: receipt.transactionHash,
-          }))
+        setState(prev => ({ ...prev, status: 'confirming' }))
+        const receipt = await waitForReceipt(donationReceipt)
+
+        setState(prev => ({
+          ...prev,
+          status: 'success',
+          transactionHash: receipt.transactionHash,
+        }))
+        return {
+          success: true,
+          transactionHash: receipt.transactionHash,
         }
       } catch (error) {
         console.error('Batch donation failed:', error)
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Failed to process batch donation'
         setState(prev => ({
           ...prev,
           status: 'error',
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Failed to process batch donation',
+          error: errorMessage,
         }))
+        return {
+          success: false,
+          error: errorMessage,
+        }
       }
     },
     [account],
