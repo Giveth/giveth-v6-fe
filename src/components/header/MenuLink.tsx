@@ -28,7 +28,7 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
       >
         <Link
           href={{ pathname: href }}
-          className="flex items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 p-3 hover:bg-giv-primary-50 rounded-lg transition-colors"
+          className="flex justify-between md:justify-start gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 p-3 hover:bg-giv-primary-50 rounded-lg transition-colors"
         >
           {label}
           <ChevronDown
@@ -39,7 +39,7 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
         </Link>
         {/* Dropdown Menu */}
         {menuOpen && (
-          <div className="absolute top-full left-0 w-48 bg-white rounded-lg shadow-lg p-4 z-50 animate-slide-in">
+          <div className="md:absolute top-full left-0 w-48 bg-white md:rounded-lg md:shadow-lg p-4 z-50 animate-slide-in">
             {submenu.map(item => (
               <Link
                 key={item.label}

@@ -1,57 +1,57 @@
 import Link from 'next/link'
 import { CartButton } from '@/components/header/CartButton'
 import { CreateProjectButton } from '@/components/header/CreateProjectButton'
-import { MenuLink } from '@/components/header/MenuLink'
-import { SearchButton } from '@/components/header/SearchButton'
 import { GivethLogo } from '@/components/icons/GivethLogo'
 import { CustomConnectWallet } from '@/components/wallet/CustomConnectWallet'
+import { DesktopNavigation } from './DesktopNavigation'
+import { MobileNavigation } from './MobileNavigation'
 
-const menuItems = [
+export const menuItems = [
   {
     label: 'Donate',
     href: '/qf',
   },
   {
     label: 'GIVeconomy',
-    href: '/qf',
+    href: 'https://giveth.io/givfarm',
     submenu: [
       {
         label: 'Stake GIV',
-        href: '/qf',
+        href: 'https://giveth.io/givfarm',
       },
       {
         label: 'GIVbacks',
-        href: '/qf',
+        href: 'https://giveth.io/givbacks',
       },
     ],
   },
   {
     label: 'Community',
-    href: '/qf',
+    href: 'https://giveth.io/onboarding',
     submenu: [
       {
         label: 'Get Started',
-        href: '/qf',
+        href: 'https://giveth.io/onboarding',
       },
       {
         label: 'Givers NFT',
-        href: '/qf',
+        href: 'https://giveth.io/nft',
       },
       {
         label: 'About Us',
-        href: '/qf',
+        href: 'https://giveth.io/about',
       },
       {
         label: 'Vote',
-        href: '/qf',
+        href: 'https://snapshot.org/#/giv.eth',
       },
       {
         label: 'Join Us',
-        href: '/qf',
+        href: 'https://giveth.io/join',
       },
       {
         label: 'Leave Feedback',
-        href: '/qf',
+        href: 'https://giveth.typeform.com/feedback',
       },
     ],
   },
@@ -67,23 +67,16 @@ export function DefaultHeader() {
             <GivethLogo width={66} height={66} />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
-            {menuItems.map(item => (
-              <MenuLink
-                key={item.label}
-                href={item.href}
-                label={item.label}
-                submenu={item.submenu}
-              />
-            ))}
+          {/* Desktop Menu */}
+          <DesktopNavigation />
 
-            <SearchButton />
-          </nav>
+          {/* Mobile Menu */}
+          <MobileNavigation />
         </div>
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
-          <div className="pe-5">
+          <div className="hidden md:block pe-5">
             <CreateProjectButton />
           </div>
 
