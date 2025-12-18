@@ -74,6 +74,8 @@ export type CauseEntity = {
   /** Search relevance score, only populated when using searchTerm filter */
   searchRank?: Maybe<Scalars['Float']['output']>;
   slug: Scalars['String']['output'];
+  socialMedia?: Maybe<Array<ProjectSocialMediaEntity>>;
+  status?: Maybe<ProjectStatus>;
   title: Scalars['String']['output'];
   totalDonations: Scalars['Float']['output'];
   totalReactions: Scalars['Int']['output'];
@@ -103,10 +105,9 @@ export type ConfirmEmailVerificationInput = {
   verifyCode: Scalars['String']['input'];
 };
 
-export type CountryEntity = {
-  __typename?: 'CountryEntity';
+export type Country = {
+  __typename?: 'Country';
   code: Scalars['String']['output'];
-  id: Scalars['Int']['output'];
   name: Scalars['String']['output'];
 };
 
@@ -136,23 +137,10 @@ export type CreateProjectInput = {
 };
 
 export type CreateProjectUpdateInput = {
-  achievedMilestones?: InputMaybe<Scalars['String']['input']>;
   content: Scalars['String']['input'];
   contentSummary?: InputMaybe<Scalars['String']['input']>;
-  facebook?: InputMaybe<Scalars['String']['input']>;
-  foundationDate?: InputMaybe<Scalars['DateTime']['input']>;
-  instagram?: InputMaybe<Scalars['String']['input']>;
   isMain?: InputMaybe<Scalars['Boolean']['input']>;
-  isNonProfitOrganization?: InputMaybe<Scalars['Boolean']['input']>;
-  linkedin?: InputMaybe<Scalars['String']['input']>;
-  managingFundDescription?: InputMaybe<Scalars['String']['input']>;
-  mission?: InputMaybe<Scalars['String']['input']>;
-  organizationCountry?: InputMaybe<Scalars['String']['input']>;
-  organizationDescription?: InputMaybe<Scalars['String']['input']>;
-  organizationWebsite?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
-  twitter?: InputMaybe<Scalars['String']['input']>;
-  youtube?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateQfRoundInput = {
@@ -316,7 +304,6 @@ export type GivbacksEligibilityFormEntity = {
   reviewerId?: Maybe<Scalars['Int']['output']>;
   status: GivbacksEligibilityStatus;
   updatedAt: Scalars['DateTime']['output'];
-  userId: Scalars['Int']['output'];
   verifiedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -752,6 +739,8 @@ export type ProjectEntity = {
   /** Search relevance score, only populated when using searchTerm filter */
   searchRank?: Maybe<Scalars['Float']['output']>;
   slug: Scalars['String']['output'];
+  socialMedia?: Maybe<Array<ProjectSocialMediaEntity>>;
+  status?: Maybe<ProjectStatus>;
   title: Scalars['String']['output'];
   totalDonations: Scalars['Float']['output'];
   totalReactions: Scalars['Int']['output'];
@@ -808,6 +797,14 @@ export type ProjectRegistryInput = {
   organizationWebsite?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type ProjectSocialMediaEntity = {
+  __typename?: 'ProjectSocialMediaEntity';
+  id: Scalars['ID']['output'];
+  link: Scalars['String']['output'];
+  projectId: Scalars['Int']['output'];
+  type: Scalars['String']['output'];
+};
+
 /** Fields to sort projects by */
 export enum ProjectSortField {
   CreatedAt = 'CreatedAt',
@@ -817,6 +814,17 @@ export enum ProjectSortField {
   UpdatedAt = 'UpdatedAt'
 }
 
+export enum ProjectStatus {
+  Active = 'ACTIVE',
+  Cancelled = 'CANCELLED',
+  Clarification = 'CLARIFICATION',
+  Deactive = 'DEACTIVE',
+  Drafted = 'DRAFTED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED',
+  Verification = 'VERIFICATION'
+}
+
 export enum ProjectType {
   Cause = 'CAUSE',
   Project = 'PROJECT'
@@ -824,29 +832,15 @@ export enum ProjectType {
 
 export type ProjectUpdateEntity = {
   __typename?: 'ProjectUpdateEntity';
-  achievedMilestones?: Maybe<Scalars['String']['output']>;
   content: Scalars['String']['output'];
   contentSummary?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
-  facebook?: Maybe<Scalars['String']['output']>;
-  foundationDate?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
-  instagram?: Maybe<Scalars['String']['output']>;
   isMain: Scalars['Boolean']['output'];
-  isNonProfitOrganization: Scalars['Boolean']['output'];
-  linkedin?: Maybe<Scalars['String']['output']>;
-  managingFundDescription?: Maybe<Scalars['String']['output']>;
-  mission?: Maybe<Scalars['String']['output']>;
-  organizationCountry?: Maybe<Scalars['String']['output']>;
-  organizationDescription?: Maybe<Scalars['String']['output']>;
-  organizationWebsite?: Maybe<Scalars['String']['output']>;
   projectId: Scalars['Int']['output'];
   title: Scalars['String']['output'];
   totalReactions: Scalars['Int']['output'];
-  twitter?: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['DateTime']['output'];
-  userId: Scalars['Int']['output'];
-  youtube?: Maybe<Scalars['String']['output']>;
 };
 
 export type ProjectUpdateQueryInput = {
@@ -944,7 +938,7 @@ export type Query = {
   estimatedMatching: EstimatedMatchingEntity;
   featuredProjectUpdate?: Maybe<FeaturedUpdateEntity>;
   featuredProjects: PaginatedProjectsEntity;
-  getAllowedCountries: Array<CountryEntity>;
+  getAllowedCountries: Array<Country>;
   getCurrentGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   getDonationById?: Maybe<DonationEntity>;
   getDonationStats: Array<DonationCurrencyStatsEntity>;
@@ -1331,23 +1325,10 @@ export type UpdateProjectInput = {
 };
 
 export type UpdateProjectUpdateInput = {
-  achievedMilestones?: InputMaybe<Scalars['String']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
   contentSummary?: InputMaybe<Scalars['String']['input']>;
-  facebook?: InputMaybe<Scalars['String']['input']>;
-  foundationDate?: InputMaybe<Scalars['DateTime']['input']>;
-  instagram?: InputMaybe<Scalars['String']['input']>;
   isMain?: InputMaybe<Scalars['Boolean']['input']>;
-  isNonProfitOrganization?: InputMaybe<Scalars['Boolean']['input']>;
-  linkedin?: InputMaybe<Scalars['String']['input']>;
-  managingFundDescription?: InputMaybe<Scalars['String']['input']>;
-  mission?: InputMaybe<Scalars['String']['input']>;
-  organizationCountry?: InputMaybe<Scalars['String']['input']>;
-  organizationDescription?: InputMaybe<Scalars['String']['input']>;
-  organizationWebsite?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
-  twitter?: InputMaybe<Scalars['String']['input']>;
-  youtube?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateQfRoundInput = {
@@ -1484,7 +1465,7 @@ export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __type
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean, beginDate: any, endDate: any }> };
+export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null }> };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
@@ -1522,7 +1503,7 @@ export type ArchivedQfRoundsQueryVariables = Exact<{
 }>;
 
 
-export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean, beginDate: any, endDate: any }> } };
+export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null }> } };
 
 export type QfRoundStatsQueryVariables = Exact<{
   qfRoundId: Scalars['Int']['input'];
@@ -1702,10 +1683,15 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
   activeQfRounds {
     id
     name
+    description
     slug
     isActive
     beginDate
     endDate
+    hubCardImage
+    allocatedFundUSD
+    allocatedFund
+    allocatedTokenSymbol
   }
 }
     `) as unknown as TypedDocumentString<ActiveQfRoundsQuery, ActiveQfRoundsQueryVariables>;
@@ -1844,10 +1830,15 @@ export const ArchivedQfRoundsDocument = new TypedDocumentString(`
     rounds {
       id
       name
+      description
+      allocatedFundUSD
+      allocatedFund
+      allocatedTokenSymbol
       slug
       isActive
       beginDate
       endDate
+      hubCardImage
     }
     total
   }

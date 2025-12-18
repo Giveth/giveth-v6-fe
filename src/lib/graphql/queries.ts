@@ -121,10 +121,15 @@ export const activeQfRoundsQuery = graphql(`
     activeQfRounds {
       id
       name
+      description
       slug
       isActive
       beginDate
       endDate
+      hubCardImage
+      allocatedFundUSD
+      allocatedFund
+      allocatedTokenSymbol
     }
   }
 `)
@@ -278,10 +283,15 @@ export const archivedQfRoundsQuery = graphql(`
       rounds {
         id
         name
+        description
+        allocatedFundUSD
+        allocatedFund
+        allocatedTokenSymbol
         slug
         isActive
         beginDate
         endDate
+        hubCardImage
       }
       total
     }
