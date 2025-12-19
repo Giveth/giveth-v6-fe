@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { truncateText } from '@/lib/helpers/textHelper'
 import type { Route } from 'next'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 
 export function RoundCard({
   round,
@@ -13,14 +14,17 @@ export function RoundCard({
   round: ActiveQfRoundsQuery['activeQfRounds'][0]
   layout?: 'horizontal' | 'vertical'
 }) {
-  const mainContainerFlexDirection =
-    layout === 'horizontal' ? 'flex-row' : 'flex-col'
+  const isMobile = useIsMobile();
+  const layoutOption = isMobile ? 'vertical' : layout;
 
-  const imageContainerWidth = layout === 'horizontal' ? 'w-1/2' : 'w-full'
+  const mainContainerFlexDirection =
+  layoutOption === 'horizontal' ? 'flex-row' : 'flex-col'
+
+  const imageContainerWidth = layoutOption === 'horizontal' ? 'w-1/2' : 'w-full'
   const imageContainerHeight =
-    layout === 'horizontal' ? 'h-[330px]' : 'h-[200px]'
+  layoutOption === 'horizontal' ? 'h-[330px]' : 'h-[200px]'
   const contentContainerWidth =
-    layout === 'horizontal' ? 'w-1/2' : 'w-full flex-1'
+  layoutOption === 'horizontal' ? 'w-1/2' : 'w-full flex-1'
 
   return (
     <div
@@ -49,7 +53,7 @@ export function RoundCard({
           )}
         </p>
 
-        {layout === 'vertical' && (
+        {layoutOption === 'vertical' && (
           <div className="mt-auto">
             <DateContainer
               beginDate={round.beginDate}
@@ -63,13 +67,13 @@ export function RoundCard({
           <span className="ml-1 text-xl">Matching Pool</span>
         </div>
 
-        {layout === 'vertical' && (
+        {layoutOption === 'vertical' && (
           <div className="mt-8">
             <ExploreButton href={`/qf/${round.slug}` as Route} />
           </div>
         )}
 
-        {layout === 'horizontal' && (
+        {layoutOption === 'horizontal' && (
           <div className="flex justify-between items-center">
             <DateContainer
               beginDate={round.beginDate}
