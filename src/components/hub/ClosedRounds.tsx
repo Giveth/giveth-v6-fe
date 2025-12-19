@@ -14,8 +14,6 @@ export function ClosedRounds() {
 
   const rounds = archivedRoundsData?.archivedQfRounds?.rounds || []
 
-  console.log('archivedRoundsData', rounds)
-
   return (
     <div className="mt-12 space-y-6">
       <div className="flex items-center justify-between mb-10">
