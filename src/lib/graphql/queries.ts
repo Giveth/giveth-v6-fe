@@ -88,7 +88,7 @@ export const projectBySlugQuery = graphql(`
         project {
           id
           qfRoundMatchingProjects {
-            qfRoundId
+            qfRoundMatchingId
             matchingAmount
           }
         }
