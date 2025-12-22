@@ -1,5 +1,5 @@
-import { DonationRound } from '@/components/cart/donation-round'
 import { DonationSidebar } from '@/components/cart/donation-sidebar'
+import { DonationRound } from '@/components/cart/DonationRound'
 
 const superDuperRoundProjects = [
   {
@@ -7,8 +7,17 @@ const superDuperRoundProjects = [
     name: 'Geode Labs',
     image: '/geode-labs-crypto-blue-logo.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '0.000018 BTC in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '0.000052',
     token: 'BTC',
@@ -19,8 +28,18 @@ const superDuperRoundProjects = [
     name: 'PEP Master - build trust in DIY medical instruments',
     image: '/medical-diy-instruments-logo.jpg',
     badges: [
-      { type: 'info' as const, label: '$15 makes you eligible for GIVbacks' },
-      { type: 'info' as const, label: '$1 unlocks matching funds' },
+      {
+        type: 'eligible',
+        color: 'gray',
+        amountPrefix: '$15',
+        label: 'makes you eligible for GIVbacks',
+      },
+      {
+        type: 'matching',
+        color: 'gray',
+        amountPrefix: '$1',
+        label: 'unlocks matching funds',
+      },
     ],
     tokenAmount: '0.000012',
     token: 'BTC',
@@ -34,8 +53,17 @@ const bestRoundProjects = [
     name: 'Alphablocks',
     image: '/alphablocks-education-logo.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '15 USDT in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '25',
     token: 'USDT',
@@ -46,8 +74,17 @@ const bestRoundProjects = [
     name: 'Diamante Luz Center for Regenerative Living',
     image: '/regenerative-living-nature-green.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '5 USDT in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '20',
     token: 'USDT',
@@ -58,8 +95,17 @@ const bestRoundProjects = [
     name: 'Reforestation with biodiversity AgroForest',
     image: '/reforestation-forest-green-nature.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '5 USDT in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '20',
     token: 'USDT',

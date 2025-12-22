@@ -46,7 +46,7 @@ export function MobileNavigation() {
           <button
             onClick={() => setIsMenuOpen(false)}
             aria-label="Close menu"
-            className="p-2 rounded-lg hover:bg-giv-gray-100"
+            className="p-2 rounded-lg hover:bg-white"
           >
             <X className="h-6 w-6" />
           </button>

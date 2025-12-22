@@ -1,0 +1,68 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { ChevronDown } from 'lucide-react'
+import { defineChain } from 'thirdweb'
+import { ChainProvider, ChainIcon as ThirdwebChainIcon } from 'thirdweb/react'
+import { getChainName } from '@/lib/constants'
+import { thirdwebClient } from '@/lib/thirdweb/client'
+
+export const ChainDropdown = ({ chainId }: { chainId: number }) => {
+  return (
+    <DropdownMenu.Root>
+      {/* Trigger */}
+      <DropdownMenu.Trigger asChild>
+        <button className="flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
+          <ChainIcon chainId={chainId} />
+          <span className="text-base font-medium text-giv-gray-900">
+            {getChainName(chainId)}
+          </span>
+          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900" />
+        </button>
+      </DropdownMenu.Trigger>
+
+      {/* Dropdown */}
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          sideOffset={8}
+          align="start"
+          className="
+            z-50 min-w-[180px] rounded-xl border border-[#ebecf2] bg-white p-1
+            shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
+          "
+        >
+          {[1, 10, 137].map(id => (
+            <DropdownMenu.Item
+              key={id}
+              onSelect={() => {
+                // TODO: wire chain selection into cart state
+              }}
+              className="
+                cursor-pointer rounded-lg px-3 py-2 text-sm
+                text-[#1f2333] outline-none
+                hover:bg-[#f7f7f9]
+                focus:bg-[#f7f7f9]
+              "
+            >
+              <div className="flex items-center gap-2">
+                <ChainIcon chainId={id} />
+                {getChainName(id)}
+              </div>
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  )
+}
+
+function ChainIcon({ chainId }: { chainId: number }) {
+  const chain = defineChain(chainId)
+  return (
+    <ChainProvider chain={chain}>
+      <ThirdwebChainIcon
+        client={thirdwebClient}
+        className="h-5 w-5 rounded-full"
+        alt={`${getChainName(chainId)} icon`}
+      />
+    </ChainProvider>
+  )
+}

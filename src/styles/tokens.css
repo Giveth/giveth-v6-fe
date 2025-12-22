@@ -32,9 +32,10 @@
     --giv-gray-800: #4F576A;
     --giv-gray-700: #82899a;
     --giv-gray-500: #bbc3d4;
+    --giv-gray-400: #D7DDEA;
     --giv-gray-300: #ebecf2;
     --giv-gray-200: #f7f7f9;
-    --giv-gray-100: #ffffff;
+    --giv-gray-100: #EBEBEB;
 
     /* Semantic tokens */
     --color-surface: #fcfcff;
@@ -124,8 +125,10 @@
     --color-giv-jade-200: var(--giv-jade-200);
 
     --color-giv-gray-900: var(--giv-gray-900);
+    --color-giv-gray-800: var(--giv-gray-800);
     --color-giv-gray-700: var(--giv-gray-700);
     --color-giv-gray-500: var(--giv-gray-500);
+    --color-giv-gray-400: var(--giv-gray-400);
     --color-giv-gray-300: var(--giv-gray-300);
     --color-giv-gray-200: var(--giv-gray-200);
     --color-giv-gray-100: var(--giv-gray-100);
