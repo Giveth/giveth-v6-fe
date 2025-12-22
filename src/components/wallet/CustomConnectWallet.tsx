@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Check, ChevronDown, Copy, LogOut } from 'lucide-react'
+import Image from 'next/image'
+import { Check, Copy, LogOut } from 'lucide-react'
 import {
   useActiveAccount,
   useActiveWallet,
@@ -9,27 +10,10 @@ import {
   useConnect,
   useDisconnect,
 } from 'thirdweb/react'
+import { useProfile } from '@/hooks/useAccount'
+import { useSiweAuth } from '@/hooks/useSiweAuth'
+import { getUserName, shortenAddress } from '@/lib/helpers/userHelper'
 import { supportedWallets, thirdwebClient } from '@/lib/thirdweb/client'
-
-const shortenAddress = (address?: string) => {
-  if (!address) return ''
-  return `${address.slice(0, 6)}...${address.slice(-5)}`
-}
-
-// Generate a deterministic color based on address
-const getAvatarGradient = (address?: string) => {
-  if (!address) return 'from-emerald-400 via-lime-500 to-amber-400'
-
-  const hash = address.split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc)
-  }, 0)
-
-  const hue1 = Math.abs(hash % 360)
-  const hue2 = Math.abs((hash * 2) % 360)
-  const hue3 = Math.abs((hash * 3) % 360)
-
-  return `from-[hsl(${hue1},70%,60%)] via-[hsl(${hue2},70%,55%)] to-[hsl(${hue3},70%,50%)]`
-}
 
 export function CustomConnectWallet() {
   const account = useActiveAccount()
@@ -41,6 +25,11 @@ export function CustomConnectWallet() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [copied, setCopied] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const { token } = useSiweAuth()
+  const { data: profileData } = useProfile(token || undefined)
+
+  const user = profileData?.me
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -106,33 +95,30 @@ export function CustomConnectWallet() {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100"
+          className="flex items-center gap-3 px-4 py-1 bg-white rounded-full font-normal shadow-[0px_3px_20px_rgba(212,218,238,0.4)] hover:opacity-85 transition-all duration-200 border border-gray-100 cursor-pointer"
         >
           {/* Avatar */}
           <div
-            className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarGradient(account.address)} flex items-center justify-center shadow-inner`}
+            className={`w-auto h-auto rounded-fullflex items-center justify-center`}
           >
-            <span className="text-white text-xl font-bold">
-              {account.address.slice(2, 4).toUpperCase()}
-            </span>
+            <Image
+              src={user?.avatar || '/images/user/default-avatar.png'}
+              alt="Avatar"
+              width={24}
+              height={24}
+              className="object-cover rounded-full"
+            />
           </div>
 
           {/* Address and Network Info */}
           <div className="flex flex-col items-start">
-            <span className="text-base font-semibold text-[#1f2333]">
-              {shortenAddress(account.address)}
+            <span className="font-normal text-giv-gray-900 text-sm">
+              {(user && getUserName(user)) || shortenAddress(account.address)}
             </span>
-            <span className="text-sm font-medium text-[#5326ec]">
+            <span className="font-normal text-giv-gray-900 text-[10px]">
               Connected to {chain?.name || 'Network'}
             </span>
           </div>
-
-          {/* Dropdown Arrow */}
-          <ChevronDown
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-          />
         </button>
 
         {/* Dropdown Menu */}
@@ -141,8 +127,15 @@ export function CustomConnectWallet() {
             <div className="p-4 border-b border-gray-100">
               <div className="flex items-center gap-3 mb-3">
                 <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient(account.address)} flex items-center justify-center`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center`}
                 >
+                  <Image
+                    src={user?.avatar || '/images/user/default-avatar.png'}
+                    alt="Avatar"
+                    width={24}
+                    height={24}
+                    className="object-cover rounded-full"
+                  />
                   <span className="text-white text-lg font-bold">
                     {account.address.slice(2, 4).toUpperCase()}
                   </span>
@@ -193,7 +186,7 @@ export function CustomConnectWallet() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isConnecting}
-        className="px-6 py-2.5 bg-[#5326ec] text-white font-semibold rounded-full hover:bg-[#6b3dff] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-6 py-2.5 bg-giv-pinky-500 text-white font-semibold rounded-full hover:bg-giv-pinky-600 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {isConnecting ? 'Connecting...' : 'Connect Wallet'}
       </button>
