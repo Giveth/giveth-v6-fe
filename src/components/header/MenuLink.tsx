@@ -28,7 +28,7 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
       >
         <Link
           href={{ pathname: href }}
-          className="flex justify-between md:justify-start gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 p-3 hover:bg-giv-primary-50 rounded-lg transition-colors"
+          className="flex justify-between md:justify-start items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 p-3 hover:bg-giv-primary-50 rounded-lg transition-colors"
         >
           {label}
           <ChevronDown
