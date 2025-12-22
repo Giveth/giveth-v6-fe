@@ -62,8 +62,8 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
       {/* Empty State */}
       {cartItems.length === 0 && (
         <div className="p-8 text-center">
-          <p className="text-sm text-[#82899a]">Your cart is empty</p>
-          <p className="text-xs text-[#82899a] mt-2">
+          <p className="text-sm text-giv-gray-700">Your cart is empty</p>
+          <p className="text-xs text-giv-gray-700 mt-2">
             Add projects to your cart to get started
           </p>
         </div>

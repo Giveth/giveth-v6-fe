@@ -1,5 +1,9 @@
-import { DonationRound } from '@/components/cart/donation-round'
+'use client'
+
 import { DonationSidebar } from '@/components/cart/donation-sidebar'
+import { DonationRound } from '@/components/cart/DonationRound'
+import { useCart } from '@/context/CartContext'
+import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 
 const superDuperRoundProjects = [
   {
@@ -68,6 +72,12 @@ const bestRoundProjects = [
 ]
 
 export default function CartPage() {
+  // Get active rounds from context
+  const { activeQfRounds } = useActiveQfRounds()
+
+  // Get cart items from context
+  const { cartItems } = useCart()
+
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
       <main className="max-w-7xl mx-auto px-6 py-8">
