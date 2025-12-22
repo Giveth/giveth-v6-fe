@@ -16,12 +16,18 @@ import { thirdwebClient } from '@/lib/thirdweb/client'
  */
 export const DONATION_HANDLER_ADDRESSES: Record<number, string> = {
   137: '0x6e349c56f512cb4250276bf36335c8dd618944a1', // Polygon Mainnet
+  100: '0x97b2cb568e0880B99Cd16EFc6edFF5272Aa02676', // Gnosis Mainnet
+  10: '0x8D685A56C51Cf54685d3dB0Ea50748D3A2c2e0dC', // Optimism Mainnet
+  1: '0x97b2cb568e0880B99Cd16EFc6edFF5272Aa02676', // Ethereum Mainnet
+  42220: '0x97b2cb568e0880B99Cd16EFc6edFF5272Aa02676', // Celo Mainnet
+  42161: '0x97b2cb568e0880B99Cd16EFc6edFF5272Aa02676', // Arbitrum One Mainnet
+  8453: '0x7a5D2A00a25b95fd8739bc52Cd79f8F971C37Ca1', // Base Mainnet
   // Add other chains as needed
 }
 
 /**
  * Donation Handler Contract ABI
- * Based on actual contract at 0x6e349c56f512cb4250276bf36335c8dd618944a1
+ * Based on actual contract at 0x6e349c56f512cb4250276bf36335c8dd618944a1 on Polygon Mainnet
  */
 export const DONATION_HANDLER_ABI = [
   {
