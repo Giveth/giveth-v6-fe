@@ -161,7 +161,7 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
         {/* Checkout Button */}
         {cartItems.length > 0 && (
           <Link
-            href="/donation"
+            href="/cart"
             onClick={onClose}
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#5326ec] py-4 text-base font-bold text-white transition-all hover:bg-[#4520c7]"
           >
