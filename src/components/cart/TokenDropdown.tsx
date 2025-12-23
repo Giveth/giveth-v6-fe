@@ -74,11 +74,11 @@ export const TokenDropdown = ({ chainId }: { chainId: number }) => {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
+        <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
           <span className="text-base font-medium text-giv-gray-900">
             Wallet tokens
           </span>
-          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900" />
+          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900 max-[480px]:ml-auto" />
         </button>
       </DropdownMenu.Trigger>
 

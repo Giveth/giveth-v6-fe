@@ -53,11 +53,13 @@ export function DonationRound({
       </div>
 
       {/* Token Selection Row */}
-      <div className="py-6 flex items-center justify-between">
-        <ChainDropdown chainId={chainId} />
+      <div className="py-6 flex max-[480px]:flex-wrap items-center justify-between">
+        <div className="max-[480px]:w-full max-[480px]:mb-3 md:w-auto">
+          <ChainDropdown chainId={chainId} />
+        </div>
 
         {/* Right Side - Token, Amount, Apply */}
-        <div className="flex items-center gap-3">
+        <div className="max-[480px]:flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto">
           <TokenDropdown chainId={chainId} />
 
           <AmountInput
@@ -80,11 +82,11 @@ export function DonationRound({
       </div>
 
       {/* Round Footer */}
-      <div className="flex flex-between bg-giv-gray-200 px-5 py-3 rounded-xl">
+      <div className="max-[480px]:flex-wrap flex justify-between bg-giv-gray-200 px-5 py-3 rounded-xl">
         <span className="text-base font-medium text-giv-gray-700">
           {projects.length} projects
         </span>
-        <div className="flex justify-between items-center ml-auto gap-2 text-sm">
+        <div className="flex justify-between items-center md:ml-auto gap-2 text-sm">
           <span className="flex items-center gap-1.5 text-base font-medium text-giv-gray-800">
             Total match
             <MatchingEligible

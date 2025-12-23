@@ -7,7 +7,7 @@ import { DonateToGiveth } from './DonateToGiveth'
 
 export function DonationSidebar() {
   return (
-    <div className="shrink-0 space-y-4 w-4/12">
+    <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
       {/* Credit Card Option */}
       <div className="bg-white p-5 rounded-2xl">
         <p className="text-base font-medium text-giv-gray-900 mb-3">

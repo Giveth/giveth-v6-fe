@@ -21,7 +21,7 @@ interface Project {
 
 const tokenIcons: Record<string, React.ReactNode> = {
   BTC: (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+    <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none">
       <circle cx="12" cy="12" r="10" fill="#F7931A" />
       <text
         x="12"
@@ -36,7 +36,7 @@ const tokenIcons: Record<string, React.ReactNode> = {
     </svg>
   ),
   USDT: (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+    <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none">
       <circle cx="12" cy="12" r="10" fill="#50AF95" />
       <text
         x="12"
@@ -56,7 +56,7 @@ export const ProjectCartCard = ({ project }: { project: Project }) => {
   return (
     <div className="px-4 py-4 border border-giv-gray-300 mb-4 mn-last:mb-0 rounded-xl hover:bg-giv-gray-200 transition-colors">
       {/* Project Info */}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <img
             src={project.image || '/placeholder.svg'}
@@ -73,8 +73,8 @@ export const ProjectCartCard = ({ project }: { project: Project }) => {
       </div>
 
       {/* Amount Row */}
-      <div className="flex items-center justify-between mt-8 gap-2">
-        <div className="flex flex-wrap gap-2">
+      <div className="max-[480px]:flex-wrap flex items-center justify-between mt-8 gap-2">
+        <div className="flex flex-wrap max-[480px]:w-full md:w-auto gap-2">
           {project.badges.map((badge, idx) => (
             <GivBacksBadge
               key={idx}
@@ -85,32 +85,15 @@ export const ProjectCartCard = ({ project }: { project: Project }) => {
             />
           ))}
         </div>
-        <div className="flex items-center gap-1.5">
+
+        <div className="flex items-center text-base font-medium gap-2 border border-giv-gray-100 rounded-md pr-3 pl-2 py-2">
           {tokenIcons[project.token]}
-          <span className="text-sm text-[#82899a]">{project.token}</span>
-          <span className="text-sm font-medium text-[#1f2333]">
-            {project.tokenAmount}
+          <span className="text-giv-gray-700">{project.token}</span>
+          <span>{project.tokenAmount}</span>
+          <span className="px-2 py-1 bg-giv-gray-300 rounded-lg text-xs text-giv-gray-700">
+            $ {project.usdValue}
           </span>
-          <a href="#" className="text-[#82899a] hover:text-[#5326ec]">
-            <svg
-              viewBox="0 0 16 16"
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path
-                d="M6 10L10 6M10 6H6M10 6V10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <rect x="2" y="2" width="12" height="12" rx="2" />
-            </svg>
-          </a>
         </div>
-        <span className="px-3 py-1.5 bg-[#f7f7f9] rounded-lg text-sm text-[#82899a]">
-          $ {project.usdValue}
-        </span>
       </div>
     </div>
   )

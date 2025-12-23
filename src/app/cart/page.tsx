@@ -120,9 +120,9 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
       <main className="max-w-7xl mx-auto py-8">
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-6">
           {/* Left Column - Donation Rounds */}
-          <div className="flex-1 space-y-5 w-8/12">
+          <div className="flex-1 space-y-5 w-12/12 lg:w-8/12">
             <DonationRound
               roundName="Super duper round"
               chainId={137}

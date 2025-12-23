@@ -10,12 +10,12 @@ export const ChainDropdown = ({ chainId }: { chainId: number }) => {
     <DropdownMenu.Root>
       {/* Trigger */}
       <DropdownMenu.Trigger asChild>
-        <button className="flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
+        <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
           <ChainIcon chainId={chainId} />
           <span className="text-base font-medium text-giv-gray-900">
             {getChainName(chainId)}
           </span>
-          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900" />
+          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900 max-[480px]:ml-auto" />
         </button>
       </DropdownMenu.Trigger>
 
@@ -25,7 +25,8 @@ export const ChainDropdown = ({ chainId }: { chainId: number }) => {
           sideOffset={8}
           align="start"
           className="
-            z-50 min-w-[180px] rounded-xl border border-[#ebecf2] bg-white p-1
+            max-[480px]:w-full md:w-auto 
+            z-50 min-w-[180px] rounded-xl border border-giv-gray-300 bg-white p-1
             shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
           "
         >
