@@ -2,10 +2,7 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { QFProjectCard } from '@/components/qf/components/qf-project-card'
 import { useSimilarProjectsBySlug } from '@/hooks/useProject'
-import {
-  type ProjectEntity,
-  type SimilarProjectsBySlugQuery,
-} from '@/lib/graphql/generated/graphql'
+import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 
 interface SimilarProjectsProps {
   projectSlug: string
@@ -27,8 +24,7 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
     )
   }
 
-  const allProjects =
-    (data as SimilarProjectsBySlugQuery)?.similarProjectsBySlug?.projects || []
+  const allProjects = data?.similarProjectsBySlug?.projects || []
 
   if (allProjects.length === 0) {
     return null

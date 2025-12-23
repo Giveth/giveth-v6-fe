@@ -48,7 +48,6 @@ See `.env.example` for required variables:
 - `NEXT_PUBLIC_GRAPHQL_ENDPOINT`
 - `NEXT_PUBLIC_THIRDWEB_CLIENT_ID`
 - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` (optional)
-- `GRAPHQL_CODEGEN_ENDPOINT` (optional override for codegen CLI)
 
 ## Testing & quality
 
