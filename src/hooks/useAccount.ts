@@ -11,7 +11,6 @@ import type {
   UserEntity,
   UserWalletEntity,
 } from '@/lib/graphql/generated/graphql'
-import { MeDocument, UserStatsDocument } from '@/lib/graphql/generated/graphql'
 import {
   confirmEmailVerificationMutation,
   requestEmailVerificationMutation,
@@ -19,9 +18,11 @@ import {
   uploadAvatarMutation,
 } from '@/lib/graphql/mutations'
 import {
+  meQuery,
   myDonationsQuery,
   myProjectsQuery,
   profileQuery,
+  userStatsQuery,
 } from '@/lib/graphql/queries'
 
 const createAuthorizedClient = (token?: string) =>
@@ -40,7 +41,7 @@ export const useMe = (token?: string) =>
     queryKey: ['me', token],
     queryFn: async () => {
       const client = createAuthorizedClient(token)
-      return client.request(MeDocument)
+      return client.request(meQuery)
     },
     enabled: !!token,
   })
@@ -50,7 +51,7 @@ export const useUserStats = (userId?: number, token?: string) =>
     queryKey: ['userStats', userId, token],
     queryFn: async () => {
       const client = createAuthorizedClient(token)
-      return client.request(UserStatsDocument, { id: userId ?? 0 })
+      return client.request(userStatsQuery, { id: userId ?? 0 })
     },
     enabled: !!token && !!userId,
   })

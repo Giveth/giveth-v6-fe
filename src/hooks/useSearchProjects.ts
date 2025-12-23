@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
 import type { InputMaybe } from '@/lib/graphql/generated/graphql'
 import {
-  ProjectsDocument,
   ProjectSortField,
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
+import { projectsQuery } from '@/lib/graphql/queries'
 
 export interface SearchProjectsOptions {
   searchTerm: string
@@ -29,7 +29,7 @@ export const useSearchProjects = (options: SearchProjectsOptions) => {
   return useQuery({
     queryKey: ['searchProjects', searchTerm, skip, take, sortBy, sortDirection],
     queryFn: async () => {
-      return graphQLClient.request(ProjectsDocument, {
+      return graphQLClient.request(projectsQuery, {
         skip: skip as InputMaybe<number>,
         take: take as InputMaybe<number>,
         orderBy: sortBy as InputMaybe<ProjectSortField>,

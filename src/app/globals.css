@@ -2,6 +2,22 @@
 @import "../styles/tokens.css";
 @import "react-quill-new/dist/quill.snow.css";
 
+@font-face {
+  font-family: 'TeX Gyre Adventor';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/fonts/texgyreadventor-regular-webfont.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TeX Gyre Adventor';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/fonts/texgyreadventor-bold-webfont.woff') format('woff');
+  font-display: swap;
+}
+
 *,
 *::before,
 *::after {

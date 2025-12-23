@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
 import {
-  DonationsByProjectDocument,
-  ProjectBySlugDocument,
-  ProjectsDocument,
-} from '@/lib/graphql/generated/graphql'
-import { similarProjectsBySlugQuery } from '@/lib/graphql/queries'
+  donationsByProjectQuery,
+  projectBySlugQuery,
+  projectsQuery,
+  similarProjectsBySlugQuery,
+} from '@/lib/graphql/queries'
 
 export const useProjectBySlug = (slug: string) => {
   return useQuery({
     queryKey: ['projectBySlug', slug],
     queryFn: async () => {
-      return graphQLClient.request(ProjectBySlugDocument, { slug })
+      return graphQLClient.request(projectBySlugQuery, { slug })
     },
     enabled: !!slug,
   })
@@ -26,7 +26,7 @@ export const useProjectDonations = (
   return useQuery({
     queryKey: ['donationsByProject', projectId, skip, take, qfRoundId],
     queryFn: async () => {
-      return graphQLClient.request(DonationsByProjectDocument, {
+      return graphQLClient.request(donationsByProjectQuery, {
         projectId,
         skip,
         take,
@@ -41,7 +41,7 @@ export const useProjects = (skip: number = 0, take: number = 10) => {
   return useQuery({
     queryKey: ['projects', skip, take],
     queryFn: async () => {
-      return graphQLClient.request(ProjectsDocument, {
+      return graphQLClient.request(projectsQuery, {
         skip,
         take,
       })
