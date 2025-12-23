@@ -1,5 +1,8 @@
-import { DonationSidebar } from '@/components/cart/donation-sidebar'
+import type { ComponentProps } from 'react'
 import { DonationRound } from '@/components/cart/DonationRound'
+import { DonationSidebar } from '@/components/cart/DonationSidebar'
+
+type DonationRoundProjects = ComponentProps<typeof DonationRound>['projects']
 
 const superDuperRoundProjects = [
   {
@@ -45,7 +48,7 @@ const superDuperRoundProjects = [
     token: 'BTC',
     usdValue: '4.45',
   },
-]
+] satisfies DonationRoundProjects
 
 const bestRoundProjects = [
   {
@@ -111,15 +114,15 @@ const bestRoundProjects = [
     token: 'USDT',
     usdValue: '20.00',
   },
-]
+] satisfies DonationRoundProjects
 
 export default function CartPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-6">
+      <main className="max-w-7xl mx-auto py-8">
+        <div className="flex gap-4">
           {/* Left Column - Donation Rounds */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-5 w-8/12">
             <DonationRound
               roundName="Super duper round"
               chainId={137}

@@ -4,9 +4,10 @@ import { AmountInput } from '@/components/cart/AmountInput'
 import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
 import { TokenDropdown } from '@/components/cart/TokenDropdown'
+import { MatchingEligible } from '@/components/icons/MatchingEligible'
 
 interface ProjectBadge {
-  type: 'givbacks' | 'matching'
+  type: 'eligible' | 'matching'
   color: 'green' | 'gray'
   amountPrefix?: string
   label: string
@@ -79,30 +80,25 @@ export function DonationRound({
       </div>
 
       {/* Round Footer */}
-      <div className="px-5 py-4 flex items-center justify-between bg-[#fafafa]">
-        <span className="text-sm text-[#82899a]">
+      <div className="flex flex-between bg-giv-gray-200 px-5 py-3 rounded-xl">
+        <span className="text-base font-medium text-giv-gray-700">
           {projects.length} projects
         </span>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="flex items-center gap-1.5">
+        <div className="flex justify-between items-center ml-auto gap-2 text-sm">
+          <span className="flex items-center gap-1.5 text-base font-medium text-giv-gray-800">
             Total match
-            <span className="w-5 h-5 rounded-full bg-[#e7e1ff] flex items-center justify-center">
-              <svg
-                viewBox="0 0 16 16"
-                className="w-3 h-3 text-[#5326ec]"
-                fill="currentColor"
-              >
-                <path d="M8 2L10 6L14 7L11 10L12 14L8 12L4 14L5 10L2 7L6 6L8 2Z" />
-              </svg>
+            <MatchingEligible
+              width={20}
+              height={20}
+              fill="var(--giv-jade-500)"
+            />
+            <span className="text-giv-jade-500 text-base font-medium">
+              $ {totalMatch}
             </span>
-            <span className="text-[#37b4a9] font-medium">$ {totalMatch}</span>
           </span>
-          <span className="text-[#82899a]">|</span>
-          <span>
-            Total donation{' '}
-            <span className="font-semibold text-[#1f2333]">
-              $ {totalDonation}
-            </span>
+          <span className="text-giv-gray-500 text-lg font-normal">|</span>
+          <span className="text-giv-gray-800 text-base font-medium">
+            Total donation <span>$ {totalDonation}</span>
           </span>
         </div>
       </div>
