@@ -202,4 +202,26 @@ export class SiweService {
       throw error
     }
   }
+
+  async invalidateToken(jwt: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.siweAuthServiceUrl}/v1/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jwt }),
+      })
+
+      if (!response.ok) {
+        console.warn('Failed to invalidate token on server')
+        return false
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error invalidating token:', error)
+      return false
+    }
+  }
 }

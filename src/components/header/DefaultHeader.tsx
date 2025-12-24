@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { CartButton } from '@/components/header/CartButton'
 import { CreateProjectButton } from '@/components/header/CreateProjectButton'
+import { HeaderConnectWallet } from '@/components/header/HeaderConnectWallet'
 import { GivethLogo } from '@/components/icons/GivethLogo'
-import { CustomConnectWallet } from '@/components/wallet/CustomConnectWallet'
 import { DesktopNavigation } from './DesktopNavigation'
 import { MobileNavigation } from './MobileNavigation'
 
@@ -84,7 +84,7 @@ export function DefaultHeader() {
           <CartButton />
 
           {/* Wallet */}
-          <CustomConnectWallet />
+          <HeaderConnectWallet />
         </div>
       </div>
     </header>

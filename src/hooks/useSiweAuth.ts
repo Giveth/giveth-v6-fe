@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   useActiveAccount,
   useActiveWalletConnectionStatus,
@@ -35,7 +35,19 @@ export function useSiweAuth() {
   const account = useActiveAccount()
   const connectionStatus = useActiveWalletConnectionStatus()
 
-  const siweService = new SiweService()
+  // Create once to avoid re-instantiating clients on every render
+  const siweService = useMemo(() => new SiweService(), [])
+  const lastWalletAddressRef = useRef<string | undefined>(undefined)
+
+  const setSignedOutState = useCallback((error: string | null = null) => {
+    setAuthState({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      isLoading: false,
+      error,
+    })
+  }, [])
 
   // Initialize auth state from localStorage
   useEffect(() => {
@@ -56,30 +68,49 @@ export function useSiweAuth() {
           } else {
             // Token is invalid, remove it
             localStorage.removeItem('giveth_token')
-            setAuthState(prev => ({
-              ...prev,
-              isLoading: false,
-            }))
+            setSignedOutState(null)
           }
         } catch {
           // Error validating token, remove it
           localStorage.removeItem('giveth_token')
-          setAuthState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: 'Token validation failed',
-          }))
+          setSignedOutState('Token validation failed')
         }
       } else {
-        setAuthState(prev => ({
-          ...prev,
-          isLoading: false,
-        }))
+        // Important: explicitly clear any stale in-memory auth state
+        setSignedOutState(null)
       }
     }
 
     initializeAuth()
-  }, [])
+  }, [setSignedOutState, siweService])
+
+  // Keep auth state consistent with wallet connection / account changes.
+  // This prevents cases where UI shows authenticated content after wallet connect
+  // while no token is present (e.g. stale in-memory state from HMR or prior session).
+  useEffect(() => {
+    const isConnected = connectionStatus === 'connected'
+    const walletAddress = account?.address
+
+    // If wallet changes, any existing token/user should be considered invalid for safety.
+    if (
+      walletAddress &&
+      lastWalletAddressRef.current &&
+      walletAddress !== lastWalletAddressRef.current
+    ) {
+      localStorage.removeItem('giveth_token')
+      setSignedOutState(null)
+    }
+
+    lastWalletAddressRef.current = walletAddress
+
+    if (!isConnected) return
+
+    const token = localStorage.getItem('giveth_token')
+    if (!token) {
+      // Wallet connected but no token => must require SIWE immediately
+      setSignedOutState(null)
+    }
+  }, [account?.address, connectionStatus, setSignedOutState])
 
   const signIn = useCallback(async () => {
     if (!account?.address) {
@@ -145,18 +176,20 @@ export function useSiweAuth() {
     }
   }, [account, siweService])
 
-  const signOut = useCallback(() => {
-    setAuthState({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      isLoading: false,
-      error: null,
-    })
+  const signOut = useCallback(async () => {
+    // const token = authState.token || localStorage.getItem('giveth_token')
+
+    // Invalidate token on auth service
+    // TODO: Invalidate token stucks on Auth service - should be fixed in the future
+    // if (token) {
+    //   await siweService.invalidateToken(token)
+    // }
+
+    setSignedOutState(null)
 
     // Remove token from storage
     localStorage.removeItem('giveth_token')
-  }, [])
+  }, [setSignedOutState])
 
   return {
     ...authState,

@@ -9,7 +9,7 @@ import {
   type CreateFormSection,
 } from '@/components/project/CreateProjectFullForm'
 import { CreateProjectProGuide } from '@/components/project/CreateProjectProGuide'
-import { ConnectWalletButton } from '@/components/wallet/ConnectWalletButton'
+import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/hooks/useSiweAuth'
 
 export default function CreateProjectPage() {

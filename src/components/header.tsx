@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { DefaultHeader } from './header/DefaultHeader'
-import { CustomConnectWallet } from './wallet/CustomConnectWallet'
+import { HeaderConnectWallet } from './header/HeaderConnectWallet'
 
 export function Header() {
   const pathname = usePathname()
@@ -29,7 +29,7 @@ export function Header() {
           </div>
 
           {/* Right Section - Wallet */}
-          <CustomConnectWallet />
+          <HeaderConnectWallet />
         </div>
       </header>
     )
