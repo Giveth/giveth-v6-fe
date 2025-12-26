@@ -9,8 +9,8 @@ import {
   useActiveWallet,
   useActiveWalletChain,
 } from 'thirdweb/react'
+import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
 import { getUserName, shortenAddress } from '@/lib/helpers/userHelper'
 import ConnectWalletButton from '../wallet/ConnectWalletButton'
 
@@ -70,14 +70,14 @@ export function HeaderConnectWallet() {
         >
           {/* Avatar */}
           <div
-            className={`w-auto h-auto rounded-fullflex items-center justify-center`}
+            className={`w-6 h-6 rounded-full flex items-center justify-center`}
           >
             <Image
               src={user?.avatar || '/images/user/default-avatar.png'}
               alt="Avatar"
               width={24}
               height={24}
-              className="object-cover rounded-full"
+              className="w-full h-full object-cover rounded-full"
             />
           </div>
 
