@@ -423,6 +423,7 @@ export type Mutation = {
   addProjectUpdate: ProjectUpdateEntity;
   addWallet: UserEntity;
   calculateQfRoundMatching: QfRoundMatchingEntity;
+  checkWalletUser: SiweAuthResponse;
   confirmEmailVerification: UserEntity;
   createAvatarUploadUrl: Scalars['String']['output'];
   createCause: CauseEntity;
@@ -492,6 +493,11 @@ export type MutationAddWalletArgs = {
 
 export type MutationCalculateQfRoundMatchingArgs = {
   qfRoundId: Scalars['Int']['input'];
+};
+
+
+export type MutationCheckWalletUserArgs = {
+  walletAddress: Scalars['String']['input'];
 };
 
 
@@ -1507,6 +1513,63 @@ export type WalletAddressUsedEntity = {
   hasRelatedProject: Scalars['Boolean']['output'];
 };
 
+export type CreateProjectMutationVariables = Exact<{
+  input: CreateProjectInput;
+}>;
+
+
+export type CreateProjectMutation = { __typename?: 'Mutation', createProject: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number }> | null } };
+
+export type UpdateProjectMutationVariables = Exact<{
+  projectId: Scalars['Int']['input'];
+  input: UpdateProjectInput;
+}>;
+
+
+export type UpdateProjectMutation = { __typename?: 'Mutation', updateProject: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, image?: string | null, impactLocation?: string | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, chainType: ChainType, title?: string | null }> | null } };
+
+export type UpdateProfileMutationVariables = Exact<{
+  input: UpdateUserInput;
+}>;
+
+
+export type UpdateProfileMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'UserEntity', id: string, email?: string | null, firstName?: string | null, lastName?: string | null, name?: string | null, avatar?: string | null, url?: string | null, location?: string | null, twitterName?: string | null, telegramName?: string | null, isEmailVerified: boolean } };
+
+export type RequestEmailVerificationMutationVariables = Exact<{
+  input: RequestEmailVerificationInput;
+}>;
+
+
+export type RequestEmailVerificationMutation = { __typename?: 'Mutation', requestEmailVerification: { __typename?: 'EmailVerificationRequestEntity', status: string, email: string, expiresAt: any } };
+
+export type ConfirmEmailVerificationMutationVariables = Exact<{
+  input: ConfirmEmailVerificationInput;
+}>;
+
+
+export type ConfirmEmailVerificationMutation = { __typename?: 'Mutation', confirmEmailVerification: { __typename?: 'UserEntity', id: string, email?: string | null, isEmailVerified: boolean } };
+
+export type UploadAvatarMutationVariables = Exact<{
+  file: Scalars['Upload']['input'];
+}>;
+
+
+export type UploadAvatarMutation = { __typename?: 'Mutation', createAvatarUploadUrl: string };
+
+export type VerifySiweTokenMutationVariables = Exact<{
+  jwt: Scalars['String']['input'];
+}>;
+
+
+export type VerifySiweTokenMutation = { __typename?: 'Mutation', verifySiweToken: { __typename?: 'SiweAuthResponse', success: boolean, token?: string | null, error?: string | null, user?: { __typename?: 'AuthUser', id: number, email?: string | null, name?: string | null, avatar?: string | null, primaryWallet?: string | null } | null } };
+
+export type CheckWalletUserMutationVariables = Exact<{
+  walletAddress: Scalars['String']['input'];
+}>;
+
+
+export type CheckWalletUserMutation = { __typename?: 'Mutation', checkWalletUser: { __typename?: 'SiweAuthResponse', success: boolean, error?: string | null, user?: { __typename?: 'AuthUser', id: number, email?: string | null, name?: string | null, avatar?: string | null, primaryWallet?: string | null } | null } };
+
 export type CategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1581,10 +1644,10 @@ export type QfRoundStatsQueryVariables = Exact<{
 
 export type QfRoundStatsQuery = { __typename?: 'Query', qfRoundStats: { __typename?: 'QfRoundStatsEntity', totalDonationsUsd: number, donationsCount: number, uniqueDonors: number, qfRound: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string } } };
 
-export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+export type UserProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'UserEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } };
+export type UserProfileQuery = { __typename?: 'Query', me: { __typename?: 'UserEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, location?: string | null, twitterName?: string | null, telegramName?: string | null, isEmailVerified: boolean, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } };
 
 export type UserStatsQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -1611,11 +1674,6 @@ export type MyDonationsQueryVariables = Exact<{
 
 export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
-export type MeProfileQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MeProfileQuery = { __typename?: 'Query', me: { __typename?: 'UserEntity', id: string, email?: string | null, firstName?: string | null, lastName?: string | null, name?: string | null, avatar?: string | null, url?: string | null, location?: string | null, twitterName?: string | null, telegramName?: string | null, isEmailVerified: boolean, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } };
-
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -1635,6 +1693,125 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
+export const CreateProjectDocument = new TypedDocumentString(`
+    mutation CreateProject($input: CreateProjectInput!) {
+  createProject(input: $input) {
+    id
+    title
+    slug
+    description
+    image
+    impactLocation
+    createdAt
+    updatedAt
+    categories {
+      id
+      name
+      value
+    }
+    addresses {
+      id
+      address
+      networkId
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<CreateProjectMutation, CreateProjectMutationVariables>;
+export const UpdateProjectDocument = new TypedDocumentString(`
+    mutation UpdateProject($projectId: Int!, $input: UpdateProjectInput!) {
+  updateProject(projectId: $projectId, input: $input) {
+    id
+    title
+    slug
+    description
+    image
+    impactLocation
+    categories {
+      id
+      name
+      value
+    }
+    addresses {
+      id
+      address
+      networkId
+      chainType
+      title
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<UpdateProjectMutation, UpdateProjectMutationVariables>;
+export const UpdateProfileDocument = new TypedDocumentString(`
+    mutation UpdateProfile($input: UpdateUserInput!) {
+  updateUser(input: $input) {
+    id
+    email
+    firstName
+    lastName
+    name
+    avatar
+    url
+    location
+    twitterName
+    telegramName
+    isEmailVerified
+  }
+}
+    `) as unknown as TypedDocumentString<UpdateProfileMutation, UpdateProfileMutationVariables>;
+export const RequestEmailVerificationDocument = new TypedDocumentString(`
+    mutation RequestEmailVerification($input: RequestEmailVerificationInput!) {
+  requestEmailVerification(input: $input) {
+    status
+    email
+    expiresAt
+  }
+}
+    `) as unknown as TypedDocumentString<RequestEmailVerificationMutation, RequestEmailVerificationMutationVariables>;
+export const ConfirmEmailVerificationDocument = new TypedDocumentString(`
+    mutation ConfirmEmailVerification($input: ConfirmEmailVerificationInput!) {
+  confirmEmailVerification(input: $input) {
+    id
+    email
+    isEmailVerified
+  }
+}
+    `) as unknown as TypedDocumentString<ConfirmEmailVerificationMutation, ConfirmEmailVerificationMutationVariables>;
+export const UploadAvatarDocument = new TypedDocumentString(`
+    mutation UploadAvatar($file: Upload!) {
+  createAvatarUploadUrl(file: $file)
+}
+    `) as unknown as TypedDocumentString<UploadAvatarMutation, UploadAvatarMutationVariables>;
+export const VerifySiweTokenDocument = new TypedDocumentString(`
+    mutation VerifySiweToken($jwt: String!) {
+  verifySiweToken(jwt: $jwt) {
+    success
+    token
+    user {
+      id
+      email
+      name
+      avatar
+      primaryWallet
+    }
+    error
+  }
+}
+    `) as unknown as TypedDocumentString<VerifySiweTokenMutation, VerifySiweTokenMutationVariables>;
+export const CheckWalletUserDocument = new TypedDocumentString(`
+    mutation CheckWalletUser($walletAddress: String!) {
+  checkWalletUser(walletAddress: $walletAddress) {
+    success
+    user {
+      id
+      email
+      name
+      avatar
+      primaryWallet
+    }
+    error
+  }
+}
+    `) as unknown as TypedDocumentString<CheckWalletUserMutation, CheckWalletUserMutationVariables>;
 export const CategoriesDocument = new TypedDocumentString(`
     query Categories {
   categories {
@@ -1927,8 +2104,8 @@ export const QfRoundStatsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<QfRoundStatsQuery, QfRoundStatsQueryVariables>;
-export const MeDocument = new TypedDocumentString(`
-    query Me {
+export const UserProfileDocument = new TypedDocumentString(`
+    query UserProfile {
   me {
     id
     email
@@ -1940,6 +2117,10 @@ export const MeDocument = new TypedDocumentString(`
     url
     totalDonated
     totalReceived
+    location
+    twitterName
+    telegramName
+    isEmailVerified
     wallets {
       id
       address
@@ -1948,7 +2129,7 @@ export const MeDocument = new TypedDocumentString(`
     }
   }
 }
-    `) as unknown as TypedDocumentString<MeQuery, MeQueryVariables>;
+    `) as unknown as TypedDocumentString<UserProfileQuery, UserProfileQueryVariables>;
 export const UserStatsDocument = new TypedDocumentString(`
     query UserStats($id: Int!) {
   userStats(id: $id) {
@@ -2018,26 +2199,3 @@ export const MyDonationsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<MyDonationsQuery, MyDonationsQueryVariables>;
-export const MeProfileDocument = new TypedDocumentString(`
-    query MeProfile {
-  me {
-    id
-    email
-    firstName
-    lastName
-    name
-    avatar
-    url
-    location
-    twitterName
-    telegramName
-    isEmailVerified
-    wallets {
-      id
-      address
-      isPrimary
-      chainType
-    }
-  }
-}
-    `) as unknown as TypedDocumentString<MeProfileQuery, MeProfileQueryVariables>;
