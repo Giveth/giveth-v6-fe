@@ -313,8 +313,8 @@ export const qfRoundStatsQuery = graphql(`
   }
 `)
 
-export const meQuery = graphql(`
-  query Me {
+export const userProfileQuery = graphql(`
+  query UserProfile {
     me {
       id
       email
@@ -326,6 +326,10 @@ export const meQuery = graphql(`
       url
       totalDonated
       totalReceived
+      location
+      twitterName
+      telegramName
+      isEmailVerified
       wallets {
         id
         address
@@ -408,30 +412,6 @@ export const myDonationsQuery = graphql(`
           title
           slug
         }
-      }
-    }
-  }
-`)
-
-export const profileQuery = graphql(`
-  query MeProfile {
-    me {
-      id
-      email
-      firstName
-      lastName
-      name
-      avatar
-      url
-      location
-      twitterName
-      telegramName
-      isEmailVerified
-      wallets {
-        id
-        address
-        isPrimary
-        chainType
       }
     }
   }

@@ -1,7 +1,10 @@
 import { GraphQLClient } from 'graphql-request'
 import { SiweMessage } from 'siwe'
-import { verifySiweTokenMutation } from '@/lib/graphql/mutations'
-import { meQuery } from '@/lib/graphql/queries'
+import {
+  checkWalletUserMutation,
+  verifySiweTokenMutation,
+} from '@/lib/graphql/mutations'
+import { userProfileQuery } from '@/lib/graphql/queries'
 
 interface SiweAuthResponse {
   jwt: string
@@ -13,6 +16,20 @@ interface CoreAuthResponse {
   verifySiweToken: {
     success: boolean
     token?: string
+    user?: {
+      id: number
+      email?: string
+      name?: string
+      avatar?: string
+      primaryWallet?: string
+    }
+    error?: string
+  }
+}
+
+interface CheckWalletUserResponse {
+  checkWalletUser: {
+    success: boolean
     user?: {
       id: number
       email?: string
@@ -141,7 +158,7 @@ export class SiweService {
         },
       })
 
-      const response = await client.request<{ me: User }>(meQuery)
+      const response = await client.request<{ me: User }>(userProfileQuery)
 
       if (response.me) {
         // Find primary wallet from user's wallets
@@ -166,16 +183,43 @@ export class SiweService {
     }
   }
 
+  async checkWalletUser(
+    walletAddress: string,
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
+    try {
+      const result = await this.graphqlClient.request<CheckWalletUserResponse>(
+        checkWalletUserMutation,
+        { walletAddress },
+      )
+
+      if (result.checkWalletUser.success && result.checkWalletUser.user) {
+        return {
+          success: true,
+          user: result.checkWalletUser.user,
+        }
+      } else {
+        return {
+          success: false,
+          error: result.checkWalletUser.error || 'Failed to check wallet user',
+        }
+      }
+    } catch (error) {
+      console.error('Error checking wallet user:', error)
+      return { success: false, error: 'Failed to check wallet user' }
+    }
+  }
+
   async signInWithEthereum(
     address: string,
     signMessage: (message: string) => Promise<string>,
+    chainId?: number,
   ): Promise<CoreAuthResponse> {
     try {
       // Step 1: Get nonce from SIWE auth service
       const nonce = await this.getNonce()
 
       // Step 2: Create SIWE message
-      const siweMessage = this.createSiweMessage(address, nonce)
+      const siweMessage = this.createSiweMessage(address, nonce, chainId)
 
       // Step 3: Get user's signature
       const signature = await signMessage(siweMessage.toMessage())
