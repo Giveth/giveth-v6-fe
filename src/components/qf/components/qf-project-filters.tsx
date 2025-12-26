@@ -142,7 +142,7 @@ export function QFProjectFilters({
             <h4 className="text-[#1f2333] font-bold text-sm mb-3">
               Accepts funds on
             </h4>
-            <div className="space-y-3 max-h-[240px] overflow-y-auto custom-scrollbar">
+            <div className="space-y-3 overflow-y-auto custom-scrollbar">
               {NETWORKS.map(network => (
                 <label
                   key={network}
