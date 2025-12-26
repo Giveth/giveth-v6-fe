@@ -10,7 +10,7 @@ import {
 } from '@/components/project/CreateProjectFullForm'
 import { CreateProjectProGuide } from '@/components/project/CreateProjectProGuide'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
+import { useSiweAuth } from '@/context/AuthContext'
 
 export default function CreateProjectPage() {
   const { isAuthenticated, isLoading, signIn } = useSiweAuth()

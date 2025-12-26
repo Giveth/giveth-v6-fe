@@ -1,8 +1,18 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import {
   useActiveAccount,
+  useActiveWalletChain,
   useActiveWalletConnectionStatus,
 } from 'thirdweb/react'
 import { SiweService } from '@/lib/auth/siwe.service'
@@ -23,21 +33,31 @@ interface AuthState {
   error: string | null
 }
 
-export function useSiweAuth() {
+interface AuthContextValue extends AuthState {
+  signIn: () => Promise<void>
+  signOut: () => Promise<void>
+  isConnected: boolean
+  walletAddress: string | undefined
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
     token: null,
-    isLoading: true, // Start with loading true
+    isLoading: true,
     error: null,
   })
 
   const account = useActiveAccount()
   const connectionStatus = useActiveWalletConnectionStatus()
+  const chain = useActiveWalletChain()
 
-  // Create once to avoid re-instantiating clients on every render
   const siweService = useMemo(() => new SiweService(), [])
   const lastWalletAddressRef = useRef<string | undefined>(undefined)
+  const initRef = useRef(false)
 
   const setSignedOutState = useCallback((error: string | null = null) => {
     setAuthState({
@@ -49,13 +69,15 @@ export function useSiweAuth() {
     })
   }, [])
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from localStorage - only once
   useEffect(() => {
+    if (initRef.current) return
+    initRef.current = true
+
     const initializeAuth = async () => {
       const token = localStorage.getItem('giveth_token')
       if (token) {
         try {
-          // Validate token with backend
           const validation = await siweService.validateToken(token)
           if (validation.valid && validation.user) {
             setAuthState({
@@ -66,17 +88,14 @@ export function useSiweAuth() {
               error: null,
             })
           } else {
-            // Token is invalid, remove it
             localStorage.removeItem('giveth_token')
             setSignedOutState(null)
           }
         } catch {
-          // Error validating token, remove it
           localStorage.removeItem('giveth_token')
           setSignedOutState('Token validation failed')
         }
       } else {
-        // Important: explicitly clear any stale in-memory auth state
         setSignedOutState(null)
       }
     }
@@ -84,14 +103,11 @@ export function useSiweAuth() {
     initializeAuth()
   }, [setSignedOutState, siweService])
 
-  // Keep auth state consistent with wallet connection / account changes.
-  // This prevents cases where UI shows authenticated content after wallet connect
-  // while no token is present (e.g. stale in-memory state from HMR or prior session).
+  // Keep auth state consistent with wallet connection / account changes
   useEffect(() => {
     const isConnected = connectionStatus === 'connected'
     const walletAddress = account?.address
 
-    // If wallet changes, any existing token/user should be considered invalid for safety.
     if (
       walletAddress &&
       lastWalletAddressRef.current &&
@@ -105,12 +121,45 @@ export function useSiweAuth() {
 
     if (!isConnected) return
 
+    const checkWalletUser = async () => {
+      if (!walletAddress) return
+
+      try {
+        const result = await siweService.checkWalletUser(walletAddress)
+
+        if (result.success && result.user) {
+          setAuthState(prev => ({
+            ...prev,
+            isLoading: false,
+            error: null,
+          }))
+        } else {
+          setAuthState(prev => ({
+            ...prev,
+            isLoading: false,
+            error: result.error || 'Failed to check wallet user',
+          }))
+        }
+      } catch (error) {
+        console.error('Error checking wallet user:', error)
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Failed to check wallet user',
+        }))
+      }
+    }
+
     const token = localStorage.getItem('giveth_token')
     if (!token) {
-      // Wallet connected but no token => must require SIWE immediately
-      setSignedOutState(null)
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: true,
+        error: null,
+      }))
+      checkWalletUser()
     }
-  }, [account?.address, connectionStatus, setSignedOutState])
+  }, [account?.address, connectionStatus, setSignedOutState, siweService])
 
   const signIn = useCallback(async () => {
     if (!account?.address) {
@@ -128,14 +177,10 @@ export function useSiweAuth() {
     }))
 
     try {
-      // Create a sign message function using thirdweb
       const signMessage = async (message: string): Promise<string> => {
         if (!account) {
           throw new Error('No active account')
         }
-
-        // This will need to be implemented based on thirdweb's signing API
-        // For now, using a placeholder - you'll need to implement this properly
         const signature = await account.signMessage({
           message: { raw: message as `0x${string}` },
         })
@@ -145,6 +190,7 @@ export function useSiweAuth() {
       const response = await siweService.signInWithEthereum(
         account.address as `0x${string}`,
         signMessage,
+        chain?.id,
       )
 
       if (
@@ -160,7 +206,6 @@ export function useSiweAuth() {
           error: null,
         })
 
-        // Store token in localStorage or secure storage
         localStorage.setItem('giveth_token', response.verifySiweToken.token)
       } else {
         throw new Error(
@@ -174,28 +219,28 @@ export function useSiweAuth() {
         error: error instanceof Error ? error.message : 'Authentication failed',
       }))
     }
-  }, [account, siweService])
+  }, [account, chain?.id, siweService])
 
   const signOut = useCallback(async () => {
-    // const token = authState.token || localStorage.getItem('giveth_token')
-
-    // Invalidate token on auth service
-    // TODO: Invalidate token stucks on Auth service - should be fixed in the future
-    // if (token) {
-    //   await siweService.invalidateToken(token)
-    // }
-
     setSignedOutState(null)
-
-    // Remove token from storage
     localStorage.removeItem('giveth_token')
   }, [setSignedOutState])
 
-  return {
+  const value: AuthContextValue = {
     ...authState,
     signIn,
     signOut,
     isConnected: connectionStatus === 'connected',
     walletAddress: account?.address,
   }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useSiweAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useSiweAuth must be used within an AuthProvider')
+  }
+  return context
 }

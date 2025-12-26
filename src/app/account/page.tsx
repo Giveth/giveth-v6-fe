@@ -8,7 +8,7 @@ import { ProfileSection } from '@/components/account/profile-section'
 import { RaffleCard } from '@/components/account/raffle-card'
 import { Button } from '@/components/ui/button'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
+import { useSiweAuth } from '@/context/AuthContext'
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, error, signIn, isConnected } =

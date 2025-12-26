@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { Copy } from 'lucide-react'
 import { EditProfileModal } from '@/components/account/EditProfileModal'
 import { Button } from '@/components/ui/button'
+import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
 
 export function ProfileSection() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
@@ -27,6 +27,12 @@ export function ProfileSection() {
         Loading Profile...
       </div>
     )
+  } else if (!user) {
+    return (
+      <div className="p-6 bg-white rounded-xl border border-[#ebecf2]">
+        User not found
+      </div>
+    )
   }
 
   // Fallbacks
@@ -38,7 +44,6 @@ export function ProfileSection() {
     displayAddress.length > 10
       ? `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`
       : displayAddress
-  // const avatarUrl = user?.avatar || "/images/default-avatar.png"
 
   return (
     <>
