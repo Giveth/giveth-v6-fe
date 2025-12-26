@@ -805,6 +805,8 @@ export type ProjectFiltersInput = {
   category?: InputMaybe<Scalars['String']['input']>;
   isGivbacksEligible?: InputMaybe<Scalars['Boolean']['input']>;
   mainCategory?: InputMaybe<Scalars['String']['input']>;
+  /** Filter projects by accepted recipient networks (EVM chain IDs / networkId) */
+  networkIds?: InputMaybe<Array<Scalars['Int']['input']>>;
   projectType?: InputMaybe<ProjectType>;
   qfRoundId?: InputMaybe<Scalars['Int']['input']>;
   searchTerm?: InputMaybe<Scalars['String']['input']>;
