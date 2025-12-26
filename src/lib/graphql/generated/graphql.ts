@@ -859,6 +859,7 @@ export type ProjectSocialMediaEntity = {
 /** Fields to sort projects by */
 export enum ProjectSortField {
   CreatedAt = 'CreatedAt',
+  QfDonations = 'QfDonations',
   QualityScore = 'QualityScore',
   Relevance = 'Relevance',
   TotalDonations = 'TotalDonations',
@@ -1618,7 +1619,7 @@ export type ProjectsQueryVariables = Exact<{
 }>;
 
 
-export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, qualityScore: number, vouched: boolean, isGivbacksEligible: boolean, searchRank?: number | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
+export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, reviewStatus: ReviewStatus, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null } | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
 
 export type SimilarProjectsBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1984,36 +1985,15 @@ export const ProjectsDocument = new TypedDocumentString(`
       title
       slug
       image
+      reviewStatus
       descriptionSummary
       totalDonations
       countUniqueDonors
-      qualityScore
       vouched
       isGivbacksEligible
-      searchRank
       adminUser {
         id
         name
-        firstName
-        lastName
-        avatar
-      }
-      categories {
-        id
-        name
-        value
-        mainCategory {
-          id
-          title
-          slug
-        }
-      }
-      addresses {
-        id
-        address
-        networkId
-        title
-        chainType
       }
       projectQfRounds {
         id

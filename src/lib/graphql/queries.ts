@@ -189,36 +189,15 @@ export const projectsQuery = graphql(`
         title
         slug
         image
+        reviewStatus
         descriptionSummary
         totalDonations
         countUniqueDonors
-        qualityScore
         vouched
         isGivbacksEligible
-        searchRank
         adminUser {
           id
           name
-          firstName
-          lastName
-          avatar
-        }
-        categories {
-          id
-          name
-          value
-          mainCategory {
-            id
-            title
-            slug
-          }
-        }
-        addresses {
-          id
-          address
-          networkId
-          title
-          chainType
         }
         projectQfRounds {
           id

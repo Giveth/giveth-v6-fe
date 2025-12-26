@@ -53,7 +53,7 @@ const SORT_OPTIONS: SortOption[] = [
   },
   {
     label: 'Amount raised in QF',
-    field: ProjectSortField.TotalDonations, // Placeholder, requires backend support
+    field: ProjectSortField.QfDonations,
     direction: 'DESC',
     icon: <TrendingUp className="w-4 h-4" />,
   },

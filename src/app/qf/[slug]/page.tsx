@@ -48,7 +48,7 @@ export default function QFRoundPage() {
       qfRoundId: roundId,
       isGivbacksEligible: filters.isGivbacksEligible || undefined,
       vouched: filters.eligibleForMatching || undefined,
-      // Note: Networks filtering is not currently supported by the backend ProjectFiltersInput
+      // TODO: Networks filtering is not currently supported by the backend ProjectFiltersInput
     },
     orderBy: sortField,
     orderDirection:
