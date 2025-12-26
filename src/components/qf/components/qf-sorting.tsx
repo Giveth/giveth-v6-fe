@@ -6,9 +6,9 @@ import {
   ArrowUp,
   ChevronDown,
   DollarSign,
-  HandHeart, // using HandHeart as proxy for hand icon
   RefreshCw,
   Rocket,
+  Sparkles,
   TrendingUp,
 } from 'lucide-react'
 import { ProjectSortField } from '@/lib/graphql/generated/graphql'
@@ -22,16 +22,16 @@ export interface SortOption {
 
 const SORT_OPTIONS: SortOption[] = [
   {
+    label: 'Best match',
+    field: ProjectSortField.Relevance,
+    direction: 'DESC',
+    icon: <Sparkles className="w-4 h-4" />,
+  },
+  {
     label: 'Highest GIVpower',
     field: ProjectSortField.QualityScore,
     direction: 'DESC',
     icon: <Rocket className="w-4 h-4" />,
-  },
-  {
-    label: 'Highest GIVbacks %',
-    field: ProjectSortField.Relevance, // Mapping to Relevance as proxy or placeholder
-    direction: 'DESC',
-    icon: <HandHeart className="w-4 h-4" />,
   },
   {
     label: 'Newest first',
@@ -69,20 +69,26 @@ interface QFSortingProps {
   currentField: ProjectSortField
   currentDirection: 'ASC' | 'DESC'
   onSortChange: (field: ProjectSortField, direction: 'ASC' | 'DESC') => void
+  isSearchActive?: boolean
 }
 
 export function QFSorting({
   currentField,
   currentDirection,
   onSortChange,
+  isSearchActive = false,
 }: QFSortingProps) {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
+  const visibleOptions = isSearchActive
+    ? SORT_OPTIONS
+    : SORT_OPTIONS.filter(opt => opt.field !== ProjectSortField.Relevance)
+
   const selectedOption =
-    SORT_OPTIONS.find(
+    visibleOptions.find(
       opt => opt.field === currentField && opt.direction === currentDirection,
-    ) || SORT_OPTIONS[0]
+    ) || visibleOptions[0]
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -111,7 +117,7 @@ export function QFSorting({
 
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-full min-w-[240px] bg-white border border-[#ebecf2] rounded-xl shadow-xl z-30 py-2">
-          {SORT_OPTIONS.map((option, idx) => (
+          {visibleOptions.map((option, idx) => (
             <button
               key={idx}
               onClick={() => {
