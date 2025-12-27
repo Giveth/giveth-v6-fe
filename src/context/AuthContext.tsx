@@ -16,6 +16,7 @@ import {
   useActiveWalletConnectionStatus,
 } from 'thirdweb/react'
 import { SiweService } from '@/lib/auth/siwe.service'
+import { ensureImpactGraphUserExists } from '@/lib/impact-graph/userSync'
 
 interface User {
   id: number
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const siweService = useMemo(() => new SiweService(), [])
   const lastWalletAddressRef = useRef<string | undefined>(undefined)
+  const lastImpactGraphSyncRef = useRef<string | undefined>(undefined)
   const initRef = useRef(false)
 
   const setSignedOutState = useCallback((error: string | null = null) => {
@@ -121,31 +123,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!isConnected) return
 
-    const checkWalletUser = async () => {
+    const syncImpactGraphUser = async () => {
       if (!walletAddress) return
 
       try {
-        const result = await siweService.checkWalletUser(walletAddress)
-
-        if (result.success && result.user) {
-          setAuthState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: null,
-          }))
-        } else {
-          setAuthState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: result.error || 'Failed to check wallet user',
-          }))
+        // Ensure user exists in Impact-Graph (public endpoint; no JWT needed)
+        if (lastImpactGraphSyncRef.current !== walletAddress) {
+          lastImpactGraphSyncRef.current = walletAddress
+          try {
+            await ensureImpactGraphUserExists(walletAddress)
+          } catch (e) {
+            // Non-fatal: do not block wallet auth check if Impact-Graph is down.
+            console.error('Impact-Graph user sync failed:', e)
+          }
         }
       } catch (error) {
-        console.error('Error checking wallet user:', error)
+        console.error('Error syncing Impact-Graph user:', error)
         setAuthState(prev => ({
           ...prev,
           isLoading: false,
-          error: 'Failed to check wallet user',
+          error: 'Failed to sync Impact-Graph user',
         }))
       }
     }
@@ -157,7 +154,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: true,
         error: null,
       }))
-      checkWalletUser()
+      syncImpactGraphUser().finally(() => {
+        // Wallet is connected but user isn't authenticated yet; don't call v6-core to create/update user.
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+        }))
+      })
     }
   }, [account?.address, connectionStatus, setSignedOutState, siweService])
 
