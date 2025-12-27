@@ -14,7 +14,6 @@ import type {
 import {
   confirmEmailVerificationMutation,
   requestEmailVerificationMutation,
-  updateProfileMutation,
   uploadAvatarMutation,
 } from '@/lib/graphql/mutations'
 import {
@@ -158,19 +157,19 @@ export const useProfile = (token?: string) =>
     placeholderData: keepPreviousData, // Use previous data while loading
   })
 
-type UpdateProfileInput = Partial<
-  Pick<
-    UserProfile,
-    | 'firstName'
-    | 'lastName'
-    | 'name'
-    | 'avatar'
-    | 'url'
-    | 'location'
-    | 'twitterName'
-    | 'telegramName'
-  >
->
+// type UpdateProfileInput = Partial<
+//   Pick<
+//     UserProfile,
+//     | 'firstName'
+//     | 'lastName'
+//     | 'name'
+//     | 'avatar'
+//     | 'url'
+//     | 'location'
+//     | 'twitterName'
+//     | 'telegramName'
+//   >
+// >
 
 // export const useUpdateProfile = (token?: string) =>
 //   useMutation({

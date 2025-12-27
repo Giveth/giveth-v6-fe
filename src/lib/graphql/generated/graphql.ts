@@ -178,18 +178,6 @@ export type CreateQfRoundInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type CreateUserInput = {
-  avatar?: InputMaybe<Scalars['String']['input']>;
-  email?: InputMaybe<Scalars['String']['input']>;
-  firstName?: InputMaybe<Scalars['String']['input']>;
-  lastName?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-  telegramName?: InputMaybe<Scalars['String']['input']>;
-  twitterName?: InputMaybe<Scalars['String']['input']>;
-  walletAddress: Scalars['String']['input'];
-};
-
 export enum DisplaySize {
   Large = 'LARGE',
   Standard = 'STANDARD'
@@ -423,7 +411,6 @@ export type Mutation = {
   addProjectUpdate: ProjectUpdateEntity;
   addWallet: UserEntity;
   calculateQfRoundMatching: QfRoundMatchingEntity;
-  checkWalletUser: SiweAuthResponse;
   confirmEmailVerification: UserEntity;
   createAvatarUploadUrl: Scalars['String']['output'];
   createCause: CauseEntity;
@@ -431,7 +418,6 @@ export type Mutation = {
   createGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   createProject: ProjectEntity;
   createQfRound: QfRoundEntity;
-  createUser: UserEntity;
   deleteProjectUpdate: Scalars['Boolean']['output'];
   editProjectUpdate: ProjectUpdateEntity;
   givbacksEligibilityConfirmEmail: GivbacksEligibilityFormEntity;
@@ -453,7 +439,6 @@ export type Mutation = {
   updateGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   updateProject: ProjectEntity;
   updateQfRound: QfRoundEntity;
-  updateUser: UserEntity;
   verifyDonation: DonationEntity;
   verifySiweToken: SiweAuthResponse;
 };
@@ -496,11 +481,6 @@ export type MutationCalculateQfRoundMatchingArgs = {
 };
 
 
-export type MutationCheckWalletUserArgs = {
-  walletAddress: Scalars['String']['input'];
-};
-
-
 export type MutationConfirmEmailVerificationArgs = {
   input: ConfirmEmailVerificationInput;
 };
@@ -533,11 +513,6 @@ export type MutationCreateProjectArgs = {
 
 export type MutationCreateQfRoundArgs = {
   input: CreateQfRoundInput;
-};
-
-
-export type MutationCreateUserArgs = {
-  input: CreateUserInput;
 };
 
 
@@ -653,11 +628,6 @@ export type MutationUpdateProjectArgs = {
 export type MutationUpdateQfRoundArgs = {
   id: Scalars['Int']['input'];
   input: UpdateQfRoundInput;
-};
-
-
-export type MutationUpdateUserArgs = {
-  input: UpdateUserInput;
 };
 
 
@@ -1431,19 +1401,6 @@ export type UpdateQfRoundInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type UpdateUserInput = {
-  avatar?: InputMaybe<Scalars['String']['input']>;
-  email?: InputMaybe<Scalars['String']['input']>;
-  firstName?: InputMaybe<Scalars['String']['input']>;
-  lastName?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-  primaryEns?: InputMaybe<Scalars['String']['input']>;
-  telegramName?: InputMaybe<Scalars['String']['input']>;
-  twitterName?: InputMaybe<Scalars['String']['input']>;
-  url?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type UserEntity = {
   __typename?: 'UserEntity';
   avatar?: Maybe<Scalars['String']['output']>;
@@ -1531,13 +1488,6 @@ export type UpdateProjectMutationVariables = Exact<{
 
 export type UpdateProjectMutation = { __typename?: 'Mutation', updateProject: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, image?: string | null, impactLocation?: string | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, chainType: ChainType, title?: string | null }> | null } };
 
-export type UpdateProfileMutationVariables = Exact<{
-  input: UpdateUserInput;
-}>;
-
-
-export type UpdateProfileMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'UserEntity', id: string, email?: string | null, firstName?: string | null, lastName?: string | null, name?: string | null, avatar?: string | null, url?: string | null, location?: string | null, twitterName?: string | null, telegramName?: string | null, isEmailVerified: boolean } };
-
 export type RequestEmailVerificationMutationVariables = Exact<{
   input: RequestEmailVerificationInput;
 }>;
@@ -1565,13 +1515,6 @@ export type VerifySiweTokenMutationVariables = Exact<{
 
 
 export type VerifySiweTokenMutation = { __typename?: 'Mutation', verifySiweToken: { __typename?: 'SiweAuthResponse', success: boolean, token?: string | null, error?: string | null, user?: { __typename?: 'AuthUser', id: number, email?: string | null, name?: string | null, avatar?: string | null, primaryWallet?: string | null } | null } };
-
-export type CheckWalletUserMutationVariables = Exact<{
-  walletAddress: Scalars['String']['input'];
-}>;
-
-
-export type CheckWalletUserMutation = { __typename?: 'Mutation', checkWalletUser: { __typename?: 'SiweAuthResponse', success: boolean, error?: string | null, user?: { __typename?: 'AuthUser', id: number, email?: string | null, name?: string | null, avatar?: string | null, primaryWallet?: string | null } | null } };
 
 export type CategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1744,23 +1687,6 @@ export const UpdateProjectDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<UpdateProjectMutation, UpdateProjectMutationVariables>;
-export const UpdateProfileDocument = new TypedDocumentString(`
-    mutation UpdateProfile($input: UpdateUserInput!) {
-  updateUser(input: $input) {
-    id
-    email
-    firstName
-    lastName
-    name
-    avatar
-    url
-    location
-    twitterName
-    telegramName
-    isEmailVerified
-  }
-}
-    `) as unknown as TypedDocumentString<UpdateProfileMutation, UpdateProfileMutationVariables>;
 export const RequestEmailVerificationDocument = new TypedDocumentString(`
     mutation RequestEmailVerification($input: RequestEmailVerificationInput!) {
   requestEmailVerification(input: $input) {
@@ -1800,21 +1726,6 @@ export const VerifySiweTokenDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<VerifySiweTokenMutation, VerifySiweTokenMutationVariables>;
-export const CheckWalletUserDocument = new TypedDocumentString(`
-    mutation CheckWalletUser($walletAddress: String!) {
-  checkWalletUser(walletAddress: $walletAddress) {
-    success
-    user {
-      id
-      email
-      name
-      avatar
-      primaryWallet
-    }
-    error
-  }
-}
-    `) as unknown as TypedDocumentString<CheckWalletUserMutation, CheckWalletUserMutationVariables>;
 export const CategoriesDocument = new TypedDocumentString(`
     query Categories {
   categories {
