@@ -50,23 +50,23 @@ export const updateProjectMutation = graphql(`
   }
 `)
 
-export const updateProfileMutation = graphql(`
-  mutation UpdateProfile($input: UpdateUserInput!) {
-    updateUser(input: $input) {
-      id
-      email
-      firstName
-      lastName
-      name
-      avatar
-      url
-      location
-      twitterName
-      telegramName
-      isEmailVerified
-    }
-  }
-`)
+// export const updateProfileMutation = graphql(`
+//   mutation UpdateProfile($input: UpdateUserInput!) {
+//     updateUser(input: $input) {
+//       id
+//       email
+//       firstName
+//       lastName
+//       name
+//       avatar
+//       url
+//       location
+//       twitterName
+//       telegramName
+//       isEmailVerified
+//     }
+//   }
+// `)
 
 export const requestEmailVerificationMutation = graphql(`
   mutation RequestEmailVerification($input: RequestEmailVerificationInput!) {
@@ -111,18 +111,18 @@ export const verifySiweTokenMutation = graphql(`
   }
 `)
 
-export const checkWalletUserMutation = graphql(`
-  mutation CheckWalletUser($walletAddress: String!) {
-    checkWalletUser(walletAddress: $walletAddress) {
-      success
-      user {
-        id
-        email
-        name
-        avatar
-        primaryWallet
-      }
-      error
-    }
-  }
-`)
+// export const checkWalletUserMutation = graphql(`
+//   mutation CheckWalletUser($walletAddress: String!) {
+//     checkWalletUser(walletAddress: $walletAddress) {
+//       success
+//       user {
+//         id
+//         email
+//         name
+//         avatar
+//         primaryWallet
+//       }
+//       error
+//     }
+//   }
+// `)

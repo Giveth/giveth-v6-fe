@@ -1,9 +1,6 @@
 import { GraphQLClient } from 'graphql-request'
 import { SiweMessage } from 'siwe'
-import {
-  checkWalletUserMutation,
-  verifySiweTokenMutation,
-} from '@/lib/graphql/mutations'
+import { verifySiweTokenMutation } from '@/lib/graphql/mutations'
 import { userProfileQuery } from '@/lib/graphql/queries'
 
 interface SiweAuthResponse {
@@ -27,19 +24,19 @@ interface CoreAuthResponse {
   }
 }
 
-interface CheckWalletUserResponse {
-  checkWalletUser: {
-    success: boolean
-    user?: {
-      id: number
-      email?: string
-      name?: string
-      avatar?: string
-      primaryWallet?: string
-    }
-    error?: string
-  }
-}
+// interface CheckWalletUserResponse {
+//   checkWalletUser: {
+//     success: boolean
+//     user?: {
+//       id: number
+//       email?: string
+//       name?: string
+//       avatar?: string
+//       primaryWallet?: string
+//     }
+//     error?: string
+//   }
+// }
 
 interface User {
   id: number
@@ -183,31 +180,31 @@ export class SiweService {
     }
   }
 
-  async checkWalletUser(
-    walletAddress: string,
-  ): Promise<{ success: boolean; user?: User; error?: string }> {
-    try {
-      const result = await this.graphqlClient.request<CheckWalletUserResponse>(
-        checkWalletUserMutation,
-        { walletAddress },
-      )
+  // async checkWalletUser(
+  //   walletAddress: string,
+  // ): Promise<{ success: boolean; user?: User; error?: string }> {
+  //   try {
+  //     const result = await this.graphqlClient.request<CheckWalletUserResponse>(
+  //       checkWalletUserMutation,
+  //       { walletAddress },
+  //     )
 
-      if (result.checkWalletUser.success && result.checkWalletUser.user) {
-        return {
-          success: true,
-          user: result.checkWalletUser.user,
-        }
-      } else {
-        return {
-          success: false,
-          error: result.checkWalletUser.error || 'Failed to check wallet user',
-        }
-      }
-    } catch (error) {
-      console.error('Error checking wallet user:', error)
-      return { success: false, error: 'Failed to check wallet user' }
-    }
-  }
+  //     if (result.checkWalletUser.success && result.checkWalletUser.user) {
+  //       return {
+  //         success: true,
+  //         user: result.checkWalletUser.user,
+  //       }
+  //     } else {
+  //       return {
+  //         success: false,
+  //         error: result.checkWalletUser.error || 'Failed to check wallet user',
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking wallet user:', error)
+  //     return { success: false, error: 'Failed to check wallet user' }
+  //   }
+  // }
 
   async signInWithEthereum(
     address: string,

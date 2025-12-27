@@ -172,16 +172,16 @@ type UpdateProfileInput = Partial<
   >
 >
 
-export const useUpdateProfile = (token?: string) =>
-  useMutation({
-    mutationFn: async (input: UpdateProfileInput) => {
-      const client = createAuthorizedClient(token)
-      return client.request<{ updateUser: UserProfile }>(
-        updateProfileMutation,
-        { input },
-      )
-    },
-  })
+// export const useUpdateProfile = (token?: string) =>
+//   useMutation({
+//     mutationFn: async (input: UpdateProfileInput) => {
+//       const client = createAuthorizedClient(token)
+//       return client.request<{ updateUser: UserProfile }>(
+//         updateProfileMutation,
+//         { input },
+//       )
+//     },
+//   })
 
 export const useRequestEmailVerification = (token?: string) =>
   useMutation({
