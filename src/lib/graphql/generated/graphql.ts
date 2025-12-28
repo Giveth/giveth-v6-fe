@@ -1616,6 +1616,18 @@ export type MeProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeProfileQuery = { __typename?: 'Query', me: { __typename?: 'UserEntity', id: string, email?: string | null, firstName?: string | null, lastName?: string | null, name?: string | null, avatar?: string | null, url?: string | null, location?: string | null, twitterName?: string | null, telegramName?: string | null, isEmailVerified: boolean, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } };
 
+export type TokensQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TokensQuery = { __typename?: 'Query', tokens: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null }> };
+
+export type TokensByNetworkQueryVariables = Exact<{
+  networkId: Scalars['Int']['input'];
+}>;
+
+
+export type TokensByNetworkQuery = { __typename?: 'Query', tokensByNetwork: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null }> };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -2041,3 +2053,33 @@ export const MeProfileDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<MeProfileQuery, MeProfileQueryVariables>;
+export const TokensDocument = new TypedDocumentString(`
+    query Tokens {
+  tokens {
+    id
+    name
+    symbol
+    address
+    decimals
+    networkId
+    chainType
+    isActive
+    coingeckoId
+  }
+}
+    `) as unknown as TypedDocumentString<TokensQuery, TokensQueryVariables>;
+export const TokensByNetworkDocument = new TypedDocumentString(`
+    query TokensByNetwork($networkId: Int!) {
+  tokensByNetwork(networkId: $networkId) {
+    id
+    name
+    symbol
+    address
+    decimals
+    networkId
+    chainType
+    isActive
+    coingeckoId
+  }
+}
+    `) as unknown as TypedDocumentString<TokensByNetworkQuery, TokensByNetworkQueryVariables>;

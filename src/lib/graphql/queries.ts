@@ -436,3 +436,35 @@ export const profileQuery = graphql(`
     }
   }
 `)
+
+export const tokensQuery = graphql(`
+  query Tokens {
+    tokens {
+      id
+      name
+      symbol
+      address
+      decimals
+      networkId
+      chainType
+      isActive
+      coingeckoId
+    }
+  }
+`)
+
+export const tokensByNetworkQuery = graphql(`
+  query TokensByNetwork($networkId: Int!) {
+    tokensByNetwork(networkId: $networkId) {
+      id
+      name
+      symbol
+      address
+      decimals
+      networkId
+      chainType
+      isActive
+      coingeckoId
+    }
+  }
+`)
