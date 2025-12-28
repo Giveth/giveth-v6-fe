@@ -1,5 +1,7 @@
-import { DonationRound } from '@/components/cart/donation-round'
+'use client'
+
 import { DonationSidebar } from '@/components/cart/donation-sidebar'
+import { DonationRound } from '@/components/cart/DonationRound'
 
 const superDuperRoundProjects = [
   {
