@@ -1,6 +1,7 @@
+import { env } from './src/lib/env'
 import type { NextConfig } from 'next'
 
-const isProd = process.env.NODE_ENV === 'production'
+const isProd = env.VERCEL_ENV === 'production'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

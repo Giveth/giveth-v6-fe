@@ -1,27 +1,37 @@
 import { z } from 'zod'
 
 const clientEnvSchema = z.object({
-  NEXT_PUBLIC_GRAPHQL_ENDPOINT: z
-    .string()
-    .url('NEXT_PUBLIC_GRAPHQL_ENDPOINT must be a valid URL'),
-  NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT: z
-    .string()
-    .url('NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT must be a valid URL')
+  // Build mode set by Next.js/Node
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  GRAPHQL_ENDPOINT: z.string(),
+  IMPACT_GRAPH_URL: z.string(),
+  // Set by Vercel for client-side usage if explicitly exposed (often via build-time env injection)
+  // Values: 'production' | 'preview' | 'development' | 'local'
+  VERCEL_ENV: z
+    .enum(['production', 'preview', 'development', 'local'])
     .optional(),
-  NEXT_PUBLIC_THIRDWEB_CLIENT_ID: z
+  THIRDWEB_CLIENT_ID: z
     .string()
     .min(1, 'NEXT_PUBLIC_THIRDWEB_CLIENT_ID is required'),
-  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().optional(),
+  WALLETCONNECT_PROJECT_ID: z.string(),
+  SIWE_AUTH_SERVICE_URL: z.string(),
+  OLD_FRONTEND_URL: z.string(),
+  FRONTEND_URL: z.string(),
 })
 type ClientEnv = z.infer<typeof clientEnvSchema>
 
 const raw = {
-  NEXT_PUBLIC_GRAPHQL_ENDPOINT: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
-  NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT:
-    process.env.NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT,
-  NEXT_PUBLIC_THIRDWEB_CLIENT_ID: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID,
-  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
-    process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  NODE_ENV: process.env.NODE_ENV,
+  GRAPHQL_ENDPOINT: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
+  // Prefer NEXT_PUBLIC_* (available in the browser), but allow server-only fallback.
+  IMPACT_GRAPH_URL:
+    process.env.NEXT_PUBLIC_IMPACT_GRAPH_URL ?? process.env.IMPACT_GRAPH_URL,
+  VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
+  THIRDWEB_CLIENT_ID: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID,
+  WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  SIWE_AUTH_SERVICE_URL: process.env.NEXT_PUBLIC_SIWE_AUTH_SERVICE_URL,
+  OLD_FRONTEND_URL: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL,
+  FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL,
 }
 
 const parsed = clientEnvSchema.safeParse(raw)
@@ -40,17 +50,24 @@ if (parsed.success) {
     '⚠️ Missing environment variables. Falling back to development defaults.',
   )
 
+  const defaults: Partial<ClientEnv> = {
+    GRAPHQL_ENDPOINT: 'http://localhost:4000/graphql',
+    THIRDWEB_CLIENT_ID: 'demo-client-id',
+    IMPACT_GRAPH_URL:
+      raw.VERCEL_ENV === 'production'
+        ? 'https://mainnet.serve.giveth.io/graphql'
+        : 'https://impact-graph.serve.giveth.io/graphql',
+    SIWE_AUTH_SERVICE_URL: 'https://auth.giveth.io',
+    OLD_FRONTEND_URL: 'https://giveth.io',
+    FRONTEND_URL:
+      raw.VERCEL_ENV === 'production'
+        ? 'https://v6.giveth.io'
+        : 'https://v6-staging.giveth.io',
+  }
+
   resolvedEnv = clientEnvSchema.parse({
-    NEXT_PUBLIC_GRAPHQL_ENDPOINT:
-      raw.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? 'http://localhost:4000/graphql',
-    NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT:
-      raw.NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT ??
-      raw.NEXT_PUBLIC_GRAPHQL_ENDPOINT ??
-      'http://localhost:4000/graphql',
-    NEXT_PUBLIC_THIRDWEB_CLIENT_ID:
-      raw.NEXT_PUBLIC_THIRDWEB_CLIENT_ID ?? 'demo-client-id',
-    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
-      raw.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    ...defaults,
+    ...raw,
   })
 }
 

@@ -1,15 +1,12 @@
 import { GraphQLClient } from 'graphql-request'
 import { env } from '@/lib/env'
 
-const impactGraphClient = new GraphQLClient(
-  env.NEXT_PUBLIC_IMPACT_GRAPHQL_ENDPOINT!,
-  {
-    headers: {
-      'Content-Type': 'application/json',
-      'apollo-require-preflight': 'true',
-    },
+const impactGraphClient = new GraphQLClient(env.IMPACT_GRAPH_URL, {
+  headers: {
+    'Content-Type': 'application/json',
+    'apollo-require-preflight': 'true',
   },
-)
+})
 
 const userExistsByAddressQuery = `
   query UserExistsByAddress($address: String!) {

@@ -1,5 +1,6 @@
 import { GraphQLClient } from 'graphql-request'
 import { SiweMessage } from 'siwe'
+import { env } from '@/lib/env'
 import { verifySiweTokenMutation } from '@/lib/graphql/mutations'
 import { userProfileQuery } from '@/lib/graphql/queries'
 
@@ -56,11 +57,8 @@ export class SiweService {
   private graphqlClient: GraphQLClient
 
   constructor() {
-    this.siweAuthServiceUrl =
-      process.env.NEXT_PUBLIC_SIWE_AUTH_SERVICE_URL || 'https://auth.giveth.io'
-    this.coreServiceUrl =
-      process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-      'http://localhost:4000/graphql'
+    this.siweAuthServiceUrl = env.SIWE_AUTH_SERVICE_URL
+    this.coreServiceUrl = env.GRAPHQL_ENDPOINT
     this.graphqlClient = new GraphQLClient(this.coreServiceUrl)
   }
 
