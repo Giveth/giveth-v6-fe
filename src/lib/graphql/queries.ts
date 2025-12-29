@@ -395,3 +395,59 @@ export const myDonationsQuery = graphql(`
     }
   }
 `)
+
+export const profileQuery = graphql(`
+  query MeProfile {
+    me {
+      id
+      email
+      firstName
+      lastName
+      name
+      avatar
+      url
+      location
+      twitterName
+      telegramName
+      isEmailVerified
+      wallets {
+        id
+        address
+        isPrimary
+        chainType
+      }
+    }
+  }
+`)
+
+export const tokensQuery = graphql(`
+  query Tokens {
+    tokens {
+      id
+      name
+      symbol
+      address
+      decimals
+      networkId
+      chainType
+      isActive
+      coingeckoId
+    }
+  }
+`)
+
+export const tokensByNetworkQuery = graphql(`
+  query TokensByNetwork($networkId: Int!) {
+    tokensByNetwork(networkId: $networkId) {
+      id
+      name
+      symbol
+      address
+      decimals
+      networkId
+      chainType
+      isActive
+      coingeckoId
+    }
+  }
+`)

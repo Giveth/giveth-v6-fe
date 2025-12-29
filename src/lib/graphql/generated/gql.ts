@@ -35,6 +35,9 @@ type Documents = {
     "\n  query UserStats($id: Int!) {\n    userStats(id: $id) {\n      id\n      email\n      name\n      firstName\n      lastName\n      avatar\n      primaryEns\n      url\n      totalDonated\n      totalReceived\n      donationsCount\n      projectsCount\n      likedProjectsCount\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n": typeof types.UserStatsDocument,
     "\n  query MyProjects(\n    $skip: Int = 0\n    $take: Int = 10\n    $orderBy: ProjectSortField = CreatedAt\n    $orderDirection: SortDirection = DESC\n  ) {\n    myProjects(\n      skip: $skip\n      take: $take\n      orderBy: $orderBy\n      orderDirection: $orderDirection\n    ) {\n      total\n      projects {\n        id\n        title\n        slug\n        createdAt\n        reviewStatus\n        isGivbacksEligible\n        vouched\n        totalDonations\n      }\n    }\n  }\n": typeof types.MyProjectsDocument,
     "\n  query MyDonations($skip: Int = 0, $take: Int = 20) {\n    myDonations(skip: $skip, take: $take) {\n      total\n      donations {\n        id\n        amount\n        valueUsd\n        currency\n        status\n        transactionId\n        transactionNetworkId\n        createdAt\n        project {\n          id\n          title\n          slug\n        }\n      }\n    }\n  }\n": typeof types.MyDonationsDocument,
+    "\n  query MeProfile {\n    me {\n      id\n      email\n      firstName\n      lastName\n      name\n      avatar\n      url\n      location\n      twitterName\n      telegramName\n      isEmailVerified\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n": typeof types.MeProfileDocument,
+    "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": typeof types.TokensDocument,
+    "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": typeof types.TokensByNetworkDocument,
 };
 const documents: Documents = {
     "\n  mutation CreateProject($input: CreateProjectInput!) {\n    createProject(input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      createdAt\n      updatedAt\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n      }\n    }\n  }\n": types.CreateProjectDocument,
@@ -57,6 +60,9 @@ const documents: Documents = {
     "\n  query UserStats($id: Int!) {\n    userStats(id: $id) {\n      id\n      email\n      name\n      firstName\n      lastName\n      avatar\n      primaryEns\n      url\n      totalDonated\n      totalReceived\n      donationsCount\n      projectsCount\n      likedProjectsCount\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n": types.UserStatsDocument,
     "\n  query MyProjects(\n    $skip: Int = 0\n    $take: Int = 10\n    $orderBy: ProjectSortField = CreatedAt\n    $orderDirection: SortDirection = DESC\n  ) {\n    myProjects(\n      skip: $skip\n      take: $take\n      orderBy: $orderBy\n      orderDirection: $orderDirection\n    ) {\n      total\n      projects {\n        id\n        title\n        slug\n        createdAt\n        reviewStatus\n        isGivbacksEligible\n        vouched\n        totalDonations\n      }\n    }\n  }\n": types.MyProjectsDocument,
     "\n  query MyDonations($skip: Int = 0, $take: Int = 20) {\n    myDonations(skip: $skip, take: $take) {\n      total\n      donations {\n        id\n        amount\n        valueUsd\n        currency\n        status\n        transactionId\n        transactionNetworkId\n        createdAt\n        project {\n          id\n          title\n          slug\n        }\n      }\n    }\n  }\n": types.MyDonationsDocument,
+    "\n  query MeProfile {\n    me {\n      id\n      email\n      firstName\n      lastName\n      name\n      avatar\n      url\n      location\n      twitterName\n      telegramName\n      isEmailVerified\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n": types.MeProfileDocument,
+    "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": types.TokensDocument,
+    "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": types.TokensByNetworkDocument,
 };
 
 /**
@@ -139,6 +145,18 @@ export function graphql(source: "\n  query MyProjects(\n    $skip: Int = 0\n    
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query MyDonations($skip: Int = 0, $take: Int = 20) {\n    myDonations(skip: $skip, take: $take) {\n      total\n      donations {\n        id\n        amount\n        valueUsd\n        currency\n        status\n        transactionId\n        transactionNetworkId\n        createdAt\n        project {\n          id\n          title\n          slug\n        }\n      }\n    }\n  }\n"): typeof import('./graphql').MyDonationsDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query MeProfile {\n    me {\n      id\n      email\n      firstName\n      lastName\n      name\n      avatar\n      url\n      location\n      twitterName\n      telegramName\n      isEmailVerified\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n"): typeof import('./graphql').MeProfileDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n"): typeof import('./graphql').TokensDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n"): typeof import('./graphql').TokensByNetworkDocument;
 
 
 export function graphql(source: string) {

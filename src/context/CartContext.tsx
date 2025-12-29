@@ -9,20 +9,47 @@ export interface Project {
   image?: string | null
   roundId?: number
   roundName?: string
+  // Donation details
+  walletAddress?: string // Project's receiving wallet address
+  donationAmount?: string // Amount to donate
+  tokenSymbol?: string // Token symbol (e.g., 'USDT', 'USDC')
+  tokenAddress?: string // Token contract address
+  chainId?: number // Chain ID for the donation
+}
+
+export interface DonationRound {
+  roundId: number
+  roundName: string
+  chainId: number
+  token: string
+  tokenAddress: string
+  projects: Project[]
+  totalAmount: string
 }
 
 interface CartContextType {
   cartItems: Project[]
+  donationRounds: DonationRound[]
   addToCart: (project: Project) => void
   removeFromCart: (projectId: string) => void
   clearCart: () => void
   isInCart: (projectId: string) => boolean
+  updateProjectDonation: (
+    projectId: string,
+    amount: string,
+    tokenSymbol: string,
+    tokenAddress: string,
+    chainId: number,
+  ) => void
+  getDonationsByChain: (chainId: number) => Project[]
+  getTotalDonationForRound: (roundId: number) => string
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<Project[]>([])
+  const [donationRounds, setDonationRounds] = useState<DonationRound[]>([])
 
   // Load from local storage on mount
   useEffect(() => {
@@ -39,6 +66,45 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Save to local storage whenever cart changes
   useEffect(() => {
     localStorage.setItem('giveth_cart', JSON.stringify(cartItems))
+  }, [cartItems])
+
+  // Group projects by rounds whenever cart changes
+  useEffect(() => {
+    const rounds = new Map<number, DonationRound>()
+
+    cartItems.forEach(item => {
+      if (
+        item.roundId &&
+        item.roundName &&
+        item.chainId &&
+        item.tokenSymbol &&
+        item.tokenAddress
+      ) {
+        if (!rounds.has(item.roundId)) {
+          rounds.set(item.roundId, {
+            roundId: item.roundId,
+            roundName: item.roundName,
+            chainId: item.chainId,
+            token: item.tokenSymbol,
+            tokenAddress: item.tokenAddress,
+            projects: [],
+            totalAmount: '0',
+          })
+        }
+
+        const round = rounds.get(item.roundId)!
+        round.projects.push(item)
+
+        // Calculate total amount
+        const total = round.projects.reduce((sum, project) => {
+          const amount = parseFloat(project.donationAmount || '0')
+          return sum + amount
+        }, 0)
+        round.totalAmount = total.toString()
+      }
+    })
+
+    setDonationRounds(Array.from(rounds.values()))
   }, [cartItems])
 
   const addToCart = (project: Project) => {
@@ -60,9 +126,50 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return cartItems.some(item => item.id === projectId)
   }
 
+  const updateProjectDonation = (
+    projectId: string,
+    amount: string,
+    tokenSymbol: string,
+    tokenAddress: string,
+    chainId: number,
+  ) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === projectId
+          ? {
+              ...item,
+              donationAmount: amount,
+              tokenSymbol,
+              tokenAddress,
+              chainId,
+            }
+          : item,
+      ),
+    )
+  }
+
+  const getDonationsByChain = (chainId: number) => {
+    return cartItems.filter(item => item.chainId === chainId)
+  }
+
+  const getTotalDonationForRound = (roundId: number) => {
+    const round = donationRounds.find(r => r.roundId === roundId)
+    return round?.totalAmount || '0'
+  }
+
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, clearCart, isInCart }}
+      value={{
+        cartItems,
+        donationRounds,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        isInCart,
+        updateProjectDonation,
+        getDonationsByChain,
+        getTotalDonationForRound,
+      }}
     >
       {children}
     </CartContext.Provider>
