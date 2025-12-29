@@ -18,8 +18,9 @@ export default function CartPage() {
     [cartItems],
   )
 
-  console.log(activeRoundsData)
-  console.log(qfRoundGroups)
+  console.log({ activeRoundsData })
+  console.log({ cartItems })
+  console.log({ qfRoundGroups })
 
   return (
     <div className="min-h-screen bg-[#f7f7f9]">

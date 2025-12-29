@@ -18,16 +18,17 @@ export function groupCartItemsByRound(cartItems: Project[]): {
   const nonQf: Project[] = []
 
   cartItems.forEach(item => {
-    if (item.roundId && item.roundName && item.tokenSymbol && item.tokenAddress) {
+    if (item.roundId && item.roundName) {
       const key = String(item.roundId)
 
       if (!groups.has(key)) {
         groups.set(key, {
           roundId: item.roundId,
           roundName: item.roundName,
-          selectedChainId: 0,
-          token: item.tokenSymbol,
-          tokenAddress: item.tokenAddress,
+          selectedChainId: item.chainId ?? 0,
+          tokenSymbol: item.tokenSymbol ?? '',
+          tokenAddress: item.tokenAddress ?? '',
+          tokenDecimals: item.tokenDecimals ?? 18,
           projects: [],
           totalAmount: '0',
         })

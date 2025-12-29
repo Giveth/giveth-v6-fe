@@ -4,7 +4,8 @@ export interface GroupedProjects {
   roundId: number
   roundName: string
   selectedChainId: number
-  token: string
+  tokenSymbol: string
+  tokenDecimals: number
   tokenAddress: string
   projects: Project[]
   totalAmount: string

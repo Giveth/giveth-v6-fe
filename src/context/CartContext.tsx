@@ -13,6 +13,7 @@ export interface Project {
   walletAddress?: string // Project's receiving wallet address
   donationAmount?: string // Amount to donate
   tokenSymbol?: string // Token symbol (e.g., 'USDT', 'USDC')
+  tokenDecimals?: number // Token decimals
   tokenAddress?: string // Token contract address
   chainId?: number // Chain ID for the donation
 }
@@ -21,8 +22,9 @@ export interface DonationRound {
   roundId: number
   roundName: string
   selectedChainId: number
-  token: string
+  tokenSymbol: string
   tokenAddress: string
+  tokenDecimals: number
   projects: Project[]
   totalAmount: string
 }
@@ -86,8 +88,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             roundId: item.roundId,
             roundName: item.roundName,
             selectedChainId: 0,
-            token: item.tokenSymbol,
+            tokenSymbol: item.tokenSymbol,
             tokenAddress: item.tokenAddress,
+            tokenDecimals: item.tokenDecimals ?? 18,
             projects: [],
             totalAmount: '0',
           })
