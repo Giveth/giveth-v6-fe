@@ -154,7 +154,7 @@ export function MultiRoundCheckout({
                       <p className="text-sm text-[#82899a] mt-1">
                         {round.projects.length} project
                         {round.projects.length > 1 ? 's' : ''} •{' '}
-                        {round.totalAmount} {round.token} •{' '}
+                        {round.totalAmount} {round.tokenSymbol} •{' '}
                         {getChainName(round.selectedChainId)}
                       </p>
                     </div>
@@ -162,7 +162,7 @@ export function MultiRoundCheckout({
                     {/* Amount Badge */}
                     <div className="flex-shrink-0 px-3 py-1 bg-[#f7f7f9] rounded-lg">
                       <p className="text-sm font-medium text-[#1f2333]">
-                        {round.totalAmount} {round.token}
+                        {round.totalAmount} {round.tokenSymbol}
                       </p>
                     </div>
                   </div>

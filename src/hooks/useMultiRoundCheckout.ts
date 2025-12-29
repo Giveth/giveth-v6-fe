@@ -230,7 +230,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           }
 
           // Prepare batch donation details
-          const tokenDecimals = getTokenDecimals(round.token)
+          const tokenDecimals = getTokenDecimals(round.tokenSymbol)
 
           const donations = round.projects.map(project => ({
             projectAddress:
@@ -238,7 +238,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               '0x0000000000000000000000000000000000000000',
             amount: parseUnits(project.donationAmount || '0', tokenDecimals),
             tokenAddress: round.tokenAddress,
-            tokenSymbol: round.token,
+            tokenSymbol: round.tokenSymbol,
             chainId: round.selectedChainId,
           }))
 
