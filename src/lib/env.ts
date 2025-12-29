@@ -34,20 +34,22 @@ const raw = {
   FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL,
 }
 
+export const isProd = raw.VERCEL_ENV === 'production'
+
 const defaults: Partial<ClientEnv> = {
-  GRAPHQL_ENDPOINT: 'http://localhost:4000/graphql',
+  GRAPHQL_ENDPOINT: isProd
+    ? 'https://core.v6.giveth.io/graphql'
+    : 'https://core.v6-staging.giveth.io/graphql',
   THIRDWEB_CLIENT_ID: 'demo-client-id',
   WALLETCONNECT_PROJECT_ID: 'demo-project-id',
-  IMPACT_GRAPH_URL:
-    raw.VERCEL_ENV === 'production'
-      ? 'https://mainnet.serve.giveth.io/graphql'
-      : 'https://impact-graph.serve.giveth.io/graphql',
+  IMPACT_GRAPH_URL: isProd
+    ? 'https://mainnet.serve.giveth.io/graphql'
+    : 'https://impact-graph.serve.giveth.io/graphql',
   SIWE_AUTH_SERVICE_URL: 'https://auth.giveth.io',
   OLD_FRONTEND_URL: 'https://giveth.io',
-  FRONTEND_URL:
-    raw.VERCEL_ENV === 'production'
-      ? 'https://v6.giveth.io'
-      : 'https://v6-staging.giveth.io',
+  FRONTEND_URL: isProd
+    ? 'https://v6.giveth.io'
+    : 'https://v6-staging.giveth.io',
 }
 
 // Filter out undefined values so they don't overwrite defaults
