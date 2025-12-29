@@ -6,13 +6,13 @@ import { format } from 'date-fns'
 import { ArrowUpDown, ExternalLink } from 'lucide-react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useMyDonations } from '@/hooks/useAccount'
-import { getChainIcon, getTransactionUrl } from '@/lib/constants'
+import { getChainIcon, getTransactionUrl } from '@/lib/helpers/chain'
 
 function NetworkIcon({ chainId }: { chainId: number }) {
   const { iconUrl } = getChainIcon(chainId)
 
   return (
-    <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
+    <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
       <img
         src={iconUrl}
         alt="Network Icon"
