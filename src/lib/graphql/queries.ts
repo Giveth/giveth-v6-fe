@@ -189,36 +189,15 @@ export const projectsQuery = graphql(`
         title
         slug
         image
+        reviewStatus
         descriptionSummary
         totalDonations
         countUniqueDonors
-        qualityScore
         vouched
         isGivbacksEligible
-        searchRank
         adminUser {
           id
           name
-          firstName
-          lastName
-          avatar
-        }
-        categories {
-          id
-          name
-          value
-          mainCategory {
-            id
-            title
-            slug
-          }
-        }
-        addresses {
-          id
-          address
-          networkId
-          title
-          chainType
         }
         projectQfRounds {
           id
@@ -313,8 +292,8 @@ export const qfRoundStatsQuery = graphql(`
   }
 `)
 
-export const meQuery = graphql(`
-  query Me {
+export const userProfileQuery = graphql(`
+  query UserProfile {
     me {
       id
       email
@@ -326,6 +305,10 @@ export const meQuery = graphql(`
       url
       totalDonated
       totalReceived
+      location
+      twitterName
+      telegramName
+      isEmailVerified
       wallets {
         id
         address

@@ -3,7 +3,6 @@ import { graphQLClient } from '@/lib/graphql/client'
 import {
   donationsByProjectQuery,
   projectBySlugQuery,
-  projectsQuery,
   similarProjectsBySlugQuery,
 } from '@/lib/graphql/queries'
 
@@ -34,18 +33,6 @@ export const useProjectDonations = (
       })
     },
     enabled: !!projectId,
-  })
-}
-
-export const useProjects = (skip: number = 0, take: number = 10) => {
-  return useQuery({
-    queryKey: ['projects', skip, take],
-    queryFn: async () => {
-      return graphQLClient.request(projectsQuery, {
-        skip,
-        take,
-      })
-    },
   })
 }
 

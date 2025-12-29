@@ -1,7 +1,8 @@
-'use client'
-
-import { DonationSidebar } from '@/components/cart/donation-sidebar'
+import type { ComponentProps } from 'react'
 import { DonationRound } from '@/components/cart/DonationRound'
+import { DonationSidebar } from '@/components/cart/DonationSidebar'
+
+type DonationRoundProjects = ComponentProps<typeof DonationRound>['projects']
 
 const superDuperRoundProjects = [
   {
@@ -9,8 +10,17 @@ const superDuperRoundProjects = [
     name: 'Geode Labs',
     image: '/geode-labs-crypto-blue-logo.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '0.000018 BTC in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '0.000052',
     token: 'BTC',
@@ -21,14 +31,24 @@ const superDuperRoundProjects = [
     name: 'PEP Master - build trust in DIY medical instruments',
     image: '/medical-diy-instruments-logo.jpg',
     badges: [
-      { type: 'info' as const, label: '$15 makes you eligible for GIVbacks' },
-      { type: 'info' as const, label: '$1 unlocks matching funds' },
+      {
+        type: 'eligible',
+        color: 'gray',
+        amountPrefix: '$15',
+        label: 'makes you eligible for GIVbacks',
+      },
+      {
+        type: 'matching',
+        color: 'gray',
+        amountPrefix: '$1',
+        label: 'unlocks matching funds',
+      },
     ],
     tokenAmount: '0.000012',
     token: 'BTC',
     usdValue: '4.45',
   },
-]
+] satisfies DonationRoundProjects
 
 const bestRoundProjects = [
   {
@@ -36,8 +56,17 @@ const bestRoundProjects = [
     name: 'Alphablocks',
     image: '/alphablocks-education-logo.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '15 USDT in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '25',
     token: 'USDT',
@@ -48,8 +77,17 @@ const bestRoundProjects = [
     name: 'Diamante Luz Center for Regenerative Living',
     image: '/regenerative-living-nature-green.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '5 USDT in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '20',
     token: 'USDT',
@@ -60,22 +98,31 @@ const bestRoundProjects = [
     name: 'Reforestation with biodiversity AgroForest',
     image: '/reforestation-forest-green-nature.jpg',
     badges: [
-      { type: 'givbacks' as const, label: 'GIVbacks eligible' },
-      { type: 'matching' as const, label: '5 USDT in matching' },
+      {
+        type: 'eligible',
+        color: 'green',
+        label: 'GIVbacks eligible',
+      },
+      {
+        type: 'matching',
+        color: 'green',
+        amountPrefix: '0.000018',
+        label: 'BTC in matching',
+      },
     ],
     tokenAmount: '20',
     token: 'USDT',
     usdValue: '20.00',
   },
-]
+] satisfies DonationRoundProjects
 
 export default function CartPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-6">
+      <main className="max-w-7xl mx-auto py-8">
+        <div className="flex flex-wrap gap-6">
           {/* Left Column - Donation Rounds */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-5 w-12/12 lg:w-8/12">
             <DonationRound
               roundName="Super duper round"
               chainId={137}
