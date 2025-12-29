@@ -20,7 +20,7 @@ export interface Project {
 export interface DonationRound {
   roundId: number
   roundName: string
-  chainId: number
+  selectedChainId: number
   token: string
   tokenAddress: string
   projects: Project[]
@@ -31,6 +31,7 @@ interface CartContextType {
   cartItems: Project[]
   donationRounds: DonationRound[]
   addToCart: (project: Project) => void
+  updateSelectedChainId: (roundId: number, chainId: number) => void
   removeFromCart: (projectId: string) => void
   clearCart: () => void
   isInCart: (projectId: string) => boolean
@@ -84,7 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           rounds.set(item.roundId, {
             roundId: item.roundId,
             roundName: item.roundName,
-            chainId: item.chainId,
+            selectedChainId: 0,
             token: item.tokenSymbol,
             tokenAddress: item.tokenAddress,
             projects: [],
@@ -112,6 +113,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (prev.some(item => item.id === project.id)) return prev
       return [...prev, project]
     })
+  }
+
+  const updateSelectedChainId = (roundId: number, chainId: number) => {
+    setDonationRounds(prev =>
+      prev.map(round =>
+        round.roundId === roundId
+          ? { ...round, selectedChainId: chainId }
+          : round,
+      ),
+    )
   }
 
   const removeFromCart = (projectId: string) => {
@@ -163,6 +174,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         cartItems,
         donationRounds,
         addToCart,
+        updateSelectedChainId,
         removeFromCart,
         clearCart,
         isInCart,

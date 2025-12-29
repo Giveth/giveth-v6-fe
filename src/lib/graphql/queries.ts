@@ -126,6 +126,7 @@ export const activeQfRoundsQuery = graphql(`
       isActive
       beginDate
       endDate
+      eligibleNetworks
       hubCardImage
       allocatedFundUSD
       allocatedFund

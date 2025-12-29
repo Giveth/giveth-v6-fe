@@ -5,6 +5,8 @@ import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
 import { TokenDropdown } from '@/components/cart/TokenDropdown'
 import { MatchingEligible } from '@/components/icons/MatchingEligible'
+import { type DonationRound } from '@/context/CartContext'
+import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 
 interface ProjectBadge {
   type: 'eligible' | 'matching'
@@ -24,8 +26,8 @@ interface Project {
 }
 
 interface DonationRoundProps {
-  roundName: string
-  chainId: number
+  roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
+  cartRoundData: DonationRound
   token: string
   defaultAmount: string
   defaultUsdValue: string
@@ -35,8 +37,8 @@ interface DonationRoundProps {
 }
 
 export function DonationRound({
-  roundName,
-  chainId,
+  roundData,
+  cartRoundData,
   defaultAmount,
   defaultUsdValue,
   projects,
@@ -48,19 +50,23 @@ export function DonationRound({
       {/* Round Header */}
       <div className="bg-giv-gray-300 px-5 py-3 rounded-xl">
         <span className="text-base font-medium text-giv-gray-800">
-          {roundName}
+          {roundData.name}
         </span>
       </div>
 
       {/* Token Selection Row */}
       <div className="py-6 flex max-[480px]:flex-wrap items-center justify-between">
         <div className="max-[480px]:w-full max-[480px]:mb-3 md:w-auto">
-          <ChainDropdown chainId={chainId} />
+          <ChainDropdown
+            roundId={Number(roundData.id)}
+            selectedChainId={cartRoundData.selectedChainId}
+            eligibleNetworks={roundData.eligibleNetworks}
+          />
         </div>
 
         {/* Right Side - Token, Amount, Apply */}
         <div className="max-[480px]:flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto">
-          <TokenDropdown chainId={chainId} />
+          <TokenDropdown chainId={cartRoundData.selectedChainId} />
 
           <AmountInput
             defaultAmount={defaultAmount}

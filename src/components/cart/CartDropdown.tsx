@@ -4,17 +4,12 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowRight, X } from 'lucide-react'
 import { ProjectImage } from '@/components/project/ProjectImage'
-import { useCart, type Project } from '@/context/CartContext'
+import { useCart } from '@/context/CartContext'
+import { groupCartItemsByRound } from '@/lib/helpers/cart'
 import type { Route } from 'next'
 
 interface CartDropdownProps {
   onClose: () => void
-}
-
-interface GroupedProjects {
-  roundId?: number | null
-  roundName: string | null
-  projects: Project[]
 }
 
 export function CartDropdown({ onClose }: CartDropdownProps) {
@@ -24,33 +19,11 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
     removeFromCart(itemId)
   }
 
-  // Separate QF round projects from non-QF projects
-  const { qfRoundGroups, nonQfProjects } = useMemo(() => {
-    const groups: Map<string, GroupedProjects> = new Map()
-    const nonQf: Project[] = []
-
-    cartItems.forEach(item => {
-      if (item.roundId && item.roundName) {
-        const key = String(item.roundId)
-
-        if (!groups.has(key)) {
-          groups.set(key, {
-            roundId: item.roundId,
-            roundName: item.roundName,
-            projects: [],
-          })
-        }
-        groups.get(key)!.projects.push(item)
-      } else {
-        nonQf.push(item)
-      }
-    })
-
-    return {
-      qfRoundGroups: Array.from(groups.values()),
-      nonQfProjects: nonQf,
-    }
-  }, [cartItems])
+  // Group cart items by round
+  const { qfRoundGroups, nonQfProjects } = useMemo(
+    () => groupCartItemsByRound(cartItems),
+    [cartItems],
+  )
 
   return (
     <div className="absolute right-0 top-full px-5 mt-2 w-[380px] bg-white rounded-3xl shadow-[0px_3px_20px_rgba(33,32,60,0.24)] z-50">

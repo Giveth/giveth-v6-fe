@@ -1,6 +1,7 @@
 import type React from 'react'
 import { X } from 'lucide-react'
 import { GivBacksBadge } from '@/components/badges/GivBacksBadge'
+import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants/project'
 
 interface ProjectBadge {
   type: 'eligible' | 'matching'
@@ -58,11 +59,20 @@ export const ProjectCartCard = ({ project }: { project: Project }) => {
       {/* Project Info */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <img
-            src={project.image || '/placeholder.svg'}
-            alt={project.name}
-            className="w-14 h-[45px] rounded-md overflow-hidden"
-          />
+          {project.image && (
+            <img
+              src={project.image}
+              alt={project.name}
+              className="w-14 h-[45px] rounded-md overflow-hidden"
+            />
+          )}
+          {!project.image && (
+            <img
+              src={PROJECT_FALLBACK_IMAGE}
+              alt="Project Fallback Image"
+              className="w-14 h-[45px] rounded-md overflow-hidden"
+            />
+          )}
           <h4 className="text-base font-medium text-giv-gray-900">
             {project.name}
           </h4>

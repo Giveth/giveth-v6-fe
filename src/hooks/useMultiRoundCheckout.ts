@@ -96,7 +96,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
         )
       }
 
-      if (projectChains.size === 0 || !round.chainId) {
+      if (projectChains.size === 0 || !round.selectedChainId) {
         errors.push(`Round "${round.roundName}" has no chain selected.`)
       }
 
@@ -173,7 +173,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
         initialStatuses.set(round.roundId, {
           roundId: round.roundId,
           roundName: round.roundName,
-          chainId: round.chainId,
+          chainId: round.selectedChainId,
           status: 'idle',
         })
       })
@@ -216,7 +216,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           const currentChainId = activeChain?.id
 
           // Switch chain if needed
-          if (currentChainId !== round.chainId) {
+          if (currentChainId !== round.selectedChainId) {
             setState(prev => {
               const newStatuses = new Map(prev.roundStatuses)
               newStatuses.set(round.roundId, {
@@ -226,7 +226,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               return { ...prev, roundStatuses: newStatuses }
             })
 
-            await switchChain(defineChain(round.chainId))
+            await switchChain(defineChain(round.selectedChainId))
           }
 
           // Prepare batch donation details
@@ -239,7 +239,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             amount: parseUnits(project.donationAmount || '0', tokenDecimals),
             tokenAddress: round.tokenAddress,
             tokenSymbol: round.token,
-            chainId: round.chainId,
+            chainId: round.selectedChainId,
           }))
 
           const totalAmount = donations.reduce(
@@ -249,7 +249,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
 
           const batchDetails: BatchDonationDetails = {
             donations,
-            chainId: round.chainId,
+            chainId: round.selectedChainId,
             tokenAddress: round.tokenAddress,
             totalAmount,
           }

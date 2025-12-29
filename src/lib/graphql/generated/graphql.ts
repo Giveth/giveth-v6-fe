@@ -1543,7 +1543,7 @@ export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __type
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null }> };
+export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null }> };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
@@ -1865,6 +1865,7 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
     isActive
     beginDate
     endDate
+    eligibleNetworks
     hubCardImage
     allocatedFundUSD
     allocatedFund

@@ -2,10 +2,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants/project'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { truncateText } from '@/lib/helpers/textHelper'
 import type { Route } from 'next'
-import { useIsMobile } from '@/hooks/useMediaQuery'
 
 export function RoundCard({
   round,
@@ -14,17 +15,17 @@ export function RoundCard({
   round: ActiveQfRoundsQuery['activeQfRounds'][0]
   layout?: 'horizontal' | 'vertical'
 }) {
-  const isMobile = useIsMobile();
-  const layoutOption = isMobile ? 'vertical' : layout;
+  const isMobile = useIsMobile()
+  const layoutOption = isMobile ? 'vertical' : layout
 
   const mainContainerFlexDirection =
-  layoutOption === 'horizontal' ? 'flex-row' : 'flex-col'
+    layoutOption === 'horizontal' ? 'flex-row' : 'flex-col'
 
   const imageContainerWidth = layoutOption === 'horizontal' ? 'w-1/2' : 'w-full'
   const imageContainerHeight =
-  layoutOption === 'horizontal' ? 'h-[330px]' : 'h-[200px]'
+    layoutOption === 'horizontal' ? 'h-[330px]' : 'h-[200px]'
   const contentContainerWidth =
-  layoutOption === 'horizontal' ? 'w-1/2' : 'w-full flex-1'
+    layoutOption === 'horizontal' ? 'w-1/2' : 'w-full flex-1'
 
   return (
     <div
@@ -34,7 +35,7 @@ export function RoundCard({
         className={`${imageContainerWidth} ${imageContainerHeight} relative`}
       >
         <Image
-          src={round.hubCardImage || ''}
+          src={round.hubCardImage || PROJECT_FALLBACK_IMAGE}
           alt={round.name}
           fill
           className="block w-full object-cover rounded-2xl"
