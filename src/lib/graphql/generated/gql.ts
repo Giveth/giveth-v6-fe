@@ -38,6 +38,7 @@ type Documents = {
     "\n  query MeProfile {\n    me {\n      id\n      email\n      firstName\n      lastName\n      name\n      avatar\n      url\n      location\n      twitterName\n      telegramName\n      isEmailVerified\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n": typeof types.MeProfileDocument,
     "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": typeof types.TokensDocument,
     "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": typeof types.TokensByNetworkDocument,
+    "\n  query ProjectUpdates($input: ProjectUpdateQueryInput!) {\n    projectUpdates(input: $input) {\n      totalCount\n      projectUpdates {\n        id\n        title\n        projectId\n        content\n        contentSummary\n        createdAt\n        isMain\n        totalReactions\n      }\n    }\n  }\n": typeof types.ProjectUpdatesDocument,
 };
 const documents: Documents = {
     "\n  mutation CreateProject($input: CreateProjectInput!) {\n    createProject(input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      createdAt\n      updatedAt\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n      }\n    }\n  }\n": types.CreateProjectDocument,
@@ -63,6 +64,7 @@ const documents: Documents = {
     "\n  query MeProfile {\n    me {\n      id\n      email\n      firstName\n      lastName\n      name\n      avatar\n      url\n      location\n      twitterName\n      telegramName\n      isEmailVerified\n      wallets {\n        id\n        address\n        isPrimary\n        chainType\n      }\n    }\n  }\n": types.MeProfileDocument,
     "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": types.TokensDocument,
     "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": types.TokensByNetworkDocument,
+    "\n  query ProjectUpdates($input: ProjectUpdateQueryInput!) {\n    projectUpdates(input: $input) {\n      totalCount\n      projectUpdates {\n        id\n        title\n        projectId\n        content\n        contentSummary\n        createdAt\n        isMain\n        totalReactions\n      }\n    }\n  }\n": types.ProjectUpdatesDocument,
 };
 
 /**
@@ -157,6 +159,10 @@ export function graphql(source: "\n  query Tokens {\n    tokens {\n      id\n   
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n"): typeof import('./graphql').TokensByNetworkDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ProjectUpdates($input: ProjectUpdateQueryInput!) {\n    projectUpdates(input: $input) {\n      totalCount\n      projectUpdates {\n        id\n        title\n        projectId\n        content\n        contentSummary\n        createdAt\n        isMain\n        totalReactions\n      }\n    }\n  }\n"): typeof import('./graphql').ProjectUpdatesDocument;
 
 
 export function graphql(source: string) {

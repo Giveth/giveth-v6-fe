@@ -13,6 +13,7 @@ import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
 import { SimilarProjects } from '@/components/project/similar-projects'
 import { UpdatesTab } from '@/components/project/updates-tab'
 import { useProjectBySlug } from '@/hooks/useProject'
+import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
 
 export default function ProjectPage() {
   const params = useParams()
@@ -20,6 +21,9 @@ export default function ProjectPage() {
   const [activeTab, setActiveTab] = useState('donations')
   const { data, isLoading, error } = useProjectBySlug(slug)
   const project = data?.projectBySlug
+  const projectId = project?.id ? parseInt(project.id) : undefined
+  const { data: updatesCountData } = useProjectUpdatesCount(projectId)
+  const updatesCount = updatesCountData?.projectUpdates.totalCount ?? null
 
   if (isLoading)
     return (
@@ -98,7 +102,11 @@ export default function ProjectPage() {
         </div>
 
         {/* Tabs */}
-        <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <ProjectTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          updatesCount={updatesCount}
+        />
 
         {/* Tab Content */}
         <div className="mt-8">
@@ -129,7 +137,12 @@ export default function ProjectPage() {
             />
           )}
 
-          {activeTab === 'updates' && <UpdatesTab />}
+          {activeTab === 'updates' && projectId && (
+            <UpdatesTab
+              projectId={projectId}
+              projectCreatedAt={project.createdAt}
+            />
+          )}
 
           {activeTab === 'givpower' && (
             <div className="max-w-4xl">

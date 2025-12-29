@@ -29,7 +29,6 @@ export function AboutTab({ description, descriptionSummary }: AboutTabProps) {
     'strike',
     'blockquote',
     'list',
-    'bullet',
     'indent',
     'link',
     'image',
