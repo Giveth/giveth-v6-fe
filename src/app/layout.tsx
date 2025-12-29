@@ -16,6 +16,9 @@ const redHatText = Red_Hat_Text({
 export const metadata: Metadata = {
   title: 'Giveth',
   description: 'The Future of Giving',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

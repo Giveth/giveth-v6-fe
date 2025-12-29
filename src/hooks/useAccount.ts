@@ -14,14 +14,12 @@ import type {
 import {
   confirmEmailVerificationMutation,
   requestEmailVerificationMutation,
-  updateProfileMutation,
   uploadAvatarMutation,
 } from '@/lib/graphql/mutations'
 import {
-  meQuery,
   myDonationsQuery,
   myProjectsQuery,
-  profileQuery,
+  userProfileQuery,
   userStatsQuery,
 } from '@/lib/graphql/queries'
 
@@ -35,16 +33,6 @@ const createAuthorizedClient = (token?: string) =>
         }
       : undefined,
   )
-
-export const useMe = (token?: string) =>
-  useQuery({
-    queryKey: ['me', token],
-    queryFn: async () => {
-      const client = createAuthorizedClient(token)
-      return client.request(meQuery)
-    },
-    enabled: !!token,
-  })
 
 export const useUserStats = (userId?: number, token?: string) =>
   useQuery({
@@ -151,35 +139,48 @@ export const useProfile = (token?: string) =>
     queryKey: ['profile', token],
     queryFn: async () => {
       const client = createAuthorizedClient(token)
-      return client.request<{ me: UserProfile | null }>(profileQuery)
+      return client.request<{ me: UserProfile | null }>(userProfileQuery)
     },
     enabled: !!token,
-  })
-
-type UpdateProfileInput = Partial<
-  Pick<
-    UserProfile,
-    | 'firstName'
-    | 'lastName'
-    | 'name'
-    | 'avatar'
-    | 'url'
-    | 'location'
-    | 'twitterName'
-    | 'telegramName'
-  >
->
-
-export const useUpdateProfile = (token?: string) =>
-  useMutation({
-    mutationFn: async (input: UpdateProfileInput) => {
-      const client = createAuthorizedClient(token)
-      return client.request<{ updateUser: UserProfile }>(
-        updateProfileMutation,
-        { input },
-      )
+    staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh
+    gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnMount: false, // Use cache if available, don't refetch on mount
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors (401, 403)
+      if (error && typeof error === 'object' && 'status' in error) {
+        const status = (error as { status?: number }).status
+        if (status === 401 || status === 403) return false
+      }
+      return failureCount < 2 // Retry up to 2 times for other errors
     },
+    placeholderData: keepPreviousData, // Use previous data while loading
   })
+
+// type UpdateProfileInput = Partial<
+//   Pick<
+//     UserProfile,
+//     | 'firstName'
+//     | 'lastName'
+//     | 'name'
+//     | 'avatar'
+//     | 'url'
+//     | 'location'
+//     | 'twitterName'
+//     | 'telegramName'
+//   >
+// >
+
+// export const useUpdateProfile = (token?: string) =>
+//   useMutation({
+//     mutationFn: async (input: UpdateProfileInput) => {
+//       const client = createAuthorizedClient(token)
+//       return client.request<{ updateUser: UserProfile }>(
+//         updateProfileMutation,
+//         { input },
+//       )
+//     },
+//   })
 
 export const useRequestEmailVerification = (token?: string) =>
   useMutation({

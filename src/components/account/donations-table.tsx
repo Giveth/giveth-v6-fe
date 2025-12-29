@@ -4,8 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ArrowUpDown, ExternalLink } from 'lucide-react'
+import { useSiweAuth } from '@/context/AuthContext'
 import { useMyDonations } from '@/hooks/useAccount'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
 import { getChainIcon, getTransactionUrl } from '@/lib/constants'
 
 function NetworkIcon({ chainId }: { chainId: number }) {

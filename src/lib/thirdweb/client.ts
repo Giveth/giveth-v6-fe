@@ -9,12 +9,7 @@ import {
   polygon,
   type Chain,
 } from 'thirdweb/chains'
-import {
-  createWallet,
-  inAppWallet,
-  walletConnect,
-  type Wallet,
-} from 'thirdweb/wallets'
+import { createWallet, walletConnect, type Wallet } from 'thirdweb/wallets'
 import { env } from '@/lib/env'
 
 const celoAlfajores = defineChain(44787)
@@ -34,19 +29,6 @@ const baseWallets: Wallet[] = [
   createWallet('io.metamask'),
   createWallet('com.trustwallet.app'),
   createWallet('com.coinbase.wallet'),
-  inAppWallet({
-    auth: {
-      options: [
-        'google',
-        'facebook',
-        'apple',
-        'discord',
-        'x',
-        'email',
-        'phone',
-      ],
-    },
-  }),
 ]
 
 const walletConnectWallet = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
