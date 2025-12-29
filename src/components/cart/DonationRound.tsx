@@ -1,15 +1,12 @@
 'use client'
 
-import { AmountInput } from '@/components/cart/AmountInput'
-import { ChainDropdown } from '@/components/cart/ChainDropdown'
-import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
-import { TokenDropdown } from '@/components/cart/TokenDropdown'
-import { MatchingEligible } from '@/components/icons/MatchingEligible'
+import type React from 'react'
+import { useState } from 'react'
+import { ArrowLeftRight, ChevronDown, X } from 'lucide-react'
+import { getChainIcon, getChainName } from '@/lib/constants'
 
 interface ProjectBadge {
-  type: 'eligible' | 'matching'
-  color: 'green' | 'gray'
-  amountPrefix?: string
+  type: 'givbacks' | 'matching' | 'info'
   label: string
 }
 
