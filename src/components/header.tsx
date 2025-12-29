@@ -14,5 +14,5 @@ export function Header() {
   }
 
   // Default header variant
-  return <DefaultHeader />
+  return <DefaultHeader hideSearch />
 }
