@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { CartButton } from '@/components/header/CartButton'
 import { CreateProjectButton } from '@/components/header/CreateProjectButton'
+import { HeaderConnectWallet } from '@/components/header/HeaderConnectWallet'
 import { GivethLogo } from '@/components/icons/GivethLogo'
-import { CustomConnectWallet } from '@/components/wallet/CustomConnectWallet'
 import { DesktopNavigation } from './DesktopNavigation'
 import { MobileNavigation } from './MobileNavigation'
 
@@ -57,7 +57,7 @@ export const menuItems = [
   },
 ]
 
-export function DefaultHeader() {
+export function DefaultHeader({ hideSearch }: { hideSearch?: boolean }) {
   return (
     <header className="bg-white border-b border-giv-gray-300 px-6 py-4">
       <div className="max-w-[1442px] mx-auto flex items-center justify-between">
@@ -68,10 +68,10 @@ export function DefaultHeader() {
           </Link>
 
           {/* Desktop Menu */}
-          <DesktopNavigation />
+          <DesktopNavigation hideSearch={hideSearch} />
 
           {/* Mobile Menu */}
-          <MobileNavigation />
+          <MobileNavigation hideSearch={hideSearch} />
         </div>
 
         {/* Right Side */}
@@ -84,7 +84,7 @@ export function DefaultHeader() {
           <CartButton />
 
           {/* Wallet */}
-          <CustomConnectWallet />
+          <HeaderConnectWallet />
         </div>
       </div>
     </header>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ExternalLink } from 'lucide-react'
 import { type QFFiltersState } from '@/components/qf/components/qf-project-filters'
@@ -20,6 +20,17 @@ export default function QFRoundPage() {
   const params = useParams<{ slug: string }>()
   const { slug } = params
 
+  const NETWORK_NAME_TO_ID: Record<string, number> = {
+    Mainnet: 1,
+    Gnosis: 100,
+    Polygon: 137,
+    Celo: 42220,
+    Optimism: 10,
+    'Ethereum Classic': 61,
+    Arbitrum: 42161,
+    Base: 8453,
+  }
+
   // State for Sorting and Filtering
   const [sortField, setSortField] = useState<ProjectSortField>(
     ProjectSortField.QualityScore,
@@ -30,6 +41,26 @@ export default function QFRoundPage() {
     eligibleForMatching: false,
     networks: [],
   })
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim())
+    }, 700)
+    return () => clearTimeout(t)
+  }, [searchTerm])
+
+  // If user clears search, don't keep "Best match" selected (it won't be available)
+  useEffect(() => {
+    if (
+      debouncedSearchTerm.length < 2 &&
+      sortField === ProjectSortField.Relevance
+    ) {
+      setSortField(ProjectSortField.QualityScore)
+      setSortDirection('DESC')
+    }
+  }, [debouncedSearchTerm, sortField])
 
   // 1. Fetch Round Info
   const { data: roundData, isLoading: isRoundLoading } = useQfRoundBySlug(slug)
@@ -43,12 +74,18 @@ export default function QFRoundPage() {
   const stats = statsData?.qfRoundStats
 
   // 3. Fetch Projects
+  const networkIds =
+    filters.networks
+      .map(n => NETWORK_NAME_TO_ID[n])
+      .filter((id): id is number => Number.isInteger(id)) || []
+
   const { data: projectsData, isLoading: isProjectsLoading } = useProjects({
     filters: {
       qfRoundId: roundId,
       isGivbacksEligible: filters.isGivbacksEligible || undefined,
       vouched: filters.eligibleForMatching || undefined,
-      // Note: Networks filtering is not currently supported by the backend ProjectFiltersInput
+      networkIds: networkIds.length > 0 ? networkIds : undefined,
+      searchTerm: debouncedSearchTerm.length ? debouncedSearchTerm : undefined,
     },
     orderBy: sortField,
     orderDirection:
@@ -126,6 +163,8 @@ export default function QFRoundPage() {
           roundId={roundId}
           roundName={qfRound.title || qfRound.name}
           totalProjects={totalProjects}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
           currentSortField={sortField}
           currentSortDirection={sortDirection}
           onSortChange={handleSortChange}

@@ -1,14 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { Copy } from 'lucide-react'
-import { EditProfileModal } from '@/components/account/EditProfileModal'
-import { Button } from '@/components/ui/button'
+import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
 
 export function ProfileSection() {
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
   const { token, walletAddress } = useSiweAuth()
   const { data: profileData, isLoading: isProfileLoading } = useProfile(
     token || undefined,
@@ -27,6 +23,12 @@ export function ProfileSection() {
         Loading Profile...
       </div>
     )
+  } else if (!user) {
+    return (
+      <div className="p-6 bg-white rounded-xl border border-[#ebecf2]">
+        User not found
+      </div>
+    )
   }
 
   // Fallbacks
@@ -38,7 +40,6 @@ export function ProfileSection() {
     displayAddress.length > 10
       ? `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`
       : displayAddress
-  // const avatarUrl = user?.avatar || "/images/default-avatar.png"
 
   return (
     <>
@@ -78,13 +79,13 @@ export function ProfileSection() {
             </div>
           </div>
 
-          <Button
+          {/* <Button
             variant="outline"
             className="border-[#5326ec] text-[#5326ec] hover:bg-[#f6f3ff] bg-transparent"
             onClick={() => setIsEditProfileOpen(true)}
           >
             Edit Profile
-          </Button>
+          </Button> */}
         </div>
 
         {/* Stats - Keeping hardcoded for now or mapping if I knew the fields. 
@@ -124,11 +125,11 @@ export function ProfileSection() {
         </div>
       </div>
 
-      <EditProfileModal
+      {/* <EditProfileModal
         open={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
         token={token || undefined}
-      />
+      /> */}
     </>
   )
 }
