@@ -65,9 +65,14 @@ if (parsed.success) {
         : 'https://v6-staging.giveth.io',
   }
 
+  // Filter out undefined values so they don't overwrite defaults
+  const definedRaw = Object.fromEntries(
+    Object.entries(raw).filter(([, v]) => v !== undefined),
+  )
+
   resolvedEnv = clientEnvSchema.parse({
     ...defaults,
-    ...raw,
+    ...definedRaw,
   })
 }
 
