@@ -31,7 +31,7 @@ const baseWallets: Wallet[] = [
   createWallet('com.coinbase.wallet'),
 ]
 
-const walletConnectWallet = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+const walletConnectWallet = env.WALLETCONNECT_PROJECT_ID
   ? walletConnect()
   : undefined
 
@@ -40,5 +40,5 @@ export const supportedWallets = walletConnectWallet
   : baseWallets
 
 export const thirdwebClient = createThirdwebClient({
-  clientId: env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID,
+  clientId: env.THIRDWEB_CLIENT_ID,
 })

@@ -1620,6 +1620,13 @@ export type MyDonationsQueryVariables = Exact<{
 
 export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
+export type ProjectUpdatesQueryVariables = Exact<{
+  input: ProjectUpdateQueryInput;
+}>;
+
+
+export type ProjectUpdatesQuery = { __typename?: 'Query', projectUpdates: { __typename?: 'ProjectUpdatesResult', totalCount: number, projectUpdates: Array<{ __typename?: 'ProjectUpdateEntity', id: string, title: string, projectId: number, content: string, contentSummary?: string | null, createdAt: any, isMain?: boolean | null, totalReactions: number }> } };
+
 export type MeProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2109,6 +2116,23 @@ export const MyDonationsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<MyDonationsQuery, MyDonationsQueryVariables>;
+export const ProjectUpdatesDocument = new TypedDocumentString(`
+    query ProjectUpdates($input: ProjectUpdateQueryInput!) {
+  projectUpdates(input: $input) {
+    totalCount
+    projectUpdates {
+      id
+      title
+      projectId
+      content
+      contentSummary
+      createdAt
+      isMain
+      totalReactions
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ProjectUpdatesQuery, ProjectUpdatesQueryVariables>;
 export const MeProfileDocument = new TypedDocumentString(`
     query MeProfile {
   me {

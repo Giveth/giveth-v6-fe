@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ThirdwebProvider } from 'thirdweb/react'
 import { AuthProvider } from '@/context/AuthContext'
 import { useThemeSync } from '@/hooks/use-theme-sync'
+import { env } from '@/lib/env'
 import { getQueryClient } from '@/lib/react-query/query-client'
 
 type ProvidersProps = {
@@ -23,7 +24,7 @@ export function Providers({ children }: ProvidersProps) {
         <AuthProvider>
           <Theme accentColor="iris" grayColor="sand" radius="large">
             {children}
-            {process.env.NODE_ENV === 'development' && (
+            {env.NODE_ENV === 'development' && (
               <ReactQueryDevtools
                 initialIsOpen={false}
                 position="bottom"

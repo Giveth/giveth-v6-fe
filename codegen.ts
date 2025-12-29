@@ -1,7 +1,7 @@
+import { env } from './src/lib/env'
 import type { CodegenConfig } from '@graphql-codegen/cli'
 
-const schemaEndpoint =
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? 'http://localhost:4000/graphql'
+const schemaEndpoint = env.GRAPHQL_ENDPOINT
 
 const config: CodegenConfig = {
   schema: schemaEndpoint,
