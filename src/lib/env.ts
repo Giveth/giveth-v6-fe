@@ -24,8 +24,7 @@ const raw = {
   NODE_ENV: process.env.NODE_ENV,
   GRAPHQL_ENDPOINT: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
   // Prefer NEXT_PUBLIC_* (available in the browser), but allow server-only fallback.
-  IMPACT_GRAPH_URL:
-    process.env.NEXT_PUBLIC_IMPACT_GRAPH_URL ?? process.env.IMPACT_GRAPH_URL,
+  IMPACT_GRAPH_URL: process.env.NEXT_PUBLIC_IMPACT_GRAPH_URL,
   VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
   THIRDWEB_CLIENT_ID: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID,
   WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
@@ -46,7 +45,7 @@ const defaults: Partial<ClientEnv> = {
     ? 'https://mainnet.serve.giveth.io/graphql'
     : 'https://impact-graph.serve.giveth.io/graphql',
   SIWE_AUTH_SERVICE_URL: 'https://auth.giveth.io',
-  OLD_FRONTEND_URL: 'https://giveth.io',
+  OLD_FRONTEND_URL: isProd ? 'https://giveth.io' : 'https://staging.giveth.io',
   FRONTEND_URL: isProd
     ? 'https://v6.giveth.io'
     : 'https://v6-staging.giveth.io',
