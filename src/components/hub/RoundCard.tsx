@@ -4,15 +4,22 @@ import { format } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants/project'
-import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
+import type {
+  ActiveQfRoundsQuery,
+  ArchivedQfRoundsQuery,
+} from '@/lib/graphql/generated/graphql'
 import { truncateText } from '@/lib/helpers/textHelper'
 import type { Route } from 'next'
+
+type RoundCardData =
+  | ActiveQfRoundsQuery['activeQfRounds'][0]
+  | ArchivedQfRoundsQuery['archivedQfRounds']['rounds'][0]
 
 export function RoundCard({
   round,
   layout = 'horizontal',
 }: {
-  round: ActiveQfRoundsQuery['activeQfRounds'][0]
+  round: RoundCardData
   layout?: 'horizontal' | 'vertical'
 }) {
   const isMobile = useIsMobile()
