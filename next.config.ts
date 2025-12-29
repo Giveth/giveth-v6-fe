@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       '@radix-ui/themes',
       '@radix-ui/react-icons',
+      'thirdweb',
     ],
   },
   compiler: {
