@@ -1,4 +1,4 @@
-import { menuItems } from './DefaultHeader'
+import { menuItems } from '@/lib/constants/menu-links'
 import { MenuLink } from './MenuLink'
 import { SearchButton } from './SearchButton'
 

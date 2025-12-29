@@ -2,7 +2,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb'
 import { ChainProvider, ChainIcon as ThirdwebChainIcon } from 'thirdweb/react'
-import { getChainName } from '@/lib/constants'
+import { getChainName } from '@/lib/helpers/chain'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 
 export const ChainDropdown = ({ chainId }: { chainId: number }) => {
