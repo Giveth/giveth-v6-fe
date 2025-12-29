@@ -1,6 +1,6 @@
 import type { SyntheticEvent } from 'react'
 import { Copy } from 'lucide-react'
-import { getChainIcon } from '@/lib/helpers/chain'
+import { getChainIcon } from '@/lib/helpers/chainHelper'
 
 interface QFRoundSidebarProps {
   project: {

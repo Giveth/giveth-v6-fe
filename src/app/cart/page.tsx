@@ -6,7 +6,7 @@ import { DonationRound } from '@/components/cart/DonationRound'
 import { DonationSidebar } from '@/components/cart/DonationSidebar'
 import { useCart } from '@/context/CartContext'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
-import { groupCartItemsByRound } from '@/lib/helpers/cart'
+import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 
 export default function CartPage() {
   const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
@@ -48,20 +48,12 @@ export default function CartPage() {
                       )
                     : undefined
 
-                console.log(round, round)
-
                 if (!round) return null
 
                 const token =
                   group.projects[0]?.tokenSymbol ??
                   round.allocatedTokenSymbol ??
                   ''
-
-                const totalAmountNum = group.projects.reduce((sum, p) => {
-                  const a = Number.parseFloat(p.donationAmount ?? '0')
-                  return sum + (Number.isFinite(a) ? a : 0)
-                }, 0)
-                const totalAmount = String(totalAmountNum)
 
                 const projectsForUi = group.projects.map((p, projectIndex) => ({
                   id:
@@ -81,11 +73,7 @@ export default function CartPage() {
                     roundData={round}
                     cartRoundData={group}
                     token={token}
-                    defaultAmount={totalAmount}
-                    defaultUsdValue={totalAmount}
                     projects={projectsForUi}
-                    totalMatch={totalAmount}
-                    totalDonation={totalAmount}
                   />
                 )
               })}

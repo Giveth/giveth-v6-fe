@@ -32,18 +32,12 @@ interface DonationRoundProps {
   defaultAmount: string
   defaultUsdValue: string
   projects: Project[]
-  totalMatch: string
-  totalDonation: string
 }
 
 export function DonationRound({
   roundData,
   cartRoundData,
-  defaultAmount,
-  defaultUsdValue,
   projects,
-  totalMatch,
-  totalDonation,
 }: DonationRoundProps) {
   return (
     <div className="bg-white p-4 rounded-2xl border-4 border-giv-gray-500 overflow-hidden">
@@ -58,25 +52,24 @@ export function DonationRound({
       <div className="py-6 flex max-[480px]:flex-wrap items-center justify-between">
         <div className="max-[480px]:w-full max-[480px]:mb-3 md:w-auto">
           <ChainDropdown
-            roundId={Number(roundData.id)}
+            roundId={cartRoundData.roundId}
             selectedChainId={cartRoundData.selectedChainId}
             eligibleNetworks={roundData.eligibleNetworks}
           />
         </div>
 
         {/* Right Side - Token, Amount, Apply */}
-        <div className="max-[480px]:flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto">
-          <TokenDropdown chainId={cartRoundData.selectedChainId} />
-
-          <AmountInput
-            defaultAmount={defaultAmount}
-            defaultUsdValue={defaultUsdValue}
+        <div className="flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto md:ml-auto">
+          <TokenDropdown
+            roundId={cartRoundData.roundId}
+            selectedChainId={cartRoundData.selectedChainId}
           />
 
-          {/* Apply to all */}
-          <button className="ml-1 text-base font-medium text-giv-primary-500 hover:text-giv-primary-700 transition-colors cursor-pointer">
-            Apply to all
-          </button>
+          <AmountInput
+            roundId={cartRoundData.roundId}
+            selectedToken={cartRoundData.selectedToken}
+            cartItems={cartRoundData.projects}
+          />
         </div>
       </div>
 
@@ -100,13 +93,11 @@ export function DonationRound({
               height={20}
               fill="var(--giv-jade-500)"
             />
-            <span className="text-giv-jade-500 text-base font-medium">
-              $ {totalMatch}
-            </span>
+            <span className="text-giv-jade-500 text-base font-medium">$ 0</span>
           </span>
           <span className="text-giv-gray-500 text-lg font-normal">|</span>
           <span className="text-giv-gray-800 text-base font-medium">
-            Total donation <span>$ {totalDonation}</span>
+            Total donation <span>$ 0</span>
           </span>
         </div>
       </div>

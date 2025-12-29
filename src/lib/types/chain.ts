@@ -11,3 +11,15 @@ export interface ChainInfo {
     decimals: number
   }
 }
+
+export type WalletTokenWithBalance = {
+  address?: `0x${string}` // undefined for native token
+  symbol: string
+  decimals: number
+  name?: string
+  logoURI?: string
+  chainId: number
+  priceInUSD: number
+  balance: string
+  formattedBalance: string
+}

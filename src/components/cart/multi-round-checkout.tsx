@@ -11,7 +11,7 @@ import { Check, X, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DonationRound } from '@/context/CartContext'
 import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
-import { getChainName } from '@/lib/helpers/chain'
+import { getChainName } from '@/lib/helpers/chainHelper'
 
 interface MultiRoundCheckoutProps {
   rounds: DonationRound[]

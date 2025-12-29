@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, X } from 'lucide-react'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
-import { groupCartItemsByRound } from '@/lib/helpers/cart'
+import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 import type { Route } from 'next'
 
 interface CartDropdownProps {

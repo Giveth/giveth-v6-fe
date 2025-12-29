@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
 export interface Project {
   id: string
@@ -9,6 +10,7 @@ export interface Project {
   image?: string | null
   roundId?: number
   roundName?: string
+  selectedToken: WalletTokenWithBalance | undefined
   // Donation details
   walletAddress?: string // Project's receiving wallet address
   donationAmount?: string // Amount to donate
@@ -22,11 +24,13 @@ export interface DonationRound {
   roundId: number
   roundName: string
   selectedChainId: number
+  selectedToken: WalletTokenWithBalance | undefined
   tokenSymbol: string
   tokenAddress: string
   tokenDecimals: number
   projects: Project[]
   totalAmount: string
+  totalUsdValue: string
 }
 
 interface CartContextType {
@@ -34,6 +38,13 @@ interface CartContextType {
   donationRounds: DonationRound[]
   addToCart: (project: Project) => void
   updateSelectedChainId: (roundId: number, chainId: number) => void
+  updateSelectedToken: (
+    roundId: number,
+    selectedToken: WalletTokenWithBalance,
+    tokenSymbol: string,
+    tokenAddress: string,
+    tokenDecimals: number,
+  ) => void
   removeFromCart: (projectId: string) => void
   clearCart: () => void
   isInCart: (projectId: string) => boolean
@@ -88,11 +99,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             roundId: item.roundId,
             roundName: item.roundName,
             selectedChainId: 0,
+            selectedToken: undefined,
             tokenSymbol: item.tokenSymbol,
             tokenAddress: item.tokenAddress,
             tokenDecimals: item.tokenDecimals ?? 18,
             projects: [],
             totalAmount: '0',
+            totalUsdValue: '0',
           })
         }
 
@@ -119,10 +132,48 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const updateSelectedChainId = (roundId: number, chainId: number) => {
+    // Persist selection on cart items so any grouping helpers derived from cartItems
+    // can reflect the selected chain immediately.
+    setCartItems(prev =>
+      prev.map(item =>
+        item.roundId === roundId ? { ...item, chainId } : item,
+      ),
+    )
+
+    // Also update derived donationRounds for immediate UI consistency.
     setDonationRounds(prev =>
       prev.map(round =>
         round.roundId === roundId
           ? { ...round, selectedChainId: chainId }
+          : round,
+      ),
+    )
+  }
+
+  const updateSelectedToken = (
+    roundId: number,
+    selectedToken: WalletTokenWithBalance,
+    tokenSymbol: string,
+    tokenAddress: string,
+    tokenDecimals: number,
+  ) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.roundId === roundId
+          ? { ...item, selectedToken, tokenSymbol, tokenAddress, tokenDecimals }
+          : item,
+      ),
+    )
+    setDonationRounds(prev =>
+      prev.map(round =>
+        round.roundId === roundId
+          ? {
+              ...round,
+              selectedToken,
+              tokenSymbol,
+              tokenAddress,
+              tokenDecimals,
+            }
           : round,
       ),
     )
@@ -178,6 +229,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         donationRounds,
         addToCart,
         updateSelectedChainId,
+        updateSelectedToken,
         removeFromCart,
         clearCart,
         isInCart,

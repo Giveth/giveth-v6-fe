@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb'
 import { ChainProvider, ChainIcon as ThirdwebChainIcon } from 'thirdweb/react'
 import { useCart } from '@/context/CartContext'
-import { getChainName } from '@/lib/helpers/chain'
+import { getChainName } from '@/lib/helpers/chainHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 
 export const ChainDropdown = ({
@@ -29,7 +29,9 @@ export const ChainDropdown = ({
   // If only one eligible network, select it automatically
   useEffect(() => {
     if (selectedChainIdState === 0 && eligibleNetworks.length === 1) {
-      setSelectedChainIdState(eligibleNetworks[0])
+      const only = eligibleNetworks[0]
+      setSelectedChainIdState(only)
+      updateSelectedChainId(roundId, only)
     }
   }, [selectedChainIdState, eligibleNetworks])
 
@@ -70,6 +72,7 @@ export const ChainDropdown = ({
             <DropdownMenu.Item
               key={id}
               onSelect={() => {
+                setSelectedChainIdState(id)
                 updateSelectedChainId(roundId, id)
               }}
               className="
