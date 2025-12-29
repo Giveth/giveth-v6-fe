@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useMediaQuery'
+import { QF_ROUND_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { truncateText } from '@/lib/helpers/textHelper'
 import type { Route } from 'next'
@@ -34,7 +35,7 @@ export function RoundCard({
         className={`${imageContainerWidth} ${imageContainerHeight} relative`}
       >
         <Image
-          src={round.hubCardImage || ''}
+          src={round.hubCardImage || QF_ROUND_FALLBACK_IMAGE}
           alt={round.name}
           fill
           className="block w-full object-cover rounded-2xl"
