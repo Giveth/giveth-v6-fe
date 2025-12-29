@@ -8,9 +8,30 @@
  * - Reduced gas costs and improved UX
  */
 
-import type { Account, Hex } from 'thirdweb/wallets'
 import { encode } from 'thirdweb'
 import type { PreparedTransaction } from 'thirdweb'
+import type { Account } from 'thirdweb/wallets'
+
+// Hex type definition for address and data fields
+export type Hex = `0x${string}`
+
+// EIP-1193 Provider interface
+interface EIP1193Provider {
+  request(args: {
+    method: string
+    params?: unknown[] | Record<string, unknown>
+  }): Promise<unknown>
+}
+
+// Wallet capabilities response
+interface WalletCapabilities {
+  atomicBatch?: {
+    supported: boolean
+  }
+  delegation?: {
+    supported: boolean
+  }
+}
 
 /**
  * Call object for EIP-5792 wallet_sendCalls
@@ -61,15 +82,15 @@ export interface CallsStatus {
  * Check if wallet supports EIP-5792 batch calls
  */
 export async function supportsWalletSendCalls(
-  provider: any,
+  provider: EIP1193Provider,
 ): Promise<boolean> {
   try {
     if (!provider?.request) return false
 
     // Check if wallet_sendCalls is supported
-    const capabilities = await provider.request({
+    const capabilities = (await provider.request({
       method: 'wallet_getCapabilities',
-    })
+    })) as WalletCapabilities
 
     return capabilities?.atomicBatch?.supported === true
   } catch (error) {
@@ -95,7 +116,11 @@ export async function sendBatchCalls(
   const { account, calls, chainId } = options
 
   // Get the wallet provider
-  const provider = (account as any).wallet?.getProvider?.()
+  const provider = (
+    account as Account & {
+      wallet?: { getProvider?: () => EIP1193Provider }
+    }
+  ).wallet?.getProvider?.()
   if (!provider) {
     throw new Error('Wallet provider not found')
   }
@@ -126,7 +151,7 @@ export async function sendBatchCalls(
       ],
     })
 
-    return { bundleId }
+    return { bundleId: bundleId as string }
   } catch (error) {
     console.error('Failed to send batch calls:', error)
     throw new Error(
@@ -143,14 +168,14 @@ export async function sendBatchCalls(
  * @returns Status of the batch calls
  */
 export async function getBatchCallsStatus(
-  provider: any,
+  provider: EIP1193Provider,
   bundleId: string,
 ): Promise<CallsStatus> {
   try {
-    const status = await provider.request({
+    const status = (await provider.request({
       method: 'wallet_getCallsStatus',
       params: [bundleId],
-    })
+    })) as CallsStatus
 
     return status
   } catch (error) {
@@ -170,7 +195,7 @@ export async function getBatchCallsStatus(
  * @returns Final status of the batch calls
  */
 export async function waitForBatchCalls(
-  provider: any,
+  provider: EIP1193Provider,
   bundleId: string,
   timeout = 60000,
 ): Promise<CallsStatus> {
@@ -206,10 +231,14 @@ export async function prepareBatchFromTransactions(
     // Encode the transaction data
     const data = await encode(tx)
 
+    // Resolve transaction properties (they may be promises or getters)
+    const to = typeof tx.to === 'function' ? await tx.to() : tx.to
+    const value = typeof tx.value === 'function' ? await tx.value() : tx.value
+
     calls.push({
-      to: tx.to || '',
+      to: to || '',
       data: data as Hex,
-      value: tx.value,
+      value: value,
     })
   }
 
@@ -251,17 +280,19 @@ export async function executeApprovalAndDonation(
  * This is a fallback for wallets that don't support EIP-5792
  */
 export async function executeSequentially(
-  account: Account,
+  _account: Account,
   transactions: PreparedTransaction[],
 ): Promise<string[]> {
   const txHashes: string[] = []
 
-  for (const tx of transactions) {
+  for (const _tx of transactions) {
     // Execute each transaction
     // Note: This requires the actual send function from thirdweb
     // You'll need to implement this based on your transaction sending logic
-    console.warn('Sequential execution not fully implemented - needs send logic')
-    // const receipt = await sendTransaction({ account, transaction: tx })
+    console.warn(
+      'Sequential execution not fully implemented - needs send logic',
+    )
+    // const receipt = await sendTransaction({ account, transaction: _tx })
     // txHashes.push(receipt.transactionHash)
   }
 
@@ -271,7 +302,9 @@ export async function executeSequentially(
 /**
  * Check wallet capabilities for EIP-7702 and EIP-5792
  */
-export async function checkWalletCapabilities(provider: any): Promise<{
+export async function checkWalletCapabilities(
+  provider: EIP1193Provider,
+): Promise<{
   supportsEIP5792: boolean
   supportsEIP7702: boolean
   supportsAtomicBatch: boolean
@@ -285,12 +318,13 @@ export async function checkWalletCapabilities(provider: any): Promise<{
       }
     }
 
-    const capabilities = await provider.request({
+    const capabilities = (await provider.request({
       method: 'wallet_getCapabilities',
-    })
+    })) as WalletCapabilities
 
     return {
-      supportsEIP5792: typeof capabilities === 'object' && capabilities !== null,
+      supportsEIP5792:
+        typeof capabilities === 'object' && capabilities !== null,
       supportsEIP7702: capabilities?.delegation?.supported === true,
       supportsAtomicBatch: capabilities?.atomicBatch?.supported === true,
     }
@@ -303,4 +337,3 @@ export async function checkWalletCapabilities(provider: any): Promise<{
     }
   }
 }
-
