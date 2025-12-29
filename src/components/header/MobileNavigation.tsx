@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { MenuIcon, X } from 'lucide-react'
-import { CreateProjectButton } from './CreateProjectButton'
+import { CreateProjectButton } from '@/components/header/CreateProjectButton'
 import { menuItems } from '@/constants/menu-links'
 import { MenuLink } from './MenuLink'
 import { SearchButton } from './SearchButton'
@@ -55,13 +55,17 @@ export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
         {/* Content */}
         <div className="flex flex-col gap-4 p-4 overflow-y-auto h-full">
           {menuItems.map(
-            (item: { label: string; href: string; submenu?: unknown[] }) => (
-            <MenuLink
-              key={item.label}
-              href={item.href}
-              label={item.label}
-              submenu={item.submenu}
-            />
+            (item: {
+              label: string
+              href: string
+              submenu?: { label: string; href: string }[]
+            }) => (
+              <MenuLink
+                key={item.label}
+                href={item.href}
+                label={item.label}
+                submenu={item.submenu}
+              />
             ),
           )}
 

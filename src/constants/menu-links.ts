@@ -8,45 +8,51 @@ export const menuItems = [
   },
   {
     label: 'GIVeconomy',
-    href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givfarm',
+    href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givfarm' || '/givfarm',
     submenu: [
       {
         label: 'Stake GIV',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givfarm',
+        href:
+          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givfarm' || '/givfarm',
       },
       {
         label: 'GIVbacks',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givbacks',
+        href:
+          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givbacks' || '/givbacks',
       },
     ],
   },
   {
     label: 'Community',
-    href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/onboarding',
+    href:
+      process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/onboarding' || '/onboarding',
     submenu: [
       {
         label: 'Get Started',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/onboarding',
+        href:
+          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/onboarding' ||
+          '/onboarding',
       },
       {
         label: 'Givers NFT',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/nft',
+        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/nft' || '/nft',
       },
       {
         label: 'About Us',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/about',
+        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/about' || '/about',
       },
       {
         label: 'Vote',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/vote',
+        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/vote' || '/vote',
       },
       {
         label: 'Join Us',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/join',
+        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/join' || '/join',
       },
       {
         label: 'Leave Feedback',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/feedback',
+        href:
+          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/feedback' || '/feedback',
       },
     ],
   },
