@@ -1,22 +1,4 @@
-export const PROJECT_FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1000'
-
-export const USER_AVATAR_FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100&h=100'
-
-export interface ChainInfo {
-  id: number
-  name: string
-  shortName: string
-  blockExplorerUrl: string
-  iconKey: string
-  isTestnet: boolean
-  nativeCurrency: {
-    name: string
-    symbol: string
-    decimals: number
-  }
-}
+import type { ChainInfo } from '@/lib/types/chain'
 
 export const CHAINS: Record<number, ChainInfo> = {
   // Mainnets
@@ -438,41 +420,4 @@ export const CHAIN_ICONS: Record<
     fallbackIcon: '◇',
     textColor: 'text-white',
   },
-}
-
-export function getChainInfo(chainId: number): ChainInfo | undefined {
-  return CHAINS[chainId]
-}
-
-export function getChainIcon(chainId: number): {
-  bg: string
-  iconUrl: string
-  fallbackIcon: string
-  textColor?: string
-} {
-  const chain = getChainInfo(chainId)
-  if (!chain) {
-    return CHAIN_ICONS.ethereum // fallback
-  }
-  return CHAIN_ICONS[chain.iconKey] || CHAIN_ICONS.ethereum
-}
-
-export function getChainName(chainId: number): string {
-  const chain = getChainInfo(chainId)
-  return chain?.name || `Chain ${chainId}`
-}
-
-export function getChainShortName(chainId: number): string {
-  const chain = getChainInfo(chainId)
-  return chain?.shortName || `${chainId}`
-}
-
-export function getBlockExplorerUrl(chainId: number): string {
-  const chain = getChainInfo(chainId)
-  return chain?.blockExplorerUrl || ''
-}
-
-export function getTransactionUrl(chainId: number, txHash: string): string {
-  const explorerUrl = getBlockExplorerUrl(chainId)
-  return explorerUrl ? `${explorerUrl}/tx/${txHash}` : ''
 }

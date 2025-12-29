@@ -10,12 +10,12 @@ import {
   type FilterType,
 } from '@/components/project/donation-table-dropdown'
 import { useProjectDonations } from '@/hooks/useProject'
+import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/project'
 import {
   getChainIcon,
   getChainName,
   getTransactionUrl,
-  USER_AVATAR_FALLBACK_IMAGE,
-} from '@/lib/constants'
+} from '@/lib/helpers/chain'
 import { ProjectImage } from './ProjectImage'
 
 interface ProjectDonationsTableProps {

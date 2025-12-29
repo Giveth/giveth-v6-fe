@@ -5,7 +5,7 @@ import { DesktopNavigation } from '@/components/header/DesktopNavigation'
 import { HeaderConnectWallet } from '@/components/header/HeaderConnectWallet'
 import { MobileNavigation } from '@/components/header/MobileNavigation'
 import { GivethLogo } from '@/components/icons/GivethLogo'
-import { LogoLink } from '@/constants/menu-links'
+import { LogoLink } from '@/lib/constants/menu-links'
 import type { Route } from 'next'
 
 export function DefaultHeader({ hideSearch }: { hideSearch?: boolean }) {

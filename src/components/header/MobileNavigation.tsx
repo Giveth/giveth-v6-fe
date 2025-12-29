@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { MenuIcon, X } from 'lucide-react'
 import { CreateProjectButton } from '@/components/header/CreateProjectButton'
-import { menuItems } from '@/constants/menu-links'
+import { menuItems } from '@/lib/constants/menu-links'
 import { MenuLink } from './MenuLink'
 import { SearchButton } from './SearchButton'
 
