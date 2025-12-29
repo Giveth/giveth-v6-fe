@@ -1,71 +1,34 @@
 import Link from 'next/link'
 import { CartButton } from '@/components/header/CartButton'
 import { CreateProjectButton } from '@/components/header/CreateProjectButton'
+import { DesktopNavigation } from '@/components/header/DesktopNavigation'
 import { HeaderConnectWallet } from '@/components/header/HeaderConnectWallet'
+import { MobileNavigation } from '@/components/header/MobileNavigation'
 import { GivethLogo } from '@/components/icons/GivethLogo'
-import { DesktopNavigation } from './DesktopNavigation'
-import { MobileNavigation } from './MobileNavigation'
-
-export const menuItems = [
-  {
-    label: 'Donate',
-    href: '/qf',
-  },
-  {
-    label: 'GIVeconomy',
-    href: 'https://giveth.io/givfarm',
-    submenu: [
-      {
-        label: 'Stake GIV',
-        href: 'https://giveth.io/givfarm',
-      },
-      {
-        label: 'GIVbacks',
-        href: 'https://giveth.io/givbacks',
-      },
-    ],
-  },
-  {
-    label: 'Community',
-    href: 'https://giveth.io/onboarding',
-    submenu: [
-      {
-        label: 'Get Started',
-        href: 'https://giveth.io/onboarding',
-      },
-      {
-        label: 'Givers NFT',
-        href: 'https://giveth.io/nft',
-      },
-      {
-        label: 'About Us',
-        href: 'https://giveth.io/about',
-      },
-      {
-        label: 'Vote',
-        href: 'https://snapshot.org/#/giv.eth',
-      },
-      {
-        label: 'Join Us',
-        href: 'https://giveth.io/join',
-      },
-      {
-        label: 'Leave Feedback',
-        href: 'https://giveth.typeform.com/feedback',
-      },
-    ],
-  },
-]
+import { LogoLink } from '@/constants/menu-links'
+import type { Route } from 'next'
 
 export function DefaultHeader({ hideSearch }: { hideSearch?: boolean }) {
+  const isExternalLogoLink = /^https?:\/\//.test(LogoLink)
+
   return (
     <header className="bg-white border-b border-giv-gray-300 px-6 py-4">
       <div className="max-w-[1442px] mx-auto flex items-center justify-between">
         {/* Logo and Nav */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center">
-            <GivethLogo width={66} height={66} />
-          </Link>
+          {isExternalLogoLink ? (
+            <a
+              href={LogoLink}
+              className="flex items-center"
+              rel="noopener noreferrer"
+            >
+              <GivethLogo width={66} height={66} />
+            </a>
+          ) : (
+            <Link href={LogoLink as Route} className="flex items-center">
+              <GivethLogo width={66} height={66} />
+            </Link>
+          )}
 
           {/* Desktop Menu */}
           <DesktopNavigation hideSearch={hideSearch} />
