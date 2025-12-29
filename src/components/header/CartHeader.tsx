@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { CustomConnectWallet } from '@/components/wallet/CustomConnectWallet'
+import { HeaderConnectWallet } from './HeaderConnectWallet'
 
 export const CartHeader = () => {
   return (
@@ -20,7 +20,7 @@ export const CartHeader = () => {
         </div>
 
         {/* Right Section - Wallet */}
-        <CustomConnectWallet />
+        <HeaderConnectWallet />
       </div>
     </header>
   )

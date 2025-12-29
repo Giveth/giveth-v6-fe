@@ -16,13 +16,13 @@ export function CartHeader() {
             <ArrowLeft className="w-8 h-8 text-giv-gray-900" />
           </Link>
           <h1 className="text-lg font-semibold text-[#1f2333]">
-            Donation cartAAA
+            Donation cart
           </h1>
         </div>
 
         {/* Right Section - Wallet */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500" />
+          <div className="w-8 h-8 rounded-full bg-linear-to-br from-emerald-400 to-teal-500" />
           <div className="text-right">
             <p className="text-sm font-medium text-[#1f2333]">0xF278...7a2cc</p>
             <p className="text-xs text-[#37b4a9]">Connected to xDai</p>
