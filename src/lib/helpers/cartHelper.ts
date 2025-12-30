@@ -3,7 +3,7 @@ import { getContract } from 'thirdweb'
 import { defineChain } from 'thirdweb/chains'
 import { balanceOf } from 'thirdweb/extensions/erc20'
 import { formatUnits } from 'viem'
-import type { Project } from '@/context/CartContext'
+import { type ProjectCartItem } from '@/context/CartContext'
 import { graphQLClient } from '@/lib/graphql/client'
 import type { TokensByNetworkQuery } from '@/lib/graphql/generated/graphql'
 import { tokensByNetworkQuery } from '@/lib/graphql/queries'
@@ -20,12 +20,12 @@ import { type WalletTokenWithBalance } from '../types/chain'
  * }
  * @returns The grouped projects
  */
-export function groupCartItemsByRound(cartItems: Project[]): {
+export function groupCartItemsByRound(cartItems: ProjectCartItem[]): {
   qfRoundGroups: GroupedProjects[]
-  nonQfProjects: Project[]
+  nonQfProjects: ProjectCartItem[]
 } {
   const groups: Map<string, GroupedProjects> = new Map()
-  const nonQf: Project[] = []
+  const nonQf: ProjectCartItem[] = []
 
   cartItems.forEach(item => {
     if (item.roundId && item.roundName) {
@@ -182,4 +182,44 @@ async function getTokenPriceInUSDByCoingeckoId(
       return data?.[coingeckoId]?.usd ?? 0
     },
   })
+}
+
+/**
+ * Calculate the total donation value for a round in
+ * token amount
+ *
+ * @param roundId - The round ID
+ * @param cartItems - The cart items
+ * @returns The total donation value for the round
+ */
+export const calculateTotalDonationValueForRound = (
+  roundId: number,
+  cartItems: ProjectCartItem[],
+) => {
+  return cartItems
+    .filter(item => item.roundId === roundId)
+    .reduce((sum, item) => {
+      const amount = parseFloat(item.donationAmount || '0')
+      return sum + amount
+    }, 0)
+}
+
+/**
+ * Calculate the total donation value for a round in USD
+ *
+ * @param roundId - The round ID
+ * @param cartItems - The cart items
+ * @returns The total donation value for the round in USD
+ */
+export const calculateTotalDonationValueForRoundInUSD = (
+  roundId: number,
+  cartItems: ProjectCartItem[],
+) => {
+  return cartItems
+    .filter(item => item.roundId === roundId)
+    .reduce((sum, item) => {
+      const priceInUSD = item.selectedToken?.priceInUSD ?? 0
+      const amount = parseFloat(item.donationAmount || '0') * priceInUSD
+      return sum + amount
+    }, 0)
 }

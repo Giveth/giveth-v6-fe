@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeftRight } from 'lucide-react'
-import { useCart, type Project } from '@/context/CartContext'
+import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { normalizeDecimalInput } from '@/lib/helpers/numbersHelper'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
@@ -8,7 +8,7 @@ import { type WalletTokenWithBalance } from '@/lib/types/chain'
 interface AmountInputProps {
   roundId: number
   selectedToken: WalletTokenWithBalance | undefined
-  cartItems: Project[]
+  cartItems: ProjectCartItem[]
 }
 
 export const AmountInput = ({
@@ -21,7 +21,6 @@ export const AmountInput = ({
   const [enteringType, setEnteringType] = useState<'amount' | 'usd'>('amount')
   const [enteredValue, setEnteredValue] = useState('0')
   const [enteredUsdValue, setEnteredUsdValue] = useState('0')
-  const [balanceError, setBalanceError] = useState<string | null>(null)
 
   const usdValue = useMemo(() => {
     return selectedToken?.priceInUSD ? selectedToken.priceInUSD : 0
@@ -48,27 +47,6 @@ export const AmountInput = ({
 
     setEnteredValue(normalizeDecimalInput(valueToken))
     setEnteredUsdValue(normalizeDecimalInput(valueTokenUsd))
-
-    // Add 2 seconds delay to the function
-    const timeout = setTimeout(() => {
-      if (valueToken) {
-        const totalAmount = cartItems.length * Number.parseFloat(valueToken)
-        const walletBalance = selectedToken
-          ? Number.parseFloat(selectedToken.formattedBalance)
-          : Number.POSITIVE_INFINITY
-
-        if (Number.isFinite(walletBalance) && totalAmount > walletBalance) {
-          setBalanceError('Insufficient balance')
-        } else {
-          setBalanceError(null)
-        }
-      } else {
-      }
-    }, 2000)
-
-    // NOTE: returning a cleanup function here does nothing because this isn't a useEffect.
-    // Cleanup should be handled by debouncing or by using useEffect.
-    void timeout
   }
 
   // Update each cart item in round with same token amount
@@ -77,6 +55,7 @@ export const AmountInput = ({
     if (round) {
       cartItems.forEach(item => {
         updateProjectDonation(
+          roundId,
           item.id,
           enteredValue,
           selectedToken?.symbol ?? '',
@@ -113,17 +92,10 @@ export const AmountInput = ({
       {/* Apply to all */}
       <button
         className="ml-1 text-base font-medium text-giv-primary-500 hover:text-giv-primary-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={!!balanceError}
         onClick={() => handleApplyToAll(_roundId)}
       >
         Apply to all
       </button>
-      {balanceError && (
-        <span className="d-block w-full text-red-500 text-xs text-right transition-opacity duration-200 ease-out">
-          {balanceError}
-        </span>
-      )}
-      {enteredValue} -- {enteredUsdValue}
     </>
   )
 }

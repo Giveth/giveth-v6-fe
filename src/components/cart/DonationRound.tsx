@@ -5,30 +5,18 @@ import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
 import { TokenDropdown } from '@/components/cart/TokenDropdown'
 import { MatchingEligible } from '@/components/icons/MatchingEligible'
-import { type DonationRound } from '@/context/CartContext'
+import type { ProjectCartItem } from '@/context/CartContext'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
-
-interface ProjectBadge {
-  type: 'eligible' | 'matching'
-  color: 'green' | 'gray'
-  amountPrefix?: string
-  label: string
-}
-
-interface Project {
-  id: number
-  name: string
-  image: string
-  badges: ProjectBadge[]
-  tokenAmount: string
-  token: string
-  usdValue: string
-}
+import {
+  calculateTotalDonationValueForRoundInUSD,
+  formatNumber,
+} from '@/lib/helpers/cartHelper'
+import type { GroupedProjects } from '@/lib/types/cart'
 
 interface DonationRoundProps {
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
-  cartRoundData: DonationRound
-  projects: Project[]
+  cartRoundData: GroupedProjects
+  projects: ProjectCartItem[]
 }
 
 export function DonationRound({
@@ -73,7 +61,11 @@ export function DonationRound({
       {/* Projects List */}
       <div>
         {projects.map(project => (
-          <ProjectCartCard key={project.id} project={project} />
+          <ProjectCartCard
+            key={project.id}
+            roundData={roundData}
+            project={project}
+          />
         ))}
       </div>
 
@@ -94,7 +86,16 @@ export function DonationRound({
           </span>
           <span className="text-giv-gray-500 text-lg font-normal">|</span>
           <span className="text-giv-gray-800 text-base font-medium">
-            Total donation <span>$ 0</span>
+            Total donation{' '}
+            <span>
+              ${' '}
+              {formatNumber(
+                calculateTotalDonationValueForRoundInUSD(
+                  cartRoundData.roundId,
+                  cartRoundData.projects,
+                ),
+              )}
+            </span>
           </span>
         </div>
       </div>

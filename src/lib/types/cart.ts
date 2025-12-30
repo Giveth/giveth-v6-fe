@@ -1,4 +1,4 @@
-import type { Project } from '@/context/CartContext'
+import type { ProjectCartItem } from '@/context/CartContext'
 import { type WalletTokenWithBalance } from './chain'
 
 export interface GroupedProjects {
@@ -9,7 +9,7 @@ export interface GroupedProjects {
   tokenSymbol: string
   tokenDecimals: number
   tokenAddress: string
-  projects: Project[]
+  projects: ProjectCartItem[]
   totalAmount: string
   totalUsdValue: string
 }

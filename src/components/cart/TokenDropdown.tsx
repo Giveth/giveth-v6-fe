@@ -25,7 +25,7 @@ export const TokenDropdown = ({
   selectedChainId: number
   roundId: number
 }) => {
-  const { updateSelectedToken } = useCart()
+  const { updateSelectedToken, cartItems, updateProjectDonation } = useCart()
   const account = useActiveAccount()
   const accountAddress = account?.address
 
@@ -62,6 +62,20 @@ export const TokenDropdown = ({
       token.address as `0x${string}`,
       token.decimals,
     )
+
+    // Update all projects in the round with the same token and reset donation amount
+    cartItems.forEach(item => {
+      if (item.roundId === roundId) {
+        updateProjectDonation(
+          roundId,
+          item.id,
+          String(0),
+          token.symbol,
+          token.address as `0x${string}`,
+          token.decimals,
+        )
+      }
+    })
   }
 
   return (

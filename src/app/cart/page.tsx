@@ -39,7 +39,7 @@ export default function CartPage() {
           {/* Left Column - Donation Rounds */}
           <div className="flex-1 space-y-5 w-12/12 lg:w-8/12">
             {cartItems.length > 0 &&
-              qfRoundGroups.map((group, groupIndex) => {
+              qfRoundGroups.map(group => {
                 const roundId = group.roundId
                 const round =
                   roundId != null
@@ -50,29 +50,12 @@ export default function CartPage() {
 
                 if (!round) return null
 
-                const token =
-                  group.projects[0]?.tokenSymbol ??
-                  round.allocatedTokenSymbol ??
-                  ''
-
-                const projectsForUi = group.projects.map((p, projectIndex) => ({
-                  id:
-                    Number.parseInt(p.id, 10) ||
-                    groupIndex * 1000 + projectIndex,
-                  name: p.title,
-                  image: p.image || '/placeholder.svg',
-                  badges: [],
-                  tokenAmount: p.donationAmount || '0',
-                  token,
-                  usdValue: p.donationAmount || '0',
-                }))
-
                 return (
                   <DonationRound
                     key={round.id}
                     roundData={round}
                     cartRoundData={group}
-                    projects={projectsForUi}
+                    projects={group.projects}
                   />
                 )
               })}

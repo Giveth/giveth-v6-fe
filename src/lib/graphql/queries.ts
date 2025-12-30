@@ -131,6 +131,7 @@ export const activeQfRoundsQuery = graphql(`
       allocatedFundUSD
       allocatedFund
       allocatedTokenSymbol
+      minimumValidUsdValue
     }
   }
 `)

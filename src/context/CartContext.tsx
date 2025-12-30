@@ -3,14 +3,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
-export interface Project {
+export interface ProjectCartItem {
   id: string
   title: string
   slug: string
   image?: string | null
   roundId?: number
   roundName?: string
-  selectedToken: WalletTokenWithBalance | undefined
+  selectedToken?: WalletTokenWithBalance
   // Donation details
   walletAddress?: string // Project's receiving wallet address
   donationAmount?: string // Amount to donate
@@ -18,6 +18,7 @@ export interface Project {
   tokenDecimals?: number // Token decimals
   tokenAddress?: string // Token contract address
   chainId?: number // Chain ID for the donation
+  isGivbackEligible?: boolean
 }
 
 export interface DonationRound {
@@ -28,15 +29,16 @@ export interface DonationRound {
   tokenSymbol: string
   tokenAddress: string
   tokenDecimals: number
-  projects: Project[]
+  projects: ProjectCartItem[]
   totalAmount: string
   totalUsdValue: string
+  isGivbackEligible?: boolean
 }
 
 interface CartContextType {
-  cartItems: Project[]
+  cartItems: ProjectCartItem[]
   donationRounds: DonationRound[]
-  addToCart: (project: Project) => void
+  addToCart: (project: ProjectCartItem) => void
   updateSelectedChainId: (roundId: number, chainId: number) => void
   updateSelectedToken: (
     roundId: number,
@@ -45,24 +47,25 @@ interface CartContextType {
     tokenAddress: string,
     tokenDecimals: number,
   ) => void
-  removeFromCart: (projectId: string) => void
+  removeFromCart: (roundId: number, projectId: string) => void
   clearCart: () => void
   isInCart: (projectId: string) => boolean
   updateProjectDonation: (
+    roundId: number,
     projectId: string,
     amount: string,
     tokenSymbol: string,
     tokenAddress: string,
     chainId: number,
   ) => void
-  getDonationsByChain: (chainId: number) => Project[]
+  getDonationsByChain: (chainId: number) => ProjectCartItem[]
   getTotalDonationForRound: (roundId: number) => string
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<Project[]>([])
+  const [cartItems, setCartItems] = useState<ProjectCartItem[]>([])
   const [donationRounds, setDonationRounds] = useState<DonationRound[]>([])
 
   // Load from local storage on mount
@@ -106,6 +109,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             projects: [],
             totalAmount: '0',
             totalUsdValue: '0',
+            isGivbackEligible: item.isGivbackEligible ?? false,
           })
         }
 
@@ -124,7 +128,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setDonationRounds(Array.from(rounds.values()))
   }, [cartItems])
 
-  const addToCart = (project: Project) => {
+  const addToCart = (project: ProjectCartItem) => {
     setCartItems(prev => {
       if (prev.some(item => item.id === project.id)) return prev
       return [...prev, project]
@@ -179,8 +183,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const removeFromCart = (projectId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== projectId))
+  const removeFromCart = (roundId: number, projectId: string) => {
+    setCartItems(prev =>
+      prev.filter(item => !(item.roundId === roundId && item.id === projectId)),
+    )
   }
 
   const clearCart = () => {
@@ -192,6 +198,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const updateProjectDonation = (
+    roundId: number,
     projectId: string,
     amount: string,
     tokenSymbol: string,
@@ -200,7 +207,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   ) => {
     setCartItems(prev =>
       prev.map(item =>
-        item.id === projectId
+        item.roundId === roundId && item.id === projectId
           ? {
               ...item,
               donationAmount: amount,

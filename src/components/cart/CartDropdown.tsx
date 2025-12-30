@@ -15,8 +15,8 @@ interface CartDropdownProps {
 export function CartDropdown({ onClose }: CartDropdownProps) {
   const { cartItems, removeFromCart } = useCart()
 
-  const handleRemoveItem = (itemId: string) => {
-    removeFromCart(itemId)
+  const handleRemoveItem = (roundId: number, itemId: string) => {
+    removeFromCart(roundId, itemId)
   }
 
   // Group cart items by round
@@ -86,7 +86,9 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
 
                         {/* Remove Button */}
                         <button
-                          onClick={() => handleRemoveItem(item.id)}
+                          onClick={() =>
+                            handleRemoveItem(group.roundId, item.id)
+                          }
                           className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer"
                         >
                           <X className="w-4 h-4" />
@@ -119,7 +121,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
 
                   {/* Remove Button */}
                   <button
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={() => handleRemoveItem(0, item.id)}
                     className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer"
                   >
                     <X className="w-4 h-4" />
