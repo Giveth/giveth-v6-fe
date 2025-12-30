@@ -109,6 +109,7 @@ export function useWalletTokens(
               balance: String(balance),
               formattedBalance: formatUnits(balance, token.decimals),
               priceInUSD,
+              isGivbackEligible: token.isGivbacksEligible,
             } satisfies WalletTokenWithBalance
           } catch {
             // Ignore broken tokens

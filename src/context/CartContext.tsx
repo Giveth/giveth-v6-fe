@@ -46,6 +46,7 @@ interface CartContextType {
     tokenSymbol: string,
     tokenAddress: string,
     tokenDecimals: number,
+    isGivbackEligible?: boolean,
   ) => void
   removeFromCart: (roundId: number, projectId: string) => void
   clearCart: () => void
@@ -160,11 +161,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     tokenSymbol: string,
     tokenAddress: string,
     tokenDecimals: number,
+    isGivbackEligible?: boolean,
   ) => {
     setCartItems(prev =>
       prev.map(item =>
         item.roundId === roundId
-          ? { ...item, selectedToken, tokenSymbol, tokenAddress, tokenDecimals }
+          ? {
+              ...item,
+              selectedToken,
+              tokenSymbol,
+              tokenAddress,
+              tokenDecimals,
+              isGivbackEligible,
+            }
           : item,
       ),
     )
@@ -177,6 +186,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               tokenSymbol,
               tokenAddress,
               tokenDecimals,
+              isGivbackEligible,
             }
           : round,
       ),

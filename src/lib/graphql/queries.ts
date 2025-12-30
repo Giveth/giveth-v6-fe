@@ -468,6 +468,7 @@ export const tokensByNetworkQuery = graphql(`
       chainType
       isActive
       coingeckoId
+      isGivbacksEligible
     }
   }
 `)

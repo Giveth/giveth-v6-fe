@@ -14,13 +14,35 @@ export const ProjectBadges = ({
     Number(project.donationAmount ?? 0) *
     Number(project.selectedToken?.priceInUSD ?? 0)
 
-  // First check round matching eligibility
+  console.log('project', project)
+
+  // FIRST check GIVBacks eligibility
+  // Project needs to be GIVbacks eligible and the token needs to be GIVbacks eligible
+  // and the donation amount needs to be greater than the GIVBACKS_DONATION_QUALIFICATION_VALUE_USD
+  const isTokenGivbacksEligible = project?.selectedToken?.isGivbackEligible
+  const isProjectGivbacks = project?.isGivbackEligible
+  const isProjectGivbacksEligible =
+    isTokenGivbacksEligible &&
+    isProjectGivbacks &&
+    donationAmountInUSD >= GIVBACKS_DONATION_QUALIFICATION_VALUE_USD
+
+  const isProjectGivbacksEligibleColor = isProjectGivbacksEligible
+    ? 'green'
+    : 'gray'
+
+  const isProjectGivbacksEligibleMessage = isProjectGivbacksEligible
+    ? 'GIVbacks eligible'
+    : 'makes you eligible for GIVbacks'
+
+  // Second check round matching for the project
   const projectChainId = project.chainId
   const isOnQFEligibleNetworks = roundData?.eligibleNetworks?.includes(
     projectChainId || 0,
   )
+
   const isDonationMatched =
     !!roundData &&
+    isTokenGivbacksEligible &&
     isOnQFEligibleNetworks &&
     donationAmountInUSD >= (roundData?.minimumValidUsdValue || 0)
 
@@ -29,7 +51,7 @@ export const ProjectBadges = ({
     ? 'Donation will be matched'
     : 'unlocks matching funds'
 
-  // TODO: Check project GIVBACKS matching eligibility"!!!!"
+  // TODO: Check project matching eligibility"!!!!"
   // HERE IS ONLY FOR SHOWING THE BADGE, NOT FOR THE LOGIC
   // const { isGivbackEligible } = project || {}
   // const isTokenGivbacksEligible = token?.isGivbackEligible
@@ -44,24 +66,24 @@ export const ProjectBadges = ({
   //   isProjectGivbacksEligible &&
   //   donationUsdValue >= GIVBACKS_DONATION_QUALIFICATION_VALUE_USD
 
-  // Second check project eligibility
-  const isProjectGivbacksEligible =
-    donationAmountInUSD >= GIVBACKS_DONATION_QUALIFICATION_VALUE_USD
-
-  const isProjectGivbacksEligibleColor = isProjectGivbacksEligible
-    ? 'green'
-    : 'gray'
-
-  const isProjectGivbacksEligibleMessage = isProjectGivbacksEligible
-    ? project.selectedToken?.symbol + ' in matching'
-    : 'unlocks matching funds'
-
   return (
     <>
+      <GivBacksBadge
+        key={0}
+        type="eligible"
+        color={isProjectGivbacksEligibleColor}
+        amountPrefix={
+          isProjectGivbacksEligible
+            ? undefined
+            : '$' + GIVBACKS_DONATION_QUALIFICATION_VALUE_USD.toString()
+        }
+        label={isProjectGivbacksEligibleMessage}
+      />
+
       {!!roundData && (
         <GivBacksBadge
-          key={0}
-          type="eligible"
+          key={1}
+          type="matching"
           color={isDonationMatchedColor}
           amountPrefix={
             isDonationMatched
@@ -71,16 +93,6 @@ export const ProjectBadges = ({
           label={isDonationMatchedMessage}
         />
       )}
-
-      <GivBacksBadge
-        key={1}
-        type="matching"
-        color={isProjectGivbacksEligibleColor}
-        amountPrefix={
-          '$' + GIVBACKS_DONATION_QUALIFICATION_VALUE_USD.toString()
-        }
-        label={isProjectGivbacksEligibleMessage}
-      />
     </>
   )
 }

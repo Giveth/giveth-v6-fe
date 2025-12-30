@@ -1351,6 +1351,7 @@ export type TokenEntity = {
   decimals: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isGivbacksEligible: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   networkId: Scalars['Int']['output'];
   symbol: Scalars['String']['output'];
@@ -1642,7 +1643,7 @@ export type TokensByNetworkQueryVariables = Exact<{
 }>;
 
 
-export type TokensByNetworkQuery = { __typename?: 'Query', tokensByNetwork: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null }> };
+export type TokensByNetworkQuery = { __typename?: 'Query', tokensByNetwork: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null, isGivbacksEligible: boolean }> };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2185,6 +2186,7 @@ export const TokensByNetworkDocument = new TypedDocumentString(`
     chainType
     isActive
     coingeckoId
+    isGivbacksEligible
   }
 }
     `) as unknown as TypedDocumentString<TokensByNetworkQuery, TokensByNetworkQueryVariables>;

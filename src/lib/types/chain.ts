@@ -22,4 +22,5 @@ export type WalletTokenWithBalance = {
   priceInUSD: number
   balance: string
   formattedBalance: string
+  isGivbackEligible?: boolean
 }

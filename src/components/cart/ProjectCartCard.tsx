@@ -55,9 +55,6 @@ export const ProjectCartCard = ({
       <div className="max-[480px]:flex-wrap flex items-center justify-between mt-8 gap-2">
         <div className="flex flex-wrap max-[480px]:w-full md:w-auto gap-2">
           <ProjectBadges project={project} roundData={roundData} />
-          {/* {project.badges.map((badge, idx) => (
-           
-          ))} */}
         </div>
 
         <div className="flex items-center text-base font-medium gap-2 border border-giv-gray-100 rounded-md pr-3 pl-2 py-2">

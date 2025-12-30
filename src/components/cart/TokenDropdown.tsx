@@ -48,6 +48,7 @@ export const TokenDropdown = ({
         walletTokens[0].symbol,
         walletTokens[0].address as `0x${string}`,
         walletTokens[0].decimals,
+        walletTokens[0].isGivbackEligible,
       )
     }
   }, [walletTokens, selectedToken])
@@ -61,6 +62,7 @@ export const TokenDropdown = ({
       token.symbol,
       token.address as `0x${string}`,
       token.decimals,
+      token.isGivbackEligible,
     )
 
     // Update all projects in the round with the same token and reset donation amount
