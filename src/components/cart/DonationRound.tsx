@@ -28,9 +28,6 @@ interface Project {
 interface DonationRoundProps {
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
   cartRoundData: DonationRound
-  token: string
-  defaultAmount: string
-  defaultUsdValue: string
   projects: Project[]
 }
 

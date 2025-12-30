@@ -72,7 +72,6 @@ export default function CartPage() {
                     key={round.id}
                     roundData={round}
                     cartRoundData={group}
-                    token={token}
                     projects={projectsForUi}
                   />
                 )
