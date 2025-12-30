@@ -4,7 +4,7 @@ import { defineChain } from 'thirdweb/chains'
 import { TokenIcon, TokenProvider } from 'thirdweb/react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
-import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants/project'
+import { QF_ROUND_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
@@ -34,7 +34,7 @@ export const ProjectCartCard = ({
           )}
           {!project.image && (
             <Image
-              src={PROJECT_FALLBACK_IMAGE}
+              src={QF_ROUND_FALLBACK_IMAGE}
               alt="Project Fallback Image"
               className="w-14 h-[45px] rounded-md overflow-hidden"
               width={56}
