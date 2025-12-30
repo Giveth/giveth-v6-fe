@@ -223,3 +223,16 @@ export const calculateTotalDonationValueForRoundInUSD = (
       return sum + amount
     }, 0)
 }
+
+export const calculateROundTotalMatchingValue = (
+  roundId: number,
+  cartItems: ProjectCartItem[],
+) => {
+  return cartItems
+    .filter(item => item.roundId === roundId)
+    .reduce((sum, item) => {
+      const priceInUSD = item.selectedToken?.priceInUSD ?? 0
+      const amount = parseFloat(item.donationAmount || '0') * priceInUSD
+      return sum + amount
+    }, 0)
+}

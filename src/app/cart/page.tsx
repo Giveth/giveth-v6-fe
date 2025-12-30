@@ -67,7 +67,7 @@ export default function CartPage() {
           </div>
 
           {/* Right Column - Sidebar */}
-          <DonationSidebar />
+          <DonationSidebar qfRoundGroups={qfRoundGroups} />
         </div>
       </main>
     </div>
