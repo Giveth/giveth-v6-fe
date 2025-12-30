@@ -40,6 +40,9 @@ yarn-error.log*
 next-env.d.ts
 .vscode/settings.json
 
+# graphql-codegen (generated client/types)
+src/lib/graphql/generated/
+
 # IDEs
 .idea
 .vscode

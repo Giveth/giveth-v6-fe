@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "prebuild": "pnpm run codegen",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -14,7 +15,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "update:schema": "node ./scripts/update-schema.mjs"
   },
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",

@@ -1,0 +1,957 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AddWalletInput {
+  address: String!
+}
+
+type AllocatedGivbacksEntity {
+  allocatedGivTokens: Float!
+  date: DateTime!
+  givPrice: Float!
+  usdValueSentAmountInPowerRound: Float!
+}
+
+type AuthUser {
+  avatar: String
+  email: String
+  id: Int!
+  name: String
+  primaryWallet: String
+}
+
+type CategoryEntity {
+  canUseOnFrontend: Boolean!
+  id: ID!
+  isActive: Boolean!
+  mainCategory: MainCategoryEntity
+  mainCategoryId: ID
+  name: String!
+  source: String
+  value: String
+}
+
+type CauseEntity {
+  addresses: [ProjectAddressEntity!]
+  adminUser: UserEntity
+  adminUserId: Int!
+  categories: [CategoryEntity!]
+  countUniqueDonors: Int
+  countUniqueDonorsForActiveQfRound: Int
+  createdAt: DateTime!
+  description: String
+  descriptionSummary: String
+  id: ID!
+  image: String
+  impactLocation: String
+  isGivbacksEligible: Boolean!
+  latestUpdateCreationDate: DateTime
+  powerRank: Int
+  projectQfRounds: [ProjectQfRoundEntity!]!
+  projectType: ProjectType!
+  qfRoundMatchingProjects: [QfRoundMatchingProjectEntity!]
+  qualityScore: Float!
+  reviewStatus: ReviewStatus!
+
+  """Search relevance score, only populated when using searchTerm filter"""
+  searchRank: Float
+  slug: String!
+  slugHistory: [String!]!
+  socialMedia: [ProjectSocialMediaEntity!]
+  status: ProjectStatus
+  sumDonationValueUsdForActiveQfRound: Float
+  title: String!
+  totalDonations: Float!
+  totalProjectUpdates: Int
+  totalReactions: Int!
+  updatedAt: DateTime!
+  vouched: Boolean!
+}
+
+enum ChainType {
+  EVM
+  SOLANA
+}
+
+type CommentEntity {
+  content: String
+  createdAt: DateTime
+  email: String
+}
+
+type CommentsSectionEntity {
+  comments: [CommentEntity!]
+}
+
+input ConfirmEmailVerificationInput {
+  email: String!
+  verifyCode: String!
+}
+
+type Country {
+  code: String!
+  name: String!
+}
+
+input CreateDonationInput {
+  amount: Float!
+  anonymous: Boolean
+  chainType: String
+  currency: String!
+  fromWalletAddress: String!
+  nonce: Int
+  projectId: Int!
+  qfRoundId: Int
+  toWalletAddress: String!
+  tokenAddress: String
+  transactionId: String!
+  transactionNetworkId: Int!
+}
+
+input CreateProjectInput {
+  addresses: [ProjectAddressInput!]
+  categoryIds: [Int!]
+  description: String!
+  image: String
+  impactLocation: String
+  projectType: ProjectType
+  title: String!
+}
+
+input CreateProjectUpdateInput {
+  content: String!
+  contentSummary: String
+  isMain: Boolean
+  title: String!
+}
+
+input CreateQfRoundInput {
+  allocatedFund: Float!
+  allocatedFundUSD: Float
+  allocatedFundUSDPreferred: Boolean
+  allocatedTokenChainId: Int
+  allocatedTokenSymbol: String
+  bannerBgImage: String
+  bannerFull: String
+  bannerMobile: String
+  beginDate: String!
+  clusterMatchingSyncAt: String
+  description: String
+  displaySize: DisplaySize
+  eligibleNetworks: [Int!]
+  endDate: String!
+  hubCardImage: String
+  isActive: Boolean
+  maximumReward: Float
+  minMBDScore: Float
+  minimumPassportScore: Float!
+  minimumValidUsdValue: Float
+  name: String!
+  priority: Int
+  qfStrategy: String
+  sponsorsImgs: [String!]
+  title: String
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum DisplaySize {
+  LARGE
+  STANDARD
+}
+
+type DonationCurrencyStatsEntity {
+  currency: String
+  currencyPercentage: Float
+  uniqueDonorCount: Int
+}
+
+type DonationEntity {
+  amount: Float!
+  anonymous: Boolean
+  chainType: ChainType!
+  createdAt: DateTime!
+  currency: String!
+  donationPercentage: Float
+  fromWalletAddress: String!
+  id: ID!
+  isCustomToken: Boolean!
+  isExternal: Boolean!
+  isProjectGivbackEligible: Boolean!
+  nonce: Float
+  priceUsd: Float
+  project: ProjectEntity
+  projectId: Int!
+  qfRoundErrorMessage: String
+  qfRoundId: Int
+  qfRoundUserScore: Float
+  status: DonationStatus!
+  toWalletAddress: String!
+  tokenAddress: String
+  transactionId: String!
+  transactionNetworkId: Int!
+  useDonationBox: Boolean!
+  user: UserEntity
+  userId: Int
+  valueUsd: Float
+  verifyErrorMessage: String
+}
+
+type DonationMetricsEntity {
+  averagePercentageToGiveth: Float!
+  totalDonationsToGiveth: Int!
+  totalUsdValueToGiveth: Float!
+}
+
+type DonationStatsEntity {
+  donationsCount: Int!
+  totalAmount: Float!
+  totalUsd: Float!
+  uniqueDonors: Int!
+}
+
+"""Status of a donation"""
+enum DonationStatus {
+  FAILED
+  PENDING
+  TIMEOUT
+  VERIFIED
+}
+
+type EmailVerificationRequestEntity {
+  email: String!
+  expiresAt: DateTime!
+  status: String!
+}
+
+type EstimatedMatchingEntity {
+  allProjectsSqrtSum: Float!
+  estimatedMatching: Float!
+  matchingPool: Float!
+  projectDonationsSqrtSum: Float!
+  projectId: Int!
+  qfRoundId: Int!
+}
+
+type FeaturedUpdateEntity {
+  createdAt: DateTime!
+  id: Int!
+  position: Int
+  projectId: Int
+  projectUpdateId: Int
+  updatedAt: DateTime!
+}
+
+type FormRelatedAddressEntity {
+  address: String
+  chainType: ChainType
+  memo: String
+  networkId: Float
+  title: String
+}
+
+input FormRelatedAddressInput {
+  address: String
+  chainType: String
+  memo: String
+  networkId: Float
+  title: String
+}
+
+input GetPowerBoostingInput {
+  orderBy: PowerBoostingOrderByInput
+  projectId: Int
+  skip: Int! = 0
+  take: Int! = 1000
+  userId: Int
+}
+
+type GivPowersEntity {
+  powerBoostings: [PowerBoostingEntity!]!
+  totalCount: Int!
+}
+
+type GivbacksEligibilityFormEntity {
+  commentsSection: CommentsSectionEntity
+  createdAt: DateTime!
+  email: String
+  emailConfirmationSent: Boolean!
+  emailConfirmationSentAt: DateTime
+  emailConfirmationToken: String
+  emailConfirmationTokenExpiredAt: DateTime
+  emailConfirmed: Boolean!
+  emailConfirmedAt: DateTime
+  id: Int!
+  isTermAndConditionsAccepted: Boolean!
+  lastStep: String
+  managingFunds: ManagingFundsEntity
+  milestones: MilestonesEntity
+  personalInfo: PersonalInfoEntity
+  projectContacts: [ProjectContactsEntity!]
+  projectId: Int!
+  projectRegistry: ProjectRegistryEntity
+  reviewerId: Int
+  status: GivbacksEligibilityStatus!
+  updatedAt: DateTime!
+  verifiedAt: DateTime
+}
+
+enum GivbacksEligibilityStatus {
+  DRAFT
+  REJECTED
+  SUBMITTED
+  VERIFIED
+}
+
+input GivbacksEligibilityUpdateInput {
+  givbacksEligibilityId: Int!
+  isTermAndConditionsAccepted: Boolean
+  lastStep: String
+  managingFunds: ManagingFundsInput
+  milestones: MilestonesInput
+  personalInfo: PersonalInfoInput
+  projectContacts: [ProjectContactsInput!]
+  projectRegistry: ProjectRegistryInput
+}
+
+type LikeResponseEntity {
+  liked: Boolean!
+  reactionId: Int
+}
+
+type MainCategoryDonationsEntity {
+  id: Int!
+  slug: String!
+  title: String!
+  totalUsd: Float!
+}
+
+type MainCategoryEntity {
+  banner: String
+  categories: [CategoryEntity!]
+  description: String
+  id: ID!
+  slug: String!
+  title: String!
+}
+
+type ManagingFundsEntity {
+  description: String
+  relatedAddresses: [FormRelatedAddressEntity!]
+}
+
+input ManagingFundsInput {
+  description: String
+  relatedAddresses: [FormRelatedAddressInput!]
+}
+
+type MilestonesEntity {
+  achievedMilestones: String
+  achievedMilestonesProofs: [String!]
+  foundationDate: String
+  impact: String
+  mission: String
+  plans: String
+  problem: String
+}
+
+input MilestonesInput {
+  achievedMilestones: String
+  achievedMilestonesProofs: [String!]
+  foundationDate: String
+  impact: String
+  mission: String
+  plans: String
+  problem: String
+}
+
+type Mutation {
+  addNewSocialProfile(projectVerificationId: Int!, socialNetwork: String!): String!
+  addProjectAddress(address: String!, chainType: ChainType, networkId: Int!, projectId: Int!, title: String): ProjectEntity!
+  addProjectToQfRound(projectId: Int!, qfRoundId: Int!): Boolean!
+  addProjectUpdate(input: CreateProjectUpdateInput!, projectId: Int!): ProjectUpdateEntity!
+  addWallet(input: AddWalletInput!): UserEntity!
+  calculateQfRoundMatching(qfRoundId: Int!): QfRoundMatchingEntity!
+  confirmEmailVerification(input: ConfirmEmailVerificationInput!): UserEntity!
+  createAvatarUploadUrl(file: Upload!): String!
+  createCause(input: CreateProjectInput!): CauseEntity!
+  createDonation(input: CreateDonationInput!): DonationEntity!
+  createGivbacksEligibilityForm(slug: String!): GivbacksEligibilityFormEntity!
+  createProject(input: CreateProjectInput!): ProjectEntity!
+  createQfRound(input: CreateQfRoundInput!): QfRoundEntity!
+  deleteProjectUpdate(updateId: Int!): Boolean!
+  editProjectUpdate(input: UpdateProjectUpdateInput!, updateId: Int!): ProjectUpdateEntity!
+  givbacksEligibilityConfirmEmail(emailConfirmationToken: String!): GivbacksEligibilityFormEntity!
+  givbacksEligibilitySendEmailConfirmation(givbacksEligibilityFormId: Int!): GivbacksEligibilityFormEntity!
+  likeProject(projectId: Int!): LikeResponseEntity!
+  likeProjectUpdate(projectUpdateId: Int!): LikeResponseEntity!
+  removeProjectFromQfRound(projectId: Int!, qfRoundId: Int!): Boolean!
+  removeSocialProfile(socialProfileId: Int!): Boolean!
+  removeWallet(walletId: Int!): UserEntity!
+  requestEmailVerification(input: RequestEmailVerificationInput!): EmailVerificationRequestEntity!
+  setFeaturedProjectUpdate(position: Int, projectId: Int!, projectUpdateId: Int!): Boolean!
+  setMultiplePowerBoosting(percentages: [Float!]!, projectIds: [Int!]!): [PowerBoostingEntity!]!
+  setPrimaryWallet(walletId: Int!): UserEntity!
+  setSinglePowerBoosting(percentage: Float!, projectId: Int!): [PowerBoostingEntity!]!
+  unlikeProject(reactionId: Int!): Boolean!
+  unlikeProjectUpdate(reactionId: Int!): Boolean!
+  updateCause(causeId: Int!, input: UpdateProjectInput!): CauseEntity!
+  updateDonationStatus(donationId: Int!, status: DonationStatus): DonationEntity!
+  updateGivbacksEligibilityForm(givbacksEligibilityUpdateInput: GivbacksEligibilityUpdateInput!): GivbacksEligibilityFormEntity!
+  updateProject(input: UpdateProjectInput!, projectId: Int!): ProjectEntity!
+  updateQfRound(id: Int!, input: UpdateQfRoundInput!): QfRoundEntity!
+  verifyDonation(input: VerifyDonationInput!): DonationEntity!
+  verifySiweToken(jwt: String!): SiweAuthResponse!
+}
+
+type PaginatedDonationsEntity {
+  donations: [DonationEntity!]!
+  total: Int!
+  totalUsdBalance: Float
+}
+
+type PaginatedProjectsEntity {
+  projects: [ProjectEntity!]!
+  total: Int!
+}
+
+type PaginatedQfRoundsEntity {
+  rounds: [QfRoundEntity!]!
+  total: Int!
+}
+
+type PersonalInfoEntity {
+  email: String
+  fullName: String
+  walletAddress: String
+}
+
+input PersonalInfoInput {
+  email: String
+  fullName: String
+  walletAddress: String
+}
+
+type PowerBoostingEntity {
+  createdAt: DateTime!
+  id: Int!
+  percentage: Float!
+  powerRank: Int
+  project: ProjectEntity
+  projectId: Int!
+  updatedAt: DateTime!
+  user: UserEntity
+  userId: Int!
+}
+
+input PowerBoostingOrderByInput {
+  direction: PowerBoostingOrderDirection! = DESC
+  field: PowerBoostingOrderField! = UpdatedAt
+}
+
+enum PowerBoostingOrderDirection {
+  ASC
+  DESC
+}
+
+enum PowerBoostingOrderField {
+  CreatedAt
+  Percentage
+  UpdatedAt
+}
+
+type ProjectAddressEntity {
+  address: String!
+  chainType: ChainType!
+  createdAt: DateTime!
+  id: ID!
+  isRecipient: Boolean!
+  networkId: Int!
+  projectId: Int!
+  title: String
+  updatedAt: DateTime!
+}
+
+input ProjectAddressInput {
+  address: String!
+  chainType: ChainType
+  networkId: Int!
+  title: String
+}
+
+type ProjectContactsEntity {
+  name: String
+  url: String
+}
+
+input ProjectContactsInput {
+  name: String
+  url: String
+}
+
+type ProjectEntity {
+  addresses: [ProjectAddressEntity!]
+  adminUser: UserEntity
+  adminUserId: Int!
+  categories: [CategoryEntity!]
+  countUniqueDonors: Int
+  countUniqueDonorsForActiveQfRound: Int
+  createdAt: DateTime!
+  description: String
+  descriptionSummary: String
+  id: ID!
+  image: String
+  impactLocation: String
+  isGivbacksEligible: Boolean!
+  latestUpdateCreationDate: DateTime
+  powerRank: Int
+  projectQfRounds: [ProjectQfRoundEntity!]!
+  projectType: ProjectType!
+  qfRoundMatchingProjects: [QfRoundMatchingProjectEntity!]
+  qualityScore: Float!
+  reviewStatus: ReviewStatus!
+
+  """Search relevance score, only populated when using searchTerm filter"""
+  searchRank: Float
+  slug: String!
+  slugHistory: [String!]!
+  socialMedia: [ProjectSocialMediaEntity!]
+  status: ProjectStatus
+  sumDonationValueUsdForActiveQfRound: Float
+  title: String!
+  totalDonations: Float!
+  totalProjectUpdates: Int
+  totalReactions: Int!
+  updatedAt: DateTime!
+  vouched: Boolean!
+}
+
+input ProjectFiltersInput {
+  """Filter to show only projects in active QF rounds"""
+  activeQfRound: Boolean
+  category: String
+  isGivbacksEligible: Boolean
+  mainCategory: String
+
+  """
+  Filter projects by accepted recipient networks (EVM chain IDs / networkId)
+  """
+  networkIds: [Int!]
+  projectType: ProjectType
+  qfRoundId: Int
+  searchTerm: String
+  vouched: Boolean
+}
+
+type ProjectMatchingEntity {
+  matchingAmount: Float!
+  matchingPercent: Float
+  projectId: Int!
+}
+
+type ProjectQfRoundEntity {
+  countUniqueDonors: Int!
+  id: ID!
+  project: ProjectEntity
+  projectId: Int!
+  qfRound: QfRoundEntity
+  qfRoundId: Int!
+  sumDonationValueUsd: Float!
+}
+
+type ProjectRegistryEntity {
+  attachments: [String!]
+  isNonProfitOrganization: Boolean
+  organizationCountry: String
+  organizationDescription: String
+  organizationName: String
+  organizationWebsite: String
+}
+
+input ProjectRegistryInput {
+  attachments: [String!]
+  isNonProfitOrganization: Boolean
+  organizationCountry: String
+  organizationDescription: String
+  organizationName: String
+  organizationWebsite: String
+}
+
+type ProjectSocialMediaEntity {
+  id: ID!
+  link: String!
+  projectId: Int!
+  type: String!
+}
+
+"""Fields to sort projects by"""
+enum ProjectSortField {
+  CreatedAt
+  QfDonations
+  QualityScore
+  Relevance
+  TotalDonations
+  UpdatedAt
+}
+
+enum ProjectStatus {
+  ACTIVE
+  CANCELLED
+  CLARIFICATION
+  DEACTIVE
+  DRAFTED
+  PENDING
+  REJECTED
+  VERIFICATION
+}
+
+enum ProjectType {
+  CAUSE
+  PROJECT
+}
+
+type ProjectUpdateEntity {
+  content: String!
+  contentSummary: String
+  createdAt: DateTime!
+  id: ID!
+  isMain: Boolean
+  projectId: Int!
+  title: String!
+  totalReactions: Int!
+}
+
+input ProjectUpdateQueryInput {
+  isMain: Boolean
+  order: SortDirection
+  projectId: Int!
+  skip: Int = 0
+  take: Int = 10
+}
+
+type ProjectUpdatesResult {
+  projectUpdates: [ProjectUpdateEntity!]!
+  totalCount: Int!
+}
+
+type QfRoundEntity {
+  allocatedFund: Float!
+  allocatedFundUSD: Float
+  allocatedFundUSDPreferred: Boolean
+  allocatedTokenChainId: Int
+  allocatedTokenSymbol: String
+  bannerBgImage: String
+  bannerFull: String
+  bannerMobile: String
+  beginDate: DateTime!
+  clusterMatchingSyncAt: DateTime
+  createdAt: DateTime!
+  description: String
+  displaySize: DisplaySize
+  eligibleNetworks: [Int!]!
+  endDate: DateTime!
+  hubCardImage: String
+  id: ID!
+  isActive: Boolean!
+  isDataAnalysisDone: Boolean!
+  maximumReward: Float!
+  minMBDScore: Float
+  minimumPassportScore: Float!
+  minimumValidUsdValue: Float!
+  name: String!
+  priority: Int!
+  qfStrategy: QfStrategy!
+  slug: String!
+  sponsorsImgs: [String!]!
+  sybilDefense: SybilDefenseType!
+  title: String
+  updatedAt: DateTime!
+}
+
+type QfRoundMatchingEntity {
+  calculatedAt: DateTime!
+  projectMatching: [ProjectMatchingEntity!]!
+  qfRoundId: Int!
+  totalMatchingPool: Float!
+}
+
+type QfRoundMatchingProjectEntity {
+  deltaMatch: Float
+  deltaTqf: Float
+  deltaTqfCocm: Float
+  id: ID!
+  matchingAmount: Float!
+  matchingAmountQf: Float
+  matchingAmountTqf: Float
+  matchingAmountTqfCocm: Float
+  matchingAmountUsd: Float
+  matchingPercent: Float
+  projectId: Int!
+  qfRoundMatchingId: Int!
+}
+
+type QfRoundStatsEntity {
+  donationsCount: Int!
+  qfRound: QfRoundEntity!
+  totalDonationsUsd: Float!
+  uniqueDonors: Int!
+}
+
+enum QfStrategy {
+  COCM
+  REGULAR
+}
+
+type Query {
+  activeQfRounds: [QfRoundEntity!]!
+  allocatedGivbacks(refreshCache: Boolean): AllocatedGivbacksEntity
+  archivedQfRounds(skip: Int! = 0, take: Int! = 20): PaginatedQfRoundsEntity!
+  categories: [CategoryEntity!]!
+  cause(id: Int!): CauseEntity
+  causeBySlug(slug: String!): CauseEntity
+  causes(filters: ProjectFiltersInput, skip: Int! = 0, take: Int! = 20): [CauseEntity!]!
+  doesDonatedToProjectInQfRound(projectId: Int!, qfRoundId: Int!, userId: Int!): Boolean!
+  donation(id: Int!): DonationEntity!
+  donationMetrics(endDate: String!, startDate: String!): DonationMetricsEntity!
+  donationsByProject(projectId: Int!, qfRoundId: Int, skip: Int! = 0, take: Int! = 20): PaginatedDonationsEntity!
+  donationsByUser(skip: Int! = 0, take: Int! = 20, userId: Int!): PaginatedDonationsEntity!
+  donationsTotalUsdPerDate(fromDate: String, networkId: Int, onlyVerified: Boolean, toDate: String): ResourcePerDateRangeEntity
+  estimatedMatching(donationAmount: Float!, donorAddress: String!, projectId: Int!, qfRoundId: Int!): EstimatedMatchingEntity!
+  featuredProjectUpdate(projectId: Int!): FeaturedUpdateEntity
+  featuredProjects(skip: Int! = 0, take: Int! = 10): PaginatedProjectsEntity!
+  getAllowedCountries: [Country!]!
+  getCurrentGivbacksEligibilityForm(slug: String!): GivbacksEligibilityFormEntity!
+  getDonationById(id: Int!): DonationEntity
+  getDonationStats(fromDate: String, networkId: Int, toDate: String): [DonationCurrencyStatsEntity!]!
+  getPowerBoosting(input: GetPowerBoostingInput!): GivPowersEntity!
+  getProjectReactions(projectId: Int!): [ReactionEntity!]!
+  getTopPowerRank: Float!
+  isValidCauseTitle(causeId: Int, title: String!): Boolean!
+  isValidCauseTitleForEdit(causeId: Int!, title: String!): Boolean!
+  isValidWalletAddress(address: String!): Boolean!
+  mainCategories: [MainCategoryEntity!]!
+  me: UserEntity!
+  myDonations(skip: Int! = 0, take: Int! = 20): PaginatedDonationsEntity!
+  myProjects(filters: ProjectFiltersInput, orderBy: ProjectSortField! = CreatedAt, orderDirection: SortDirection! = DESC, skip: Int! = 0, take: Int! = 20): PaginatedProjectsEntity!
+  project(id: Int!): ProjectEntity!
+  projectBySlug(slug: String!): ProjectEntity!
+  projectDonationStats(projectId: Int!, qfRoundId: Int): DonationStatsEntity!
+  projectUpdates(input: ProjectUpdateQueryInput!): ProjectUpdatesResult!
+
+  """
+  Get paginated projects with optional filters including search term and active QF round filter
+  """
+  projects(
+    filters: ProjectFiltersInput
+
+    """
+    Sort field: createdAt, updatedAt, totalDonations, qualityScore, or relevance (only with searchTerm)
+    """
+    orderBy: ProjectSortField! = CreatedAt
+    orderDirection: SortDirection! = DESC
+    skip: Int! = 0
+    take: Int! = 20
+  ): PaginatedProjectsEntity!
+  qfRound(id: Int!): QfRoundEntity!
+  qfRoundBySlug(slug: String!): QfRoundEntity!
+  qfRoundStats(qfRoundId: Int!): QfRoundStatsEntity!
+  qfRounds(skip: Int! = 0, take: Int! = 20): PaginatedQfRoundsEntity!
+  recentDonations(take: Int! = 30): [DonationEntity!]
+  refreshUserScores(address: String!): UserEntity
+  similarProjectsBySlug(skip: Int! = 0, slug: String!, take: Int! = 10): PaginatedProjectsEntity!
+  subscribeOnboarding(email: String!): Boolean!
+  tokens: [TokenEntity!]!
+  tokensByNetwork(networkId: Int!): [TokenEntity!]!
+  totalDonationsNumberPerDate(fromDate: String, networkId: Int, onlyVerified: Boolean, toDate: String): ResourcePerDateRangeEntity
+  totalDonationsPerCategory(fromDate: String, networkId: Int, onlyVerified: Boolean, toDate: String): [MainCategoryDonationsEntity!]
+  totalDonorsCountPerDate(fromDate: String, networkId: Int, toDate: String): ResourcePerDateRangeEntity
+  user(id: Int!): UserEntity
+  userByAddress(address: String!): UserEntity
+  userStats(id: Int!): UserStatsEntity
+  validateEmail(email: String!): Boolean!
+  walletAddressIsPurpleListed(address: String!): Boolean!
+  walletAddressUsed(address: String!): WalletAddressUsedEntity!
+}
+
+type ReactionEntity {
+  createdAt: DateTime!
+  id: Int!
+  projectId: Int
+  projectUpdateId: Int
+  reaction: String!
+  updatedAt: DateTime!
+  userId: Int!
+}
+
+input RequestEmailVerificationInput {
+  email: String!
+}
+
+type ResourcePerDateRangeEntity {
+  total: Float
+  totalPerMonthAndYear: [ResourcesTotalPerMonthAndYearEntity!]
+}
+
+type ResourcesTotalPerMonthAndYearEntity {
+  date: String
+  total: Float
+}
+
+enum ReviewStatus {
+  LISTED
+  NOT_LISTED
+  NOT_REVIEWED
+}
+
+type SiweAuthResponse {
+  error: String
+  success: Boolean!
+  token: String
+  user: AuthUser
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum SybilDefenseType {
+  AVALANCHE_PASSPORT
+  NONE
+  PASSPORT_MODEL
+  PASSPORT_STAMPS
+}
+
+type TokenEntity {
+  address: String
+  chainType: ChainType!
+  coingeckoId: String
+  createdAt: DateTime!
+  decimals: Int!
+  id: ID!
+  isActive: Boolean!
+  isGivbacksEligible: Boolean!
+  name: String!
+  networkId: Int!
+  symbol: String!
+  updatedAt: DateTime!
+}
+
+input UpdateProjectInput {
+  addresses: [ProjectAddressInput!]
+  categoryIds: [Int!]
+  description: String
+  image: String
+  impactLocation: String
+  title: String
+}
+
+input UpdateProjectUpdateInput {
+  content: String
+  contentSummary: String
+  isMain: Boolean
+  title: String
+}
+
+input UpdateQfRoundInput {
+  allocatedFund: Float
+  allocatedFundUSD: Float
+  allocatedFundUSDPreferred: Boolean
+  allocatedTokenChainId: Int
+  allocatedTokenSymbol: String
+  bannerBgImage: String
+  bannerFull: String
+  bannerMobile: String
+  beginDate: String
+  clusterMatchingSyncAt: String
+  description: String
+  displaySize: DisplaySize
+  eligibleNetworks: [Int!]
+  endDate: String
+  hubCardImage: String
+  isActive: Boolean
+  maximumReward: Float
+  minMBDScore: Float
+  minimumPassportScore: Float
+  minimumValidUsdValue: Float
+  name: String
+  priority: Int
+  qfStrategy: String
+  sponsorsImgs: [String!]
+  title: String
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+type UserEntity {
+  avatar: String
+  createdAt: DateTime!
+  email: String
+  firstName: String
+  id: ID!
+  isEmailVerified: Boolean!
+  lastName: String
+  location: String
+  name: String
+  passportScore: Float
+  passportStamps: Int
+  primaryEns: String
+  role: String!
+  telegramName: String
+  totalDonated: Float!
+  totalReceived: Float!
+  twitterName: String
+  updatedAt: DateTime!
+  url: String
+  wallets: [UserWalletEntity!]!
+}
+
+type UserStatsEntity {
+  avatar: String
+  createdAt: DateTime!
+  donationsCount: Int!
+  email: String
+  firstName: String
+  id: ID!
+  isEmailVerified: Boolean!
+  lastName: String
+  likedProjectsCount: Int!
+  location: String
+  name: String
+  passportScore: Float
+  passportStamps: Int
+  primaryEns: String
+  projectsCount: Int!
+  role: String!
+  telegramName: String
+  totalDonated: Float!
+  totalReceived: Float!
+  twitterName: String
+  updatedAt: DateTime!
+  url: String
+  wallets: [UserWalletEntity!]!
+}
+
+type UserWalletEntity {
+  address: String!
+  chainType: ChainType!
+  createdAt: DateTime!
+  id: ID!
+  isPrimary: Boolean!
+  updatedAt: DateTime!
+  userId: Int!
+}
+
+input VerifyDonationInput {
+  donationId: Int!
+}
+
+type WalletAddressUsedEntity {
+  hasDonated: Boolean!
+  hasRelatedProject: Boolean!
+}

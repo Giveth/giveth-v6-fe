@@ -1,10 +1,7 @@
-import { env } from './src/lib/env'
 import type { CodegenConfig } from '@graphql-codegen/cli'
 
-const schemaEndpoint = env.GRAPHQL_ENDPOINT
-
 const config: CodegenConfig = {
-  schema: schemaEndpoint,
+  schema: './src/lib/graphql/schema.gql',
   documents: ['src/**/*.{ts,tsx}'],
   ignoreNoDocuments: true,
   generates: {
