@@ -48,6 +48,7 @@ See `.env.example` for required variables:
 - `NEXT_PUBLIC_GRAPHQL_ENDPOINT`
 - `NEXT_PUBLIC_THIRDWEB_CLIENT_ID`
 - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` (optional)
+- `NEXT_PUBLIC_SCHEMA_URL` (Either point to schema.gql file in v6 core repo, e.g. '../giveth-v6-core/src/schema.gql' or local graphQL endpoint like http://localhost:4000/graphql)
 
 ## Testing & quality
 
