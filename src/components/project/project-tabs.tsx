@@ -3,14 +3,28 @@
 interface ProjectTabsProps {
   activeTab: string
   onTabChange: (tab: string) => void
+  updatesCount?: number | null
+  donationsCount?: number | null
+  givpowerCount?: number | null
 }
 
-export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
+export function ProjectTabs({
+  activeTab,
+  onTabChange,
+  updatesCount = null,
+  donationsCount = null,
+  givpowerCount = null,
+}: ProjectTabsProps) {
   const tabs = [
     { id: 'about', label: 'About', count: null },
-    { id: 'updates', label: 'Updates', count: 5 },
-    { id: 'donations', label: 'Donations', count: 4092, highlight: true },
-    { id: 'givpower', label: 'GIVpower', count: 56 },
+    { id: 'updates', label: 'Updates', count: updatesCount },
+    {
+      id: 'donations',
+      label: 'Donations',
+      count: donationsCount,
+      highlight: true,
+    },
+    { id: 'givpower', label: 'GIVpower', count: givpowerCount },
   ]
 
   return (

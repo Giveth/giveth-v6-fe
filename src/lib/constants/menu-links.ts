@@ -1,4 +1,11 @@
-export const LogoLink = process.env.NEXT_PUBLIC_OLD_FRONTEND_URL || '/'
+import { env } from '@/lib/env'
+
+const oldFrontend = env.OLD_FRONTEND_URL
+
+const oldFrontendPath = (path: string, fallback: string) =>
+  oldFrontend ? `${oldFrontend}${path}` : fallback
+
+export const LogoLink = oldFrontend ?? '/'
 
 // Menu items for the navigation
 export const menuItems = [
@@ -8,51 +15,45 @@ export const menuItems = [
   },
   {
     label: 'GIVeconomy',
-    href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givfarm' || '/givfarm',
+    href: oldFrontendPath('/givfarm', '/givfarm'),
     submenu: [
       {
         label: 'Stake GIV',
-        href:
-          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givfarm' || '/givfarm',
+        href: oldFrontendPath('/givfarm', '/givfarm'),
       },
       {
         label: 'GIVbacks',
-        href:
-          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/givbacks' || '/givbacks',
+        href: oldFrontendPath('/givbacks', '/givbacks'),
       },
     ],
   },
   {
     label: 'Community',
-    href:
-      process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/onboarding' || '/onboarding',
+    href: oldFrontendPath('/onboarding', '/onboarding'),
     submenu: [
       {
         label: 'Get Started',
-        href:
-          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/onboarding' ||
-          '/onboarding',
+        href: oldFrontendPath('/onboarding', '/onboarding'),
       },
       {
         label: 'Givers NFT',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/nft' || '/nft',
+        href: oldFrontendPath('/nft', '/nft'),
       },
       {
         label: 'About Us',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/about' || '/about',
+        href: oldFrontendPath('/about', '/about'),
       },
       {
         label: 'Vote',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/vote' || '/vote',
+        href: oldFrontendPath('/vote', '/vote'),
       },
       {
         label: 'Join Us',
-        href: process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/join' || '/join',
+        href: oldFrontendPath('/join', '/join'),
       },
       {
         label: 'Leave Feedback',
-        href:
-          process.env.NEXT_PUBLIC_OLD_FRONTEND_URL + '/feedback' || '/feedback',
+        href: oldFrontendPath('/feedback', '/feedback'),
       },
     ],
   },

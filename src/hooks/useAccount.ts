@@ -249,6 +249,6 @@ export const useUploadAvatar = (token?: string) =>
       uploadAvatarRequest({
         file,
         token,
-        endpoint: env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
+        endpoint: env.GRAPHQL_ENDPOINT,
       }),
   })

@@ -4,7 +4,7 @@ import { env } from '@/lib/env'
 export const createGraphQLClient = (options?: {
   headers?: Record<string, string>
 }) => {
-  return new GraphQLClient(env.NEXT_PUBLIC_GRAPHQL_ENDPOINT, {
+  return new GraphQLClient(env.GRAPHQL_ENDPOINT, {
     headers: {
       'Content-Type': 'application/json',
       'apollo-require-preflight': 'true',

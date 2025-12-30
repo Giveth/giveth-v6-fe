@@ -10,7 +10,7 @@ import {
   type FilterType,
 } from '@/components/project/donation-table-dropdown'
 import { useProjectDonations } from '@/hooks/useProject'
-import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/project'
+import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import {
   getChainIcon,
   getChainName,

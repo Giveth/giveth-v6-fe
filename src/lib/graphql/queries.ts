@@ -398,6 +398,24 @@ export const myDonationsQuery = graphql(`
   }
 `)
 
+export const projectUpdatesQuery = graphql(`
+  query ProjectUpdates($input: ProjectUpdateQueryInput!) {
+    projectUpdates(input: $input) {
+      totalCount
+      projectUpdates {
+        id
+        title
+        projectId
+        content
+        contentSummary
+        createdAt
+        isMain
+        totalReactions
+      }
+    }
+  }
+`)
+
 export const profileQuery = graphql(`
   query MeProfile {
     me {
