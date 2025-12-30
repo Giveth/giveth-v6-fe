@@ -51,6 +51,13 @@ export const ProjectBadges = ({
     ? 'Donation will be matched'
     : 'unlocks matching funds'
 
+  // const isDonationMatched =
+  // !!selectedQFRound &&
+  // isOnQFEligibleNetworks &&
+  // donationUsdValue >= (selectedQFRound?.minimumValidUsdValue || 0);
+  //
+  //
+  //
   // TODO: Check project matching eligibility"!!!!"
   // HERE IS ONLY FOR SHOWING THE BADGE, NOT FOR THE LOGIC
   // const { isGivbackEligible } = project || {}
