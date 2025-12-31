@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb/chains'
@@ -9,6 +9,15 @@ import { useCart } from '@/context/CartContext'
 import { formatNumber, useWalletTokens } from '@/lib/helpers/cartHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { WalletTokenWithBalance } from '@/lib/types/chain'
+
+const chainCache = new Map<number, ReturnType<typeof defineChain>>()
+function getCachedChain(chainId: number) {
+  const cached = chainCache.get(chainId)
+  if (cached) return cached
+  const chain = defineChain(chainId)
+  chainCache.set(chainId, chain)
+  return chain
+}
 
 // tokens.ts
 export interface Token {
@@ -86,13 +95,10 @@ export const TokenDropdown = ({
         <button className="max-[480px]:w-full md:w-auto md:ml-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
           {selectedToken?.address && (
             <div className="flex items-center gap-2">
-              <TokenProvider
+              <TokenIconCached
                 address={selectedToken.address}
-                chain={defineChain(selectedChainId)}
-                client={thirdwebClient}
-              >
-                <TokenIcon className="h-5 w-5" />
-              </TokenProvider>
+                chainId={selectedChainId}
+              />
               <span className="text-base font-medium text-giv-gray-900">
                 {selectedToken.symbol}
               </span>
@@ -160,13 +166,10 @@ function TokenDropdownItems({
           "
         >
           <div className="flex items-center justify-start gap-4">
-            <TokenProvider
+            <TokenIconCached
               address={t.address as `0x${string}`}
-              chain={defineChain(t.chainId)}
-              client={thirdwebClient}
-            >
-              <TokenIcon className="h-5 w-5" />
-            </TokenProvider>
+              chainId={t.chainId}
+            />
             <span className="font-medium">{t.symbol}</span>
             <span className="text-[#82899a] tabular-nums ml-auto">
               {formatNumber(t.formattedBalance, {
@@ -180,3 +183,23 @@ function TokenDropdownItems({
     </>
   )
 }
+
+const TokenIconCached = memo(function TokenIconCached({
+  address,
+  chainId,
+}: {
+  address: `0x${string}`
+  chainId: number
+}) {
+  return (
+    <TokenProvider
+      address={address}
+      chain={getCachedChain(chainId)}
+      client={thirdwebClient}
+    >
+      <TokenIcon className="h-5 w-5" />
+    </TokenProvider>
+  )
+})
+
+TokenIconCached.displayName = 'TokenIconCached'

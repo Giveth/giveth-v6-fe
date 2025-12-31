@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb'
@@ -6,6 +6,15 @@ import { ChainProvider, ChainIcon as ThirdwebChainIcon } from 'thirdweb/react'
 import { useCart } from '@/context/CartContext'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
+
+const chainCache = new Map<number, ReturnType<typeof defineChain>>()
+function getCachedChain(chainId: number) {
+  const cached = chainCache.get(chainId)
+  if (cached) return cached
+  const chain = defineChain(chainId)
+  chainCache.set(chainId, chain)
+  return chain
+}
 
 export const ChainDropdown = ({
   selectedChainId,
@@ -94,8 +103,8 @@ export const ChainDropdown = ({
   )
 }
 
-function ChainIcon({ chainId }: { chainId: number }) {
-  const chain = defineChain(chainId)
+const ChainIcon = memo(function ChainIcon({ chainId }: { chainId: number }) {
+  const chain = getCachedChain(chainId)
   return (
     <ChainProvider chain={chain}>
       <ThirdwebChainIcon
@@ -105,4 +114,6 @@ function ChainIcon({ chainId }: { chainId: number }) {
       />
     </ChainProvider>
   )
-}
+})
+
+ChainIcon.displayName = 'ChainIcon'

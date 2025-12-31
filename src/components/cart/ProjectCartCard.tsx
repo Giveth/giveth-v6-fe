@@ -16,7 +16,11 @@ export const ProjectCartCard = ({
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
   project: ProjectCartItem
 }) => {
-  const { updateProjectDonation } = useCart()
+  const { updateProjectDonation, removeFromCart } = useCart()
+
+  const handleRemoveItem = (roundId: number, itemId: string) => {
+    removeFromCart(roundId, itemId)
+  }
   return (
     <div className="px-4 py-4 border border-giv-gray-300 mb-4 mn-last:mb-0 rounded-xl hover:bg-giv-gray-200 transition-colors">
       {/* Project Info */}
@@ -46,7 +50,12 @@ export const ProjectCartCard = ({
             {project.title}
           </h4>
         </div>
-        <button className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer">
+        <button
+          onClick={() =>
+            handleRemoveItem(Number(roundData?.id ?? 0), project.id)
+          }
+          className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer"
+        >
           <X className="w-4 h-4" />
         </button>
       </div>
