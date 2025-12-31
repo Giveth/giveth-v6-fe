@@ -1,48 +1,73 @@
 'use client'
 
-import router from 'next/router'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
-import { formatNumber, useWalletTokens } from '@/lib/helpers/cartHelper'
+import { type ProjectCartItem } from '@/context/CartContext'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import { type GroupedProjects } from '@/lib/types/cart'
+import { InsufficientFund } from '../modals/InsufficientFund'
 
 export function DonationSidebar({
   qfRoundGroups,
+  nonQfProjects,
 }: {
   qfRoundGroups: GroupedProjects[]
+  nonQfProjects: ProjectCartItem[]
 }) {
   if (qfRoundGroups.length === 0) return null
 
-  console.log({ qfRoundGroups })
+  const router = useRouter()
+  useActiveAccount()
 
-  const account = useActiveAccount()
-  const accountAddress = account?.address
+  const [isInsufficientFund, setIsInsufficientFund] = useState(false)
 
   const handleDonateButtonClick = () => {
-    // Check is cart value match user wallet balance
-    const totalCartValue = qfRoundGroups.reduce((acc, group) => {
+    // Check is cart group value match user wallet balance
+    const totalGroupCartValueUsd = qfRoundGroups.reduce((acc, group) => {
       return acc + Number(group.totalUsdValue)
     }, 0)
-    const walletTokens = useWalletTokens(
-      qfRoundGroups[0].selectedChainId,
-      accountAddress,
-    )
-    if (
-      walletTokens.data &&
-      walletTokens.data.length > 0 &&
-      walletTokens.status === 'success'
-    ) {
-      const userWalletBalance = walletTokens.reduce((acc, token) => {
-        return acc + Number(token.balance)
-      }, 0)
-    }
-    if (totalCartValue > userWalletBalance) {
-      toast.error('Insufficient balance')
+
+    const totalGroupCartBalanceUsd = qfRoundGroups.reduce((acc, group) => {
+      return (
+        acc +
+        Number(group.selectedToken?.formattedBalance ?? 0) *
+          Number(group.selectedToken?.priceInUSD ?? 0)
+      )
+    }, 0)
+
+    if (totalGroupCartValueUsd > totalGroupCartBalanceUsd) {
+      setIsInsufficientFund(true)
       return
     }
+
+    // Check is cart non-group value match user wallet balance
+    const totalNonGroupCartValueUsd = nonQfProjects.reduce((acc, project) => {
+      return (
+        acc +
+        Number(project.donationAmount) *
+          Number(project.selectedToken?.priceInUSD ?? 0)
+      )
+    }, 0)
+
+    const totalNonGroupCartBalanceUsd = nonQfProjects.reduce((acc, project) => {
+      return (
+        acc +
+        Number(project.selectedToken?.formattedBalance ?? 0) *
+          Number(project.selectedToken?.priceInUSD ?? 0)
+      )
+    }, 0)
+
+    if (totalNonGroupCartValueUsd > totalNonGroupCartBalanceUsd) {
+      setIsInsufficientFund(true)
+      return
+    }
+
+    router.push('/cart/pending')
   }
 
   return (
@@ -85,6 +110,27 @@ export function DonationSidebar({
               </p>
             </div>
           ))}
+          {nonQfProjects.map(project => (
+            <div
+              key={project.id}
+              className="p-3 rounded-lg border border-giv-gray-300"
+            >
+              <p className="text-base text-giv-gray-900 font-medium">
+                {project.title}
+              </p>
+              <p className="text-base text-giv-gray-900 font-medium mt-0.5">
+                {project.donationAmount} {project.tokenSymbol}{' '}
+                <span className="font-normal">
+                  (~$
+                  {formatNumber(
+                    Number(project.donationAmount) *
+                      (project.selectedToken?.priceInUSD ?? 0),
+                  )}
+                  )
+                </span>
+              </p>
+            </div>
+          ))}
         </div>
 
         <DonateToGiveth />
@@ -100,6 +146,11 @@ export function DonationSidebar({
 
         <AnonymousOption />
       </div>
+
+      <InsufficientFund
+        open={isInsufficientFund}
+        onOpenChange={setIsInsufficientFund}
+      />
     </div>
   )
 }

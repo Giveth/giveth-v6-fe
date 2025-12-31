@@ -13,14 +13,10 @@ export default function CartPage() {
   const { cartItems } = useCart()
 
   // Group cart items by round
-  const { qfRoundGroups } = useMemo(
+  const { qfRoundGroups, nonQfProjects } = useMemo(
     () => groupCartItemsByRound(cartItems),
     [cartItems],
   )
-
-  console.log({ activeRoundsData })
-  console.log({ cartItems })
-  console.log({ qfRoundGroups })
 
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
@@ -67,7 +63,10 @@ export default function CartPage() {
           </div>
 
           {/* Right Column - Sidebar */}
-          <DonationSidebar qfRoundGroups={qfRoundGroups} />
+          <DonationSidebar
+            qfRoundGroups={qfRoundGroups}
+            nonQfProjects={nonQfProjects}
+          />
         </div>
       </main>
     </div>
