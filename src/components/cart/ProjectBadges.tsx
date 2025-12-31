@@ -1,7 +1,11 @@
+import { useEffect, useState } from 'react'
+import { useActiveAccount } from 'thirdweb/react'
 import { GivBacksBadge } from '@/components/badges/GivBacksBadge'
-import { type ProjectCartItem } from '@/context/CartContext'
+import { useCart, type ProjectCartItem } from '@/context/CartContext'
+import { useProjectEstimatedMatching } from '@/hooks/projectHooks'
 import { GIVBACKS_DONATION_QUALIFICATION_VALUE_USD } from '@/lib/constants/app-main'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
+import { calculateEstimatedMatchingWithDonationAmount } from '@/lib/helpers/projectHelper'
 
 export const ProjectBadges = ({
   project,
@@ -10,11 +14,20 @@ export const ProjectBadges = ({
   project: ProjectCartItem
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
 }) => {
+  const { updateProjectDonation } = useCart()
+
   const donationAmountInUSD =
     Number(project.donationAmount ?? 0) *
     Number(project.selectedToken?.priceInUSD ?? 0)
 
-  console.log('project', project)
+  const [projectMatchingData, setProjectMatchingData] = useState({
+    allProjectsSum: 0,
+    matchingPool: 0,
+    projectDonationsSqrtRootSum: 0,
+  })
+
+  // Get user wallet address
+  const account = useActiveAccount()
 
   // FIRST check GIVBacks eligibility
   // Project needs to be GIVbacks eligible and the token needs to be GIVbacks eligible
@@ -51,27 +64,60 @@ export const ProjectBadges = ({
     ? 'Donation will be matched'
     : 'unlocks matching funds'
 
-  // const isDonationMatched =
-  // !!selectedQFRound &&
-  // isOnQFEligibleNetworks &&
-  // donationUsdValue >= (selectedQFRound?.minimumValidUsdValue || 0);
-  //
-  //
-  //
-  // TODO: Check project matching eligibility"!!!!"
-  // HERE IS ONLY FOR SHOWING THE BADGE, NOT FOR THE LOGIC
-  // const { isGivbackEligible } = project || {}
-  // const isTokenGivbacksEligible = token?.isGivbackEligible
-  // const isProjectGivbacksEligible = !!isGivbackEligible
+  // Get estimated matching for the project
+  const { data: estimatedMatching, isLoading: isEstimatedMatchingLoading } =
+    useProjectEstimatedMatching({
+      donationAmount: Number(project.donationAmount ?? 0),
+      donorAddress: account?.address ?? '', // ensure string
+      projectId: Number(project.id), // ensure number
+      qfRoundId: Number(roundData?.id), // ensure number
+    })
 
-  // const donationUsdValue =
-  //   (tokenPrice || 0) *
-  //   (truncateToDecimalPlaces(formatUnits(amount, decimals), decimals) || 0)
+  useEffect(() => {
+    const em = estimatedMatching?.estimatedMatching
+    if (em && !isEstimatedMatchingLoading) {
+      setProjectMatchingData({
+        allProjectsSum: em.allProjectsSqrtSum,
+        matchingPool: em.matchingPool,
+        projectDonationsSqrtRootSum: em.projectDonationsSqrtSum,
+      })
+    }
+  }, [estimatedMatching, isEstimatedMatchingLoading])
 
-  // const isGivbacksEligible =
-  //   isTokenGivbacksEligible &&
-  //   isProjectGivbacksEligible &&
-  //   donationUsdValue >= GIVBACKS_DONATION_QUALIFICATION_VALUE_USD
+  // NEED TO GET THE MAXIMUM REWARD FROM THE ROUND DATA AND
+  // AND THE ALLOCATED FUND USD PREFERRED FROM THE ROUND DATA AND
+  //const maximumReward = roundData?.maximumReward ?? 0
+  // const allocatedFundUSDPreferred = roundData?.allocatedFundUSDPreferred ?? false
+  // @mmahdighi: I'm not sure if we have those data from the BE side, so I'm using dummy data for now
+  const maximumReward = 100
+  const allocatedFundUSD = false
+  const allocatedFundUSDPreferred = 1
+
+  const esMatching = calculateEstimatedMatchingWithDonationAmount(
+    donationAmountInUSD,
+    projectMatchingData.projectDonationsSqrtRootSum,
+    projectMatchingData.allProjectsSum,
+    allocatedFundUSDPreferred
+      ? Number(allocatedFundUSD)
+      : projectMatchingData.matchingPool,
+    maximumReward,
+  )
+
+  // Update the project donation with the estimated matching value
+  useEffect(() => {
+    if (esMatching && !isEstimatedMatchingLoading) {
+      if (project.roundId == null) return
+      updateProjectDonation(
+        project.roundId,
+        project.id,
+        project.donationAmount ?? '0',
+        project.selectedToken?.symbol ?? '',
+        project.selectedToken?.address ?? '',
+        project.chainId ?? 0,
+        esMatching,
+      )
+    }
+  }, [esMatching, isEstimatedMatchingLoading, project.roundId, project.id])
 
   return (
     <>
@@ -94,7 +140,7 @@ export const ProjectBadges = ({
           color={isDonationMatchedColor}
           amountPrefix={
             isDonationMatched
-              ? undefined
+              ? '$' + esMatching.toFixed(2)
               : '$' + roundData?.minimumValidUsdValue.toString()
           }
           label={isDonationMatchedMessage}

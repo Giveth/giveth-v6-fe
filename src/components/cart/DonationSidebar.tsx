@@ -1,9 +1,11 @@
 'use client'
 
-import Link from 'next/link'
+import router from 'next/router'
 import { ArrowRight } from 'lucide-react'
+import { useActiveAccount } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
+import { formatNumber, useWalletTokens } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import { type GroupedProjects } from '@/lib/types/cart'
 
@@ -15,6 +17,33 @@ export function DonationSidebar({
   if (qfRoundGroups.length === 0) return null
 
   console.log({ qfRoundGroups })
+
+  const account = useActiveAccount()
+  const accountAddress = account?.address
+
+  const handleDonateButtonClick = () => {
+    // Check is cart value match user wallet balance
+    const totalCartValue = qfRoundGroups.reduce((acc, group) => {
+      return acc + Number(group.totalUsdValue)
+    }, 0)
+    const walletTokens = useWalletTokens(
+      qfRoundGroups[0].selectedChainId,
+      accountAddress,
+    )
+    if (
+      walletTokens.data &&
+      walletTokens.data.length > 0 &&
+      walletTokens.status === 'success'
+    ) {
+      const userWalletBalance = walletTokens.reduce((acc, token) => {
+        return acc + Number(token.balance)
+      }, 0)
+    }
+    if (totalCartValue > userWalletBalance) {
+      toast.error('Insufficient balance')
+      return
+    }
+  }
 
   return (
     <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
@@ -42,9 +71,13 @@ export function DonationSidebar({
               className="p-3 rounded-lg border border-giv-gray-300"
             >
               <p className="text-base text-giv-gray-900 font-medium">
-                0.00026 BTC <span className="font-normal">(~$70) to</span>{' '}
-                {group.projects.length}
-                projects <span className="font-normal">in</span>
+                {group.totalAmount} {group.tokenSymbol}{' '}
+                <span className="font-normal">
+                  (~${formatNumber(Number(group.totalUsdValue))}) to
+                </span>{' '}
+                {group.projects.length} project
+                {group.projects.length > 1 ? 's' : ''}{' '}
+                <span className="font-normal">in</span>
               </p>
               <p className="text-base text-giv-gray-900 font-medium mt-0.5">
                 {group.roundName} <span className="font-normal">on</span>{' '}
@@ -57,13 +90,13 @@ export function DonationSidebar({
         <DonateToGiveth />
 
         {/* Donate Button */}
-        <Link
-          href={{ pathname: '/cart/pending' }}
+        <button
+          onClick={handleDonateButtonClick}
           className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer"
         >
           Donate now
           <ArrowRight className="w-5 h-5" />
-        </Link>
+        </button>
 
         <AnonymousOption />
       </div>

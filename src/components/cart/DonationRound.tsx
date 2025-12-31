@@ -8,7 +8,7 @@ import { MatchingEligible } from '@/components/icons/MatchingEligible'
 import type { ProjectCartItem } from '@/context/CartContext'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import {
-  calculateROundTotalMatchingValue,
+  calculateRoundTotalMatchingValue,
   calculateTotalDonationValueForRoundInUSD,
   formatNumber,
 } from '@/lib/helpers/cartHelper'
@@ -86,7 +86,7 @@ export function DonationRound({
             <span className="text-giv-jade-500 text-base font-medium">
               $
               {formatNumber(
-                calculateROundTotalMatchingValue(
+                calculateRoundTotalMatchingValue(
                   cartRoundData.roundId,
                   cartRoundData.projects,
                 ),

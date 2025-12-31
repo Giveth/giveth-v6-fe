@@ -19,6 +19,7 @@ export interface ProjectCartItem {
   tokenAddress?: string // Token contract address
   chainId?: number // Chain ID for the donation
   isGivbackEligible?: boolean
+  estimatedMatchingValue?: number
 }
 
 export interface DonationRound {
@@ -33,11 +34,16 @@ export interface DonationRound {
   totalAmount: string
   totalUsdValue: string
   isGivbackEligible?: boolean
+  estimatedMatchingValue?: number
 }
 
 interface CartContextType {
   cartItems: ProjectCartItem[]
   donationRounds: DonationRound[]
+  givethPercentage: number
+  setGivethPercentage: (percentage: number) => void
+  isAnonymous: boolean
+  setIsAnonymous: (isAnonymous: boolean) => void
   addToCart: (project: ProjectCartItem) => void
   updateSelectedChainId: (roundId: number, chainId: number) => void
   updateSelectedToken: (
@@ -58,6 +64,7 @@ interface CartContextType {
     tokenSymbol: string,
     tokenAddress: string,
     chainId: number,
+    estimatedMatchingValue?: number,
   ) => void
   getDonationsByChain: (chainId: number) => ProjectCartItem[]
   getTotalDonationForRound: (roundId: number) => string
@@ -68,6 +75,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<ProjectCartItem[]>([])
   const [donationRounds, setDonationRounds] = useState<DonationRound[]>([])
+  const [givethPercentage, setGivethPercentage] = useState<number>(0)
+  const [isAnonymous, setIsAnonymous] = useState<boolean>(false)
 
   // Load from local storage on mount
   useEffect(() => {
@@ -111,6 +120,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             totalAmount: '0',
             totalUsdValue: '0',
             isGivbackEligible: item.isGivbackEligible ?? false,
+            estimatedMatchingValue: item.estimatedMatchingValue ?? 0,
           })
         }
 
@@ -214,6 +224,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     tokenSymbol: string,
     tokenAddress: string,
     chainId: number,
+    estimatedMatchingValue?: number,
   ) => {
     setCartItems(prev =>
       prev.map(item =>
@@ -224,6 +235,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               tokenSymbol,
               tokenAddress,
               chainId,
+              estimatedMatchingValue,
             }
           : item,
       ),
@@ -244,6 +256,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cartItems,
         donationRounds,
+        givethPercentage,
+        setGivethPercentage,
+        isAnonymous,
+        setIsAnonymous,
         addToCart,
         updateSelectedChainId,
         updateSelectedToken,

@@ -472,3 +472,26 @@ export const tokensByNetworkQuery = graphql(`
     }
   }
 `)
+
+export const estimatedMatchingQuery = graphql(`
+  query EstimatedMatching(
+    $donationAmount: Float!
+    $donorAddress: String!
+    $projectId: Int!
+    $qfRoundId: Int!
+  ) {
+    estimatedMatching(
+      donationAmount: $donationAmount
+      donorAddress: $donorAddress
+      projectId: $projectId
+      qfRoundId: $qfRoundId
+    ) {
+      projectId
+      qfRoundId
+      matchingPool
+      allProjectsSqrtSum
+      projectDonationsSqrtSum
+      estimatedMatching
+    }
+  }
+`)

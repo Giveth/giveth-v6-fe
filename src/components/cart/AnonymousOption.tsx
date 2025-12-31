@@ -1,7 +1,14 @@
 import * as Switch from '@radix-ui/react-switch'
+import { useCart } from '@/context/CartContext'
 import { HelpTooltip } from '../HelpTooltip'
 
 export function AnonymousOption() {
+  const { isAnonymous, setIsAnonymous } = useCart()
+
+  const handleToggleAnonymous = () => {
+    setIsAnonymous(!isAnonymous)
+  }
+
   return (
     <div className="bg-white rounded-xl border border-[#ebecf2] p-5 mt-5">
       <div className="flex items-center gap-3">
@@ -11,6 +18,8 @@ export function AnonymousOption() {
             bg-[#e6e8f0] transition-colors
             data-[state=checked]:bg-[#5326ec]
           "
+          checked={isAnonymous}
+          onCheckedChange={handleToggleAnonymous}
         >
           <Switch.Thumb
             className="

@@ -54,6 +54,12 @@ export function groupCartItemsByRound(cartItems: ProjectCartItem[]): {
         return sum + amount
       }, 0)
       round.totalAmount = total.toString()
+      const totalUsdValue = round.projects.reduce((sum, project) => {
+        const priceInUSD = project.selectedToken?.priceInUSD ?? 0
+        const amount = parseFloat(project.donationAmount || '0') * priceInUSD
+        return sum + amount
+      }, 0)
+      round.totalUsdValue = totalUsdValue.toString()
     } else {
       nonQf.push(item)
     }
@@ -225,15 +231,21 @@ export const calculateTotalDonationValueForRoundInUSD = (
     }, 0)
 }
 
-export const calculateROundTotalMatchingValue = (
+/**
+ * Calculate the total matching value for a round
+ *
+ * @param roundId - The round ID
+ * @param cartItems - The cart items
+ * @returns The total matching value for the round
+ */
+export const calculateRoundTotalMatchingValue = (
   roundId: number,
   cartItems: ProjectCartItem[],
 ) => {
   return cartItems
     .filter(item => item.roundId === roundId)
     .reduce((sum, item) => {
-      const priceInUSD = item.selectedToken?.priceInUSD ?? 0
-      const amount = parseFloat(item.donationAmount || '0') * priceInUSD
+      const amount = item.estimatedMatchingValue ?? 0
       return sum + amount
     }, 0)
 }

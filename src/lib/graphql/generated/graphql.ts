@@ -1645,6 +1645,16 @@ export type TokensByNetworkQueryVariables = Exact<{
 
 export type TokensByNetworkQuery = { __typename?: 'Query', tokensByNetwork: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null, isGivbacksEligible: boolean }> };
 
+export type EstimatedMatchingQueryVariables = Exact<{
+  donationAmount: Scalars['Float']['input'];
+  donorAddress: Scalars['String']['input'];
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
+}>;
+
+
+export type EstimatedMatchingQuery = { __typename?: 'Query', estimatedMatching: { __typename?: 'EstimatedMatchingEntity', projectId: number, qfRoundId: number, matchingPool: number, allProjectsSqrtSum: number, projectDonationsSqrtSum: number, estimatedMatching: number } };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -2190,3 +2200,20 @@ export const TokensByNetworkDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<TokensByNetworkQuery, TokensByNetworkQueryVariables>;
+export const EstimatedMatchingDocument = new TypedDocumentString(`
+    query EstimatedMatching($donationAmount: Float!, $donorAddress: String!, $projectId: Int!, $qfRoundId: Int!) {
+  estimatedMatching(
+    donationAmount: $donationAmount
+    donorAddress: $donorAddress
+    projectId: $projectId
+    qfRoundId: $qfRoundId
+  ) {
+    projectId
+    qfRoundId
+    matchingPool
+    allProjectsSqrtSum
+    projectDonationsSqrtSum
+    estimatedMatching
+  }
+}
+    `) as unknown as TypedDocumentString<EstimatedMatchingQuery, EstimatedMatchingQueryVariables>;
