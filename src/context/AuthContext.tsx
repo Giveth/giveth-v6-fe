@@ -16,6 +16,7 @@ import {
   useActiveWalletConnectionStatus,
 } from 'thirdweb/react'
 import { SiweService } from '@/lib/auth/siwe.service'
+import { ensureImpactGraphUserExists } from '@/lib/impact-graph/userSync'
 
 interface User {
   id: number
@@ -130,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (lastImpactGraphSyncRef.current !== walletAddress) {
           lastImpactGraphSyncRef.current = walletAddress
           try {
-            // await ensureImpactGraphUserExists(walletAddress)
+            await ensureImpactGraphUserExists(walletAddress)
           } catch (e) {
             // Non-fatal: do not block wallet auth check if Impact-Graph is down.
             console.error('Impact-Graph user sync failed:', e)
