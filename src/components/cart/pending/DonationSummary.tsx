@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Loader2,
 } from 'lucide-react'
+import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 
 interface Transaction {
   id: string
@@ -105,19 +106,18 @@ export function DonationSummary() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#ebecf2] overflow-hidden">
+    <div className="p-6 bg-white rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-[#ebecf2]">
-        <div className="flex items-center gap-2 mb-4">
-          <Gift className="w-5 h-5 text-[#5326ec]" />
-          <h2 className="text-lg font-bold text-[#1f2333]">
+      <div>
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
+          <IconPraiseHand />
+          <h2 className="text-2xl font-bold text-giv-gray-900">
             Your donation summary
           </h2>
         </div>
-        <p className="text-[#4f576a]">
-          You are donating{' '}
-          <span className="font-semibold text-[#37b4a9]">~$1270</span> to{' '}
-          <span className="font-semibold text-[#5326ec]">4 projects.</span>
+        <p className="text-giv-gray-700 text-lg font-medium">
+          You are donating <span className="text-giv-primary-700">~$1270</span>{' '}
+          to <span className="text-giv-primary-700">4 projects.</span>
         </p>
       </div>
 
@@ -129,7 +129,7 @@ export function DonationSummary() {
             className="border border-[#ebecf2] rounded-xl overflow-hidden"
           >
             {/* Round Header */}
-            <div className="bg-gradient-to-r from-[#5326ec] to-[#8668fc] px-4 py-3">
+            <div className="bg-linear-to-r from-[#5326ec] to-[#8668fc] px-4 py-3">
               <p className="text-white text-sm">
                 <span className="font-semibold">
                   {round.cryptoAmount} {round.cryptoSymbol}
