@@ -30,7 +30,7 @@ export function InsufficientFund({
               <button
                 type="button"
                 aria-label="Close"
-                className="rounded-full p-2 hover:bg-black/5"
+                className="rounded-full p-2 hover:bg-black/5 cursor-pointer"
               >
                 <Cross2Icon />
               </button>

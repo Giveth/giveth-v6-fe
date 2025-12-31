@@ -83,11 +83,6 @@ export function DonateToGiveth() {
               focus:outline-none transition-colors
               text-center
               "
-            defaultValue={
-              givethPercentage.toString().replace('%', '')
-                ? givethPercentage.toString().replace('%', '')
-                : '0'
-            }
             value={givethPercentage.toString().replace('%', '')}
             onChange={e => handleSetGivethPercentage(Number(e.target.value))}
             onKeyDown={e => {

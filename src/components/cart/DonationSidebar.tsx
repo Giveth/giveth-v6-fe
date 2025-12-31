@@ -19,12 +19,12 @@ export function DonationSidebar({
   qfRoundGroups: GroupedProjects[]
   nonQfProjects: ProjectCartItem[]
 }) {
-  if (qfRoundGroups.length === 0) return null
-
   const router = useRouter()
   useActiveAccount()
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
+
+  if (qfRoundGroups.length === 0) return null
 
   const handleDonateButtonClick = () => {
     // Check is cart group value match user wallet balance
