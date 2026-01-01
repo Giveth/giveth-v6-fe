@@ -15,7 +15,7 @@ import {
   getChainIcon,
   getChainName,
   getTransactionUrl,
-} from '@/lib/helpers/chain'
+} from '@/lib/helpers/chainHelper'
 import { ProjectImage } from './ProjectImage'
 
 interface ProjectDonationsTableProps {

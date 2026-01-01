@@ -1351,6 +1351,7 @@ export type TokenEntity = {
   decimals: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isGivbacksEligible: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   networkId: Scalars['Int']['output'];
   symbol: Scalars['String']['output'];
@@ -1543,7 +1544,7 @@ export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __type
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null }> };
+export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null, minimumValidUsdValue: number }> };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
@@ -1642,7 +1643,17 @@ export type TokensByNetworkQueryVariables = Exact<{
 }>;
 
 
-export type TokensByNetworkQuery = { __typename?: 'Query', tokensByNetwork: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null }> };
+export type TokensByNetworkQuery = { __typename?: 'Query', tokensByNetwork: Array<{ __typename?: 'TokenEntity', id: string, name: string, symbol: string, address?: string | null, decimals: number, networkId: number, chainType: ChainType, isActive: boolean, coingeckoId?: string | null, isGivbacksEligible: boolean }> };
+
+export type EstimatedMatchingQueryVariables = Exact<{
+  donationAmount: Scalars['Float']['input'];
+  donorAddress: Scalars['String']['input'];
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
+}>;
+
+
+export type EstimatedMatchingQuery = { __typename?: 'Query', estimatedMatching: { __typename?: 'EstimatedMatchingEntity', projectId: number, qfRoundId: number, matchingPool: number, allProjectsSqrtSum: number, projectDonationsSqrtSum: number, estimatedMatching: number } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -1872,10 +1883,12 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
     isActive
     beginDate
     endDate
+    eligibleNetworks
     hubCardImage
     allocatedFundUSD
     allocatedFund
     allocatedTokenSymbol
+    minimumValidUsdValue
   }
 }
     `) as unknown as TypedDocumentString<ActiveQfRoundsQuery, ActiveQfRoundsQueryVariables>;
@@ -2183,6 +2196,24 @@ export const TokensByNetworkDocument = new TypedDocumentString(`
     chainType
     isActive
     coingeckoId
+    isGivbacksEligible
   }
 }
     `) as unknown as TypedDocumentString<TokensByNetworkQuery, TokensByNetworkQueryVariables>;
+export const EstimatedMatchingDocument = new TypedDocumentString(`
+    query EstimatedMatching($donationAmount: Float!, $donorAddress: String!, $projectId: Int!, $qfRoundId: Int!) {
+  estimatedMatching(
+    donationAmount: $donationAmount
+    donorAddress: $donorAddress
+    projectId: $projectId
+    qfRoundId: $qfRoundId
+  ) {
+    projectId
+    qfRoundId
+    matchingPool
+    allProjectsSqrtSum
+    projectDonationsSqrtSum
+    estimatedMatching
+  }
+}
+    `) as unknown as TypedDocumentString<EstimatedMatchingQuery, EstimatedMatchingQueryVariables>;

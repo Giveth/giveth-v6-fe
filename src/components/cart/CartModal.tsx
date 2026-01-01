@@ -79,7 +79,9 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                       onMouseLeave={() => setHoveredProjectId(null)}
                     >
                       <button
-                        onClick={() => removeFromCart(project.id)}
+                        onClick={() =>
+                          removeFromCart(project.roundId ?? 0, project.id)
+                        }
                         className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                           hoveredProjectId === project.id
                             ? 'w-[180px] gap-2 rounded-full border border-gray-300 bg-white px-4 py-2'
@@ -135,7 +137,7 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                           onMouseLeave={() => setHoveredProjectId(null)}
                         >
                           <button
-                            onClick={() => removeFromCart(project.id)}
+                            onClick={() => removeFromCart(0, project.id)}
                             className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                               hoveredProjectId === project.id
                                 ? 'w-[180px] gap-2 rounded-full border border-gray-300 bg-white px-4 py-2'

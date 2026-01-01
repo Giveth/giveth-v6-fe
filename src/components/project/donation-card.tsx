@@ -25,7 +25,13 @@ export function DonationCard({ project }: DonationCardProps) {
 
   const handleCartAction = () => {
     if (isProjectInCart) {
-      removeFromCart(project.id)
+      removeFromCart(
+        Number(
+          project.projectQfRounds?.find(pqr => pqr.qfRound?.isActive)?.qfRound
+            ?.id ?? 0,
+        ),
+        project.id,
+      )
     } else {
       // Find the first active QF round, or the first one if none are active
       const activeQfRound = project.projectQfRounds?.find(

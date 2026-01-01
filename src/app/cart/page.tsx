@@ -1,153 +1,72 @@
-import type { ComponentProps } from 'react'
+'use client'
+
+import { useMemo } from 'react'
+import { Loader2 } from 'lucide-react'
 import { DonationRound } from '@/components/cart/DonationRound'
 import { DonationSidebar } from '@/components/cart/DonationSidebar'
-
-type DonationRoundProjects = ComponentProps<typeof DonationRound>['projects']
-
-const superDuperRoundProjects = [
-  {
-    id: 1,
-    name: 'Geode Labs',
-    image: '/geode-labs-crypto-blue-logo.jpg',
-    badges: [
-      {
-        type: 'eligible',
-        color: 'green',
-        label: 'GIVbacks eligible',
-      },
-      {
-        type: 'matching',
-        color: 'green',
-        amountPrefix: '0.000018',
-        label: 'BTC in matching',
-      },
-    ],
-    tokenAmount: '0.000052',
-    token: 'BTC',
-    usdValue: '14.00',
-  },
-  {
-    id: 2,
-    name: 'PEP Master - build trust in DIY medical instruments',
-    image: '/medical-diy-instruments-logo.jpg',
-    badges: [
-      {
-        type: 'eligible',
-        color: 'gray',
-        amountPrefix: '$15',
-        label: 'makes you eligible for GIVbacks',
-      },
-      {
-        type: 'matching',
-        color: 'gray',
-        amountPrefix: '$1',
-        label: 'unlocks matching funds',
-      },
-    ],
-    tokenAmount: '0.000012',
-    token: 'BTC',
-    usdValue: '4.45',
-  },
-] satisfies DonationRoundProjects
-
-const bestRoundProjects = [
-  {
-    id: 3,
-    name: 'Alphablocks',
-    image: '/alphablocks-education-logo.jpg',
-    badges: [
-      {
-        type: 'eligible',
-        color: 'green',
-        label: 'GIVbacks eligible',
-      },
-      {
-        type: 'matching',
-        color: 'green',
-        amountPrefix: '0.000018',
-        label: 'BTC in matching',
-      },
-    ],
-    tokenAmount: '25',
-    token: 'USDT',
-    usdValue: '25.00',
-  },
-  {
-    id: 4,
-    name: 'Diamante Luz Center for Regenerative Living',
-    image: '/regenerative-living-nature-green.jpg',
-    badges: [
-      {
-        type: 'eligible',
-        color: 'green',
-        label: 'GIVbacks eligible',
-      },
-      {
-        type: 'matching',
-        color: 'green',
-        amountPrefix: '0.000018',
-        label: 'BTC in matching',
-      },
-    ],
-    tokenAmount: '20',
-    token: 'USDT',
-    usdValue: '20.00',
-  },
-  {
-    id: 5,
-    name: 'Reforestation with biodiversity AgroForest',
-    image: '/reforestation-forest-green-nature.jpg',
-    badges: [
-      {
-        type: 'eligible',
-        color: 'green',
-        label: 'GIVbacks eligible',
-      },
-      {
-        type: 'matching',
-        color: 'green',
-        amountPrefix: '0.000018',
-        label: 'BTC in matching',
-      },
-    ],
-    tokenAmount: '20',
-    token: 'USDT',
-    usdValue: '20.00',
-  },
-] satisfies DonationRoundProjects
+import { useCart } from '@/context/CartContext'
+import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
+import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 
 export default function CartPage() {
+  const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
+  const { cartItems } = useCart()
+
+  // Group cart items by round
+  const { qfRoundGroups, nonQfProjects } = useMemo(
+    () => groupCartItemsByRound(cartItems),
+    [cartItems],
+  )
+
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-giv-primary-500" />
+        </div>
+      )}
+      {error && (
+        <div className="text-center py-12 text-giv-gray-700">
+          Failed to load active rounds. Please try again later. {error.message}
+        </div>
+      )}
       <main className="max-w-7xl mx-auto py-8">
         <div className="flex flex-wrap gap-6">
           {/* Left Column - Donation Rounds */}
           <div className="flex-1 space-y-5 w-12/12 lg:w-8/12">
-            <DonationRound
-              roundName="Super duper round"
-              chainId={137}
-              token="BTC"
-              defaultAmount="0.000052"
-              defaultUsdValue="14.00"
-              projects={superDuperRoundProjects}
-              totalMatch="7.5"
-              totalDonation="18.45"
-            />
+            {cartItems.length > 0 &&
+              qfRoundGroups.map(group => {
+                const roundId = group.roundId
+                const round =
+                  roundId != null
+                    ? activeRoundsData?.activeQfRounds?.find(
+                        r => r.id === String(roundId),
+                      )
+                    : undefined
 
-            <DonationRound
-              roundName="The best round ever"
-              chainId={10}
-              token="USDT"
-              defaultAmount="65"
-              defaultUsdValue="65.00"
-              projects={bestRoundProjects}
-              totalMatch="25"
-              totalDonation="65"
-            />
+                if (!round) return null
+
+                return (
+                  <DonationRound
+                    key={round.id}
+                    roundData={round}
+                    cartRoundData={group}
+                    projects={group.projects}
+                  />
+                )
+              })}
+            {cartItems.length === 0 && (
+              <div className="text-center py-12 text-giv-gray-700">
+                Your cart is empty. Add projects to your cart to get started.
+              </div>
+            )}
           </div>
 
           {/* Right Column - Sidebar */}
-          <DonationSidebar />
+          <DonationSidebar
+            qfRoundGroups={qfRoundGroups}
+            nonQfProjects={nonQfProjects}
+          />
         </div>
       </main>
     </div>

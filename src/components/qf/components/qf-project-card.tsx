@@ -22,22 +22,6 @@ export function QFProjectCard({
   const projectId = String(project.id)
   const isInCart = cartItems.some(item => item.id === projectId)
 
-  const toggleCart = (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (isInCart) {
-      removeFromCart(projectId)
-    } else {
-      addToCart({
-        id: projectId,
-        title: project.title,
-        slug: project.slug,
-        image: project.image,
-        roundId,
-        roundName,
-      })
-    }
-  }
-
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -60,6 +44,22 @@ export function QFProjectCard({
     : project.countUniqueDonors || 0
 
   const totalRaised = project.totalDonations
+
+  const toggleCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (isInCart) {
+      removeFromCart(roundData?.qfRoundId ?? 0, projectId)
+    } else {
+      addToCart({
+        id: projectId,
+        title: project.title,
+        slug: project.slug,
+        image: project.image,
+        roundId,
+        roundName,
+      })
+    }
+  }
 
   return (
     <div className="group relative bg-white rounded-xl border border-[#ebecf2] overflow-hidden hover:shadow-xl transition-all duration-300 h-[480px]">

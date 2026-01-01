@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ShoppingCart } from 'lucide-react'
-import { CartDropdown } from '@/components/cart/cart-dropdown'
+import { CartDropdown } from '@/components/cart/CartDropdown'
 import { useCart } from '@/context/CartContext'
 
 export function CartButton() {

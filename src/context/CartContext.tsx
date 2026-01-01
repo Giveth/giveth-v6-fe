@@ -1,55 +1,82 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
-export interface Project {
+export interface ProjectCartItem {
   id: string
   title: string
   slug: string
   image?: string | null
   roundId?: number
   roundName?: string
+  selectedToken?: WalletTokenWithBalance
   // Donation details
   walletAddress?: string // Project's receiving wallet address
   donationAmount?: string // Amount to donate
   tokenSymbol?: string // Token symbol (e.g., 'USDT', 'USDC')
+  tokenDecimals?: number // Token decimals
   tokenAddress?: string // Token contract address
   chainId?: number // Chain ID for the donation
+  isGivbackEligible?: boolean
+  estimatedMatchingValue?: number
 }
 
 export interface DonationRound {
   roundId: number
   roundName: string
-  chainId: number
-  token: string
+  selectedChainId: number
+  selectedToken: WalletTokenWithBalance | undefined
+  tokenSymbol: string
   tokenAddress: string
-  projects: Project[]
+  tokenDecimals: number
+  projects: ProjectCartItem[]
   totalAmount: string
+  totalUsdValue: string
+  isGivbackEligible?: boolean
+  estimatedMatchingValue?: number
 }
 
 interface CartContextType {
-  cartItems: Project[]
+  cartItems: ProjectCartItem[]
   donationRounds: DonationRound[]
-  addToCart: (project: Project) => void
-  removeFromCart: (projectId: string) => void
+  givethPercentage: number
+  setGivethPercentage: (percentage: number) => void
+  isAnonymous: boolean
+  setIsAnonymous: (isAnonymous: boolean) => void
+  addToCart: (project: ProjectCartItem) => void
+  updateSelectedChainId: (roundId: number, chainId: number) => void
+  updateSelectedToken: (
+    roundId: number,
+    selectedToken: WalletTokenWithBalance,
+    tokenSymbol: string,
+    tokenAddress: string,
+    tokenDecimals: number,
+    isGivbackEligible?: boolean,
+  ) => void
+  removeFromCart: (roundId: number, projectId: string) => void
   clearCart: () => void
   isInCart: (projectId: string) => boolean
   updateProjectDonation: (
+    roundId: number,
     projectId: string,
     amount: string,
     tokenSymbol: string,
     tokenAddress: string,
     chainId: number,
+    estimatedMatchingValue?: number,
   ) => void
-  getDonationsByChain: (chainId: number) => Project[]
+  getDonationsByChain: (chainId: number) => ProjectCartItem[]
   getTotalDonationForRound: (roundId: number) => string
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<Project[]>([])
+  const [cartItems, setCartItems] = useState<ProjectCartItem[]>([])
   const [donationRounds, setDonationRounds] = useState<DonationRound[]>([])
+  const [givethPercentage, setGivethPercentage] = useState<number>(0)
+  const [isAnonymous, setIsAnonymous] = useState<boolean>(false)
 
   // Load from local storage on mount
   useEffect(() => {
@@ -84,11 +111,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           rounds.set(item.roundId, {
             roundId: item.roundId,
             roundName: item.roundName,
-            chainId: item.chainId,
-            token: item.tokenSymbol,
+            selectedChainId: 0,
+            selectedToken: undefined,
+            tokenSymbol: item.tokenSymbol,
             tokenAddress: item.tokenAddress,
+            tokenDecimals: item.tokenDecimals ?? 18,
             projects: [],
             totalAmount: '0',
+            totalUsdValue: '0',
+            isGivbackEligible: item.isGivbackEligible ?? false,
+            estimatedMatchingValue: item.estimatedMatchingValue ?? 0,
           })
         }
 
@@ -107,15 +139,74 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setDonationRounds(Array.from(rounds.values()))
   }, [cartItems])
 
-  const addToCart = (project: Project) => {
+  const addToCart = (project: ProjectCartItem) => {
     setCartItems(prev => {
       if (prev.some(item => item.id === project.id)) return prev
       return [...prev, project]
     })
   }
 
-  const removeFromCart = (projectId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== projectId))
+  const updateSelectedChainId = (roundId: number, chainId: number) => {
+    // Persist selection on cart items so any grouping helpers derived from cartItems
+    // can reflect the selected chain immediately.
+    setCartItems(prev =>
+      prev.map(item =>
+        item.roundId === roundId ? { ...item, chainId } : item,
+      ),
+    )
+
+    // Also update derived donationRounds for immediate UI consistency.
+    setDonationRounds(prev =>
+      prev.map(round =>
+        round.roundId === roundId
+          ? { ...round, selectedChainId: chainId }
+          : round,
+      ),
+    )
+  }
+
+  const updateSelectedToken = (
+    roundId: number,
+    selectedToken: WalletTokenWithBalance,
+    tokenSymbol: string,
+    tokenAddress: string,
+    tokenDecimals: number,
+    isGivbackEligible?: boolean,
+  ) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.roundId === roundId
+          ? {
+              ...item,
+              selectedToken,
+              tokenSymbol,
+              tokenAddress,
+              tokenDecimals,
+              isGivbackEligible,
+            }
+          : item,
+      ),
+    )
+    setDonationRounds(prev =>
+      prev.map(round =>
+        round.roundId === roundId
+          ? {
+              ...round,
+              selectedToken,
+              tokenSymbol,
+              tokenAddress,
+              tokenDecimals,
+              isGivbackEligible,
+            }
+          : round,
+      ),
+    )
+  }
+
+  const removeFromCart = (roundId: number, projectId: string) => {
+    setCartItems(prev =>
+      prev.filter(item => !(item.roundId === roundId && item.id === projectId)),
+    )
   }
 
   const clearCart = () => {
@@ -127,21 +218,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const updateProjectDonation = (
+    roundId: number,
     projectId: string,
     amount: string,
     tokenSymbol: string,
     tokenAddress: string,
     chainId: number,
+    estimatedMatchingValue?: number,
   ) => {
     setCartItems(prev =>
       prev.map(item =>
-        item.id === projectId
+        item.roundId === roundId && item.id === projectId
           ? {
               ...item,
               donationAmount: amount,
               tokenSymbol,
               tokenAddress,
               chainId,
+              estimatedMatchingValue,
             }
           : item,
       ),
@@ -162,7 +256,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cartItems,
         donationRounds,
+        givethPercentage,
+        setGivethPercentage,
+        isAnonymous,
+        setIsAnonymous,
         addToCart,
+        updateSelectedChainId,
+        updateSelectedToken,
         removeFromCart,
         clearCart,
         isInCart,

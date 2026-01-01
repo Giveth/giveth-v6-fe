@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import { ArrowUpDown, ExternalLink } from 'lucide-react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useMyDonations } from '@/hooks/useAccount'
-import { getChainIcon, getTransactionUrl } from '@/lib/helpers/chain'
+import { getChainIcon, getTransactionUrl } from '@/lib/helpers/chainHelper'
 
 function NetworkIcon({ chainId }: { chainId: number }) {
   const { iconUrl } = getChainIcon(chainId)

@@ -126,10 +126,12 @@ export const activeQfRoundsQuery = graphql(`
       isActive
       beginDate
       endDate
+      eligibleNetworks
       hubCardImage
       allocatedFundUSD
       allocatedFund
       allocatedTokenSymbol
+      minimumValidUsdValue
     }
   }
 `)
@@ -466,6 +468,30 @@ export const tokensByNetworkQuery = graphql(`
       chainType
       isActive
       coingeckoId
+      isGivbacksEligible
+    }
+  }
+`)
+
+export const estimatedMatchingQuery = graphql(`
+  query EstimatedMatching(
+    $donationAmount: Float!
+    $donorAddress: String!
+    $projectId: Int!
+    $qfRoundId: Int!
+  ) {
+    estimatedMatching(
+      donationAmount: $donationAmount
+      donorAddress: $donorAddress
+      projectId: $projectId
+      qfRoundId: $qfRoundId
+    ) {
+      projectId
+      qfRoundId
+      matchingPool
+      allProjectsSqrtSum
+      projectDonationsSqrtSum
+      estimatedMatching
     }
   }
 `)

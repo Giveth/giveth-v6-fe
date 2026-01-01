@@ -1,13 +1,23 @@
 'use client'
 
+import { memo, useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
-import { defineChain, getContract } from 'thirdweb'
-import { balanceOf } from 'thirdweb/extensions/erc20'
-import { useActiveAccount } from 'thirdweb/react'
-import { formatUnits } from 'viem'
+import { defineChain } from 'thirdweb/chains'
+import { TokenIcon, TokenProvider, useActiveAccount } from 'thirdweb/react'
+import { useCart } from '@/context/CartContext'
+import { formatNumber, useWalletTokens } from '@/lib/helpers/cartHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
+import type { WalletTokenWithBalance } from '@/lib/types/chain'
+
+const chainCache = new Map<number, ReturnType<typeof defineChain>>()
+function getCachedChain(chainId: number) {
+  const cached = chainCache.get(chainId)
+  if (cached) return cached
+  const chain = defineChain(chainId)
+  chainCache.set(chainId, chain)
+  return chain
+}
 
 // tokens.ts
 export interface Token {
@@ -17,67 +27,88 @@ export interface Token {
   name: string
 }
 
-export const TOKENS_BY_CHAIN: Record<number, Token[]> = {
-  1: [
-    {
-      address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      symbol: 'USDC',
-      decimals: 6,
-      name: 'USD Coin',
-    },
-    {
-      address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-      symbol: 'DAI',
-      decimals: 18,
-      name: 'Dai',
-    },
-  ],
-}
-
-export function useWalletTokens(chainId: number) {
+export const TokenDropdown = ({
+  selectedChainId,
+  roundId,
+}: {
+  selectedChainId: number
+  roundId: number
+}) => {
+  const { updateSelectedToken, cartItems, updateProjectDonation } = useCart()
   const account = useActiveAccount()
-  const address = account?.address
-  const tokens = TOKENS_BY_CHAIN[chainId] ?? []
-  const chain = defineChain(chainId)
+  const accountAddress = account?.address
 
-  return useQuery({
-    queryKey: ['walletTokens', chainId, address],
-    enabled: !!address && tokens.length > 0,
-    queryFn: async () => {
-      const balances = await Promise.all(
-        tokens.map(async token => {
-          const contract = getContract({
-            client: thirdwebClient,
-            chain,
-            address: token.address,
-          })
+  const { data: walletTokens, isLoading } = useWalletTokens(
+    selectedChainId,
+    accountAddress,
+  )
 
-          const balance = await balanceOf({
-            contract,
-            address: address!,
-          })
+  const [selectedToken, setSelectedToken] = useState<
+    WalletTokenWithBalance | undefined
+  >(undefined)
 
-          return {
-            ...token,
-            balance,
-            formatted: formatUnits(balance, token.decimals),
-          }
-        }),
+  // Select first token by default
+  useEffect(() => {
+    if (!selectedToken && walletTokens && walletTokens.length > 0) {
+      setSelectedToken(walletTokens[0])
+      updateSelectedToken(
+        roundId,
+        walletTokens[0],
+        walletTokens[0].symbol,
+        walletTokens[0].address as `0x${string}`,
+        walletTokens[0].decimals,
+        walletTokens[0].isGivbackEligible,
       )
+    }
+  }, [walletTokens, selectedToken])
 
-      return balances.filter(t => t.balance > 0n)
-    },
-  })
-}
+  // Select choosed token when clicking on the dropdown item
+  const handleSelectToken = (token: WalletTokenWithBalance) => {
+    setSelectedToken(token)
+    updateSelectedToken(
+      roundId,
+      token,
+      token.symbol,
+      token.address as `0x${string}`,
+      token.decimals,
+      token.isGivbackEligible,
+    )
 
-export const TokenDropdown = ({ chainId }: { chainId: number }) => {
+    // Update all projects in the round with the same token and reset donation amount
+    cartItems.forEach(item => {
+      if (item.roundId === roundId) {
+        updateProjectDonation(
+          roundId,
+          item.id,
+          String(0),
+          token.symbol,
+          token.address as `0x${string}`,
+          token.decimals,
+        )
+      }
+    })
+  }
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
-          <span className="text-base font-medium text-giv-gray-900">
-            Wallet tokens
-          </span>
+        <button className="max-[480px]:w-full md:w-auto md:ml-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
+          {selectedToken?.address && (
+            <div className="flex items-center gap-2">
+              <TokenIconCached
+                address={selectedToken.address}
+                chainId={selectedChainId}
+              />
+              <span className="text-base font-medium text-giv-gray-900">
+                {selectedToken.symbol}
+              </span>
+            </div>
+          )}
+          {!selectedToken && (
+            <span className="text-base font-medium text-giv-gray-900">
+              Select a token
+            </span>
+          )}
           <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900 max-[480px]:ml-auto" />
         </button>
       </DropdownMenu.Trigger>
@@ -91,31 +122,41 @@ export const TokenDropdown = ({ chainId }: { chainId: number }) => {
             shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
           "
         >
-          <TokenDropdownItems chainId={chainId} />
+          <TokenDropdownItems
+            walletTokens={walletTokens}
+            isLoading={isLoading}
+            onSelectToken={handleSelectToken}
+          />
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   )
 }
 
-function TokenDropdownItems({ chainId }: { chainId: number }) {
-  const { data, isLoading } = useWalletTokens(chainId)
-
+function TokenDropdownItems({
+  walletTokens,
+  isLoading,
+  onSelectToken,
+}: {
+  walletTokens: WalletTokenWithBalance[] | undefined
+  isLoading: boolean
+  onSelectToken: (t: WalletTokenWithBalance) => void
+}) {
   if (isLoading) {
     return <div className="px-3 py-2 text-sm text-[#82899a]">Loading...</div>
   }
 
-  if (!data || data.length === 0) {
+  if (!walletTokens || walletTokens.length === 0) {
     return <div className="px-3 py-2 text-sm text-[#82899a]">No tokens</div>
   }
 
   return (
     <>
-      {data.map(t => (
+      {walletTokens.map(t => (
         <DropdownMenu.Item
           key={t.address}
           onSelect={() => {
-            // TODO: wire token selection into cart state
+            onSelectToken(t)
           }}
           className="
             cursor-pointer rounded-lg px-3 py-2 text-sm
@@ -124,12 +165,41 @@ function TokenDropdownItems({ chainId }: { chainId: number }) {
             focus:bg-[#f7f7f9]
           "
         >
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-start gap-4">
+            <TokenIconCached
+              address={t.address as `0x${string}`}
+              chainId={t.chainId}
+            />
             <span className="font-medium">{t.symbol}</span>
-            <span className="text-[#82899a] tabular-nums">{t.formatted}</span>
+            <span className="text-[#82899a] tabular-nums ml-auto">
+              {formatNumber(t.formattedBalance, {
+                minDecimals: 2,
+                maxDecimals: 2,
+              })}
+            </span>
           </div>
         </DropdownMenu.Item>
       ))}
     </>
   )
 }
+
+const TokenIconCached = memo(function TokenIconCached({
+  address,
+  chainId,
+}: {
+  address: `0x${string}`
+  chainId: number
+}) {
+  return (
+    <TokenProvider
+      address={address}
+      chain={getCachedChain(chainId)}
+      client={thirdwebClient}
+    >
+      <TokenIcon className="h-5 w-5" />
+    </TokenProvider>
+  )
+})
+
+TokenIconCached.displayName = 'TokenIconCached'

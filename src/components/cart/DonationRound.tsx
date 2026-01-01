@@ -5,79 +5,68 @@ import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
 import { TokenDropdown } from '@/components/cart/TokenDropdown'
 import { MatchingEligible } from '@/components/icons/MatchingEligible'
-
-interface ProjectBadge {
-  type: 'eligible' | 'matching'
-  color: 'green' | 'gray'
-  amountPrefix?: string
-  label: string
-}
-
-interface Project {
-  id: number
-  name: string
-  image: string
-  badges: ProjectBadge[]
-  tokenAmount: string
-  token: string
-  usdValue: string
-}
+import type { ProjectCartItem } from '@/context/CartContext'
+import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
+import {
+  calculateRoundTotalMatchingValue,
+  calculateTotalDonationValueForRoundInUSD,
+  formatNumber,
+} from '@/lib/helpers/cartHelper'
+import type { GroupedProjects } from '@/lib/types/cart'
 
 interface DonationRoundProps {
-  roundName: string
-  chainId: number
-  token: string
-  defaultAmount: string
-  defaultUsdValue: string
-  projects: Project[]
-  totalMatch: string
-  totalDonation: string
+  roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
+  cartRoundData: GroupedProjects
+  projects: ProjectCartItem[]
 }
 
 export function DonationRound({
-  roundName,
-  chainId,
-  defaultAmount,
-  defaultUsdValue,
+  roundData,
+  cartRoundData,
   projects,
-  totalMatch,
-  totalDonation,
 }: DonationRoundProps) {
   return (
     <div className="bg-white p-4 rounded-2xl border-4 border-giv-gray-500 overflow-hidden">
       {/* Round Header */}
       <div className="bg-giv-gray-300 px-5 py-3 rounded-xl">
         <span className="text-base font-medium text-giv-gray-800">
-          {roundName}
+          {roundData.name}
         </span>
       </div>
 
       {/* Token Selection Row */}
       <div className="py-6 flex max-[480px]:flex-wrap items-center justify-between">
         <div className="max-[480px]:w-full max-[480px]:mb-3 md:w-auto">
-          <ChainDropdown chainId={chainId} />
+          <ChainDropdown
+            roundId={cartRoundData.roundId}
+            selectedChainId={cartRoundData.selectedChainId}
+            eligibleNetworks={roundData.eligibleNetworks}
+          />
         </div>
 
         {/* Right Side - Token, Amount, Apply */}
-        <div className="max-[480px]:flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto">
-          <TokenDropdown chainId={chainId} />
-
-          <AmountInput
-            defaultAmount={defaultAmount}
-            defaultUsdValue={defaultUsdValue}
+        <div className="flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto md:ml-auto">
+          <TokenDropdown
+            roundId={cartRoundData.roundId}
+            selectedChainId={cartRoundData.selectedChainId}
           />
 
-          {/* Apply to all */}
-          <button className="ml-1 text-base font-medium text-giv-primary-500 hover:text-giv-primary-700 transition-colors cursor-pointer">
-            Apply to all
-          </button>
+          <AmountInput
+            roundId={cartRoundData.roundId}
+            selectedToken={cartRoundData.selectedToken}
+            cartItems={cartRoundData.projects}
+          />
         </div>
       </div>
 
       {/* Projects List */}
       <div>
         {projects.map(project => (
-          <ProjectCartCard key={project.id} project={project} />
+          <ProjectCartCard
+            key={project.id}
+            roundData={roundData}
+            project={project}
+          />
         ))}
       </div>
 
@@ -95,12 +84,27 @@ export function DonationRound({
               fill="var(--giv-jade-500)"
             />
             <span className="text-giv-jade-500 text-base font-medium">
-              $ {totalMatch}
+              $
+              {formatNumber(
+                calculateRoundTotalMatchingValue(
+                  cartRoundData.roundId,
+                  cartRoundData.projects,
+                ),
+              )}
             </span>
           </span>
           <span className="text-giv-gray-500 text-lg font-normal">|</span>
           <span className="text-giv-gray-800 text-base font-medium">
-            Total donation <span>$ {totalDonation}</span>
+            Total donation{' '}
+            <span>
+              ${' '}
+              {formatNumber(
+                calculateTotalDonationValueForRoundInUSD(
+                  cartRoundData.roundId,
+                  cartRoundData.projects,
+                ),
+              )}
+            </span>
           </span>
         </div>
       </div>
