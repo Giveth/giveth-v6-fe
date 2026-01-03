@@ -8,11 +8,9 @@ const impactGraphClient = new GraphQLClient(env.IMPACT_GRAPH_URL, {
   },
 })
 
-const userByAddressQuery = `
-  query UserByAddress($address: String!) {
-    userByAddress(address: $address) {
-      id
-    }
+const userExistsByAddressQuery = `
+  query UserExistsByAddress($address: String!) {
+    userExistsByAddress(address: $address)
   }
 `
 
@@ -30,10 +28,9 @@ const createUserByAddressMutation = `
 
 export async function userExistsByAddress(address: string): Promise<boolean> {
   const res = await impactGraphClient.request<{
-    userByAddress: { id: string } | null
-  }>(userByAddressQuery, { address })
-
-  return Boolean(res.userByAddress)
+    userExistsByAddress: boolean
+  }>(userExistsByAddressQuery, { address })
+  return Boolean(res.userExistsByAddress)
 }
 
 export async function createUserByAddress(address: string): Promise<{
