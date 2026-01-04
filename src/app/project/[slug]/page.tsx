@@ -134,6 +134,7 @@ export default function ProjectPage() {
             <AboutTab
               description={project.description}
               descriptionSummary={project.descriptionSummary}
+              socialMedia={project.socialMedia}
             />
           )}
 
