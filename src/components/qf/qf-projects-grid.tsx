@@ -15,6 +15,8 @@ import { QFSorting } from './components/qf-sorting'
 interface QFProjectsGridProps {
   projects: ProjectEntity[]
   isLoading?: boolean
+  isFetching?: boolean
+  hasProjectsData?: boolean
   roundId?: number
   roundName?: string
   // Search Props
@@ -33,6 +35,8 @@ interface QFProjectsGridProps {
 export function QFProjectsGrid({
   projects,
   isLoading,
+  isFetching,
+  hasProjectsData,
   roundId,
   roundName,
   searchTerm,
@@ -44,14 +48,27 @@ export function QFProjectsGrid({
   onFilterChange,
   totalProjects = 0,
 }: QFProjectsGridProps) {
+  const trimmedSearch = searchTerm.trim()
+  const isSearchActive = trimmedSearch.length >= 2
+  const showSearchingState = !!isFetching && isSearchActive
+  const showLoadingCount = !hasProjectsData && (isLoading || isFetching)
+
+  const headerRightText = showSearchingState
+    ? 'Searching…'
+    : showLoadingCount
+      ? 'Loading…'
+      : `${totalProjects}`
+
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <h2 className="text-2xl self-start md:self-center">
-          <span className="text-[#82899a]">Explore</span>{' '}
+          <span className="text-[#82899a]">
+            {showSearchingState ? '' : 'Explore'}
+          </span>{' '}
           <span className="text-[#5326ec] font-semibold">
-            {totalProjects} projects
+            {headerRightText} projects
           </span>
         </h2>
 
@@ -82,7 +99,7 @@ export function QFProjectsGrid({
             currentField={currentSortField}
             currentDirection={currentSortDirection}
             onSortChange={onSortChange}
-            isSearchActive={searchTerm.trim().length >= 2}
+            isSearchActive={isSearchActive}
           />
           <QFProjectFilters
             currentFilters={currentFilters}
