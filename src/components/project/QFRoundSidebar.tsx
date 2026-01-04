@@ -1,5 +1,5 @@
-import type { SyntheticEvent } from 'react'
-import { Copy } from 'lucide-react'
+import { useState, type SyntheticEvent } from 'react'
+import { Check, Copy } from 'lucide-react'
 import { getChainIcon } from '@/lib/helpers/chainHelper'
 
 interface QFRoundSidebarProps {
@@ -36,11 +36,23 @@ function ChainIcon({ networkId }: { networkId: number }) {
 }
 
 export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null)
+
   // Transform addresses to match expected format
   const recipientAddresses = (project.addresses || []).map(addr => ({
     address: addr.address,
     networkId: addr.networkId,
   }))
+
+  const handleCopyAddress = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopiedAddress(address)
+      setTimeout(() => setCopiedAddress(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy address:', err)
+    }
+  }
   return (
     <div className="bg-white rounded-xl border border-[#ebecf2] p-6">
       <h3 className="text-sm font-medium text-[#1f2333] mb-4">
@@ -72,8 +84,22 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
                 {item.address.slice(0, 10)}...{item.address.slice(-8)}
               </span>
               <div className="flex items-center gap-2">
-                <button className="text-[#82899a] hover:text-[#5326ec]">
-                  <Copy className="w-3.5 h-3.5" />
+                <button
+                  onClick={() => handleCopyAddress(item.address)}
+                  className={`transition-colors ${
+                    copiedAddress === item.address
+                      ? 'text-green-500'
+                      : 'text-[#82899a] hover:text-[#5326ec]'
+                  }`}
+                  title={
+                    copiedAddress === item.address ? 'Copied!' : 'Copy address'
+                  }
+                >
+                  {copiedAddress === item.address ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
                 </button>
                 <ChainIcon networkId={item.networkId} />
               </div>
