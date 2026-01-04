@@ -85,7 +85,9 @@ export default function QFRoundPage() {
       isGivbacksEligible: filters.isGivbacksEligible || undefined,
       vouched: filters.eligibleForMatching || undefined,
       networkIds: networkIds.length > 0 ? networkIds : undefined,
-      searchTerm: debouncedSearchTerm.length ? debouncedSearchTerm : undefined,
+      // Avoid triggering expensive backend search for 0-1 char inputs (noise + can be slow in prod DBs)
+      searchTerm:
+        debouncedSearchTerm.length >= 2 ? debouncedSearchTerm : undefined,
     },
     orderBy: sortField,
     orderDirection:
