@@ -58,3 +58,8 @@ export const menuItems = [
     ],
   },
 ]
+
+export const createProjectLink = {
+  label: 'Create A Project',
+  href: oldFrontendPath('/create', '/create'),
+}
