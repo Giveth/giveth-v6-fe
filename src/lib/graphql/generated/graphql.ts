@@ -16,6 +16,8 @@ export type Scalars = {
   Float: { input: number; output: number; }
   /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
   DateTime: { input: any; output: any; }
+  /** JSON custom scalar type */
+  JSON: { input: any; output: any; }
   /** The `Upload` scalar type represents a file upload. */
   Upload: { input: any; output: any; }
 };
@@ -94,6 +96,22 @@ export enum ChainType {
   Evm = 'EVM',
   Solana = 'SOLANA'
 }
+
+export type CheckEligibilityResultEntity = {
+  __typename?: 'CheckEligibilityResultEntity';
+  eligibility?: Maybe<PassportEligibilityEntity>;
+  expirationDate?: Maybe<Scalars['DateTime']['output']>;
+  isEligible: Scalars['Boolean']['output'];
+  mbdScore?: Maybe<Scalars['Float']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  passportScore?: Maybe<Scalars['Float']['output']>;
+  threshold?: Maybe<Scalars['Float']['output']>;
+};
+
+export type CheckPassportEligibilityInput = {
+  address: Scalars['String']['input'];
+  qfRoundId?: InputMaybe<Scalars['Float']['input']>;
+};
 
 export type CommentEntity = {
   __typename?: 'CommentEntity';
@@ -289,6 +307,10 @@ export type FormRelatedAddressInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type GetPassportEligibilityInput = {
+  address: Scalars['String']['input'];
+};
+
 export type GetPowerBoostingInput = {
   orderBy?: InputMaybe<PowerBoostingOrderByInput>;
   projectId?: InputMaybe<Scalars['Int']['input']>;
@@ -345,6 +367,11 @@ export type GivbacksEligibilityUpdateInput = {
   personalInfo?: InputMaybe<PersonalInfoInput>;
   projectContacts?: InputMaybe<Array<ProjectContactsInput>>;
   projectRegistry?: InputMaybe<ProjectRegistryInput>;
+};
+
+export type ImpactGraphUserWebhookInput = {
+  id: Scalars['Int']['input'];
+  walletAddress: Scalars['String']['input'];
 };
 
 export type LikeResponseEntity = {
@@ -422,8 +449,12 @@ export type Mutation = {
   editProjectUpdate: ProjectUpdateEntity;
   givbacksEligibilityConfirmEmail: GivbacksEligibilityFormEntity;
   givbacksEligibilitySendEmailConfirmation: GivbacksEligibilityFormEntity;
+  /** Impact-Graph webhook (password header) to sync newly created users into v6-core. */
+  impactGraphUpsertUser: UserEntity;
   likeProject: LikeResponseEntity;
   likeProjectUpdate: LikeResponseEntity;
+  /** Refresh Passport score by fetching latest data from Passport API. Use this when user wants to update their score after adding new stamps. */
+  refreshPassportScore: CheckEligibilityResultEntity;
   removeProjectFromQfRound: Scalars['Boolean']['output'];
   removeSocialProfile: Scalars['Boolean']['output'];
   removeWallet: UserEntity;
@@ -537,6 +568,11 @@ export type MutationGivbacksEligibilitySendEmailConfirmationArgs = {
 };
 
 
+export type MutationImpactGraphUpsertUserArgs = {
+  input: ImpactGraphUserWebhookInput;
+};
+
+
 export type MutationLikeProjectArgs = {
   projectId: Scalars['Int']['input'];
 };
@@ -544,6 +580,11 @@ export type MutationLikeProjectArgs = {
 
 export type MutationLikeProjectUpdateArgs = {
   projectUpdateId: Scalars['Int']['input'];
+};
+
+
+export type MutationRefreshPassportScoreArgs = {
+  input: RefreshPassportScoreInput;
 };
 
 
@@ -657,6 +698,20 @@ export type PaginatedQfRoundsEntity = {
   __typename?: 'PaginatedQfRoundsEntity';
   rounds: Array<QfRoundEntity>;
   total: Scalars['Int']['output'];
+};
+
+export type PassportEligibilityEntity = {
+  __typename?: 'PassportEligibilityEntity';
+  address: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  expirationTimestamp?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  lastScoreTimestamp?: Maybe<Scalars['DateTime']['output']>;
+  mbdScore?: Maybe<Scalars['Float']['output']>;
+  score?: Maybe<Scalars['Float']['output']>;
+  stamps?: Maybe<Scalars['JSON']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type PersonalInfoEntity = {
@@ -961,6 +1016,8 @@ export type Query = {
   cause?: Maybe<CauseEntity>;
   causeBySlug?: Maybe<CauseEntity>;
   causes: Array<CauseEntity>;
+  /** Check Passport eligibility for an address. Returns cached data if not expired, otherwise fetches from Passport API. */
+  checkPassportEligibility: CheckEligibilityResultEntity;
   doesDonatedToProjectInQfRound: Scalars['Boolean']['output'];
   donation: DonationEntity;
   donationMetrics: DonationMetricsEntity;
@@ -974,6 +1031,8 @@ export type Query = {
   getCurrentGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   getDonationById?: Maybe<DonationEntity>;
   getDonationStats: Array<DonationCurrencyStatsEntity>;
+  /** Get stored Passport eligibility data without fetching from API. */
+  getPassportEligibility?: Maybe<PassportEligibilityEntity>;
   getPowerBoosting: GivPowersEntity;
   getProjectReactions: Array<ReactionEntity>;
   getTopPowerRank: Scalars['Float']['output'];
@@ -1037,6 +1096,11 @@ export type QueryCausesArgs = {
   filters?: InputMaybe<ProjectFiltersInput>;
   skip?: Scalars['Int']['input'];
   take?: Scalars['Int']['input'];
+};
+
+
+export type QueryCheckPassportEligibilityArgs = {
+  input: CheckPassportEligibilityInput;
 };
 
 
@@ -1114,6 +1178,11 @@ export type QueryGetDonationStatsArgs = {
   fromDate?: InputMaybe<Scalars['String']['input']>;
   networkId?: InputMaybe<Scalars['Int']['input']>;
   toDate?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGetPassportEligibilityArgs = {
+  input: GetPassportEligibilityInput;
 };
 
 
@@ -1298,6 +1367,10 @@ export type ReactionEntity = {
   reaction: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   userId: Scalars['Int']['output'];
+};
+
+export type RefreshPassportScoreInput = {
+  address: Scalars['String']['input'];
 };
 
 export type RequestEmailVerificationInput = {
@@ -1532,7 +1605,7 @@ export type ProjectBySlugQueryVariables = Exact<{
 }>;
 
 
-export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null, project?: { __typename?: 'ProjectEntity', id: string, qfRoundMatchingProjects?: Array<{ __typename?: 'QfRoundMatchingProjectEntity', qfRoundMatchingId: number, matchingAmount: number }> | null } | null }> } };
+export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, socialMedia?: Array<{ __typename?: 'ProjectSocialMediaEntity', id: string, type: string, link: string }> | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null, project?: { __typename?: 'ProjectEntity', id: string, qfRoundMatchingProjects?: Array<{ __typename?: 'QfRoundMatchingProjectEntity', qfRoundMatchingId: number, matchingAmount: number }> | null } | null }> } };
 
 export type QfRoundBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1811,6 +1884,11 @@ export const ProjectBySlugDocument = new TypedDocumentString(`
     countUniqueDonors
     vouched
     isGivbacksEligible
+    socialMedia {
+      id
+      type
+      link
+    }
     adminUser {
       id
       name

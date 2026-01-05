@@ -52,6 +52,11 @@ export const projectBySlugQuery = graphql(`
       countUniqueDonors
       vouched
       isGivbacksEligible
+      socialMedia {
+        id
+        type
+        link
+      }
       adminUser {
         id
         name
