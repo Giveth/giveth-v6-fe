@@ -154,7 +154,6 @@ export const useProfile = (token?: string) =>
       }
       return failureCount < 2 // Retry up to 2 times for other errors
     },
-    placeholderData: keepPreviousData, // Use previous data while loading
   })
 
 // type UpdateProfileInput = Partial<
