@@ -37,7 +37,7 @@ export function EligibilityBanner() {
             Verify your donor uniqueness with a quick check of your on-chain
             activity.
           </p>
-          <button className="text-xs font-bold text-giv-pinky-400 cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3">
+          <button className="text-xs font-bold text-giv-pinky-400 font-sans cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3">
             <span className="flex items-center gap-2">
               Check Eligibility
               <IconRotate width={20} height={20} fill="var(--giv-pinky-400)" />
@@ -71,7 +71,7 @@ export function EligibilityBanner() {
               <span>Your Passport score</span>
               <span className="font-bold ml-12">10</span>
             </p>
-            <button className="text-xs font-bold text-giv-pinky-400 cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3">
+            <button className="text-xs font-bold text-giv-pinky-400 [font-family:var(--font-inter)] cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3">
               <span className="flex items-center gap-2">
                 Increase Passport Score
                 <ArrowUpRight width={20} height={20} />

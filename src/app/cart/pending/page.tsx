@@ -9,7 +9,7 @@ export default function PendingPage() {
   const router = useRouter()
   useEffect(() => {
     setTimeout(() => {
-      // router.push('/cart/success' as never)
+      router.push('/cart/success' as never)
     }, 2000)
   }, [])
   return (
