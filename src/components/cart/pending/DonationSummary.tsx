@@ -1,16 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Gift,
-  HelpCircle,
-  Loader2,
-} from 'lucide-react'
+import { CircleDashed, Ellipsis, Eye, EyeClosed } from 'lucide-react'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 
 interface Transaction {
@@ -31,6 +22,7 @@ interface DonationRound {
   chain: string
   matchingAmount: string
   transactions: Transaction[]
+  state: 'waiting' | 'processing'
 }
 
 const donationRounds: DonationRound[] = [
@@ -43,6 +35,7 @@ const donationRounds: DonationRound[] = [
     roundName: 'Super duper round',
     chain: 'Polygon',
     matchingAmount: '0.000018 BTC',
+    state: 'waiting',
     transactions: [
       {
         id: 'tx1',
@@ -69,6 +62,7 @@ const donationRounds: DonationRound[] = [
     roundName: 'The best round ever',
     chain: 'Optimism',
     matchingAmount: '0.000018 BTC',
+    state: 'processing',
     transactions: [
       {
         id: 'tx3',
@@ -106,9 +100,9 @@ export function DonationSummary() {
   }
 
   return (
-    <div className="p-6 bg-white rounded-2xl overflow-hidden">
+    <div className="p-4 bg-white rounded-2xl overflow-hidden">
       {/* Header */}
-      <div>
+      <div className="mb-6 mt-2">
         <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
           <IconPraiseHand />
           <h2 className="text-2xl font-bold text-giv-gray-900">
@@ -122,117 +116,74 @@ export function DonationSummary() {
       </div>
 
       {/* Donation Rounds */}
-      <div className="p-6 space-y-4">
+      <div className="space-y-4">
         {donationRounds.map(round => (
           <div
             key={round.id}
-            className="border border-[#ebecf2] rounded-xl overflow-hidden"
+            className="p-4 border-4 border-giv-gray-300 rounded-xl overflow-hidden"
           >
             {/* Round Header */}
-            <div className="bg-linear-to-r from-[#5326ec] to-[#8668fc] px-4 py-3">
-              <p className="text-white text-sm">
-                <span className="font-semibold">
+            <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
+              <p className="text-giv-gray-800 text-base font-normal">
+                <span className="font-medium">
                   {round.cryptoAmount} {round.cryptoSymbol}
                 </span>{' '}
                 (~{round.usdValue}) to{' '}
-                <span className="font-semibold">
+                <span className="font-medium">
                   {round.projectCount} projects
                 </span>{' '}
-                in <span className="font-semibold">{round.roundName}</span> on{' '}
-                <span className="font-semibold">{round.chain}</span>
+                in <span className="font-medium">{round.roundName}</span> on{' '}
+                <span className="font-medium">{round.chain}</span>
               </p>
             </div>
 
-            {/* Badges and Toggle */}
-            <div className="px-4 py-3">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#e7f9f7] text-xs font-medium text-[#1b8c82]">
-                  <Gift className="w-3 h-3" />
-                  GIVbacks eligible
-                </span>
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border border-[#37b4a9] text-xs font-medium text-[#1b8c82]">
-                  <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                    <rect
-                      x="1"
-                      y="1"
-                      width="10"
-                      height="10"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                    />
-                    <path
-                      d="M3 6h6M6 3v6"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  {round.matchingAmount} in matching
-                </span>
-              </div>
-
+            {/* Toggle */}
+            <div className="py-3">
               {/* Processing Status */}
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#ebecf2]">
+                <div
+                  className={`flex items-center gap-2 px-3 py-1.5 ${round.state === 'waiting' ? 'text-giv-gray-900' : 'text-giv-gray-700'} bg-giv-gray-200 rounded-md border border-giv-gray-400`}
+                >
                   <span className="flex items-center justify-center w-4 h-4">
-                    <span className="text-[#82899a]">•••</span>
+                    {round.state === 'waiting' ? (
+                      <Ellipsis />
+                    ) : (
+                      <CircleDashed />
+                    )}
                   </span>
-                  <span className="text-sm text-[#5326ec]">
+                  <span className="text-sm">
                     Your transactions are processing.
                   </span>
                 </div>
                 <button
                   onClick={() => toggleRound(round.id)}
-                  className="flex items-center gap-1 text-sm font-medium text-[#1f2333] hover:text-[#5326ec] transition-colors"
+                  className="flex items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 bg-giv-gray-200 rounded-md px-3 py-2 transition-colors cursor-pointer"
                 >
                   {expandedRounds.has(round.id) ? 'Hide' : 'Show'} Transaction
                   details
                   {expandedRounds.has(round.id) ? (
-                    <ChevronUp className="w-4 h-4" />
+                    <EyeClosed className="w-4 h-4" />
                   ) : (
-                    <ChevronDown className="w-4 h-4" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </button>
               </div>
 
               {/* Transactions */}
               {expandedRounds.has(round.id) && (
-                <div className="space-y-2">
+                <div className="space-y-2 flex flex-col items-start gap-2">
                   {round.transactions.map(tx => (
-                    <div key={tx.id} className="flex items-center gap-3 py-2">
-                      {/* Status Icon */}
-                      {tx.status === 'completed' ? (
-                        <div className="w-5 h-5 rounded-full bg-[#37b4a9] flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      ) : (
-                        <Loader2 className="w-5 h-5 text-[#82899a] animate-spin" />
-                      )}
-
-                      {/* Link Icon */}
-                      <ExternalLink className="w-4 h-4 text-[#82899a]" />
-
+                    <div
+                      key={tx.id}
+                      className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal"
+                    >
                       {/* Amount */}
-                      <span
-                        className={`text-sm ${tx.status === 'completed' ? 'text-[#1f2333]' : 'text-[#82899a]'}`}
-                      >
-                        {tx.amount} ({tx.usdValue})
-                      </span>
+                      <span className="font-medium">{tx.amount}</span>
 
-                      {/* Arrow */}
-                      <span className="text-[#82899a]">→</span>
+                      <span>to</span>
 
                       {/* Project Name */}
-                      <span
-                        className={`text-sm font-medium ${
-                          tx.status === 'completed'
-                            ? 'text-[#1f2333]'
-                            : 'text-[#82899a]'
-                        }`}
-                      >
-                        {tx.projectName}
-                      </span>
+                      <span className="font-medium">{tx.projectName}</span>
                     </div>
                   ))}
                 </div>
@@ -240,24 +191,6 @@ export function DonationSummary() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Help Links */}
-      <div className="px-6 pb-6 flex items-center justify-end gap-6">
-        <Link
-          href="#"
-          className="flex items-center gap-1 text-sm font-medium text-[#5326ec] hover:underline"
-        >
-          See How Matching Works
-          <HelpCircle className="w-4 h-4" />
-        </Link>
-        <Link
-          href="#"
-          className="flex items-center gap-1 text-sm font-medium text-[#5326ec] hover:underline"
-        >
-          Learn More about GIVbacks
-          <HelpCircle className="w-4 h-4" />
-        </Link>
       </div>
     </div>
   )
