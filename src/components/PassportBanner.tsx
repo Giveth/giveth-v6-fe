@@ -1,4 +1,13 @@
+import { useActiveAccount } from 'thirdweb/react'
+import { usePassportEligibility } from '@/hooks/usePassportEligibility'
+
 export function PassportBanner() {
+  const account = useActiveAccount()
+  console.log({ account })
+  const { data } = usePassportEligibility({ address: account?.address ?? '' })
+
+  console.log({ data })
+
   return (
     <div className="bg-[#1b1657] py-2.5 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
@@ -14,7 +23,7 @@ export function PassportBanner() {
           </svg>
         </div>
         <span className="text-white text-sm">
-          You donations are eligible to be matched!{' '}
+          You donations are eligible to be matched! AAAABBB
           <a
             href="#"
             className="underline hover:text-[#d2fffb] inline-flex items-center gap-1"

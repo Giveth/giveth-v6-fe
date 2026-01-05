@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
+import { PassportBanner } from '@/components/PassportBanner'
 import { AboutTab } from '@/components/project/about-tab'
 import { AllTimeDonations } from '@/components/project/all-time-donations'
 import { DonationCard } from '@/components/project/donation-card'
@@ -39,32 +40,8 @@ export default function ProjectPage() {
     )
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      {/* Blue Banner */}
-      <div className="bg-[#1b1657] text-white py-3 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
-          <span className="text-[#7ce8df]">✨</span>
-          <span>You donations are eligible to be matched!</span>
-          <a
-            href="#"
-            className="text-[#7ce8df] underline hover:no-underline flex items-center gap-1"
-          >
-            Go to Passport
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
+      {/* Passport Banner */}
+      <PassportBanner />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">

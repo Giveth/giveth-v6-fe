@@ -1728,6 +1728,13 @@ export type EstimatedMatchingQueryVariables = Exact<{
 
 export type EstimatedMatchingQuery = { __typename?: 'Query', estimatedMatching: { __typename?: 'EstimatedMatchingEntity', projectId: number, qfRoundId: number, matchingPool: number, allProjectsSqrtSum: number, projectDonationsSqrtSum: number, estimatedMatching: number } };
 
+export type CheckPassportEligibilityQueryVariables = Exact<{
+  input: CheckPassportEligibilityInput;
+}>;
+
+
+export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -2295,3 +2302,27 @@ export const EstimatedMatchingDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<EstimatedMatchingQuery, EstimatedMatchingQueryVariables>;
+export const CheckPassportEligibilityDocument = new TypedDocumentString(`
+    query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {
+  checkPassportEligibility(input: $input) {
+    isEligible
+    passportScore
+    mbdScore
+    threshold
+    expirationDate
+    message
+    eligibility {
+      id
+      address
+      score
+      mbdScore
+      lastScoreTimestamp
+      expirationTimestamp
+      stamps
+      error
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;

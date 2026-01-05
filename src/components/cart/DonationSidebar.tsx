@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
-import { useActiveAccount } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
 import { type ProjectCartItem } from '@/context/CartContext'
@@ -20,7 +19,6 @@ export function DonationSidebar({
   nonQfProjects: ProjectCartItem[]
 }) {
   const router = useRouter()
-  useActiveAccount()
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
 
