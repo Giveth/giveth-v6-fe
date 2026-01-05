@@ -1,7 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { CircleDashed, Ellipsis, Eye, EyeClosed } from 'lucide-react'
+import Link from 'next/link'
+import {
+  ArrowRight,
+  CircleCheck,
+  CircleX,
+  Eye,
+  EyeClosed,
+  Link as LinkIcon,
+} from 'lucide-react'
+import { EligibilityBanner } from '@/components/eligibility/EligibilityBanner'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 
 interface Transaction {
@@ -9,7 +18,7 @@ interface Transaction {
   amount: string
   usdValue: string
   projectName: string
-  status: 'completed' | 'processing'
+  txHash: string
 }
 
 interface DonationRound {
@@ -22,7 +31,7 @@ interface DonationRound {
   chain: string
   matchingAmount: string
   transactions: Transaction[]
-  state: 'waiting' | 'processing'
+  state: 'completed' | 'failed'
 }
 
 const donationRounds: DonationRound[] = [
@@ -35,21 +44,21 @@ const donationRounds: DonationRound[] = [
     roundName: 'Super duper round',
     chain: 'Polygon',
     matchingAmount: '0.000018 BTC',
-    state: 'waiting',
+    state: 'completed',
     transactions: [
       {
         id: 'tx1',
         amount: '0.000052 BTC',
         usdValue: '$14.00',
         projectName: 'Geode Labs',
-        status: 'completed',
+        txHash: '0x1234...5678',
       },
       {
         id: 'tx2',
         amount: '0.000012 BTC',
         usdValue: '$4.45',
         projectName: 'PEP Master - build trust in DIY medical instruments',
-        status: 'processing',
+        txHash: '0x8765...4321',
       },
     ],
   },
@@ -62,29 +71,29 @@ const donationRounds: DonationRound[] = [
     roundName: 'The best round ever',
     chain: 'Optimism',
     matchingAmount: '0.000018 BTC',
-    state: 'processing',
+    state: 'failed',
     transactions: [
       {
         id: 'tx3',
         amount: '0.000052 BTC',
         usdValue: '$14.00',
         projectName: 'Geode Labs',
-        status: 'processing',
+        txHash: '0xabcd...efgh',
       },
       {
         id: 'tx4',
         amount: '0.000012 BTC',
         usdValue: '$4.45',
         projectName: 'PEP Master - build trust in DIY medical instruments',
-        status: 'processing',
+        txHash: '0xijkl...mnop',
       },
     ],
   },
 ]
 
-export function DonationSummary() {
+export function SuccessDonationSummary() {
   const [expandedRounds, setExpandedRounds] = useState<Set<string>>(
-    new Set(donationRounds.map(r => r.id)),
+    new Set(['2']),
   )
 
   const toggleRound = (roundId: string) => {
@@ -105,13 +114,13 @@ export function DonationSummary() {
       <div className="mb-6 mt-2">
         <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
           <IconPraiseHand />
-          <h2 className="text-2xl font-bold text-giv-gray-900 [font-family:var(--font-inter)]">
+          <h2 className="text-2xl font-bold text-giv-gray-900">
             Your donation summary
           </h2>
         </div>
-        <p className="text-giv-gray-700 text-lg font-medium [font-family:var(--font-inter)]">
-          You are donating <span className="text-giv-primary-700">~$1270</span>{' '}
-          to <span className="text-giv-primary-700">4 projects.</span>
+        <p className="text-giv-gray-700 text-lg font-medium">
+          You’ve donated <span className="text-giv-primary-700">~$1270</span> to{' '}
+          <span className="text-giv-primary-700">4 projects.</span>
         </p>
       </div>
 
@@ -138,26 +147,60 @@ export function DonationSummary() {
             </div>
 
             {/* Toggle */}
-            <div className="py-3 [font-family:var(--font-inter)]">
-              {/* Processing Status */}
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className={`flex items-center gap-2 px-3 py-1.5 ${round.state === 'waiting' ? 'text-giv-gray-900' : 'text-giv-gray-700'} bg-giv-gray-200 rounded-md border border-giv-gray-400`}
-                >
-                  <span className="flex items-center justify-center w-4 h-4">
-                    {round.state === 'waiting' ? (
-                      <Ellipsis />
-                    ) : (
-                      <CircleDashed />
-                    )}
-                  </span>
-                  <span className="text-sm">
-                    Your transactions are processing.
-                  </span>
+            <div className="py-3 mt-2">
+              <div className="flex justify-between mb-3">
+                <div className="flex flex-col items-start gap-2">
+                  {round.state === 'completed' ? (
+                    <>
+                      <div
+                        className={`inline-flex w-auto items-center gap-2 px-3 py-2.5 bg-giv-gray-200 rounded-md border border-giv-gray-400`}
+                      >
+                        <div className="flex items-center gap-2 text-sm font-medium text-giv-jade-500">
+                          <span>
+                            <CircleCheck className="w-4 h-4" />
+                          </span>
+                          <span>Donation successful</span>
+                        </div>
+                      </div>
+                      <Link
+                        href="#"
+                        className="mt-2 inline-flex items-center gap-2 text-base font-medium text-giv-primary-500 bg-giv-gray-200 rounded-md px-3 py-2 border border-giv-primary-500 hover:opacity-85"
+                      >
+                        <LinkIcon className="w-4 h-4 text-giv-primary-500" />
+                        <span className="text-giv-primary-500">
+                          View on block explorer
+                        </span>
+                        <ArrowRight className="w-4 h-4 text-giv-primary-500" />
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className={`flex items-center gap-2 px-3 py-2.5 bg-giv-gray-200 rounded-md border border-giv-gray-400`}
+                      >
+                        <div className="flex items-center gap-2 text-sm font-medium text-(--color-danger)">
+                          <span>
+                            <CircleX className="w-4 h-4" />
+                          </span>
+                          <span>Donation failed</span>
+                        </div>
+                      </div>
+                      <Link
+                        href="#"
+                        className="mt-2 inline-flex items-center gap-2 text-base font-medium text-giv-primary-500 bg-giv-gray-200 rounded-md px-3 py-2 border border-giv-primary-500 hover:opacity-85"
+                      >
+                        <LinkIcon className="w-4 h-4 text-giv-primary-500" />
+                        <span className="text-giv-primary-500">
+                          Check on block explorer
+                        </span>
+                        <ArrowRight className="w-4 h-4 text-giv-primary-500" />
+                      </Link>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => toggleRound(round.id)}
-                  className="flex items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 bg-giv-gray-200 rounded-md px-3 py-2 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 h-12 px-3 py-2 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 bg-giv-gray-200 rounded-md transition-colors cursor-pointer"
                 >
                   {expandedRounds.has(round.id) ? 'Hide' : 'Show'} Transaction
                   details
@@ -191,6 +234,8 @@ export function DonationSummary() {
             </div>
           </div>
         ))}
+
+        <EligibilityBanner />
       </div>
     </div>
   )

@@ -1,4 +1,4 @@
-import { Red_Hat_Text } from 'next/font/google'
+import { Inter, Red_Hat_Text } from 'next/font/google'
 import { Providers } from '@/app/providers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -11,6 +11,11 @@ import './globals.css'
 const redHatText = Red_Hat_Text({
   subsets: ['latin'],
   variable: '--font-red-hat-text',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -28,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={redHatText.className}>
+      <body className={`${redHatText.className} ${inter.variable}`}>
         <Providers>
           <CartProvider>
             <Header />

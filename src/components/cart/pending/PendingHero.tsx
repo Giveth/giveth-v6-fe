@@ -10,7 +10,9 @@ export function PendingHero() {
         </div>
       </div>
 
-      <h1 className="text-3xl font-bold text-giv-gray-900 mb-2">Donating</h1>
+      <h1 className="text-3xl font-bold text-giv-gray-900 mb-2 [font-family:var(--font-inter)]">
+        Donating
+      </h1>
     </div>
   )
 }
