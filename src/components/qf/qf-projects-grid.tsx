@@ -52,23 +52,22 @@ export function QFProjectsGrid({
   const isSearchActive = trimmedSearch.length >= 2
   const showSearchingState = !!isFetching && isSearchActive
   const showLoadingCount = !hasProjectsData && (isLoading || isFetching)
+  const showLoading = showSearchingState || showLoadingCount
 
   const headerRightText = showSearchingState
     ? 'Searching…'
     : showLoadingCount
       ? 'Loading…'
-      : `${totalProjects}`
+      : `${totalProjects} projects`
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <h2 className="text-2xl self-start md:self-center">
-          <span className="text-[#82899a]">
-            {showSearchingState ? '' : 'Explore'}
-          </span>{' '}
+          <span className="text-[#82899a]">{showLoading ? '' : 'Explore'}</span>{' '}
           <span className="text-[#5326ec] font-semibold">
-            {headerRightText} projects
+            {headerRightText}
           </span>
         </h2>
 
@@ -108,7 +107,7 @@ export function QFProjectsGrid({
         </div>
       </div>
 
-      {isLoading ? (
+      {showLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div
