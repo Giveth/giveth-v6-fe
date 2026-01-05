@@ -16,7 +16,7 @@ export function SuccessHero() {
         </div>
       </div>
 
-      <h1 className="text-3xl font-bold text-giv-gray-900 mb-2">
+      <h1 className="text-3xl font-bold text-giv-gray-900 mb-2 [font-family:var(--font-inter)]">
         You're a giver now!
       </h1>
     </div>

@@ -1,4 +1,4 @@
-import { ShareSection } from '@/components/cart/pending/share-section'
+import { ShareSection } from '@/components/cart/pending/ShareSection'
 import { SuccessDonationSummary } from '@/components/cart/success/SuccessDonationSummary'
 import { SuccessHero } from '@/components/cart/success/SuccessHero'
 
