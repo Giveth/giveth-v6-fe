@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
@@ -23,8 +23,24 @@ export function DonationSidebar({
   useActiveAccount()
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
+  const [totalCartAmountUsd, setTotalCartAmountUsd] = useState(0)
 
   if (qfRoundGroups.length === 0) return null
+
+  // Set total cart amount
+  useEffect(() => {
+    const totalCartAmountUsd = qfRoundGroups.reduce((acc, group) => {
+      return acc + Number(group.totalUsdValue)
+    }, 0)
+    const totalNonQfProjectsAmount = nonQfProjects.reduce((acc, project) => {
+      return (
+        acc +
+        Number(project.donationAmount) *
+          Number(project.selectedToken?.priceInUSD ?? 0)
+      )
+    }, 0)
+    setTotalCartAmountUsd(totalCartAmountUsd + totalNonQfProjectsAmount)
+  }, [qfRoundGroups, nonQfProjects])
 
   const handleDonateButtonClick = () => {
     // Check is cart group value match user wallet balance
@@ -64,6 +80,11 @@ export function DonationSidebar({
 
     if (totalNonGroupCartValueUsd > totalNonGroupCartBalanceUsd) {
       setIsInsufficientFund(true)
+      return
+    }
+
+    // Checko is cart empty
+    if (totalCartAmountUsd === 0) {
       return
     }
 
@@ -138,7 +159,9 @@ export function DonationSidebar({
         {/* Donate Button */}
         <button
           onClick={handleDonateButtonClick}
-          className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer"
+          disabled={totalCartAmountUsd === 0}
+          className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center 
+          justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Donate now
           <ArrowRight className="w-5 h-5" />
