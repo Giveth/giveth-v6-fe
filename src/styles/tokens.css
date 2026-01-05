@@ -25,6 +25,7 @@
     --giv-cyan-400: #3edbf3;
     --giv-cyan-200: #bff4fc;
 
+    --giv-jade-600: #2EA096;
     --giv-jade-500: #37b4a9;
     --giv-jade-200: #a9f8f1;
 
@@ -36,6 +37,8 @@
     --giv-gray-300: #ebecf2;
     --giv-gray-200: #f7f7f9;
     --giv-gray-100: #EBEBEB;
+
+    --giv-warning-600: #EA960D;
 
     /* Semantic tokens */
     --color-surface: #fcfcff;
@@ -49,7 +52,7 @@
     --color-accent: var(--giv-pinky-500);
     --color-accent-strong: var(--giv-primary-500);
     --color-success: var(--giv-jade-500);
-    --color-warning: #f6ab2f;
+    --color-warning: var(--giv-warning-600);
     --color-danger: #e6492d;
 
     /* Typography */
@@ -57,6 +60,7 @@
     --font-display: var(--font-red-hat-text, "Red Hat Text", sans-serif);
     --font-adventor: "TeX Gyre Adventor", sans-serif;
     --font-mono: var(--font-geist-mono, "JetBrains Mono", monospace);
+    --font-inter: "Inter", sans-serif;
 
     /* Radii & spacing */
     --radius-xs: 4px;
@@ -121,6 +125,7 @@
     --color-giv-cyan-400: var(--giv-cyan-400);
     --color-giv-cyan-200: var(--giv-cyan-200);
 
+    --color-giv-jade-600: var(--giv-jade-600);
     --color-giv-jade-500: var(--giv-jade-500);
     --color-giv-jade-200: var(--giv-jade-200);
 
@@ -132,6 +137,8 @@
     --color-giv-gray-300: var(--giv-gray-300);
     --color-giv-gray-200: var(--giv-gray-200);
     --color-giv-gray-100: var(--giv-gray-100);
+
+    --color-giv-warning-600: var(--giv-warning-600);
 
     /* Typography */
     --font-sans: var(--font-sans);
