@@ -2,18 +2,21 @@
 
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
+import { PassportBanner } from '@/components/PassportBanner'
 import { AboutTab } from '@/components/project/about-tab'
 import { AllTimeDonations } from '@/components/project/all-time-donations'
 import { DonationCard } from '@/components/project/donation-card'
 import { GivbacksInfoBox } from '@/components/project/givbacks-info-box'
 import { ProjectDonationsTable } from '@/components/project/project-donations-table'
-import { ProjectHero } from '@/components/project/project-hero'
 import { ProjectTabs } from '@/components/project/project-tabs'
+import { ProjectHero } from '@/components/project/ProjectHero'
+import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
 import { SimilarProjects } from '@/components/project/similar-projects'
 import { UpdatesTab } from '@/components/project/updates-tab'
 import { useProjectBySlug } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
+import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 
 export default function ProjectPage() {
   const params = useParams()
@@ -24,6 +27,8 @@ export default function ProjectPage() {
   const projectId = project?.id ? parseInt(project.id) : undefined
   const { data: updatesCountData } = useProjectUpdatesCount(projectId)
   const updatesCount = updatesCountData?.projectUpdates.totalCount ?? null
+
+  console.log({ project })
 
   if (isLoading)
     return (
@@ -39,63 +44,21 @@ export default function ProjectPage() {
     )
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      {/* Blue Banner */}
-      <div className="bg-[#1b1657] text-white py-3 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
-          <span className="text-[#7ce8df]">✨</span>
-          <span>You donations are eligible to be matched!</span>
-          <a
-            href="#"
-            className="text-[#7ce8df] underline hover:no-underline flex items-center gap-1"
-          >
-            Go to Passport
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
+      {/* Passport Banner */}
+      <PassportBanner />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto py-8">
         {/* Badges */}
-        <div className="flex items-center gap-3 mb-4">
-          {project.vouched && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#e1458d] text-white">
-              Verified
-            </span>
-          )}
-          {project.isGivbacksEligible && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#d2fffb] text-[#1b8c82]">
-              <svg
-                className="w-3.5 h-3.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-              </svg>
-              GIVbacks Eligible
-            </span>
-          )}
-        </div>
+        <ProjectPageBadges project={project as unknown as ProjectEntity} />
 
         {/* Hero and Donation Card Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+          <div className="flex flex-col gap-6">
             <ProjectHero project={project} />
             <GivbacksInfoBox />
           </div>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-6">
             <DonationCard project={project} />
             <AllTimeDonations project={project} />
           </div>
@@ -161,7 +124,7 @@ export default function ProjectPage() {
 
         {/* Similar Projects */}
         <SimilarProjects projectSlug={slug} />
-      </div>
+      </main>
     </div>
   )
 }
