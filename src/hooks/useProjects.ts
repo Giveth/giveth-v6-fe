@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
 import {
   type ProjectFiltersInput,
@@ -38,6 +38,7 @@ export const useProjects = (options: UseProjectsOptions = {}) => {
       })
     },
     enabled: enabled,
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }

@@ -79,13 +79,19 @@ export default function QFRoundPage() {
       .map(n => NETWORK_NAME_TO_ID[n])
       .filter((id): id is number => Number.isInteger(id)) || []
 
-  const { data: projectsData, isLoading: isProjectsLoading } = useProjects({
+  const {
+    data: projectsData,
+    isLoading: isProjectsLoading,
+    isFetching: isProjectsFetching,
+  } = useProjects({
     filters: {
       qfRoundId: roundId,
       isGivbacksEligible: filters.isGivbacksEligible || undefined,
       vouched: filters.eligibleForMatching || undefined,
       networkIds: networkIds.length > 0 ? networkIds : undefined,
-      searchTerm: debouncedSearchTerm.length ? debouncedSearchTerm : undefined,
+      // Avoid triggering expensive backend search for 0-1 char inputs (noise + can be slow in prod DBs)
+      searchTerm:
+        debouncedSearchTerm.length >= 2 ? debouncedSearchTerm : undefined,
     },
     orderBy: sortField,
     orderDirection:
@@ -95,6 +101,7 @@ export default function QFRoundPage() {
 
   const projects = (projectsData?.projects?.projects as ProjectEntity[]) || []
   const totalProjects = projectsData?.projects?.total || 0
+  const hasProjectsData = !!projectsData?.projects
 
   const handleSortChange = (
     field: ProjectSortField,
@@ -160,6 +167,8 @@ export default function QFRoundPage() {
         <QFProjectsGrid
           projects={projects}
           isLoading={isProjectsLoading}
+          isFetching={isProjectsFetching}
+          hasProjectsData={hasProjectsData}
           roundId={roundId}
           roundName={qfRound.title || qfRound.name}
           totalProjects={totalProjects}
