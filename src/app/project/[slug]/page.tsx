@@ -4,17 +4,19 @@ import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { PassportBanner } from '@/components/PassportBanner'
 import { AboutTab } from '@/components/project/about-tab'
-import { AllTimeDonations } from '@/components/project/all-time-donations'
-import { DonationCard } from '@/components/project/donation-card'
-import { GivbacksInfoBox } from '@/components/project/givbacks-info-box'
-import { ProjectDonationsTable } from '@/components/project/project-donations-table'
-import { ProjectHero } from '@/components/project/project-hero'
-import { ProjectTabs } from '@/components/project/project-tabs'
+import { AllTimeDonations } from '@/components/project/AllTimeDonations'
+import { DonationCard } from '@/components/project/DonationCard'
+import { GivbacksInfoBox } from '@/components/project/GivbacksInfoBox'
+import { ProjectDonationsTable } from '@/components/project/ProjectDonationsTable'
+import { ProjectHero } from '@/components/project/ProjectHero'
+import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
+import { ProjectTabs } from '@/components/project/ProjectTabs'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
 import { SimilarProjects } from '@/components/project/similar-projects'
 import { UpdatesTab } from '@/components/project/updates-tab'
 import { useProjectBySlug } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
+import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 
 export default function ProjectPage() {
   const params = useParams()
@@ -39,40 +41,22 @@ export default function ProjectPage() {
       </div>
     )
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-gray-200">
       {/* Passport Banner */}
       <PassportBanner />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto py-8 px-4 md-px-0">
         {/* Badges */}
-        <div className="flex items-center gap-3 mb-4">
-          {project.vouched && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#e1458d] text-white">
-              Verified
-            </span>
-          )}
-          {project.isGivbacksEligible && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#d2fffb] text-[#1b8c82]">
-              <svg
-                className="w-3.5 h-3.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-              </svg>
-              GIVbacks Eligible
-            </span>
-          )}
-        </div>
+        <ProjectPageBadges project={project as unknown as ProjectEntity} />
 
         {/* Hero and Donation Card Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr] mb-6">
+          <div className="flex flex-col gap-6">
             <ProjectHero project={project} />
             <GivbacksInfoBox />
           </div>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-6">
             <DonationCard project={project} />
             <AllTimeDonations project={project} />
           </div>
@@ -138,7 +122,7 @@ export default function ProjectPage() {
 
         {/* Similar Projects */}
         <SimilarProjects projectSlug={slug} />
-      </div>
+      </main>
     </div>
   )
 }

@@ -25,7 +25,7 @@ export function CartButton() {
         onClick={() => setIsCartOpen(!isCartOpen)}
         className="relative inline-flex items-center justify-center py-2 px-3 hover:bg-giv-gray-300 rounded-lg transition-colors shadow-xl cursor-pointer"
       >
-        <ShoppingCart className="w-6 h-6 text-giv-gray-900" />
+        <ShoppingCart className="w-4 h-4 text-giv-gray-900 lg:w-6 lg:h-6" />
         {cartItems.length > 0 && (
           <span className="block ms-2 font-bold text-giv-gray-900 text-base">
             {cartItems.length}
