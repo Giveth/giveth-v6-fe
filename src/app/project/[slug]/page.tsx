@@ -7,10 +7,10 @@ import { AboutTab } from '@/components/project/about-tab'
 import { AllTimeDonations } from '@/components/project/AllTimeDonations'
 import { DonationCard } from '@/components/project/DonationCard'
 import { GivbacksInfoBox } from '@/components/project/GivbacksInfoBox'
-import { ProjectDonationsTable } from '@/components/project/project-donations-table'
-import { ProjectTabs } from '@/components/project/project-tabs'
+import { ProjectDonationsTable } from '@/components/project/ProjectDonationsTable'
 import { ProjectHero } from '@/components/project/ProjectHero'
 import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
+import { ProjectTabs } from '@/components/project/ProjectTabs'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
 import { SimilarProjects } from '@/components/project/similar-projects'
 import { UpdatesTab } from '@/components/project/updates-tab'
@@ -27,8 +27,6 @@ export default function ProjectPage() {
   const projectId = project?.id ? parseInt(project.id) : undefined
   const { data: updatesCountData } = useProjectUpdatesCount(projectId)
   const updatesCount = updatesCountData?.projectUpdates.totalCount ?? null
-
-  console.log({ project })
 
   if (isLoading)
     return (
@@ -48,7 +46,7 @@ export default function ProjectPage() {
       <PassportBanner />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8">
+      <main className="max-w-7xl mx-auto py-8 px-4 md-px-0">
         {/* Badges */}
         <ProjectPageBadges project={project as unknown as ProjectEntity} />
 

@@ -1,21 +1,18 @@
-import { useState, type SyntheticEvent } from 'react'
+import { useState } from 'react'
 import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
+import { ChainIcon } from '@/components/ChainIcon'
 import {
   DonationTableDropdown,
   type FilterType,
-} from '@/components/project/donation-table-dropdown'
+} from '@/components/project/DonationTableDropdown'
 import { useProjectDonations } from '@/hooks/useProject'
 import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
-import {
-  getChainIcon,
-  getChainName,
-  getTransactionUrl,
-} from '@/lib/helpers/chainHelper'
+import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { ProjectImage } from './ProjectImage'
 
 interface ProjectDonationsTableProps {
@@ -63,7 +60,7 @@ export function ProjectDonationsTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-[#ebecf2] p-6">
+      <div className="bg-white rounded-xl border border-giv-gray-300 p-6">
         <div className="text-center py-8">Loading donations...</div>
       </div>
     )
@@ -90,27 +87,6 @@ export function ProjectDonationsTable({
     usd: `$${donation.valueUsd?.toFixed(2) || '0.00'}`,
   }))
 
-  function NetworkIcon({ networkId }: { networkId: number }) {
-    const iconData = getChainIcon(networkId)
-    return (
-      <div className="w-5 h-5 rounded-full overflow-hidden bg-white flex items-center justify-center">
-        <img
-          src={iconData.iconUrl}
-          alt={`${networkId} icon`}
-          className="w-4 h-4 object-contain"
-          onError={(event: SyntheticEvent<HTMLImageElement>) => {
-            const target = event.currentTarget
-            target.style.display = 'none'
-            const parent = target.parentElement
-            if (parent) {
-              parent.innerHTML = `<div class="w-5 h-5 rounded-full ${iconData.bg} flex items-center justify-center ${iconData.textColor || 'text-white'} text-xs">${iconData.fallbackIcon}</div>`
-            }
-          }}
-        />
-      </div>
-    )
-  }
-
   return (
     <>
       <div className="mb-4">
@@ -124,32 +100,32 @@ export function ProjectDonationsTable({
         />
       </div>
 
-      <div className="bg-white rounded-xl border border-[#ebecf2] overflow-hidden">
+      <div className="overflow-hidden">
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#ebecf2] bg-[#f7f7f9]">
-                <th className="text-left px-6 py-3 text-sm font-medium text-[#82899a]">
-                  <button className="flex items-center gap-2 hover:text-[#5326ec]">
+              <tr className="border-b border-giv-gray-400">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <button className="flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer">
                     Donated at
                     <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-[#82899a]">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
                   Donor
                 </th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-[#82899a]">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
                   Network
                 </th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-[#82899a]">
-                  <button className="flex items-center gap-2 hover:text-[#5326ec]">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <button className="flex items-center gap-2 hover:text-[#5326ec] cursor-pointer">
                     Amount
                     <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-[#82899a]">
-                  <button className="flex items-center gap-2 hover:text-[#5326ec]">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <button className="flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer">
                     USD Value
                     <ArrowUpDown className="w-3 h-3" />
                   </button>
@@ -161,7 +137,7 @@ export function ProjectDonationsTable({
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-8 text-center text-sm text-[#82899a]"
+                    className="px-6 py-8 text-center text-base text-giv-gray-700"
                   >
                     No donations yet
                   </td>
@@ -170,12 +146,10 @@ export function ProjectDonationsTable({
                 formattedDonations.map((donation, idx) => (
                   <tr
                     key={idx}
-                    className="border-b border-[#ebecf2] hover:bg-[#fcfcff] transition-colors"
+                    className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm text-[#1f2333]">
-                      {donation.date}
-                    </td>
-                    <td className="px-6 py-4">
+                    <td className="px-1 py-4">{donation.date}</td>
+                    <td className="px-1 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full overflow-hidden">
                           <ProjectImage
@@ -184,25 +158,23 @@ export function ProjectDonationsTable({
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <span className="text-sm text-[#1f2333]">
-                          {donation.donor}
-                        </span>
+                        <span className="">{donation.donor}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-1 py-4">
                       <div className="flex items-center gap-2">
-                        <NetworkIcon networkId={donation.networkId} />
-                        <span className="text-sm text-[#1f2333]">
-                          {donation.network}
-                        </span>
+                        <ChainIcon
+                          networkId={donation.networkId}
+                          height="h-6"
+                          width="w-6"
+                        />
+                        <span>{donation.network}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-1 py-4">
                       <div className="flex items-center gap-1">
-                        <span className="text-sm font-semibold text-[#1f2333]">
-                          {donation.amount}
-                        </span>
-                        <span className="text-sm text-[#5326ec]">
+                        <span className="font-medium">{donation.amount}</span>
+                        <span className="text-giv-gray-800">
                           {donation.token}
                         </span>
                         <a
@@ -212,15 +184,13 @@ export function ProjectDonationsTable({
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-[#5326ec] transition-colors"
+                          className="hover:text-giv-primary-500 transition-colors"
                         >
-                          <ExternalLink className="w-3 h-3 text-[#82899a]" />
+                          <ExternalLink className="w-3 h-3 text-giv-gray-800" />
                         </a>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#1f2333]">
-                      {donation.usd}
-                    </td>
+                    <td className="px-1 py-4">{donation.usd}</td>
                   </tr>
                 ))
               )}
@@ -230,11 +200,11 @@ export function ProjectDonationsTable({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 px-6 py-4 border-t border-[#ebecf2]">
+          <div className="flex items-center justify-center gap-2 px-6 py-4">
             <button
               onClick={handlePrevious}
               disabled={currentPage === 0}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-[#82899a] hover:text-[#5326ec] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-900 hover:text-giv-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-3 h-3" />
               Prev
@@ -252,10 +222,10 @@ export function ProjectDonationsTable({
                 <button
                   key={pageIndex}
                   onClick={() => handlePageClick(pageIndex)}
-                  className={`w-7 h-7 text-sm rounded ${
+                  className={`w-7 h-7 text-sm rounded cursor-pointer ${
                     currentPage === pageIndex
-                      ? 'font-medium text-[#5326ec] border-b-2 border-[#5326ec]'
-                      : 'text-[#82899a] hover:text-[#5326ec]'
+                      ? 'font-medium text-giv-primary-500'
+                      : 'text-giv-gray-600 hover:text-giv-primary-500'
                   }`}
                 >
                   {pageIndex + 1}
@@ -264,13 +234,13 @@ export function ProjectDonationsTable({
             })}
 
             {totalPages > 5 && currentPage < totalPages - 3 && (
-              <span className="px-2 text-sm text-[#82899a]">...</span>
+              <span className="px-2 text-sm text-giv-gray-600">...</span>
             )}
 
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages - 1}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-[#82899a] hover:text-[#5326ec] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-900 hover:text-giv-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               Next
               <ChevronRight className="w-3 h-3" />
