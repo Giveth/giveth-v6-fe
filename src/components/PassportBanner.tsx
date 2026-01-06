@@ -46,8 +46,8 @@ export function PassportBanner() {
           Connect your wallet to verify your eligibility for donation matching.
         </div>
       )}
-      {/* Wallet Connected but no data */}
-      {account && !isLoading && !isError && (
+      {/* Wallet Connected but no eligibility data yet and user is not signed in */}
+      {account && !data && !isLoading && !isError && !isAuthenticated && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>
@@ -62,7 +62,8 @@ export function PassportBanner() {
           </button>
         </div>
       )}
-      {data && !data.checkPassportEligibility.isEligible && (
+      {/* Wallet Connected but no eligibility data */}
+      {account && data && !data.checkPassportEligibility.isEligible && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>You are not eligible for donation matching.</p>
