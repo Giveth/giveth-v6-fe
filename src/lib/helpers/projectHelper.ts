@@ -1,3 +1,5 @@
+import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
+
 export const calculateEstimatedMatchingWithDonationAmount = (
   donationAmountInUSD: number,
   projectDonationsSqrtRootSum?: number,
@@ -24,4 +26,14 @@ export const calculateEstimatedMatchingWithDonationAmount = (
     newEstimateMatching *
     ((afterNewDonationPow - beforeNewDonationPow) / afterNewDonationPow)
   )
+}
+
+/**
+ * Get the active rounds for a project
+ *
+ * @param project - The project to get the active rounds for
+ * @returns The active rounds for the project
+ */
+export const getProjectActiveRounds = (project: ProjectEntity) => {
+  return project.projectQfRounds?.filter(pqr => pqr.qfRound?.isActive)
 }
