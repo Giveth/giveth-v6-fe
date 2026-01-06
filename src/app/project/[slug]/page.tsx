@@ -6,7 +6,7 @@ import { PassportBanner } from '@/components/PassportBanner'
 import { AboutTab } from '@/components/project/about-tab'
 import { AllTimeDonations } from '@/components/project/all-time-donations'
 import { DonationCard } from '@/components/project/donation-card'
-import { GivbacksInfoBox } from '@/components/project/givbacks-info-box'
+import { GivbacksInfoBox } from '@/components/project/GivbacksInfoBox'
 import { ProjectDonationsTable } from '@/components/project/project-donations-table'
 import { ProjectTabs } from '@/components/project/project-tabs'
 import { ProjectHero } from '@/components/project/ProjectHero'
@@ -43,7 +43,7 @@ export default function ProjectPage() {
       </div>
     )
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-gray-200">
       {/* Passport Banner */}
       <PassportBanner />
 
@@ -53,7 +53,7 @@ export default function ProjectPage() {
         <ProjectPageBadges project={project as unknown as ProjectEntity} />
 
         {/* Hero and Donation Card Row */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr] mb-6">
           <div className="flex flex-col gap-6">
             <ProjectHero project={project} />
             <GivbacksInfoBox />

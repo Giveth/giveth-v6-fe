@@ -63,3 +63,8 @@ export const createProjectLink = {
   label: 'Create A Project',
   href: oldFrontendPath('/create', '/create'),
 }
+
+export const givpowerDocLink = {
+  label: 'GIVpower Documentation',
+  href: 'https://docs.giveth.io/givpower',
+}
