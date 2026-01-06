@@ -1,11 +1,10 @@
 'use client'
 
-import { memo, useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb/chains'
 import { TokenIcon, TokenProvider, useActiveAccount } from 'thirdweb/react'
-import { useCart } from '@/context/CartContext'
 import { formatNumber, useWalletTokens } from '@/lib/helpers/cartHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { WalletTokenWithBalance } from '@/lib/types/chain'
@@ -29,12 +28,11 @@ export interface Token {
 
 export const TokenDropdown = ({
   selectedChainId,
-  roundId,
+  setRoundSelectedToken,
 }: {
   selectedChainId: number
-  roundId: number
+  setRoundSelectedToken: (token: WalletTokenWithBalance) => void
 }) => {
-  const { updateSelectedToken, cartItems, updateProjectDonation } = useCart()
   const account = useActiveAccount()
   const accountAddress = account?.address
 
@@ -47,46 +45,10 @@ export const TokenDropdown = ({
     WalletTokenWithBalance | undefined
   >(undefined)
 
-  // Select first token by default
-  useEffect(() => {
-    if (!selectedToken && walletTokens && walletTokens.length > 0) {
-      setSelectedToken(walletTokens[0])
-      updateSelectedToken(
-        roundId,
-        walletTokens[0],
-        walletTokens[0].symbol,
-        walletTokens[0].address as `0x${string}`,
-        walletTokens[0].decimals,
-        walletTokens[0].isGivbackEligible,
-      )
-    }
-  }, [walletTokens, selectedToken])
-
   // Select choosed token when clicking on the dropdown item
   const handleSelectToken = (token: WalletTokenWithBalance) => {
     setSelectedToken(token)
-    updateSelectedToken(
-      roundId,
-      token,
-      token.symbol,
-      token.address as `0x${string}`,
-      token.decimals,
-      token.isGivbackEligible,
-    )
-
-    // Update all projects in the round with the same token and reset donation amount
-    cartItems.forEach(item => {
-      if (item.roundId === roundId) {
-        updateProjectDonation(
-          roundId,
-          item.id,
-          String(0),
-          token.symbol,
-          token.address as `0x${string}`,
-          token.decimals,
-        )
-      }
-    })
+    setRoundSelectedToken(token)
   }
 
   return (

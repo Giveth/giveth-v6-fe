@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb'
@@ -29,20 +29,6 @@ export const ChainDropdown = ({
   const [selectedChainIdState, setSelectedChainIdState] = useState<number>(
     selectedChainId ?? 0,
   )
-
-  // Keep local state in sync if the parent updates selectedChainId
-  useEffect(() => {
-    setSelectedChainIdState(selectedChainId ?? 0)
-  }, [selectedChainId])
-
-  // If only one eligible network, select it automatically
-  useEffect(() => {
-    if (selectedChainIdState === 0 && eligibleNetworks.length === 1) {
-      const only = eligibleNetworks[0]
-      setSelectedChainIdState(only)
-      updateSelectedChainId(roundId, only)
-    }
-  }, [selectedChainIdState, eligibleNetworks])
 
   return (
     <DropdownMenu.Root>

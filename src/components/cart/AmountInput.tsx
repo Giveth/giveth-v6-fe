@@ -16,7 +16,7 @@ export const AmountInput = ({
   selectedToken,
   cartItems,
 }: AmountInputProps) => {
-  const { updateProjectDonation } = useCart()
+  const { updateProjectDonation, updateSelectedToken } = useCart()
 
   const [enteringType, setEnteringType] = useState<'amount' | 'usd'>('amount')
   const [enteredValue, setEnteredValue] = useState('0')
@@ -52,7 +52,9 @@ export const AmountInput = ({
   // Update each cart item in round with same token amount
   const handleApplyToAll = (roundId: number) => {
     const round = cartItems.find(item => item.roundId === roundId)
+
     if (round) {
+      if (!selectedToken) return
       cartItems.forEach(item => {
         updateProjectDonation(
           roundId,
@@ -61,6 +63,14 @@ export const AmountInput = ({
           selectedToken?.symbol ?? '',
           selectedToken?.address ?? '',
           selectedToken?.chainId ?? 0,
+        )
+        updateSelectedToken(
+          roundId,
+          selectedToken,
+          selectedToken.symbol,
+          selectedToken.address as `0x${string}`,
+          selectedToken.decimals,
+          selectedToken.isGivbackEligible,
         )
       })
     }
