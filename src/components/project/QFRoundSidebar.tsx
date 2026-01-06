@@ -1,6 +1,6 @@
-import { useState, type SyntheticEvent } from 'react'
+import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
-import { getChainIcon } from '@/lib/helpers/chainHelper'
+import { ChainIcon } from '@/components/ChainIcon'
 
 interface QFRoundSidebarProps {
   project: {
@@ -12,27 +12,6 @@ interface QFRoundSidebarProps {
       chainType: string
     }> | null
   }
-}
-
-function ChainIcon({ networkId }: { networkId: number }) {
-  const iconData = getChainIcon(networkId)
-  return (
-    <div className="w-5 h-5 rounded-full overflow-hidden bg-white flex items-center justify-center">
-      <img
-        src={iconData.iconUrl}
-        alt={`${networkId} icon`}
-        className="w-4 h-4 object-contain"
-        onError={(event: SyntheticEvent<HTMLImageElement>) => {
-          const target = event.currentTarget
-          target.style.display = 'none'
-          const parent = target.parentElement
-          if (parent) {
-            parent.innerHTML = `<div class="w-5 h-5 rounded-full ${iconData.bg} flex items-center justify-center ${iconData.textColor || 'text-white'} text-xs">${iconData.fallbackIcon}</div>`
-          }
-        }}
-      />
-    </div>
-  )
 }
 
 export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
@@ -54,42 +33,44 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
     }
   }
   return (
-    <div className="bg-white rounded-xl border border-[#ebecf2] p-6">
-      <h3 className="text-sm font-medium text-[#1f2333] mb-4">
+    <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
+      <h3 className="text-base font-medium text-giv-gray-900 border-b border-giv-gray-300 pb-2 mb-4">
         QF round 3 donations
       </h3>
 
       <div className="mb-4">
-        <span className="text-3xl font-bold text-[#1f2333]">
+        <span className="text-[52px] font-adventor font-bold text-giv-gray-900">
           ${project.totalDonations.toFixed(2)}
         </span>
-        <p className="text-sm text-[#82899a]">
+        <p className="text-base text-giv-gray-700">
           Raised from{' '}
-          <span className="text-[#5326ec] font-medium">
+          <span className="text-giv-gray-900 font-medium">
             {project.countUniqueDonors || 0}
           </span>{' '}
           contributors
         </p>
       </div>
 
-      <div className="border-t border-[#ebecf2] pt-4">
-        <p className="text-sm text-[#82899a] mb-3">Project recipient address</p>
+      <div className="pt-4">
+        <p className="text-base text-giv-gray-700 mb-3">
+          Project recipient address
+        </p>
         <div className="space-y-2">
           {recipientAddresses.map((item, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between gap-2 p-2 bg-[#f7f7f9] rounded-lg"
+              className="flex items-center justify-between gap-2 p-2 bg-giv-gray-200 rounded-lg"
             >
-              <span className="text-xs text-[#82899a] font-mono truncate flex-1">
+              <span className="text-xs text-giv-gray-700 truncate flex-1">
                 {item.address.slice(0, 10)}...{item.address.slice(-8)}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleCopyAddress(item.address)}
-                  className={`transition-colors ${
+                  className={`transition-colors cursor-pointer ${
                     copiedAddress === item.address
-                      ? 'text-green-500'
-                      : 'text-[#82899a] hover:text-[#5326ec]'
+                      ? 'text-giv-jade-500'
+                      : 'text-giv-gray-800 hover:text-giv-primary-500'
                   }`}
                   title={
                     copiedAddress === item.address ? 'Copied!' : 'Copy address'
@@ -101,7 +82,11 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
                     <Copy className="w-3.5 h-3.5" />
                   )}
                 </button>
-                <ChainIcon networkId={item.networkId} />
+                <ChainIcon
+                  networkId={item.networkId}
+                  height="h-5"
+                  width="w-5"
+                />
               </div>
             </div>
           ))}

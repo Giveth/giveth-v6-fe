@@ -13,9 +13,9 @@ export function DefaultHeader({ hideSearch }: { hideSearch?: boolean }) {
 
   return (
     <header className="bg-white border-b border-giv-gray-300 px-6 py-4">
-      <div className="max-w-[1442px] mx-auto flex items-center justify-between">
+      <div className="max-w-[1442px] mx-auto flex flex-wrap lg:flex-nowrap items-center justify-between">
         {/* Logo and Nav */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-1 lg:gap-8">
           {isExternalLogoLink ? (
             <a
               href={LogoLink}

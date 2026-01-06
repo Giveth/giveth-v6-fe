@@ -70,20 +70,20 @@ export function HeaderConnectWallet() {
         >
           {/* Avatar */}
           <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center`}
+            className={`w-4 h-4 lg:w-6 lg:h-6 rounded-full flex items-center justify-center`}
           >
             <Image
               src={user?.avatar || '/images/user/default-avatar.png'}
               alt="Avatar"
               width={24}
               height={24}
-              className="w-full h-full object-cover rounded-full"
+              className="w-4 h-4 lg:w-6 lg:h-6 object-cover rounded-full"
             />
           </div>
 
           {/* Address and Network Info */}
           <div className="flex flex-col items-start">
-            <span className="font-normal text-giv-gray-900 text-sm">
+            <span className="font-normal text-giv-gray-900 text-xs lg:text-sm">
               {(user && getUserName(user)) || shortenAddress(account.address)}
             </span>
             <span className="font-normal text-giv-gray-900 text-[10px]">
