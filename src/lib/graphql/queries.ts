@@ -110,6 +110,7 @@ export const qfRoundBySlugQuery = graphql(`
       beginDate
       endDate
       allocatedFundUSD
+      allocatedFundUSDPreferred
     }
   }
 `)
