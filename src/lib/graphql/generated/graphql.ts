@@ -1605,7 +1605,7 @@ export type ProjectBySlugQueryVariables = Exact<{
 }>;
 
 
-export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, socialMedia?: Array<{ __typename?: 'ProjectSocialMediaEntity', id: string, type: string, link: string }> | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null, project?: { __typename?: 'ProjectEntity', id: string, qfRoundMatchingProjects?: Array<{ __typename?: 'QfRoundMatchingProjectEntity', qfRoundMatchingId: number, matchingAmount: number }> | null } | null }> } };
+export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, socialMedia?: Array<{ __typename?: 'ProjectSocialMediaEntity', id: string, type: string, link: string }> | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', countUniqueDonors: number, sumDonationValueUsd: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null }> } };
 
 export type QfRoundBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1914,20 +1914,13 @@ export const ProjectBySlugDocument = new TypedDocumentString(`
       chainType
     }
     projectQfRounds {
-      id
-      qfRoundId
+      countUniqueDonors
+      sumDonationValueUsd
       qfRound {
         id
         name
         slug
         isActive
-      }
-      project {
-        id
-        qfRoundMatchingProjects {
-          qfRoundMatchingId
-          matchingAmount
-        }
       }
     }
   }
