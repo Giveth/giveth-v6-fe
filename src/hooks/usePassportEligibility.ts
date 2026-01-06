@@ -30,10 +30,8 @@ export const usePassportEligibility = (
       jwt,
     ],
     queryFn: async () => {
-      console.log('queryFn', { input, jwt })
       if (!input) throw new Error('Missing input for checkPassportEligibility')
       if (!jwt) throw new Error('Missing JWT token')
-      console.log('queryFn2', { input, jwt })
 
       const client = createGraphQLClient({
         headers: {
