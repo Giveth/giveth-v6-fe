@@ -82,20 +82,13 @@ export const projectBySlugQuery = graphql(`
         chainType
       }
       projectQfRounds {
-        id
-        qfRoundId
+        countUniqueDonors
+        sumDonationValueUsd
         qfRound {
           id
           name
           slug
           isActive
-        }
-        project {
-          id
-          qfRoundMatchingProjects {
-            qfRoundMatchingId
-            matchingAmount
-          }
         }
       }
     }
