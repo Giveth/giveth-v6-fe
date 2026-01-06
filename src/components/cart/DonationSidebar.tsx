@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
@@ -23,24 +23,24 @@ export function DonationSidebar({
   useActiveAccount()
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
-  const [totalCartAmountUsd, setTotalCartAmountUsd] = useState(0)
 
-  if (qfRoundGroups.length === 0) return null
-
-  // Set total cart amount
-  useEffect(() => {
-    const totalCartAmountUsd = qfRoundGroups.reduce((acc, group) => {
+  const totalCartAmountUsd = useMemo(() => {
+    const totalGroupUsd = qfRoundGroups.reduce((acc, group) => {
       return acc + Number(group.totalUsdValue)
     }, 0)
-    const totalNonQfProjectsAmount = nonQfProjects.reduce((acc, project) => {
+
+    const totalNonGroupUsd = nonQfProjects.reduce((acc, project) => {
       return (
         acc +
         Number(project.donationAmount) *
           Number(project.selectedToken?.priceInUSD ?? 0)
       )
     }, 0)
-    setTotalCartAmountUsd(totalCartAmountUsd + totalNonQfProjectsAmount)
+
+    return totalGroupUsd + totalNonGroupUsd
   }, [qfRoundGroups, nonQfProjects])
+
+  const hasAnyItems = qfRoundGroups.length > 0 || nonQfProjects.length > 0
 
   const handleDonateButtonClick = () => {
     // Check is cart group value match user wallet balance
@@ -90,6 +90,8 @@ export function DonationSidebar({
 
     router.push('/cart/pending')
   }
+
+  if (!hasAnyItems) return null
 
   return (
     <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
