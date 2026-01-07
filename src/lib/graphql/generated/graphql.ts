@@ -838,6 +838,23 @@ export type ProjectFiltersInput = {
   vouched?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type ProjectMatchingContextEntity = {
+  __typename?: 'ProjectMatchingContextEntity';
+  allProjectsSqrtSum: Scalars['Float']['output'];
+  contributorCount: Scalars['Int']['output'];
+  currentMatching: Scalars['Float']['output'];
+  /** The matching calculation strategy (REGULAR or COCM) */
+  estimationMethod: Scalars['String']['output'];
+  lastUpdated: Scalars['DateTime']['output'];
+  matchingPool: Scalars['Float']['output'];
+  projectId: Scalars['Int']['output'];
+  qfRoundId: Scalars['Int']['output'];
+  roundEndDate: Scalars['DateTime']['output'];
+  roundStartDate: Scalars['DateTime']['output'];
+  sqrtSum: Scalars['Float']['output'];
+  totalDonationsUsd: Scalars['Float']['output'];
+};
+
 export type ProjectMatchingEntity = {
   __typename?: 'ProjectMatchingEntity';
   matchingAmount: Scalars['Float']['output'];
@@ -1046,6 +1063,7 @@ export type Query = {
   project: ProjectEntity;
   projectBySlug: ProjectEntity;
   projectDonationStats: DonationStatsEntity;
+  projectMatchingContext?: Maybe<ProjectMatchingContextEntity>;
   projectUpdates: ProjectUpdatesResult;
   /** Get paginated projects with optional filters including search term and active QF round filter */
   projects: PaginatedProjectsEntity;
@@ -1241,6 +1259,12 @@ export type QueryProjectBySlugArgs = {
 export type QueryProjectDonationStatsArgs = {
   projectId: Scalars['Int']['input'];
   qfRoundId?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryProjectMatchingContextArgs = {
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
 };
 
 
@@ -1516,11 +1540,13 @@ export type UserStatsEntity = {
   passportStamps?: Maybe<Scalars['Int']['output']>;
   primaryEns?: Maybe<Scalars['String']['output']>;
   projectsCount: Scalars['Int']['output'];
+  projectsWithDonationsCount: Scalars['Int']['output'];
   role: Scalars['String']['output'];
   telegramName?: Maybe<Scalars['String']['output']>;
   totalDonated: Scalars['Float']['output'];
   totalReceived: Scalars['Float']['output'];
   twitterName?: Maybe<Scalars['String']['output']>;
+  uniqueProjectsDonatedTo: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
   url?: Maybe<Scalars['String']['output']>;
   wallets: Array<UserWalletEntity>;
@@ -1674,7 +1700,7 @@ export type UserStatsQueryVariables = Exact<{
 }>;
 
 
-export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
+export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, uniqueProjectsDonatedTo: number, projectsWithDonationsCount: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
 
 export type MyProjectsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -2147,6 +2173,8 @@ export const UserStatsDocument = new TypedDocumentString(`
     donationsCount
     projectsCount
     likedProjectsCount
+    uniqueProjectsDonatedTo
+    projectsWithDonationsCount
     wallets {
       id
       address
