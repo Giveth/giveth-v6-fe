@@ -1540,11 +1540,13 @@ export type UserStatsEntity = {
   passportStamps?: Maybe<Scalars['Int']['output']>;
   primaryEns?: Maybe<Scalars['String']['output']>;
   projectsCount: Scalars['Int']['output'];
+  projectsWithDonationsCount: Scalars['Int']['output'];
   role: Scalars['String']['output'];
   telegramName?: Maybe<Scalars['String']['output']>;
   totalDonated: Scalars['Float']['output'];
   totalReceived: Scalars['Float']['output'];
   twitterName?: Maybe<Scalars['String']['output']>;
+  uniqueProjectsDonatedTo: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
   url?: Maybe<Scalars['String']['output']>;
   wallets: Array<UserWalletEntity>;
@@ -1636,7 +1638,7 @@ export type QfRoundBySlugQueryVariables = Exact<{
 }>;
 
 
-export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null } };
+export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null } };
 
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1698,7 +1700,7 @@ export type UserStatsQueryVariables = Exact<{
 }>;
 
 
-export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
+export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, uniqueProjectsDonatedTo: number, projectsWithDonationsCount: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
 
 export type MyProjectsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -1751,6 +1753,13 @@ export type EstimatedMatchingQueryVariables = Exact<{
 
 
 export type EstimatedMatchingQuery = { __typename?: 'Query', estimatedMatching: { __typename?: 'EstimatedMatchingEntity', projectId: number, qfRoundId: number, matchingPool: number, allProjectsSqrtSum: number, projectDonationsSqrtSum: number, estimatedMatching: number } };
+
+export type CheckPassportEligibilityQueryVariables = Exact<{
+  input: CheckPassportEligibilityInput;
+}>;
+
+
+export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -1965,6 +1974,7 @@ export const QfRoundBySlugDocument = new TypedDocumentString(`
     beginDate
     endDate
     allocatedFundUSD
+    allocatedFundUSDPreferred
   }
 }
     `) as unknown as TypedDocumentString<QfRoundBySlugQuery, QfRoundBySlugQueryVariables>;
@@ -2173,6 +2183,8 @@ export const UserStatsDocument = new TypedDocumentString(`
     donationsCount
     projectsCount
     likedProjectsCount
+    uniqueProjectsDonatedTo
+    projectsWithDonationsCount
     wallets {
       id
       address
@@ -2314,3 +2326,27 @@ export const EstimatedMatchingDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<EstimatedMatchingQuery, EstimatedMatchingQueryVariables>;
+export const CheckPassportEligibilityDocument = new TypedDocumentString(`
+    query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {
+  checkPassportEligibility(input: $input) {
+    isEligible
+    passportScore
+    mbdScore
+    threshold
+    expirationDate
+    message
+    eligibility {
+      id
+      address
+      score
+      mbdScore
+      lastScoreTimestamp
+      expirationTimestamp
+      stamps
+      error
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;

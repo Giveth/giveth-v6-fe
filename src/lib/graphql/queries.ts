@@ -110,6 +110,7 @@ export const qfRoundBySlugQuery = graphql(`
       beginDate
       endDate
       allocatedFundUSD
+      allocatedFundUSDPreferred
     }
   }
 `)
@@ -337,6 +338,8 @@ export const userStatsQuery = graphql(`
       donationsCount
       projectsCount
       likedProjectsCount
+      uniqueProjectsDonatedTo
+      projectsWithDonationsCount
       wallets {
         id
         address
@@ -492,6 +495,31 @@ export const estimatedMatchingQuery = graphql(`
       allProjectsSqrtSum
       projectDonationsSqrtSum
       estimatedMatching
+    }
+  }
+`)
+
+export const checkPassportEligibilityQuery = graphql(`
+  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {
+    checkPassportEligibility(input: $input) {
+      isEligible
+      passportScore
+      mbdScore
+      threshold
+      expirationDate
+      message
+      eligibility {
+        id
+        address
+        score
+        mbdScore
+        lastScoreTimestamp
+        expirationTimestamp
+        stamps
+        error
+        createdAt
+        updatedAt
+      }
     }
   }
 `)

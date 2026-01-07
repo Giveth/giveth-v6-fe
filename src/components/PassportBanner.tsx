@@ -1,39 +1,89 @@
-export function PassportBanner() {
+'use client'
+
+import { BadgeCheck, Info } from 'lucide-react'
+import { useActiveAccount } from 'thirdweb/react'
+import { useSiweAuth } from '@/context/AuthContext'
+import { usePassportEligibility } from '@/hooks/usePassportEligibility'
+
+export function PassportBanner({ roundId }: { roundId?: number }) {
+  const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
+  const account = useActiveAccount()
+
+  const eligibilityQuery = usePassportEligibility(
+    account?.address
+      ? { address: account.address, qfRoundId: roundId ?? undefined }
+      : undefined,
+    { enabled: !!account?.address && isAuthenticated },
+  )
+  const { data, isLoading, isError, refetch } = eligibilityQuery
+
+  const checkEligibility = async () => {
+    if (!account?.address) return
+
+    if (!isAuthenticated) {
+      try {
+        await signIn()
+        // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
+        await refetch()
+      } catch (error) {
+        console.error('Failed to sign in:', error)
+      }
+    } else {
+      await refetch()
+    }
+  }
+
   return (
-    <div className="bg-[#1b1657] py-2.5 px-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
-        <div className="w-5 h-5 rounded-full bg-[#37b4a9] flex items-center justify-center">
-          <svg
-            className="w-3 h-3 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+    <>
+      {isLoading && (
+        <div className="bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          Checking Eligibility...
         </div>
-        <span className="text-white text-sm">
-          You donations are eligible to be matched!{' '}
-          <a
-            href="#"
-            className="underline hover:text-[#d2fffb] inline-flex items-center gap-1"
+      )}
+      {/* Wallet Not Connected */}
+      {!account && !isLoading && !isError && (
+        <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <Info className="w-6 h-6 text-giv-warning-600" />
+          Connect your wallet to verify your eligibility for donation matching.
+        </div>
+      )}
+      {/* Wallet Connected but no eligibility data yet and user is not signed in */}
+      {account && !data && !isLoading && !isError && !isAuthenticated && (
+        <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <Info className="w-6 h-6 text-giv-warning-600" />
+          <p>
+            Get your donations matched! Verify your uniqueness with one click.
+          </p>
+          <button
+            onClick={checkEligibility}
+            disabled={isAuthLoading}
+            className="text-sm text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Go to Passport
-            <svg
-              className="w-3 h-3"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-          </a>
-        </span>
-      </div>
-    </div>
+            Check Eligibility
+          </button>
+        </div>
+      )}
+      {/* Wallet Connected but no eligibility data */}
+      {account && data && !data.checkPassportEligibility.isEligible && (
+        <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <Info className="w-6 h-6 text-giv-warning-600" />
+          <p>You are not eligible for donation matching.</p>
+          <button
+            onClick={checkEligibility}
+            disabled={isAuthLoading}
+            className="text-sm text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Re-check Eligibility
+          </button>
+        </div>
+      )}
+      {/* Wallet Connected And Has Eligibility Data */}
+      {account && data && data.checkPassportEligibility.isEligible && (
+        <div className="bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
+          <p>You donations are eligible to be matched!</p>
+        </div>
+      )}
+    </>
   )
 }

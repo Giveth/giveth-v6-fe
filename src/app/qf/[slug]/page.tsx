@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
+import { PassportBanner } from '@/components/PassportBanner'
 import { type QFFiltersState } from '@/components/qf/components/qf-project-filters'
 import { QFHero } from '@/components/qf/qf-hero'
 import { QFProjectsGrid } from '@/components/qf/qf-projects-grid'
@@ -130,28 +130,8 @@ export default function QFRoundPage() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
-      {/* Matching Banner */}
-      <div className="bg-[#1b1657] py-3 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-white text-sm">
-          <div className="w-5 h-5 rounded-full bg-[#37b4a9] flex items-center justify-center">
-            <svg className="w-3 h-3" fill="white" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <span>You donations are eligible to be matched!</span>
-          <a
-            href="#"
-            className="font-semibold underline flex items-center gap-1 hover:text-[#e7e1ff]"
-          >
-            Go to Passport
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </div>
+      {/* Passport Banner */}
+      <PassportBanner roundId={roundId} />
 
       <QFHero title={qfRound.title || qfRound.name} endDate={qfRound.endDate} />
 
