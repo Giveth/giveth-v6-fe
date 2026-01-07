@@ -1,11 +1,12 @@
 'use client'
 
+import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { CtaSection } from '@/components/account/cta-section'
-import { DashboardTabs } from '@/components/account/dashboard-tabs'
-import { DonationTabs } from '@/components/account/donation-tabs'
-import { DonationsTable } from '@/components/account/donations-table'
+import { DashboardTabs } from '@/components/account/DashboardTabs'
+import { DonationsTable } from '@/components/account/DonationsTable'
 import { ProfileSection } from '@/components/account/ProfileSection'
-import { RaffleCard } from '@/components/account/raffle-card'
+// import { RaffleCard } from '@/components/account/raffle-card'
 import { Button } from '@/components/ui/button'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -113,15 +114,33 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function AccountPage() {
+  const searchParams = useSearchParams()
+
+  const allowedTabs = useMemo(
+    () => ['donations', 'staking', 'boosted', 'projects'] as const,
+    [],
+  )
+  type AllowedTab = (typeof allowedTabs)[number]
+
+  const tabFromUrl = searchParams.get('tab')
+  const activeTab: AllowedTab = (allowedTabs as readonly string[]).includes(
+    tabFromUrl ?? '',
+  )
+    ? (tabFromUrl as AllowedTab)
+    : 'donations'
+
   return (
     <AuthGate>
-      <div className="min-h-screen bg-[#fcfcff]">
-        <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <div className="min-h-screen bg-giv-gray-200">
+        <main className="max-w-7xl mx-auto px-4 py-8">
           <ProfileSection />
-          <DashboardTabs />
-          <RaffleCard />
-          <DonationTabs />
-          <DonationsTable />
+          <DashboardTabs activeTab={activeTab} />
+          {/* <RaffleCard /> */}
+
+          {activeTab === 'donations' && <DonationsTable />}
+          {activeTab === 'staking' && <DonationsTable />}
+          {activeTab === 'boosted' && <DonationsTable />}
+          {activeTab === 'projects' && <DonationsTable />}
         </main>
         <CtaSection />
       </div>
