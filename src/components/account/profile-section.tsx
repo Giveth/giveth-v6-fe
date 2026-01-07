@@ -2,7 +2,7 @@
 
 import { Copy } from 'lucide-react'
 import { useSiweAuth } from '@/context/AuthContext'
-import { useProfile } from '@/hooks/useAccount'
+import { useProfile, useUserStats } from '@/hooks/useAccount'
 
 export function ProfileSection() {
   const { token, walletAddress } = useSiweAuth()
@@ -11,11 +11,11 @@ export function ProfileSection() {
   )
   const user = profileData?.me
 
-  // const { data: statsData } = useUserStats(
-  //   user?.id ? Number(user.id) : undefined,
-  //   token || undefined,
-  // )
-  // const stats = statsData // Unused for now
+  const { data: statsData, isLoading: isStatsLoading } = useUserStats(
+    user?.id ? Number(user.id) : undefined,
+    token || undefined,
+  )
+  const stats = statsData?.userStats
 
   if (isProfileLoading && !user) {
     return (
@@ -88,38 +88,48 @@ export function ProfileSection() {
           </Button> */}
         </div>
 
-        {/* Stats - Keeping hardcoded for now or mapping if I knew the fields. 
-            The hardcoded values were specific so I will just leave them static unless I can verify the API response. 
-            "Integrate with BE" suggests I should try. but without schema I might break build.
-            I will leave stats hardcoded but commented that they need wiring, or try to wire if I find the type.
-        */}
+        {/* User Stats */}
         <div className="flex items-center gap-6 mt-6 pt-6 border-t border-[#ebecf2]">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-[#82899a]">💰</span>
-            <span className="font-bold text-[#1f2333]">$9,000.00</span>
+            <span className="font-bold text-[#1f2333]">
+              {isStatsLoading
+                ? '...'
+                : `$${(stats?.totalDonated ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            </span>
             <span className="text-[#82899a]">Donated to</span>
-            <span className="font-semibold text-[#1f2333]">12</span>
+            <span className="font-semibold text-[#1f2333]">
+              {isStatsLoading ? '...' : (stats?.uniqueProjectsDonatedTo ?? 0)}
+            </span>
             <span className="text-[#82899a]">Projects</span>
           </div>
 
           <div className="w-px h-4 bg-[#ebecf2]" />
 
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-[#82899a]">🚀</span>
-            <span className="text-[#82899a]">Boosted</span>
-            <span className="font-semibold text-[#1f2333]">7</span>
-            <span className="text-[#82899a]">Projects with</span>
-            <span className="font-bold text-[#1f2333]">7,000,000</span>
-            <span className="text-[#82899a]">GIVpower</span>
+            <span className="text-[#82899a]">❤️</span>
+            <span className="text-[#82899a]">Liked</span>
+            <span className="font-semibold text-[#1f2333]">
+              {isStatsLoading ? '...' : (stats?.likedProjectsCount ?? 0)}
+            </span>
+            <span className="text-[#82899a]">Projects</span>
           </div>
 
           <div className="w-px h-4 bg-[#ebecf2]" />
 
           <div className="flex items-center gap-2 text-sm">
             <span className="text-[#82899a]">💵</span>
-            <span className="font-bold text-[#1f2333]">$500,000</span>
-            <span className="text-[#82899a]">donation received for</span>
-            <span className="font-semibold text-[#1f2333]">2</span>
+            <span className="font-bold text-[#1f2333]">
+              {isStatsLoading
+                ? '...'
+                : `$${(stats?.totalReceived ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            </span>
+            <span className="text-[#82899a]">received for</span>
+            <span className="font-semibold text-[#1f2333]">
+              {isStatsLoading
+                ? '...'
+                : (stats?.projectsWithDonationsCount ?? 0)}
+            </span>
             <span className="text-[#82899a]">projects</span>
           </div>
         </div>
