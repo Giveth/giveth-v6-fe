@@ -9,21 +9,8 @@ import {
 } from 'lucide-react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useMyDonations } from '@/hooks/useAccount'
-import { getChainIcon, getTransactionUrl } from '@/lib/helpers/chainHelper'
-
-function NetworkIcon({ chainId }: { chainId: number }) {
-  const { iconUrl } = getChainIcon(chainId)
-
-  return (
-    <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
-      <img
-        src={iconUrl}
-        alt="Network Icon"
-        className="w-full h-full object-cover"
-      />
-    </div>
-  )
-}
+import { getTransactionUrl } from '@/lib/helpers/chainHelper'
+import { ChainIcon } from '../ChainIcon'
 
 const PAGE_SIZE = 15
 
@@ -168,7 +155,11 @@ export const DonationTableOneTime = ({
                     </td>
                     <td className="px-1 py-4">
                       <div className="flex items-center gap-2">
-                        <NetworkIcon chainId={donation.transactionNetworkId} />
+                        <ChainIcon
+                          networkId={donation.transactionNetworkId}
+                          height="h-6"
+                          width="w-6"
+                        />
                         <span className="text-sm font-medium text-[#1f2333]">
                           {donation.amount} {donation.currency}
                         </span>
