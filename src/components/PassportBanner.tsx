@@ -1,6 +1,6 @@
 'use client'
 
-import { Info } from 'lucide-react'
+import { BadgeCheck, Info } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { usePassportEligibility } from '@/hooks/usePassportEligibility'
@@ -74,6 +74,13 @@ export function PassportBanner() {
           >
             Re-check Eligibility
           </button>
+        </div>
+      )}
+      {/* Wallet Connected And Has Eligibility Data */}
+      {account && data && data.checkPassportEligibility.isEligible && (
+        <div className="bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
+          <p>You donations are eligible to be matched!</p>
         </div>
       )}
     </>
