@@ -5,17 +5,17 @@ import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { usePassportEligibility } from '@/hooks/usePassportEligibility'
 
-export function PassportBanner() {
+export function PassportBanner({ roundId }: { roundId?: number }) {
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
   const account = useActiveAccount()
 
   const eligibilityQuery = usePassportEligibility(
-    account?.address ? { address: account.address } : undefined,
+    account?.address
+      ? { address: account.address, qfRoundId: roundId ?? undefined }
+      : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
   const { data, isLoading, isError, refetch } = eligibilityQuery
-
-  console.log({ data })
 
   const checkEligibility = async () => {
     if (!account?.address) return
@@ -32,6 +32,7 @@ export function PassportBanner() {
       await refetch()
     }
   }
+
   return (
     <>
       {isLoading && (

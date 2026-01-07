@@ -20,8 +20,6 @@ export const usePassportEligibility = (
   const { token } = useSiweAuth()
   const jwt = token ?? undefined
 
-  console.log('usePassportEligibility', { input, jwt })
-
   return useQuery<CheckPassportEligibilityResponse>({
     queryKey: [
       'checkPassportEligibility',

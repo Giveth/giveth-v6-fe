@@ -131,7 +131,7 @@ export default function QFRoundPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f9]">
       {/* Passport Banner */}
-      <PassportBanner />
+      <PassportBanner roundId={roundId} />
 
       <QFHero title={qfRound.title || qfRound.name} endDate={qfRound.endDate} />
 
