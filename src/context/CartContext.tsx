@@ -56,7 +56,7 @@ interface CartContextType {
   ) => void
   removeFromCart: (roundId: number, projectId: string) => void
   clearCart: () => void
-  isInCart: (projectId: string) => boolean
+  isInCart: (projectId: string, roundId?: number) => boolean
   updateProjectDonation: (
     roundId: number,
     projectId: string,
@@ -141,7 +141,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = (project: ProjectCartItem) => {
     setCartItems(prev => {
-      if (prev.some(item => item.id === project.id)) return prev
+      // Check for duplicate: same project in the same round
+      const isDuplicate = prev.some(
+        item => item.id === project.id && item.roundId === project.roundId,
+      )
+      if (isDuplicate) return prev
       return [...prev, project]
     })
   }
@@ -213,7 +217,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCartItems([])
   }
 
-  const isInCart = (projectId: string) => {
+  const isInCart = (projectId: string, roundId?: number) => {
+    if (roundId !== undefined) {
+      return cartItems.some(
+        item => item.id === projectId && item.roundId === roundId,
+      )
+    }
     return cartItems.some(item => item.id === projectId)
   }
 
