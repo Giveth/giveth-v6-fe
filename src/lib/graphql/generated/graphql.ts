@@ -838,6 +838,23 @@ export type ProjectFiltersInput = {
   vouched?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type ProjectMatchingContextEntity = {
+  __typename?: 'ProjectMatchingContextEntity';
+  allProjectsSqrtSum: Scalars['Float']['output'];
+  contributorCount: Scalars['Int']['output'];
+  currentMatching: Scalars['Float']['output'];
+  /** The matching calculation strategy (REGULAR or COCM) */
+  estimationMethod: Scalars['String']['output'];
+  lastUpdated: Scalars['DateTime']['output'];
+  matchingPool: Scalars['Float']['output'];
+  projectId: Scalars['Int']['output'];
+  qfRoundId: Scalars['Int']['output'];
+  roundEndDate: Scalars['DateTime']['output'];
+  roundStartDate: Scalars['DateTime']['output'];
+  sqrtSum: Scalars['Float']['output'];
+  totalDonationsUsd: Scalars['Float']['output'];
+};
+
 export type ProjectMatchingEntity = {
   __typename?: 'ProjectMatchingEntity';
   matchingAmount: Scalars['Float']['output'];
@@ -1046,6 +1063,7 @@ export type Query = {
   project: ProjectEntity;
   projectBySlug: ProjectEntity;
   projectDonationStats: DonationStatsEntity;
+  projectMatchingContext?: Maybe<ProjectMatchingContextEntity>;
   projectUpdates: ProjectUpdatesResult;
   /** Get paginated projects with optional filters including search term and active QF round filter */
   projects: PaginatedProjectsEntity;
@@ -1241,6 +1259,12 @@ export type QueryProjectBySlugArgs = {
 export type QueryProjectDonationStatsArgs = {
   projectId: Scalars['Int']['input'];
   qfRoundId?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryProjectMatchingContextArgs = {
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
 };
 
 
@@ -1617,7 +1641,7 @@ export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __type
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null, minimumValidUsdValue: number }> };
+export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedFund: number, allocatedTokenSymbol?: string | null, minimumValidUsdValue: number }> };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
@@ -1655,7 +1679,7 @@ export type ArchivedQfRoundsQueryVariables = Exact<{
 }>;
 
 
-export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null }> } };
+export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedFund: number, allocatedTokenSymbol?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null }> } };
 
 export type QfRoundStatsQueryVariables = Exact<{
   qfRoundId: Scalars['Int']['input'];
@@ -1957,6 +1981,7 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
     eligibleNetworks
     hubCardImage
     allocatedFundUSD
+    allocatedFundUSDPreferred
     allocatedFund
     allocatedTokenSymbol
     minimumValidUsdValue
@@ -2079,6 +2104,7 @@ export const ArchivedQfRoundsDocument = new TypedDocumentString(`
       name
       description
       allocatedFundUSD
+      allocatedFundUSDPreferred
       allocatedFund
       allocatedTokenSymbol
       slug

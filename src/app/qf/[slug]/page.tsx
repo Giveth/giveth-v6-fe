@@ -156,7 +156,7 @@ export default function QFRoundPage() {
       <QFHero title={qfRound.title || qfRound.name} endDate={qfRound.endDate} />
 
       <QFStats
-        matchingPool={qfRound.allocatedFundUSD || 0} // requires update to query to fetch this field
+        matchingPool={qfRound.allocatedFundUSD || 0}
         totalDonations={stats?.totalDonationsUsd || 0}
         donationsCount={stats?.donationsCount || 0}
         beginDate={qfRound.beginDate}

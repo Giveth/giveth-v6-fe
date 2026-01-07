@@ -71,7 +71,14 @@ export function RoundCard({
         )}
 
         <div className="flex items-center gap-3 justify-center border-giv-gray-300 border-[1.85px] mt-6 py-1 px-2.5 rounded-2xl text-giv-gray-900">
-          <span className="text-[25px] font-bold">$50,000</span>
+          <span className="text-[25px] font-bold">
+            {formatMatchingPool(
+              round.allocatedFundUSD,
+              round.allocatedFundUSDPreferred,
+              round.allocatedFund,
+              round.allocatedTokenSymbol,
+            )}
+          </span>
           <span className="ml-1 text-xl">Matching Pool</span>
         </div>
 
@@ -122,4 +129,32 @@ const ExploreButton = ({ href }: { href: string }) => {
       <ArrowRight className="w-4 h-4" />
     </Link>
   )
+}
+
+const formatMatchingPool = (
+  allocatedFundUSD?: number | null,
+  allocatedFundUSDPreferred?: boolean | null,
+  allocatedFund?: number,
+  allocatedTokenSymbol?: string | null,
+): string => {
+  // If allocatedFundUSDPreferred is true, show USD with dollar sign
+  if (allocatedFundUSDPreferred && allocatedFundUSD != null) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(allocatedFundUSD)
+  }
+
+  // Otherwise show token amount with symbol
+  if (allocatedFund != null) {
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 0,
+    }).format(allocatedFund)
+    return allocatedTokenSymbol
+      ? `${formattedAmount} ${allocatedTokenSymbol}`
+      : formattedAmount
+  }
+
+  return '$0'
 }
