@@ -40,6 +40,7 @@ type Documents = {
     "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": typeof types.TokensDocument,
     "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n      isGivbacksEligible\n    }\n  }\n": typeof types.TokensByNetworkDocument,
     "\n  query EstimatedMatching(\n    $donationAmount: Float!\n    $donorAddress: String!\n    $projectId: Int!\n    $qfRoundId: Int!\n  ) {\n    estimatedMatching(\n      donationAmount: $donationAmount\n      donorAddress: $donorAddress\n      projectId: $projectId\n      qfRoundId: $qfRoundId\n    ) {\n      projectId\n      qfRoundId\n      matchingPool\n      allProjectsSqrtSum\n      projectDonationsSqrtSum\n      estimatedMatching\n    }\n  }\n": typeof types.EstimatedMatchingDocument,
+    "\n  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {\n    checkPassportEligibility(input: $input) {\n      isEligible\n      passportScore\n      mbdScore\n      threshold\n      expirationDate\n      message\n      eligibility {\n        id\n        address\n        score\n        mbdScore\n        lastScoreTimestamp\n        expirationTimestamp\n        stamps\n        error\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": typeof types.CheckPassportEligibilityDocument,
 };
 const documents: Documents = {
     "\n  mutation CreateProject($input: CreateProjectInput!) {\n    createProject(input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      createdAt\n      updatedAt\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n      }\n    }\n  }\n": types.CreateProjectDocument,
@@ -67,6 +68,7 @@ const documents: Documents = {
     "\n  query Tokens {\n    tokens {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n    }\n  }\n": types.TokensDocument,
     "\n  query TokensByNetwork($networkId: Int!) {\n    tokensByNetwork(networkId: $networkId) {\n      id\n      name\n      symbol\n      address\n      decimals\n      networkId\n      chainType\n      isActive\n      coingeckoId\n      isGivbacksEligible\n    }\n  }\n": types.TokensByNetworkDocument,
     "\n  query EstimatedMatching(\n    $donationAmount: Float!\n    $donorAddress: String!\n    $projectId: Int!\n    $qfRoundId: Int!\n  ) {\n    estimatedMatching(\n      donationAmount: $donationAmount\n      donorAddress: $donorAddress\n      projectId: $projectId\n      qfRoundId: $qfRoundId\n    ) {\n      projectId\n      qfRoundId\n      matchingPool\n      allProjectsSqrtSum\n      projectDonationsSqrtSum\n      estimatedMatching\n    }\n  }\n": types.EstimatedMatchingDocument,
+    "\n  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {\n    checkPassportEligibility(input: $input) {\n      isEligible\n      passportScore\n      mbdScore\n      threshold\n      expirationDate\n      message\n      eligibility {\n        id\n        address\n        score\n        mbdScore\n        lastScoreTimestamp\n        expirationTimestamp\n        stamps\n        error\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": types.CheckPassportEligibilityDocument,
 };
 
 /**
@@ -169,6 +171,10 @@ export function graphql(source: "\n  query TokensByNetwork($networkId: Int!) {\n
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query EstimatedMatching(\n    $donationAmount: Float!\n    $donorAddress: String!\n    $projectId: Int!\n    $qfRoundId: Int!\n  ) {\n    estimatedMatching(\n      donationAmount: $donationAmount\n      donorAddress: $donorAddress\n      projectId: $projectId\n      qfRoundId: $qfRoundId\n    ) {\n      projectId\n      qfRoundId\n      matchingPool\n      allProjectsSqrtSum\n      projectDonationsSqrtSum\n      estimatedMatching\n    }\n  }\n"): typeof import('./graphql').EstimatedMatchingDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {\n    checkPassportEligibility(input: $input) {\n      isEligible\n      passportScore\n      mbdScore\n      threshold\n      expirationDate\n      message\n      eligibility {\n        id\n        address\n        score\n        mbdScore\n        lastScoreTimestamp\n        expirationTimestamp\n        stamps\n        error\n        createdAt\n        updatedAt\n      }\n    }\n  }\n"): typeof import('./graphql').CheckPassportEligibilityDocument;
 
 
 export function graphql(source: string) {
