@@ -123,7 +123,10 @@ export type UserProfile = Pick<
   | 'lastName'
   | 'name'
   | 'avatar'
+  | 'primaryEns'
   | 'url'
+  | 'totalDonated'
+  | 'totalReceived'
   | 'isEmailVerified'
 > & {
   location?: string | null
