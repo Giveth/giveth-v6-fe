@@ -128,6 +128,7 @@ export const activeQfRoundsQuery = graphql(`
       eligibleNetworks
       hubCardImage
       allocatedFundUSD
+      allocatedFundUSDPreferred
       allocatedFund
       allocatedTokenSymbol
       minimumValidUsdValue
@@ -265,6 +266,7 @@ export const archivedQfRoundsQuery = graphql(`
         name
         description
         allocatedFundUSD
+        allocatedFundUSDPreferred
         allocatedFund
         allocatedTokenSymbol
         slug
