@@ -3,7 +3,13 @@
 import { BadgeCheck, Info } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
+import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
 import { usePassportEligibility } from '@/hooks/usePassportEligibility'
+
+let globalSettingScore = {
+  globalMinimumMBDScore: 0,
+  globalMinimumPassportScore: 0,
+}
 
 export function PassportBanner({ roundId }: { roundId?: number }) {
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
@@ -16,6 +22,55 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
     { enabled: !!account?.address && isAuthenticated },
   )
   const { data, isLoading, isError, refetch } = eligibilityQuery
+
+  // Fetch global settings
+  const globalMinimumMBDScoreQuery = useGlobalConfiguration(
+    'GLOBAL_MINIMUM_MBD_SCORE',
+  )
+  const globalMinimumPassportScoreQuery = useGlobalConfiguration(
+    'GLOBAL_MINIMUM_PASSPORT_SCORE',
+  )
+  const { data: globalMinimumMBDScoreData } = globalMinimumMBDScoreQuery
+  const { data: globalMinimumPassportScoreData } =
+    globalMinimumPassportScoreQuery
+
+  globalSettingScore.globalMinimumMBDScore = Number(
+    globalMinimumMBDScoreData?.globalConfiguration?.value ?? 0,
+  )
+  globalSettingScore.globalMinimumPassportScore = Number(
+    globalMinimumPassportScoreData?.globalConfiguration?.value ?? 0,
+  )
+
+  let isEligible = false
+  let isMBDEligible = false
+  let isPassportEligible = false
+
+  // Check if we have roundId included and if we have eligibility data
+  if (roundId && roundId > 0 && data?.checkPassportEligibility) {
+    const mbdScore = Number(data?.checkPassportEligibility.mbdScore ?? 0)
+    const passportScore = Number(
+      data?.checkPassportEligibility.passportScore ?? 0,
+    )
+    isMBDEligible =
+      mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
+    isPassportEligible =
+      passportScore > 0 &&
+      passportScore >= globalSettingScore.globalMinimumPassportScore
+    isEligible = isMBDEligible && isPassportEligible
+  }
+  // Check global settings
+  else {
+    const mbdScore = Number(globalSettingScore.globalMinimumMBDScore ?? 0)
+    const passportScore = Number(
+      globalSettingScore.globalMinimumPassportScore ?? 0,
+    )
+    isMBDEligible =
+      mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
+    isPassportEligible =
+      passportScore > 0 &&
+      passportScore >= globalSettingScore.globalMinimumPassportScore
+    isEligible = isMBDEligible && isPassportEligible
+  }
 
   const checkEligibility = async () => {
     if (!account?.address) return
@@ -64,7 +119,7 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
         </div>
       )}
       {/* Wallet Connected but no eligibility data */}
-      {account && data && !data.checkPassportEligibility.isEligible && (
+      {account && data && !isEligible && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>You are not eligible for donation matching.</p>
@@ -78,7 +133,7 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
         </div>
       )}
       {/* Wallet Connected And Has Eligibility Data */}
-      {account && data && data.checkPassportEligibility.isEligible && (
+      {account && data && isEligible && (
         <div className="bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
           <p>You donations are eligible to be matched!</p>
