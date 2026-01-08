@@ -523,3 +523,16 @@ export const checkPassportEligibilityQuery = graphql(`
     }
   }
 `)
+
+export const globalConfigurationQuery = graphql(`
+  query GlobalConfiguration($key: String!) {
+    globalConfiguration(key: $key) {
+      id
+      key
+      value
+      type
+      isActive
+      updatedAt
+    }
+  }
+`)

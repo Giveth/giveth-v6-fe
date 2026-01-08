@@ -3,11 +3,12 @@
 import { BadgeCheck, Info } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
+import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
 import { usePassportEligibility } from '@/hooks/usePassportEligibility'
 
-const globalSettingScore = {
-  globalMinimumMBDScore: 2,
-  globalMinimumPassportScore: 1,
+let globalSettingScore = {
+  globalMinimumMBDScore: 0,
+  globalMinimumPassportScore: 0,
 }
 
 export function PassportBanner({ roundId }: { roundId?: number }) {
@@ -37,6 +38,24 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
       await refetch()
     }
   }
+
+  // Fetch global settings
+  const globalMinimumMBDScoreQuery = useGlobalConfiguration(
+    'GLOBAL_MINIMUM_MBD_SCORE',
+  )
+  const globalMinimumPassportScoreQuery = useGlobalConfiguration(
+    'GLOBAL_MINIMUM_PASSPORT_SCORE',
+  )
+  const { data: globalMinimumMBDScoreData } = globalMinimumMBDScoreQuery
+  const { data: globalMinimumPassportScoreData } =
+    globalMinimumPassportScoreQuery
+
+  globalSettingScore.globalMinimumMBDScore = Number(
+    globalMinimumMBDScoreData?.value ?? 0,
+  )
+  globalSettingScore.globalMinimumPassportScore = Number(
+    globalMinimumPassportScoreData?.value ?? 0,
+  )
 
   let isEligible = false
   let isMBDEligible = false
@@ -68,10 +87,6 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
       passportScore >= globalSettingScore.globalMinimumPassportScore
     isEligible = isMBDEligible && isPassportEligible
   }
-
-  console.log('isEligible', isEligible)
-  console.log('isMBDEligible', isMBDEligible)
-  console.log('isPassportEligible', isPassportEligible)
 
   return (
     <>

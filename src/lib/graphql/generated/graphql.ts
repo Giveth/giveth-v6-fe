@@ -369,6 +369,18 @@ export type GivbacksEligibilityUpdateInput = {
   projectRegistry?: InputMaybe<ProjectRegistryInput>;
 };
 
+export type GlobalConfigurationEntity = {
+  __typename?: 'GlobalConfigurationEntity';
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  key: Scalars['String']['output'];
+  type?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+};
+
 export type ImpactGraphUserWebhookInput = {
   id: Scalars['Int']['input'];
   walletAddress: Scalars['String']['input'];
@@ -1053,6 +1065,8 @@ export type Query = {
   getPowerBoosting: GivPowersEntity;
   getProjectReactions: Array<ReactionEntity>;
   getTopPowerRank: Scalars['Float']['output'];
+  globalConfiguration?: Maybe<GlobalConfigurationEntity>;
+  globalConfigurations: Array<GlobalConfigurationEntity>;
   isValidCauseTitle: Scalars['Boolean']['output'];
   isValidCauseTitleForEdit: Scalars['Boolean']['output'];
   isValidWalletAddress: Scalars['Boolean']['output'];
@@ -1211,6 +1225,16 @@ export type QueryGetPowerBoostingArgs = {
 
 export type QueryGetProjectReactionsArgs = {
   projectId: Scalars['Int']['input'];
+};
+
+
+export type QueryGlobalConfigurationArgs = {
+  key: Scalars['String']['input'];
+};
+
+
+export type QueryGlobalConfigurationsArgs = {
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -1760,6 +1784,13 @@ export type CheckPassportEligibilityQueryVariables = Exact<{
 
 
 export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
+
+export type GlobalConfigurationQueryVariables = Exact<{
+  key: Scalars['String']['input'];
+}>;
+
+
+export type GlobalConfigurationQuery = { __typename?: 'Query', globalConfiguration?: { __typename?: 'GlobalConfigurationEntity', id: string, key: string, value?: string | null, type?: string | null, isActive: boolean, updatedAt: any } | null };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2350,3 +2381,15 @@ export const CheckPassportEligibilityDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;
+export const GlobalConfigurationDocument = new TypedDocumentString(`
+    query GlobalConfiguration($key: String!) {
+  globalConfiguration(key: $key) {
+    id
+    key
+    value
+    type
+    isActive
+    updatedAt
+  }
+}
+    `) as unknown as TypedDocumentString<GlobalConfigurationQuery, GlobalConfigurationQueryVariables>;
