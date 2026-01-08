@@ -43,8 +43,6 @@ export function ProfileSection() {
     )
   }
 
-  console.log({ userStats })
-
   // Fallbacks
   const displayName = user?.name || user?.firstName || 'Anonymous User'
   const displayEmail = user?.email || 'No email'

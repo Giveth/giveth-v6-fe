@@ -44,8 +44,6 @@ export function DonationCard({ project }: DonationCardProps) {
     return getProjectActiveRounds(project as unknown as ProjectEntity)
   }, [project])
 
-  console.log({ availableRounds })
-
   const defaultRound = availableRounds[0] ?? undefined
 
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(
