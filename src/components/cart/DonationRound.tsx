@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { AmountInput } from '@/components/cart/AmountInput'
 import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
@@ -13,6 +14,7 @@ import {
   formatNumber,
 } from '@/lib/helpers/cartHelper'
 import type { GroupedProjects } from '@/lib/types/cart'
+import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
 interface DonationRoundProps {
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
@@ -25,6 +27,9 @@ export function DonationRound({
   cartRoundData,
   projects,
 }: DonationRoundProps) {
+  const [roundSelectedToken, setRoundSelectedToken] = useState<
+    WalletTokenWithBalance | undefined
+  >(undefined)
   return (
     <div className="bg-white p-4 rounded-2xl border-4 border-giv-gray-500 overflow-hidden">
       {/* Round Header */}
@@ -47,13 +52,13 @@ export function DonationRound({
         {/* Right Side - Token, Amount, Apply */}
         <div className="flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto md:ml-auto">
           <TokenDropdown
-            roundId={cartRoundData.roundId}
             selectedChainId={cartRoundData.selectedChainId}
+            setRoundSelectedToken={setRoundSelectedToken}
           />
 
           <AmountInput
             roundId={cartRoundData.roundId}
-            selectedToken={cartRoundData.selectedToken}
+            selectedToken={roundSelectedToken}
             cartItems={cartRoundData.projects}
           />
         </div>

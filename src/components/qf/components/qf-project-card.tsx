@@ -17,10 +17,10 @@ export function QFProjectCard({
   roundId,
   roundName,
 }: QFProjectCardProps) {
-  const { cartItems, addToCart, removeFromCart } = useCart()
+  const { addToCart, removeFromCart, isInCart: checkIsInCart } = useCart()
 
   const projectId = String(project.id)
-  const isInCart = cartItems.some(item => item.id === projectId)
+  const isInCart = checkIsInCart(projectId, roundId)
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', {
@@ -48,7 +48,7 @@ export function QFProjectCard({
   const toggleCart = (e: React.MouseEvent) => {
     e.preventDefault()
     if (isInCart) {
-      removeFromCart(roundData?.qfRoundId ?? 0, projectId)
+      removeFromCart(roundId ?? 0, projectId)
     } else {
       addToCart({
         id: projectId,

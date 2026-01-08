@@ -110,6 +110,7 @@ export const qfRoundBySlugQuery = graphql(`
       beginDate
       endDate
       allocatedFundUSD
+      allocatedFundUSDPreferred
     }
   }
 `)
@@ -127,6 +128,7 @@ export const activeQfRoundsQuery = graphql(`
       eligibleNetworks
       hubCardImage
       allocatedFundUSD
+      allocatedFundUSDPreferred
       allocatedFund
       allocatedTokenSymbol
       minimumValidUsdValue
@@ -264,6 +266,7 @@ export const archivedQfRoundsQuery = graphql(`
         name
         description
         allocatedFundUSD
+        allocatedFundUSDPreferred
         allocatedFund
         allocatedTokenSymbol
         slug
@@ -494,6 +497,31 @@ export const estimatedMatchingQuery = graphql(`
       allProjectsSqrtSum
       projectDonationsSqrtSum
       estimatedMatching
+    }
+  }
+`)
+
+export const checkPassportEligibilityQuery = graphql(`
+  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {
+    checkPassportEligibility(input: $input) {
+      isEligible
+      passportScore
+      mbdScore
+      threshold
+      expirationDate
+      message
+      eligibility {
+        id
+        address
+        score
+        mbdScore
+        lastScoreTimestamp
+        expirationTimestamp
+        stamps
+        error
+        createdAt
+        updatedAt
+      }
     }
   }
 `)

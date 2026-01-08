@@ -1638,12 +1638,12 @@ export type QfRoundBySlugQueryVariables = Exact<{
 }>;
 
 
-export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null } };
+export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null } };
 
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null, minimumValidUsdValue: number }> };
+export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedFund: number, allocatedTokenSymbol?: string | null, minimumValidUsdValue: number }> };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
@@ -1681,7 +1681,7 @@ export type ArchivedQfRoundsQueryVariables = Exact<{
 }>;
 
 
-export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, allocatedFundUSD?: number | null, allocatedFund: number, allocatedTokenSymbol?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null }> } };
+export type ArchivedQfRoundsQuery = { __typename?: 'Query', archivedQfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedFund: number, allocatedTokenSymbol?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, hubCardImage?: string | null }> } };
 
 export type QfRoundStatsQueryVariables = Exact<{
   qfRoundId: Scalars['Int']['input'];
@@ -1753,6 +1753,13 @@ export type EstimatedMatchingQueryVariables = Exact<{
 
 
 export type EstimatedMatchingQuery = { __typename?: 'Query', estimatedMatching: { __typename?: 'EstimatedMatchingEntity', projectId: number, qfRoundId: number, matchingPool: number, allProjectsSqrtSum: number, projectDonationsSqrtSum: number, estimatedMatching: number } };
+
+export type CheckPassportEligibilityQueryVariables = Exact<{
+  input: CheckPassportEligibilityInput;
+}>;
+
+
+export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -1967,6 +1974,7 @@ export const QfRoundBySlugDocument = new TypedDocumentString(`
     beginDate
     endDate
     allocatedFundUSD
+    allocatedFundUSDPreferred
   }
 }
     `) as unknown as TypedDocumentString<QfRoundBySlugQuery, QfRoundBySlugQueryVariables>;
@@ -1983,6 +1991,7 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
     eligibleNetworks
     hubCardImage
     allocatedFundUSD
+    allocatedFundUSDPreferred
     allocatedFund
     allocatedTokenSymbol
     minimumValidUsdValue
@@ -2105,6 +2114,7 @@ export const ArchivedQfRoundsDocument = new TypedDocumentString(`
       name
       description
       allocatedFundUSD
+      allocatedFundUSDPreferred
       allocatedFund
       allocatedTokenSymbol
       slug
@@ -2318,3 +2328,27 @@ export const EstimatedMatchingDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<EstimatedMatchingQuery, EstimatedMatchingQueryVariables>;
+export const CheckPassportEligibilityDocument = new TypedDocumentString(`
+    query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {
+  checkPassportEligibility(input: $input) {
+    isEligible
+    passportScore
+    mbdScore
+    threshold
+    expirationDate
+    message
+    eligibility {
+      id
+      address
+      score
+      mbdScore
+      lastScoreTimestamp
+      expirationTimestamp
+      stamps
+      error
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;

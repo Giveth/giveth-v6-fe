@@ -3,15 +3,9 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import {
-  ArrowRight,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Share2,
-  X,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
 import { ShareProjectModal } from '@/components/modals/ShareProjectModal'
+import { DonationMatchCard } from '@/components/project/DonationMatchCard'
 import { useCart } from '@/context/CartContext'
 import { EContentType } from '@/lib/constants/share-constants'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
@@ -40,6 +34,7 @@ export function DonationCard({ project }: DonationCardProps) {
   const { addToCart, removeFromCart, isInCart, cartItems } = useCart()
   const isProjectInCart = isInCart(project.id)
 
+  // Stuff related to the rounds selector
   const availableRounds = useMemo(() => {
     return getProjectActiveRounds(project as unknown as ProjectEntity)
   }, [project])
@@ -53,6 +48,7 @@ export function DonationCard({ project }: DonationCardProps) {
   const selectedRound =
     availableRounds.find(r => r.id === selectedRoundId) ?? defaultRound
 
+  // Stuff related to the cart action
   const handleCartAction = () => {
     if (isProjectInCart) {
       const existingCartItem = cartItems.find(i => i.id === project.id)
@@ -74,66 +70,77 @@ export function DonationCard({ project }: DonationCardProps) {
 
   return (
     <div className="h-full bg-white rounded-xl p-4">
-      {/* Round Selector */}
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
-          <button
-            className="w-full flex items-center justify-between px-4 py-3 border border-giv-gray-100 rounded-xl mb-4 hover:border-giv-primary-500 transition-colors cursor-pointer"
-            disabled={availableRounds.length === 0}
-          >
-            <span className="text-base font-medium text-giv-gray-900">
-              {selectedRound?.qfRound?.name ?? 'Select a round'}
-            </span>
-            <ChevronDown className="w-4 h-4 text-giv-gray-900" />
-          </button>
-        </DropdownMenu.Trigger>
+      {/* If there is only one round, show the round name */}
+      {availableRounds.length === 1 && (
+        <div className="w-full flex items-center justify-between px-4 py-3 border border-giv-gray-100 rounded-xl mb-4 transition-colors">
+          {selectedRound?.qfRound?.name ?? ''}
+        </div>
+      )}
 
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            sideOffset={8}
-            align="start"
-            className="
+      {/* Round Selector */}
+      {availableRounds.length > 1 && (
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button
+              className="w-full flex items-center justify-between px-4 py-3 border border-giv-gray-100 rounded-xl mb-4 hover:border-giv-primary-500 transition-colors cursor-pointer"
+              disabled={availableRounds.length === 0}
+            >
+              <span className="text-base font-medium text-giv-gray-900">
+                {selectedRound?.qfRound?.name ?? 'Select a round'}
+              </span>
+              <ChevronDown className="w-4 h-4 text-giv-gray-900" />
+            </button>
+          </DropdownMenu.Trigger>
+
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              sideOffset={8}
+              align="start"
+              className="
               z-50 min-w-[220px] rounded-xl border border-giv-gray-100 bg-white p-1
               shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
             "
-          >
-            {availableRounds.length === 0 && (
-              <DropdownMenu.Item
-                disabled
-                className="cursor-not-allowed rounded-lg px-3 py-2 text-sm text-giv-gray-900 outline-none"
-              >
-                No rounds available
-              </DropdownMenu.Item>
-            )}
+            >
+              {availableRounds.length === 0 && (
+                <DropdownMenu.Item
+                  disabled
+                  className="cursor-not-allowed rounded-lg px-3 py-2 text-sm text-giv-gray-900 outline-none"
+                >
+                  No rounds available
+                </DropdownMenu.Item>
+              )}
 
-            {availableRounds.map(r => (
-              <DropdownMenu.Item
-                key={r.id}
-                onSelect={() => setSelectedRoundId(r.id)}
-                className="
+              {availableRounds.map(r => (
+                <DropdownMenu.Item
+                  key={r.qfRound?.id}
+                  onSelect={() =>
+                    setSelectedRoundId(r.qfRound?.id ?? undefined)
+                  }
+                  className="
                   cursor-pointer rounded-xl px-3 py-2 text-sm
                   text-giv-gray-900 outline-none
                   hover:bg-giv-gray-200
                   focus:bg-giv-gray-200
                 "
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="truncate">{r.qfRound?.name}</span>
-                </div>
-              </DropdownMenu.Item>
-            ))}
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="truncate">{r.qfRound?.name}</span>
+                  </div>
+                </DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+      )}
 
       {/* Amount and Contributors */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-[32px] font-bold font-adventor text-giv-gray-900">
-          ${project.totalDonations.toFixed(2)}
+          ${selectedRound.sumDonationValueUsd.toFixed(2)}
         </span>
         <div className="text-left">
           <span className="text-sm font-medium text-giv-gray-900">
-            {project.countUniqueDonors || 0}
+            {selectedRound.countUniqueDonors || 0}
           </span>
           <p className="text-sm font-normal text-giv-gray-700">contributors</p>
         </div>
@@ -177,29 +184,26 @@ export function DonationCard({ project }: DonationCardProps) {
           <span className="text-sm text-giv-jade-500 text-right">Matching</span>
         </div>
 
-        {/* Rows */}
-        <div className="space-y-0">
-          {[
-            { from: '1 DAI', to: '+ 9 DAI' },
-            { from: '10 DAI', to: '+ 24 DAI' },
-            { from: '100 DAI', to: '+1,047 DAI' },
-          ].map(row => (
-            <div
-              key={row.from}
-              className="grid grid-cols-[1fr_auto_1fr] mb-1 items-center text-xs font-medium"
-            >
-              <span className="text-giv-gray-800">{row.from}</span>
-
-              <span className="text-giv-jade-500 text-lg">
-                <ArrowRight className="w-4 h-4" />
-              </span>
-
-              <span className="text-giv-jade-500 text-right font-medium">
-                {row.to}
-              </span>
-            </div>
-          ))}
-        </div>
+        {/* Contribution Matching Table */}
+        {selectedRound?.qfRound && (
+          <div className="space-y-0">
+            <DonationMatchCard
+              amount={1}
+              project={project}
+              roundData={selectedRound.qfRound}
+            />
+            <DonationMatchCard
+              amount={10}
+              project={project}
+              roundData={selectedRound.qfRound}
+            />
+            <DonationMatchCard
+              amount={100}
+              project={project}
+              roundData={selectedRound.qfRound}
+            />
+          </div>
+        )}
       </div>
 
       <Link
