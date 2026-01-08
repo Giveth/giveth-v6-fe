@@ -69,7 +69,7 @@ export const DashboardTabs = ({
   return (
     <div className="mt-8 [font-family:var(--font-inter)]">
       {/* Tabs */}
-      <div className="relative flex items-end">
+      <div className="relative flex flex-wrap items-end gap-4">
         {tabs.map((tab, index) => (
           <button
             key={tab.id}

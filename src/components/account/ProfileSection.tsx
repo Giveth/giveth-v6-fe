@@ -116,7 +116,7 @@ export function ProfileSection() {
             I will leave stats hardcoded but commented that they need wiring, or try to wire if I find the type.
         */}
         {userStats && !isUserStatsLoading && (
-          <div className="flex items-center gap-6 mt-6 pt-6 border-t border-giv-gray-300">
+          <div className="flex flex-wrap items-center gap-6 mt-6 pt-6 border-t border-giv-gray-300">
             <div className="flex items-center justify-start gap-1 text-left text-xs text-giv-neutral-900">
               <span className="mr-2">
                 <IconPraiseHand
