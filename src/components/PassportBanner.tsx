@@ -23,22 +23,6 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
   )
   const { data, isLoading, isError, refetch } = eligibilityQuery
 
-  const checkEligibility = async () => {
-    if (!account?.address) return
-
-    if (!isAuthenticated) {
-      try {
-        await signIn()
-        // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
-        await refetch()
-      } catch (error) {
-        console.error('Failed to sign in:', error)
-      }
-    } else {
-      await refetch()
-    }
-  }
-
   // Fetch global settings
   const globalMinimumMBDScoreQuery = useGlobalConfiguration(
     'GLOBAL_MINIMUM_MBD_SCORE',
@@ -51,10 +35,10 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
     globalMinimumPassportScoreQuery
 
   globalSettingScore.globalMinimumMBDScore = Number(
-    globalMinimumMBDScoreData?.value ?? 0,
+    globalMinimumMBDScoreData?.globalConfiguration?.value ?? 0,
   )
   globalSettingScore.globalMinimumPassportScore = Number(
-    globalMinimumPassportScoreData?.value ?? 0,
+    globalMinimumPassportScoreData?.globalConfiguration?.value ?? 0,
   )
 
   let isEligible = false
@@ -86,6 +70,22 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
       passportScore > 0 &&
       passportScore >= globalSettingScore.globalMinimumPassportScore
     isEligible = isMBDEligible && isPassportEligible
+  }
+
+  const checkEligibility = async () => {
+    if (!account?.address) return
+
+    if (!isAuthenticated) {
+      try {
+        await signIn()
+        // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
+        await refetch()
+      } catch (error) {
+        console.error('Failed to sign in:', error)
+      }
+    } else {
+      await refetch()
+    }
   }
 
   return (
