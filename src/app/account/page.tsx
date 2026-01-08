@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { CtaSection } from '@/components/account/cta-section'
+import { CtaSection } from '@/components/account/CtaGivBacks'
 import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
 import { ProfileSection } from '@/components/account/ProfileSection'

@@ -335,6 +335,10 @@ export const userStatsQuery = graphql(`
       donationsCount
       projectsCount
       likedProjectsCount
+      projectsWithDonationsCount
+      totalDonated
+      totalReceived
+      uniqueProjectsDonatedTo
       wallets {
         id
         address
