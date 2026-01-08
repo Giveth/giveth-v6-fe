@@ -6,6 +6,7 @@ import { DonationTabs } from '@/components/account/donation-tabs'
 import { DonationsTable } from '@/components/account/donations-table'
 import { ProfileSection } from '@/components/account/profile-section'
 import { RaffleCard } from '@/components/account/raffle-card'
+import { PassportBanner } from '@/components/PassportBanner'
 import { Button } from '@/components/ui/button'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -115,6 +116,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 export default function AccountPage() {
   return (
     <AuthGate>
+      <PassportBanner />
       <div className="min-h-screen bg-[#fcfcff]">
         <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
           <ProfileSection />
