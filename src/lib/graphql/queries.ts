@@ -338,8 +338,10 @@ export const userStatsQuery = graphql(`
       donationsCount
       projectsCount
       likedProjectsCount
-      uniqueProjectsDonatedTo
       projectsWithDonationsCount
+      totalDonated
+      totalReceived
+      uniqueProjectsDonatedTo
       wallets {
         id
         address
@@ -524,14 +526,31 @@ export const checkPassportEligibilityQuery = graphql(`
   }
 `)
 
+export const globalConfigurationsQuery = graphql(`
+  query GlobalConfigurations($isActive: Boolean) {
+    globalConfigurations(isActive: $isActive) {
+      id
+      key
+      value
+      description
+      type
+      isActive
+      createdAt
+      updatedAt
+    }
+  }
+`)
+
 export const globalConfigurationQuery = graphql(`
   query GlobalConfiguration($key: String!) {
     globalConfiguration(key: $key) {
       id
       key
       value
+      description
       type
       isActive
+      createdAt
       updatedAt
     }
   }

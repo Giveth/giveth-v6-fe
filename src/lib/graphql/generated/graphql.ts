@@ -1724,7 +1724,7 @@ export type UserStatsQueryVariables = Exact<{
 }>;
 
 
-export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, uniqueProjectsDonatedTo: number, projectsWithDonationsCount: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
+export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, projectsWithDonationsCount: number, uniqueProjectsDonatedTo: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
 
 export type MyProjectsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -1785,12 +1785,19 @@ export type CheckPassportEligibilityQueryVariables = Exact<{
 
 export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
 
+export type GlobalConfigurationsQueryVariables = Exact<{
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type GlobalConfigurationsQuery = { __typename?: 'Query', globalConfigurations: Array<{ __typename?: 'GlobalConfigurationEntity', id: string, key: string, value?: string | null, description?: string | null, type?: string | null, isActive: boolean, createdAt: any, updatedAt: any }> };
+
 export type GlobalConfigurationQueryVariables = Exact<{
   key: Scalars['String']['input'];
 }>;
 
 
-export type GlobalConfigurationQuery = { __typename?: 'Query', globalConfiguration?: { __typename?: 'GlobalConfigurationEntity', id: string, key: string, value?: string | null, type?: string | null, isActive: boolean, updatedAt: any } | null };
+export type GlobalConfigurationQuery = { __typename?: 'Query', globalConfiguration?: { __typename?: 'GlobalConfigurationEntity', id: string, key: string, value?: string | null, description?: string | null, type?: string | null, isActive: boolean, createdAt: any, updatedAt: any } | null };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2214,8 +2221,10 @@ export const UserStatsDocument = new TypedDocumentString(`
     donationsCount
     projectsCount
     likedProjectsCount
-    uniqueProjectsDonatedTo
     projectsWithDonationsCount
+    totalDonated
+    totalReceived
+    uniqueProjectsDonatedTo
     wallets {
       id
       address
@@ -2381,14 +2390,30 @@ export const CheckPassportEligibilityDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;
+export const GlobalConfigurationsDocument = new TypedDocumentString(`
+    query GlobalConfigurations($isActive: Boolean) {
+  globalConfigurations(isActive: $isActive) {
+    id
+    key
+    value
+    description
+    type
+    isActive
+    createdAt
+    updatedAt
+  }
+}
+    `) as unknown as TypedDocumentString<GlobalConfigurationsQuery, GlobalConfigurationsQueryVariables>;
 export const GlobalConfigurationDocument = new TypedDocumentString(`
     query GlobalConfiguration($key: String!) {
   globalConfiguration(key: $key) {
     id
     key
     value
+    description
     type
     isActive
+    createdAt
     updatedAt
   }
 }
