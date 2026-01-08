@@ -1,28 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+interface DonationTabsProps {
+  activeTab: string
+  onTabChange: (tab: string) => void
+}
 
-export function DonationTabs() {
-  const [activeTab, setActiveTab] = useState('one-time')
+export function DonationTabs({ activeTab, onTabChange }: DonationTabsProps) {
+  const handleTabClick = (tab: string) => {
+    onTabChange(tab)
+  }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3 mb-8">
       <button
-        onClick={() => setActiveTab('one-time')}
-        className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+        onClick={() => handleTabClick('one-time')}
+        className={`px-6 py-2.5 rounded-2xl text-base font-bold transition-colors border cursor-pointer hover:opacity-85 ${
           activeTab === 'one-time'
-            ? 'bg-[#5326ec] text-white'
-            : 'bg-white text-[#82899a] border border-[#ebecf2] hover:border-[#5326ec] hover:text-[#5326ec]'
+            ? 'text-giv-primary-400 border-giv-primary-300 bg-giv-primary-50'
+            : 'text-giv-gray-700 border-giv-primary-100 bg-[#FCFCFF]'
         }`}
       >
         One-time donations
       </button>
       <button
-        onClick={() => setActiveTab('recurring')}
-        className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+        onClick={() => handleTabClick('recurring')}
+        className={`px-6 py-2.5 rounded-2xl text-base font-bold transition-colors border cursor-pointer hover:opacity-85 ${
           activeTab === 'recurring'
-            ? 'bg-[#5326ec] text-white'
-            : 'bg-white text-[#82899a] border border-[#ebecf2] hover:border-[#5326ec] hover:text-[#5326ec]'
+            ? 'text-giv-primary-400 border-giv-primary-300 bg-giv-primary-50'
+            : 'text-giv-gray-700 border-giv-primary-100 bg-[#FCFCFF]'
         }`}
       >
         Recurring donations

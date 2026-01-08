@@ -77,3 +77,10 @@ a {
 .animate-slide-in {
   animation: slide-in 0.3s ease-out forwards;
 }
+
+.bg-give-get-giv {
+  background-image: url('/images/backgrounds/give-get-giv-bg.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

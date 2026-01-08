@@ -1724,7 +1724,7 @@ export type UserStatsQueryVariables = Exact<{
 }>;
 
 
-export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, uniqueProjectsDonatedTo: number, projectsWithDonationsCount: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
+export type UserStatsQuery = { __typename?: 'Query', userStats?: { __typename?: 'UserStatsEntity', id: string, email?: string | null, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, url?: string | null, totalDonated: number, totalReceived: number, donationsCount: number, projectsCount: number, likedProjectsCount: number, projectsWithDonationsCount: number, uniqueProjectsDonatedTo: number, wallets: Array<{ __typename?: 'UserWalletEntity', id: string, address: string, isPrimary: boolean, chainType: ChainType }> } | null };
 
 export type MyProjectsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -2221,8 +2221,10 @@ export const UserStatsDocument = new TypedDocumentString(`
     donationsCount
     projectsCount
     likedProjectsCount
-    uniqueProjectsDonatedTo
     projectsWithDonationsCount
+    totalDonated
+    totalReceived
+    uniqueProjectsDonatedTo
     wallets {
       id
       address
