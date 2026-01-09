@@ -5,7 +5,11 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { defineChain } from 'thirdweb/chains'
 import { TokenIcon, TokenProvider, useActiveAccount } from 'thirdweb/react'
-import { formatNumber, useWalletTokens } from '@/lib/helpers/cartHelper'
+import {
+  formatNumber,
+  getTokenPriceInUSDByCoingeckoId,
+  useWalletTokens,
+} from '@/lib/helpers/cartHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { WalletTokenWithBalance } from '@/lib/types/chain'
 
@@ -46,7 +50,11 @@ export const TokenDropdown = ({
   >(undefined)
 
   // Select choosed token when clicking on the dropdown item
-  const handleSelectToken = (token: WalletTokenWithBalance) => {
+  const handleSelectToken = async (token: WalletTokenWithBalance) => {
+    // Set token price in USD
+    const priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
+    token.priceInUSD = priceInUSD
+
     setSelectedToken(token)
     setRoundSelectedToken(token)
   }
