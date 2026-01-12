@@ -153,6 +153,12 @@ const TokenIconCached = memo(function TokenIconCached({
   address: `0x${string}`
   chainId: number
 }) {
+  // thirdweb TokenIcon -> TokenProvider calls bridge.thirdweb.com/v1/tokens.
+  // Guard against invalid chain ids (e.g. 0) to avoid 400s.
+  if (!Number.isFinite(chainId) || chainId <= 0) {
+    return <div className="h-5 w-5 rounded-full bg-giv-gray-300" />
+  }
+
   return (
     <TokenProvider
       address={address}

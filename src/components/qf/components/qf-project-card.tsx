@@ -57,6 +57,11 @@ export function QFProjectCard({
         image: project.image,
         roundId,
         roundName,
+        recipientAddresses:
+          project.addresses?.map(a => ({
+            address: a.address,
+            networkId: a.networkId,
+          })) ?? undefined,
       })
     }
   }

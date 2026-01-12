@@ -12,15 +12,15 @@ export function DonationsTable() {
     <div className="bg-white rounded-tr-2xl rounded-b-xl p-8 overflow-hidden">
       <DonationTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="relative">
-        {isLoading && (
+      {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[1px] text-[#82899a]">
-            Loading donations...
-          </div>
-        )}
+          Loading donations...
+        </div>
+      )}
 
-        {activeTab === 'one-time' && (
-          <DonationTableOneTime setIsLoading={setIsLoading} />
-        )}
+          {activeTab === 'one-time' && (
+            <DonationTableOneTime setIsLoading={setIsLoading} />
+          )}
       </div>
     </div>
   )

@@ -8,7 +8,7 @@
 
 import { prepareContractCall, type ThirdwebContract } from 'thirdweb'
 import { getContract } from 'thirdweb'
-import { polygon } from 'thirdweb/chains'
+import { defineChain } from 'thirdweb/chains'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 
 /**
@@ -181,7 +181,7 @@ export function getDonationHandlerContract(chainId: number): ThirdwebContract {
 
   return getContract({
     client: thirdwebClient,
-    chain: polygon, // Update based on chainId
+    chain: defineChain(chainId),
     address,
   })
 }
@@ -189,10 +189,13 @@ export function getDonationHandlerContract(chainId: number): ThirdwebContract {
 /**
  * Get ERC20 token contract instance
  */
-export function getERC20Contract(tokenAddress: string): ThirdwebContract {
+export function getERC20Contract(
+  chainId: number,
+  tokenAddress: string,
+): ThirdwebContract {
   return getContract({
     client: thirdwebClient,
-    chain: polygon,
+    chain: defineChain(chainId),
     address: tokenAddress,
   })
 }
