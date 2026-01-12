@@ -117,7 +117,11 @@ export function DonationSidebar({
               className="p-3 rounded-lg border border-giv-gray-300"
             >
               <p className="text-base text-giv-gray-900 font-medium">
-                {group.totalAmount} {group.tokenSymbol}{' '}
+                {formatNumber(Number(group.totalAmount), {
+                  minDecimals: 2,
+                  maxDecimals: 6,
+                })}{' '}
+                {group.tokenSymbol}{' '}
                 <span className="font-normal">
                   (~${formatNumber(Number(group.totalUsdValue))}) to
                 </span>{' '}
