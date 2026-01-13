@@ -25,6 +25,9 @@ export function RoundCard({
   const isMobile = useIsMobile()
   const layoutOption = isMobile ? 'vertical' : layout
 
+  const mainContainerWidth =
+    layoutOption === 'horizontal' ? 'lg:col-span-3' : 'col-span-1'
+
   const mainContainerFlexDirection =
     layoutOption === 'horizontal' ? 'flex-row' : 'flex-col'
 
@@ -36,7 +39,7 @@ export function RoundCard({
 
   return (
     <div
-      className={`flex ${mainContainerFlexDirection} gap-9 p-6 bg-white rounded-2xl border border-giv-gray-100 overflow-hidden shadow-[0px_6px_24px_rgba(0,0,0,0.06)]`}
+      className={`flex ${mainContainerFlexDirection} ${mainContainerWidth} gap-9 p-6 bg-white rounded-2xl border border-giv-gray-100 overflow-hidden shadow-[0px_6px_24px_rgba(0,0,0,0.06)]`}
     >
       <div
         className={`${imageContainerWidth} ${imageContainerHeight} relative`}
