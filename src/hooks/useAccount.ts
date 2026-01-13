@@ -3,13 +3,15 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { env } from '@/lib/env'
 import { createGraphQLClient } from '@/lib/graphql/client'
-import type {
-  DonationEntity,
-  PaginatedDonationsEntity,
-  PaginatedProjectsEntity,
-  ProjectEntity,
-  UserEntity,
-  UserWalletEntity,
+import {
+  type DonationEntity,
+  DonationSortField,
+  type PaginatedDonationsEntity,
+  type PaginatedProjectsEntity,
+  type ProjectEntity,
+  SortDirection,
+  type UserEntity,
+  type UserWalletEntity,
 } from '@/lib/graphql/generated/graphql'
 import {
   confirmEmailVerificationMutation,
@@ -100,15 +102,30 @@ type MyDonationsResponse = {
 
 export const useMyDonations = (
   token?: string,
-  params?: { skip?: number; take?: number; enabled?: boolean },
+  params?: {
+    skip?: number
+    take?: number
+    enabled?: boolean
+    orderBy?: DonationSortField
+    orderDirection?: SortDirection
+  },
 ) =>
   useQuery<MyDonationsResponse>({
-    queryKey: ['myDonations', params?.skip ?? 0, params?.take ?? 20, token],
+    queryKey: [
+      'myDonations',
+      params?.skip ?? 0,
+      params?.take ?? 20,
+      params?.orderBy ?? DonationSortField.CreatedAt,
+      params?.orderDirection ?? SortDirection.Desc,
+      token,
+    ],
     queryFn: async () => {
       const client = createAuthorizedClient(token)
       return client.request<MyDonationsResponse>(myDonationsQuery, {
         skip: params?.skip ?? 0,
         take: params?.take ?? 20,
+        orderBy: params?.orderBy ?? DonationSortField.CreatedAt,
+        orderDirection: params?.orderDirection ?? SortDirection.Desc,
       })
     },
     enabled: !!token && (params?.enabled ?? true),
