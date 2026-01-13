@@ -36,9 +36,15 @@ export function ActiveRounds() {
         </div>
       )}
       {rounds.length > 0 && (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {rounds.map(round => (
-            <RoundCard key={round.id} round={round} />
+            <RoundCard
+              key={round.id}
+              round={round}
+              layout={
+                round.displaySize === 'STANDARD' ? 'vertical' : 'horizontal'
+              }
+            />
           ))}
         </div>
       )}
