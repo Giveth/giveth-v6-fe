@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import {
+  ArrowDown,
+  ArrowUp,
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
@@ -12,6 +14,10 @@ import {
 } from '@/components/project/DonationTableDropdown'
 import { useProjectDonations } from '@/hooks/useProject'
 import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
+import {
+  DonationSortField,
+  SortDirection,
+} from '@/lib/graphql/generated/graphql'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { ProjectImage } from './ProjectImage'
 
@@ -34,11 +40,21 @@ export function ProjectDonationsTable({
 
   const qfRoundId = filter.type === 'round' ? parseInt(filter.id) : undefined
 
-  const { data, isLoading } = useProjectDonations(
+  // Set up sorting
+  const [orderBy, setOrderBy] = useState<DonationSortField>(
+    DonationSortField.CreatedAt,
+  )
+  const [orderDirection, setOrderDirection] = useState<SortDirection>(
+    SortDirection.Desc,
+  )
+
+  const { data, isLoading, isFetching } = useProjectDonations(
     projectId,
     currentPage * donationsPerPage,
     donationsPerPage,
     qfRoundId,
+    orderBy,
+    orderDirection,
   )
   const donations = data?.donationsByProject?.donations || []
   const totalDonations = data?.donationsByProject?.total || 0
@@ -87,6 +103,23 @@ export function ProjectDonationsTable({
     usd: `$${donation.valueUsd?.toFixed(2) || '0.00'}`,
   }))
 
+  const handleSort = (field: DonationSortField) => {
+    setCurrentPage(0)
+    // NOTE: keep this handler side-effect-free (no setState calls inside another setState updater),
+    // otherwise React StrictMode can call the updater twice in dev and "cancel out" the toggle.
+    if (orderBy === field) {
+      setOrderDirection(prevDirection =>
+        prevDirection === SortDirection.Desc
+          ? SortDirection.Asc
+          : SortDirection.Desc,
+      )
+      return
+    }
+
+    setOrderBy(field)
+    setOrderDirection(SortDirection.Desc)
+  }
+
   return (
     <>
       <div className="mb-4">
@@ -101,102 +134,163 @@ export function ProjectDonationsTable({
       </div>
 
       <div className="overflow-hidden">
+        {isFetching && (
+          <div className="text-sm text-giv-gray-600 mb-2">Loading…</div>
+        )}
         {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-giv-gray-400">
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
-                  <button className="flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer">
-                    Donated at
-                    <ArrowUpDown className="w-3 h-3" />
-                  </button>
-                </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
-                  Donor
-                </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
-                  Network
-                </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
-                  <button className="flex items-center gap-2 hover:text-[#5326ec] cursor-pointer">
-                    Amount
-                    <ArrowUpDown className="w-3 h-3" />
-                  </button>
-                </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
-                  <button className="flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer">
-                    USD Value
-                    <ArrowUpDown className="w-3 h-3" />
-                  </button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {formattedDonations.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-base text-giv-gray-700"
-                  >
-                    No donations yet
-                  </td>
+        {!isFetching && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-giv-gray-400">
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                    <button
+                      type="button"
+                      onClick={() => handleSort(DonationSortField.CreatedAt)}
+                      className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                        orderBy === DonationSortField.CreatedAt
+                          ? 'text-giv-primary-500'
+                          : 'text-giv-gray-900 hover:text-giv-primary-500'
+                      }`}
+                    >
+                      Donated at
+                      {orderBy === DonationSortField.CreatedAt &&
+                        orderDirection === SortDirection.Asc && (
+                          <ArrowUp className="w-3 h-3" />
+                        )}
+                      {orderBy === DonationSortField.CreatedAt &&
+                        orderDirection === SortDirection.Desc && (
+                          <ArrowDown className="w-3 h-3" />
+                        )}
+                      {orderBy !== DonationSortField.CreatedAt && (
+                        <ArrowUpDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                    Donor
+                  </th>
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                    Network
+                  </th>
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                    <button
+                      type="button"
+                      onClick={() => handleSort(DonationSortField.Amount)}
+                      className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                        orderBy === DonationSortField.Amount
+                          ? 'text-giv-primary-500'
+                          : 'text-giv-gray-900 hover:text-giv-primary-500'
+                      }`}
+                    >
+                      Amount
+                      {orderBy === DonationSortField.Amount &&
+                        orderDirection === SortDirection.Asc && (
+                          <ArrowUp className="w-3 h-3" />
+                        )}
+                      {orderBy === DonationSortField.Amount &&
+                        orderDirection === SortDirection.Desc && (
+                          <ArrowDown className="w-3 h-3" />
+                        )}
+                      {orderBy !== DonationSortField.Amount && (
+                        <ArrowUpDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                    <button
+                      type="button"
+                      onClick={() => handleSort(DonationSortField.ValueUsd)}
+                      className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                        orderBy === DonationSortField.ValueUsd
+                          ? 'text-giv-primary-500'
+                          : 'text-giv-gray-900 hover:text-giv-primary-500'
+                      }`}
+                    >
+                      USD Value
+                      {orderBy === DonationSortField.ValueUsd &&
+                        orderDirection === SortDirection.Asc && (
+                          <ArrowUp className="w-3 h-3" />
+                        )}
+                      {orderBy === DonationSortField.ValueUsd &&
+                        orderDirection === SortDirection.Desc && (
+                          <ArrowDown className="w-3 h-3" />
+                        )}
+                      {orderBy !== DonationSortField.ValueUsd && (
+                        <ArrowUpDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </th>
                 </tr>
-              ) : (
-                formattedDonations.map((donation, idx) => (
-                  <tr
-                    key={idx}
-                    className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
-                  >
-                    <td className="px-1 py-4">{donation.date}</td>
-                    <td className="px-1 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full overflow-hidden">
-                          <ProjectImage
-                            src={donation.avatar || USER_AVATAR_FALLBACK_IMAGE}
-                            alt={donation.donor}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className="">{donation.donor}</span>
-                      </div>
+              </thead>
+              <tbody>
+                {formattedDonations.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-base text-giv-gray-700"
+                    >
+                      No donations yet
                     </td>
-                    <td className="px-1 py-4">
-                      <div className="flex items-center gap-2">
-                        <ChainIcon
-                          networkId={donation.networkId}
-                          height="h-6"
-                          width="w-6"
-                        />
-                        <span>{donation.network}</span>
-                      </div>
-                    </td>
-                    <td className="px-1 py-4">
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium">{donation.amount}</span>
-                        <span className="text-giv-gray-800">
-                          {donation.token}
-                        </span>
-                        <a
-                          href={getTransactionUrl(
-                            donation.networkId,
-                            donation.transactionId,
-                          )}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-giv-primary-500 transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3 text-giv-gray-800" />
-                        </a>
-                      </div>
-                    </td>
-                    <td className="px-1 py-4">{donation.usd}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  formattedDonations.map((donation, idx) => (
+                    <tr
+                      key={idx}
+                      className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
+                    >
+                      <td className="px-1 py-4">{donation.date}</td>
+                      <td className="px-1 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full overflow-hidden">
+                            <ProjectImage
+                              src={
+                                donation.avatar || USER_AVATAR_FALLBACK_IMAGE
+                              }
+                              alt={donation.donor}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span className="">{donation.donor}</span>
+                        </div>
+                      </td>
+                      <td className="px-1 py-4">
+                        <div className="flex items-center gap-2">
+                          <ChainIcon
+                            networkId={donation.networkId}
+                            height="h-6"
+                            width="w-6"
+                          />
+                          <span>{donation.network}</span>
+                        </div>
+                      </td>
+                      <td className="px-1 py-4">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{donation.amount}</span>
+                          <span className="text-giv-gray-800">
+                            {donation.token}
+                          </span>
+                          <a
+                            href={getTransactionUrl(
+                              donation.networkId,
+                              donation.transactionId,
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-giv-primary-500 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3 text-giv-gray-800" />
+                          </a>
+                        </div>
+                      </td>
+                      <td className="px-1 py-4">{donation.usd}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (

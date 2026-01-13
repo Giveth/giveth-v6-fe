@@ -247,6 +247,13 @@ export type DonationMetricsEntity = {
   totalUsdValueToGiveth: Scalars['Float']['output'];
 };
 
+/** Fields to sort donations by */
+export enum DonationSortField {
+  Amount = 'Amount',
+  CreatedAt = 'CreatedAt',
+  ValueUsd = 'ValueUsd'
+}
+
 export type DonationStatsEntity = {
   __typename?: 'DonationStatsEntity';
   donationsCount: Scalars['Int']['output'];
@@ -1155,6 +1162,8 @@ export type QueryDonationMetricsArgs = {
 
 
 export type QueryDonationsByProjectArgs = {
+  orderBy?: DonationSortField;
+  orderDirection?: SortDirection;
   projectId: Scalars['Int']['input'];
   qfRoundId?: InputMaybe<Scalars['Int']['input']>;
   skip?: Scalars['Int']['input'];
@@ -1256,6 +1265,8 @@ export type QueryIsValidWalletAddressArgs = {
 
 
 export type QueryMyDonationsArgs = {
+  orderBy?: DonationSortField;
+  orderDirection?: SortDirection;
   skip?: Scalars['Int']['input'];
   take?: Scalars['Int']['input'];
 };
@@ -1673,6 +1684,8 @@ export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
   skip?: InputMaybe<Scalars['Int']['input']>;
   take?: InputMaybe<Scalars['Int']['input']>;
+  orderBy: DonationSortField;
+  orderDirection: SortDirection;
   qfRoundId?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
@@ -1739,6 +1752,8 @@ export type MyProjectsQuery = { __typename?: 'Query', myProjects: { __typename?:
 export type MyDonationsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
   take?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: DonationSortField;
+  orderDirection?: SortDirection;
 }>;
 
 
@@ -2038,11 +2053,13 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<ActiveQfRoundsQuery, ActiveQfRoundsQueryVariables>;
 export const DonationsByProjectDocument = new TypedDocumentString(`
-    query DonationsByProject($projectId: Int!, $skip: Int, $take: Int, $qfRoundId: Int) {
+    query DonationsByProject($projectId: Int!, $skip: Int, $take: Int, $orderBy: DonationSortField!, $orderDirection: SortDirection!, $qfRoundId: Int) {
   donationsByProject(
     projectId: $projectId
     skip: $skip
     take: $take
+    orderBy: $orderBy
+    orderDirection: $orderDirection
     qfRoundId: $qfRoundId
   ) {
     donations {
@@ -2258,8 +2275,13 @@ export const MyProjectsDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<MyProjectsQuery, MyProjectsQueryVariables>;
 export const MyDonationsDocument = new TypedDocumentString(`
-    query MyDonations($skip: Int = 0, $take: Int = 20) {
-  myDonations(skip: $skip, take: $take) {
+    query MyDonations($skip: Int = 0, $take: Int = 20, $orderBy: DonationSortField! = CreatedAt, $orderDirection: SortDirection! = DESC) {
+  myDonations(
+    skip: $skip
+    take: $take
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+  ) {
     total
     donations {
       id
