@@ -1,3 +1,5 @@
+import { formatNumber } from '@/lib/helpers/cartHelper'
+
 interface AllTimeDonationsProps {
   project: {
     totalDonations: number
@@ -13,7 +15,11 @@ export function AllTimeDonations({ project }: AllTimeDonationsProps) {
       </h3>
       <div className="flex items-center justify-between">
         <span className="text-base font-medium text-giv-gray-800 ml-2">
-          ${project.totalDonations.toFixed(2)}
+          $
+          {formatNumber(project.totalDonations, {
+            minDecimals: 2,
+            maxDecimals: 2,
+          })}
         </span>
         <div className="text-left">
           <span className="text-sm font-medium text-giv-gray-900">
