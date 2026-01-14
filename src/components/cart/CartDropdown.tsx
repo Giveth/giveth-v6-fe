@@ -103,7 +103,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
               {nonQfProjects.map(item => (
                 <div
                   key={item.id}
-                  className="px-1 pb-1 bg-giv-gray-300 rounded-2xl overflow-hidden"
+                  className="flex items-center gap-3 px-2 py-2 bg-giv-gray-300 rounded-2xl overflow-hidden"
                 >
                   {/* Project Image */}
                   <div className="w-14 h-[45px] rounded-md overflow-hidden shrink-0">

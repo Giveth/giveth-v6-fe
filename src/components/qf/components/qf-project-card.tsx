@@ -154,7 +154,7 @@ export function QFProjectCard({
         <div className="mt-auto h-[52px]">
           <button
             onClick={toggleCart}
-            className={`w-full h-[48px] rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`w-full h-[48px] rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isInCart
                 ? 'border-2 border-[#e1458d] text-[#e1458d] hover:bg-[#fff5f8]'
                 : 'bg-white border-2 border-[#e1458d] text-[#e1458d] hover:bg-[#e1458d] hover:text-white'

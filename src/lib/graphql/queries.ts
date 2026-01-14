@@ -111,6 +111,7 @@ export const qfRoundBySlugQuery = graphql(`
       endDate
       allocatedFundUSD
       allocatedFundUSDPreferred
+      allocatedTokenSymbol
     }
   }
 `)
@@ -133,6 +134,7 @@ export const activeQfRoundsQuery = graphql(`
       allocatedTokenSymbol
       minimumValidUsdValue
       displaySize
+      maximumReward
     }
   }
 `)

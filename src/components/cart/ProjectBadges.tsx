@@ -5,6 +5,7 @@ import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { useProjectEstimatedMatching } from '@/hooks/projectHooks'
 import { GIVBACKS_DONATION_QUALIFICATION_VALUE_USD } from '@/lib/constants/app-main'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { calculateEstimatedMatchingWithDonationAmount } from '@/lib/helpers/projectHelper'
 
 export const ProjectBadges = ({
@@ -15,6 +16,9 @@ export const ProjectBadges = ({
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
 }) => {
   const { updateProjectDonation } = useCart()
+
+  console.log('ProjectBadges.project', project)
+  console.log('ProjectBadges.roundData', roundData)
 
   const donationAmountInUSD =
     Number(project.donationAmount ?? 0) *
@@ -84,14 +88,11 @@ export const ProjectBadges = ({
     }
   }, [estimatedMatching, isEstimatedMatchingLoading])
 
-  // NEED TO GET THE MAXIMUM REWARD FROM THE ROUND DATA AND
-  // AND THE ALLOCATED FUND USD PREFERRED FROM THE ROUND DATA AND
-  //const maximumReward = roundData?.maximumReward ?? 0
-  // const allocatedFundUSDPreferred = roundData?.allocatedFundUSDPreferred ?? false
-  // @mmahdighi: I'm not sure if we have those data from the BE side, so I'm using dummy data for now
-  const maximumReward = 100
-  const allocatedFundUSD = false
-  const allocatedFundUSDPreferred = 1
+  // Get the maximum reward, allocated fund USD, and allocated fund USD preferred from the round data
+  const maximumReward = roundData?.maximumReward ?? 0
+  const allocatedFundUSD = roundData?.allocatedFundUSD ?? 0
+  const allocatedFundUSDPreferred =
+    roundData?.allocatedFundUSDPreferred ?? false
 
   const esMatching = calculateEstimatedMatchingWithDonationAmount(
     donationAmountInUSD,
@@ -140,7 +141,13 @@ export const ProjectBadges = ({
           color={isDonationMatchedColor}
           amountPrefix={
             isDonationMatched
-              ? '$' + esMatching.toFixed(2)
+              ? (roundData?.allocatedFundUSDPreferred ? '$' : '') +
+                formatNumber(esMatching ?? 0) +
+                ' ' +
+                (roundData?.allocatedTokenSymbol &&
+                !roundData?.allocatedFundUSDPreferred
+                  ? roundData?.allocatedTokenSymbol
+                  : '')
               : '$' + roundData?.minimumValidUsdValue.toString()
           }
           label={isDonationMatchedMessage}

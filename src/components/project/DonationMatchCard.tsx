@@ -4,6 +4,7 @@ import { useActiveAccount } from 'thirdweb/react'
 import { useProjectEstimatedMatching } from '@/hooks/projectHooks'
 import { useQfRoundBySlug } from '@/hooks/useQfRoundBySlug'
 import type { QfRoundEntity } from '@/lib/graphql/generated/graphql'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { calculateEstimatedMatchingWithDonationAmount } from '@/lib/helpers/projectHelper'
 
 export const DonationMatchCard = ({
@@ -67,7 +68,12 @@ export const DonationMatchCard = ({
       </span>
 
       <span className="text-giv-jade-500 text-right font-medium">
-        {esMatching} USDC
+        {fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ? '$' : ''}
+        {formatNumber(esMatching)}{' '}
+        {fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol &&
+        !fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred
+          ? fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol
+          : ''}
       </span>
     </div>
   )

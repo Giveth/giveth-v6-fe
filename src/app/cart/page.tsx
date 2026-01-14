@@ -6,6 +6,7 @@ import { DonationRound } from '@/components/cart/DonationRound'
 import { DonationSidebar } from '@/components/cart/DonationSidebar'
 import { useCart } from '@/context/CartContext'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
+import { DisplaySize } from '@/lib/graphql/generated/graphql'
 import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 
 export default function CartPage() {
@@ -55,6 +56,38 @@ export default function CartPage() {
                   />
                 )
               })}
+            {nonQfProjects.length > 0 && (
+              <DonationRound
+                key="0"
+                roundData={{
+                  id: '0',
+                  name: 'Non-QF',
+                  isActive: true,
+                  slug: '',
+                  beginDate: new Date(),
+                  endDate: new Date(),
+                  eligibleNetworks: [],
+                  displaySize: DisplaySize.Standard,
+                  description: '',
+                  allocatedFund: 0,
+                  minimumValidUsdValue: 0,
+                  maximumReward: 0,
+                }}
+                cartRoundData={{
+                  roundId: 0,
+                  roundName: 'Non-QF',
+                  selectedChainId: 0,
+                  selectedToken: undefined,
+                  tokenSymbol: '',
+                  tokenDecimals: 18,
+                  tokenAddress: '',
+                  projects: [],
+                  totalAmount: '0',
+                  totalUsdValue: '0',
+                }}
+                projects={nonQfProjects}
+              />
+            )}
             {cartItems.length === 0 && (
               <div className="text-center py-12 text-giv-gray-700">
                 Your cart is empty. Add projects to your cart to get started.

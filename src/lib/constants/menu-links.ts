@@ -189,3 +189,9 @@ export const DiscordLink = {
   href: 'https://discord.giveth.io/',
   target: '_blank',
 }
+
+export const HowItWorksLink = {
+  label: 'How it works?',
+  href: 'https://docs.giveth.io/quadraticfunding',
+  target: '_blank',
+}
