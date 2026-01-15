@@ -195,3 +195,32 @@ export const HowItWorksLink = {
   href: 'https://docs.giveth.io/quadraticfunding',
   target: '_blank',
 }
+
+export const myProjectsLink = {
+  label: 'My Projects',
+  href: oldFrontendPath('/account?tab=projects', '/account?tab=projects'),
+}
+
+export const myCausesLink = {
+  label: 'My Causes',
+  href: oldFrontendPath('/account?tab=causes', '/account?tab=causes'),
+}
+
+export const myGIVPowerLink = {
+  label: 'My GIVPower',
+  href: oldFrontendPath('/account?tab=givpower', '/account?tab=givpower'),
+}
+
+export const myRecurringDonationsLink = {
+  label: 'My Recurring Donations',
+  href: oldFrontendPath(
+    '/account?tab=recurring-donations',
+    '/account?tab=recurring-donations',
+  ),
+}
+
+export const reportBugLink = {
+  label: 'Report A Bug',
+  href: 'https://giveth.typeform.com/issue-bug?typeform-source=staging.giveth.io',
+  target: '_blank',
+}
