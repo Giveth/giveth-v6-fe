@@ -2,10 +2,16 @@
 
 import { cloneElement, isValidElement } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { type Route } from 'next'
 import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
 import { IconRocket } from '@/components/icons/IconRocket'
 import { IconSparks } from '@/components/icons/IconSparks'
 import { IconStake } from '@/components/icons/IconStake'
+import {
+  givBacksLink,
+  myGIVPowerLink,
+  myProjectsLink,
+} from '@/lib/constants/menu-links'
 
 interface DashboardTabsProps {
   activeTab: string
@@ -30,16 +36,19 @@ export const DashboardTabs = ({
       id: 'staking',
       label: 'Staking & Rewards',
       icon: <IconSparks width={24} height={24} />,
+      href: givBacksLink.href as unknown as Route,
     },
     {
       id: 'boosted',
       label: 'Boosted Projects',
       icon: <IconRocket width={24} height={24} />,
+      href: myGIVPowerLink.href as unknown as Route,
     },
     {
       id: 'projects',
       label: 'My projects',
       icon: <IconStake width={24} height={24} />,
+      href: myProjectsLink.href as unknown as Route,
     },
   ]
 
@@ -73,7 +82,11 @@ export const DashboardTabs = ({
         {tabs.map((tab, index) => (
           <button
             key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
+            onClick={() =>
+              tab.href
+                ? router.push(tab.href as unknown as Route, { scroll: false })
+                : handleTabClick(tab.id)
+            }
             style={
               activeTab === tab.id
                 ? {
