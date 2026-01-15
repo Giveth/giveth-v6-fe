@@ -1690,7 +1690,7 @@ export type DonationsByProjectQueryVariables = Exact<{
 }>;
 
 
-export type DonationsByProjectQuery = { __typename?: 'Query', donationsByProject: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, transactionId: string, transactionNetworkId: number, fromWalletAddress: string, createdAt: any, user?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null }> } };
+export type DonationsByProjectQuery = { __typename?: 'Query', donationsByProject: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, transactionId: string, transactionNetworkId: number, fromWalletAddress: string, createdAt: any, anonymous?: boolean | null, user?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null }> } };
 
 export type ProjectsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -2080,6 +2080,7 @@ export const DonationsByProjectDocument = new TypedDocumentString(`
         lastName
         avatar
       }
+      anonymous
     }
     total
   }

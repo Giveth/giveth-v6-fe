@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Check, Copy, LogOut } from 'lucide-react'
 import { type Route } from 'next'
+import { type Address } from 'thirdweb'
 import {
   useActiveAccount,
   useActiveWallet,
@@ -22,6 +23,7 @@ import {
   supportLink,
 } from '@/lib/constants/menu-links'
 import { getUserName, shortenAddress } from '@/lib/helpers/userHelper'
+import { EnsName } from '../account/EnsName'
 
 export function HeaderConnectWallet() {
   const account = useActiveAccount()
@@ -122,7 +124,9 @@ export function HeaderConnectWallet() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {shortenAddress(account.address)}
+                    <EnsName
+                      address={account.address as Address as `0x${string}`}
+                    />
                   </p>
                   <p className="text-xs text-gray-500">
                     {chain?.name || 'Unknown Network'}
