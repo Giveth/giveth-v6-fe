@@ -172,6 +172,7 @@ export const donationsByProjectQuery = graphql(`
           lastName
           avatar
         }
+        anonymous
       }
       total
     }
