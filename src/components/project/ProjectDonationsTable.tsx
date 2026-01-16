@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
+import { type Address } from 'thirdweb'
 import { ChainIcon } from '@/components/ChainIcon'
 import {
   DonationTableDropdown,
@@ -19,7 +20,9 @@ import {
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
+import { shortenAddress } from '@/lib/helpers/userHelper'
 import { ProjectImage } from './ProjectImage'
+import { EnsName } from '../account/EnsName'
 
 interface ProjectDonationsTableProps {
   projectId: number
@@ -89,11 +92,14 @@ export function ProjectDonationsTable({
       day: 'numeric',
       year: 'numeric',
     }),
-    donor: donation.user
-      ? `${donation.user.firstName || ''} ${donation.user.lastName || ''}`.trim() ||
-        donation.user.name ||
-        'Anonymous'
-      : 'Anonymous',
+    donorName: donation.anonymous
+      ? 'Anonymous'
+      : donation.user
+        ? `${donation.user.firstName || ''} ${donation.user.lastName || ''}`.trim() ||
+          donation.user.name ||
+          ''
+        : '',
+    donorAddress: donation.anonymous ? null : donation.fromWalletAddress,
     avatar: donation.user?.avatar || null,
     network: getChainName(donation.transactionNetworkId),
     networkId: donation.transactionNetworkId,
@@ -234,22 +240,74 @@ export function ProjectDonationsTable({
                     </td>
                   </tr>
                 ) : (
-                  formattedDonations.map((donation, idx) => (
-                    <tr
-                      key={idx}
-                      className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
-                    >
-                      <td className="px-1 py-4">{donation.date}</td>
-                      <td className="px-1 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full overflow-hidden">
-                            <ProjectImage
-                              src={
-                                donation.avatar || USER_AVATAR_FALLBACK_IMAGE
-                              }
-                              alt={donation.donor}
-                              className="w-full h-full object-cover"
+                  formattedDonations.map((donation, idx) => {
+                    const donorAddress = donation.donorAddress
+                      ? (donation.donorAddress as Address as `0x${string}`)
+                      : null
+                    const donorAlt =
+                      donation.donorName ||
+                      (donorAddress
+                        ? shortenAddress(donorAddress)
+                        : 'Anonymous')
+
+                    return (
+                      <tr
+                        key={idx}
+                        className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
+                      >
+                        <td className="px-1 py-4">{donation.date}</td>
+                        <td className="px-1 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <ProjectImage
+                                src={
+                                  donation.avatar || USER_AVATAR_FALLBACK_IMAGE
+                                }
+                                alt={donorAlt}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className="">
+                              {donation.donorName === 'Anonymous'
+                                ? 'Anonymous'
+                                : donation.donorName ||
+                                  (donorAddress ? (
+                                    <EnsName address={donorAddress} />
+                                  ) : (
+                                    'Anonymous'
+                                  ))}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-1 py-4">
+                          <div className="flex items-center gap-2">
+                            <ChainIcon
+                              networkId={donation.networkId}
+                              height="h-6"
+                              width="w-6"
                             />
+                            <span>{donation.network}</span>
+                          </div>
+                        </td>
+                        <td className="px-1 py-4">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">
+                              {donation.amount}
+                            </span>
+                            <span className="text-giv-gray-800">
+                              {donation.token}
+                            </span>
+                            <a
+                              href={getTransactionUrl(
+                                donation.networkId,
+                                donation.transactionId,
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-giv-primary-500 transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3 text-giv-gray-800" />
+                            </a>
                           </div>
                           <span className="">{donation.donor}</span>
                         </div>

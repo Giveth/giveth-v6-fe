@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { type Route } from 'next'
 import { DonationTableOneTime } from '@/components/account/DonationTableOneTime'
 import { DonationTabs } from '@/components/account/DonationTabs'
 import { myRecurringDonationsLink } from '@/lib/constants/menu-links'
@@ -13,7 +14,7 @@ export function DonationsTable() {
 
   useEffect(() => {
     if (activeTab === 'recurring') {
-      router.push(myRecurringDonationsLink.href as never)
+      router.push(myRecurringDonationsLink.href as unknown as Route)
     }
   }, [activeTab, router])
   return (
