@@ -283,8 +283,8 @@ export function ProjectDonationsTable({
                           <div className="flex items-center gap-2">
                             <ChainIcon
                               networkId={donation.networkId}
-                              height="h-6"
-                              width="w-6"
+                              height={20}
+                              width={20}
                             />
                             <span>{donation.network}</span>
                           </div>

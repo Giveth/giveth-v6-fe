@@ -1,20 +1,9 @@
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
-import { defineChain } from 'thirdweb'
-import { ChainProvider, ChainIcon as ThirdwebChainIcon } from 'thirdweb/react'
 import { useCart } from '@/context/CartContext'
 import { getChainName } from '@/lib/helpers/chainHelper'
-import { thirdwebClient } from '@/lib/thirdweb/client'
-
-const chainCache = new Map<number, ReturnType<typeof defineChain>>()
-function getCachedChain(chainId: number) {
-  const cached = chainCache.get(chainId)
-  if (cached) return cached
-  const chain = defineChain(chainId)
-  chainCache.set(chainId, chain)
-  return chain
-}
+import { ChainIcon } from '../ChainIcon'
 
 export const ChainDropdown = ({
   selectedChainId,
@@ -37,7 +26,7 @@ export const ChainDropdown = ({
         <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
           {selectedChainIdState > 0 && (
             <>
-              <ChainIcon chainId={selectedChainIdState} />
+              <ChainIcon networkId={selectedChainIdState} />
               <span className="text-base font-medium text-giv-gray-900">
                 {getChainName(selectedChainIdState)}
               </span>
@@ -78,7 +67,7 @@ export const ChainDropdown = ({
               "
             >
               <div className="flex items-center gap-2">
-                <ChainIcon chainId={id} />
+                <ChainIcon networkId={id} />
                 {getChainName(id)}
               </div>
             </DropdownMenu.Item>
@@ -88,18 +77,3 @@ export const ChainDropdown = ({
     </DropdownMenu.Root>
   )
 }
-
-const ChainIcon = memo(function ChainIcon({ chainId }: { chainId: number }) {
-  const chain = getCachedChain(chainId)
-  return (
-    <ChainProvider chain={chain}>
-      <ThirdwebChainIcon
-        client={thirdwebClient}
-        className="h-5 w-5 rounded-full"
-        alt={`${getChainName(chainId)} icon`}
-      />
-    </ChainProvider>
-  )
-})
-
-ChainIcon.displayName = 'ChainIcon'

@@ -246,8 +246,8 @@ export const DonationTableOneTime = ({
                         <div className="flex items-center gap-2">
                           <ChainIcon
                             networkId={donation.transactionNetworkId}
-                            height="h-6"
-                            width="w-6"
+                            height={24}
+                            width={24}
                           />
                           <span className="text-sm font-medium text-[#1f2333]">
                             {donation.amount} {donation.currency}

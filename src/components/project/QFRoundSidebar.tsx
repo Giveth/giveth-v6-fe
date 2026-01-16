@@ -87,11 +87,7 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
                     <Copy className="w-3.5 h-3.5" />
                   )}
                 </button>
-                <ChainIcon
-                  networkId={item.networkId}
-                  height="h-5"
-                  width="w-5"
-                />
+                <ChainIcon networkId={item.networkId} height={20} width={20} />
               </div>
             </div>
           ))}

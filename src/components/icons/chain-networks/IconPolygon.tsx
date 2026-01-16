@@ -1,0 +1,38 @@
+interface IconPolygonProps {
+  width?: number | string
+  height?: number | string
+  className?: string
+}
+
+export function IconPolygon({
+  width = 24,
+  height = 24,
+  className,
+}: IconPolygonProps) {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <g clipPath="url(#clip0_5935_445)">
+        <path
+          d="M32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32C24.8366 32 32 24.8366 32 16Z"
+          fill="black"
+        />
+        <path
+          d="M19.4492 8.85175L14.9842 11.4162V19.4198L12.5205 20.8479L10.0418 19.4187V16.5612L12.5205 15.1458L14.1143 16.0701V13.7582L12.5066 12.8454L8.0426 15.4389V20.5688L12.5217 23.1483L16.9856 20.5688V12.5663L19.4643 11.137L21.9418 12.5663V15.411L19.4643 16.8531L17.8566 15.9206V18.221L19.4492 19.1395L23.9572 16.5751V11.4162L19.4492 8.85175Z"
+          fill="white"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_5935_445">
+          <rect width="32" height="32" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  )
+}
