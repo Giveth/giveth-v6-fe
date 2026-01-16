@@ -5,12 +5,12 @@ import {
   type ProjectEntity,
   type ProjectSortField,
 } from '@/lib/graphql/generated/graphql'
-import { QFProjectCard } from './components/qf-project-card'
+import { QFProjectCard } from './components/QFProjectCard'
 import {
   QFProjectFilters,
   type QFFiltersState,
-} from './components/qf-project-filters'
-import { QFSorting } from './components/qf-sorting'
+} from './components/QFProjectFilters'
+import { QFSorting } from './components/QFSorting'
 
 interface QFProjectsGridProps {
   projects: ProjectEntity[]

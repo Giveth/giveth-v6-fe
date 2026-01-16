@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Check, SlidersHorizontal } from 'lucide-react'
+import { NETWROKS_FILTERS } from '@/lib/constants/round-constants'
 
 // Define the filter state interface
 export interface QFFiltersState {
@@ -14,17 +15,6 @@ interface QFProjectFiltersProps {
   currentFilters: QFFiltersState
   onFilterChange: (filters: QFFiltersState) => void
 }
-
-const NETWORKS = [
-  'Mainnet',
-  'Gnosis',
-  'Polygon',
-  'Celo',
-  'Optimism',
-  'Ethereum Classic',
-  'Arbitrum',
-  'Base',
-]
 
 export function QFProjectFilters({
   currentFilters,
@@ -143,7 +133,7 @@ export function QFProjectFilters({
               Accepts funds on
             </h4>
             <div className="space-y-3 overflow-y-auto custom-scrollbar">
-              {NETWORKS.map(network => (
+              {NETWROKS_FILTERS.map(network => (
                 <label
                   key={network}
                   className="flex items-center gap-3 cursor-pointer group"
