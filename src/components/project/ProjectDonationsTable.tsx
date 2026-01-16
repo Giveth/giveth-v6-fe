@@ -283,8 +283,8 @@ export function ProjectDonationsTable({
                           <div className="flex items-center gap-2">
                             <ChainIcon
                               networkId={donation.networkId}
-                              height="h-6"
-                              width="w-6"
+                              height={20}
+                              width={20}
                             />
                             <span>{donation.network}</span>
                           </div>
@@ -309,41 +309,11 @@ export function ProjectDonationsTable({
                               <ExternalLink className="w-3 h-3 text-giv-gray-800" />
                             </a>
                           </div>
-                          <span className="">{donation.donor}</span>
-                        </div>
-                      </td>
-                      <td className="px-1 py-4">
-                        <div className="flex items-center gap-2">
-                          <ChainIcon
-                            networkId={donation.networkId}
-                            height={24}
-                            width={24}
-                          />
-                          <span>{donation.network}</span>
-                        </div>
-                      </td>
-                      <td className="px-1 py-4">
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium">{donation.amount}</span>
-                          <span className="text-giv-gray-800">
-                            {donation.token}
-                          </span>
-                          <a
-                            href={getTransactionUrl(
-                              donation.networkId,
-                              donation.transactionId,
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-giv-primary-500 transition-colors"
-                          >
-                            <ExternalLink className="w-3 h-3 text-giv-gray-800" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="px-1 py-4">{donation.usd}</td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="px-1 py-4">{donation.usd}</td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
