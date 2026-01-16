@@ -17,9 +17,6 @@ export const ProjectBadges = ({
 }) => {
   const { updateProjectDonation } = useCart()
 
-  console.log('ProjectBadges.project', project)
-  console.log('ProjectBadges.roundData', roundData)
-
   const donationAmountInUSD =
     Number(project.donationAmount ?? 0) *
     Number(project.selectedToken?.priceInUSD ?? 0)

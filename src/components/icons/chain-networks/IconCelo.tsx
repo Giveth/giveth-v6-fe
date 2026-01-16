@@ -1,0 +1,34 @@
+interface IconCeloProps {
+  width?: number | string
+  height?: number | string
+  className?: string
+}
+
+export function IconCelo({
+  width = 24,
+  height = 24,
+  className,
+}: IconCeloProps) {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <g clipPath="url(#clip0_1536_5391)">
+        <path
+          d="M16 0H0V16H16V10.4146H13.3431C12.4282 12.4533 10.3687 13.8695 8.01253 13.8695C4.7624 13.8695 2.13055 11.2125 2.13055 7.98747C2.12637 4.7624 4.7624 2.13055 8.01253 2.13055C10.4146 2.13055 12.4742 3.59269 13.389 5.67728H16V0Z"
+          fill="black"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_1536_5391">
+          <rect width="16" height="16" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  )
+}
