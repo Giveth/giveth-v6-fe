@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import clsx from 'clsx'
 import { Plus, X } from 'lucide-react'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
@@ -62,9 +63,9 @@ export function QFProjectCard({
   }
 
   return (
-    <div className="group relative bg-white rounded-xl border border-[#ebecf2] overflow-hidden hover:shadow-xl transition-all duration-300 h-[480px]">
+    <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[480px]">
       {/* Image Layer - Static */}
-      <div className="absolute top-0 left-0 w-full h-[220px] bg-gray-100 z-0">
+      <div className="absolute top-0 left-0 w-full h-[220px] z-0 bg-white">
         <ProjectImage
           src={project.image}
           alt={project.title}
@@ -78,24 +79,30 @@ export function QFProjectCard({
       </div>
 
       {/* Content Body */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-white pt-5 pb-5 px-5 rounded-t-2xl transition-transform duration-500 ease-out transform translate-y-[68px] group-hover:translate-y-0 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[320px] flex flex-col pointer-events-auto">
+      <div
+        className={clsx(
+          'absolute bottom-0 left-0 right-0 z-20 top-[140px] bg-white pt-5 pb-5 px-5 rounded-t-2xl',
+          'transition-transform duration-500 ease-out transform translate-y-[68px] group-hover:translate-y-0',
+          'shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[350px] flex flex-col pointer-events-auto',
+        )}
+      >
         {/* Header Section */}
         <div className="mb-2">
-          <h3 className="font-bold text-lg text-[#1f2333] mb-1 line-clamp-1">
+          <h3 className="font-bold text-lg text-giv-gray-900 mb-1 line-clamp-1">
             <Link
               href={`/project/${project.slug}`}
-              className="hover:text-[#5326ec] transition-colors"
+              className="hover:text-giv-primary-500 transition-colors"
             >
               {project.title}
             </Link>
           </h3>
-          <p className="text-sm text-[#e1458d] font-medium">
+          <p className="text-sm text-giv-pinky-500 font-medium">
             {project.adminUser?.name || 'Unknown Creator'}
           </p>
         </div>
 
         {/* Description */}
-        <p className="text-sm text-[#525c76] line-clamp-3 mb-4 flex-grow">
+        <p className="text-sm text-giv-gray-700 line-clamp-3 mb-4 grow">
           {project.descriptionSummary}
         </p>
 
@@ -103,12 +110,12 @@ export function QFProjectCard({
         <div className="flex items-end justify-between border-t border-gray-100 pt-4 mb-4">
           {/* Left: Round Stats */}
           <div>
-            <div className="text-2xl font-bold text-[#1f2333] leading-tight mb-1">
+            <div className="text-2xl font-bold text-giv-gray-900 leading-tight mb-1">
               {formatCurrency(roundRaised)}
             </div>
-            <div className="text-xs text-[#82899a]">
+            <div className="text-xs text-giv-gray-700">
               Raised from{' '}
-              <span className="text-[#1f2333] font-medium">
+              <span className="text-giv-gray-900 font-medium">
                 {roundContributors}
               </span>{' '}
               contributors
@@ -116,11 +123,11 @@ export function QFProjectCard({
           </div>
 
           {/* Right: Total Stats (Box) */}
-          <div className="bg-[#f3f4f6] rounded-lg p-2 text-right min-w-[80px]">
-            <div className="text-sm font-bold text-[#525c76] leading-tight">
+          <div className="bg-giv-gray-200 rounded-lg p-2 text-right min-w-[80px]">
+            <div className="text-sm font-bold text-giv-gray-700 leading-tight">
               {formatCurrency(totalRaised)}
             </div>
-            <div className="text-[10px] uppercase font-bold text-[#82899a] mt-0.5">
+            <div className="text-[10px] uppercase font-bold text-giv-gray-700 mt-0.5">
               Total Raised
             </div>
           </div>
@@ -129,7 +136,7 @@ export function QFProjectCard({
         {/* Badges/Tags */}
         <div className="flex items-center gap-2 mb-4">
           {project.vouched && (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#37b4a9]">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-giv-jade-500">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -141,11 +148,11 @@ export function QFProjectCard({
             </span>
           )}
           {project.isGivbacksEligible && (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#5326EC] px-1.5 py-0.5">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-giv-primary-500 px-1.5 py-0.5">
               GIVBACKS
             </span>
           )}
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#20c5b4] px-1.5 py-0.5 rounded">
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-giv-cyan-500 px-1.5 py-0.5 rounded">
             QF PROJECT
           </span>
         </div>
@@ -156,8 +163,8 @@ export function QFProjectCard({
             onClick={toggleCart}
             className={`w-full h-[48px] rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isInCart
-                ? 'border-2 border-[#e1458d] text-[#e1458d] hover:bg-[#fff5f8]'
-                : 'bg-white border-2 border-[#e1458d] text-[#e1458d] hover:bg-[#e1458d] hover:text-white'
+                ? 'border-2 border-giv-pinky-500 text-giv-pinky-500 hover:bg-giv-pinky-200'
+                : 'bg-white border-2 border-giv-pinky-500 text-giv-pinky-500 hover:bg-giv-pinky-500 hover:text-white'
             }`}
           >
             {isInCart ? (
