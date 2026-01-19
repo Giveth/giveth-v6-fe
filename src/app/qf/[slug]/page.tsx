@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { PassportBanner } from '@/components/PassportBanner'
-import { type QFFiltersState } from '@/components/qf/components/qf-project-filters'
-import { QFHero } from '@/components/qf/qf-hero'
-import { QFProjectsGrid } from '@/components/qf/qf-projects-grid'
-import { QFStats } from '@/components/qf/qf-stats'
+import { type QFFiltersState } from '@/components/qf/components/QFProjectFilters'
+import { QFHero } from '@/components/qf/QFHero'
+import { QFProjectsGrid } from '@/components/qf/QFProjectsGrid'
+import { QFStats } from '@/components/qf/QFStats'
 import { useProjects } from '@/hooks/useProjects'
 import { useQfRoundBySlug } from '@/hooks/useQfRoundBySlug'
 import { useQfRoundStats } from '@/hooks/useQfRoundStats'
+import { NETWORK_FILTERS_NAME_TO_ID } from '@/lib/constants/round-constants'
 import {
   type ProjectEntity,
   ProjectSortField,
@@ -19,17 +20,6 @@ import {
 export default function QFRoundPage() {
   const params = useParams<{ slug: string }>()
   const { slug } = params
-
-  const NETWORK_NAME_TO_ID: Record<string, number> = {
-    Mainnet: 1,
-    Gnosis: 100,
-    Polygon: 137,
-    Celo: 42220,
-    Optimism: 10,
-    'Ethereum Classic': 61,
-    Arbitrum: 42161,
-    Base: 8453,
-  }
 
   // State for Sorting and Filtering
   const [sortField, setSortField] = useState<ProjectSortField>(
@@ -76,7 +66,7 @@ export default function QFRoundPage() {
   // 3. Fetch Projects
   const networkIds =
     filters.networks
-      .map(n => NETWORK_NAME_TO_ID[n])
+      .map(n => NETWORK_FILTERS_NAME_TO_ID[n])
       .filter((id): id is number => Number.isInteger(id)) || []
 
   const {
@@ -114,7 +104,7 @@ export default function QFRoundPage() {
   if (isRoundLoading) {
     // Basic loading state
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-gray-200 flex items-center justify-center">
         Loading...
       </div>
     )
@@ -122,18 +112,24 @@ export default function QFRoundPage() {
 
   if (!qfRound) {
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-gray-200 flex items-center justify-center">
         Round not found
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-gray-200">
       {/* Passport Banner */}
       <PassportBanner roundId={roundId} />
 
-      <QFHero title={qfRound.title || qfRound.name} endDate={qfRound.endDate} />
+      <QFHero
+        bannerImage={qfRound.bannerBgImage ?? undefined}
+        bannerFull={qfRound.bannerFull ?? undefined}
+        bannerMobile={qfRound.bannerMobile ?? undefined}
+        title={qfRound.title || qfRound.name}
+        endDate={qfRound.endDate}
+      />
 
       <QFStats
         matchingPool={qfRound.allocatedFundUSD || 0}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Check, SlidersHorizontal } from 'lucide-react'
+import { NETWROKS_FILTERS } from '@/lib/constants/round-constants'
 
 // Define the filter state interface
 export interface QFFiltersState {
@@ -14,17 +15,6 @@ interface QFProjectFiltersProps {
   currentFilters: QFFiltersState
   onFilterChange: (filters: QFFiltersState) => void
 }
-
-const NETWORKS = [
-  'Mainnet',
-  'Gnosis',
-  'Polygon',
-  'Celo',
-  'Optimism',
-  'Ethereum Classic',
-  'Arbitrum',
-  'Base',
-]
 
 export function QFProjectFilters({
   currentFilters,
@@ -67,32 +57,32 @@ export function QFProjectFilters({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-bold transition-colors ${
+        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-bold transition-colors cursor-pointer ${
           activeCount > 0
-            ? 'bg-[#f0effb] border-[#5326ec] text-[#5326ec]'
-            : 'bg-white border-[#ebecf2] text-[#1f2333] hover:border-[#5326ec]'
+            ? 'bg-giv-primary-050 border-giv-primary-500 text-giv-primary-500'
+            : 'bg-white border-giv-gray-300 text-giv-gray-900 hover:border-giv-primary-500'
         }`}
       >
         Filters
         <SlidersHorizontal className="w-4 h-4" />
         {activeCount > 0 && (
-          <span className="bg-[#5326ec] text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+          <span className="bg-giv-primary-500 text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
             {activeCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-[320px] bg-white border border-[#ebecf2] rounded-xl shadow-xl z-30 p-6">
+        <div className="absolute top-full right-0 mt-2 w-[320px] bg-white border border-giv-gray-300 rounded-xl shadow-xl z-30 p-6">
           {/* Project features */}
           <div className="mb-6">
-            <h4 className="text-[#1f2333] font-bold text-sm mb-3">
+            <h4 className="text-giv-gray-900 font-bold text-sm mb-3">
               Project features
             </h4>
             <div className="space-y-3">
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.isGivbacksEligible ? 'bg-[#5326ec] border-[#5326ec]' : 'border-[#cfd0d6] bg-white group-hover:border-[#5326ec]'}`}
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.isGivbacksEligible ? 'bg-giv-primary-500 border-giv-primary-500' : 'border-giv-gray-300 bg-white group-hover:border-giv-primary-500'}`}
                 >
                   {currentFilters.isGivbacksEligible && (
                     <Check className="w-3.5 h-3.5 text-white" />
@@ -106,14 +96,14 @@ export function QFProjectFilters({
                     handleCheckboxChange('isGivbacksEligible', e.target.checked)
                   }
                 />
-                <span className="text-[#525c76] text-sm">
+                <span className="text-giv-gray-700 text-sm">
                   GIVbacks Eligible
                 </span>
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.eligibleForMatching ? 'bg-[#5326ec] border-[#5326ec]' : 'border-[#cfd0d6] bg-white group-hover:border-[#5326ec]'}`}
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.eligibleForMatching ? 'bg-giv-primary-500 border-giv-primary-500' : 'border-giv-gray-300 bg-white group-hover:border-giv-primary-500'}`}
                 >
                   {currentFilters.eligibleForMatching && (
                     <Check className="w-3.5 h-3.5 text-white" />
@@ -130,7 +120,7 @@ export function QFProjectFilters({
                     )
                   }
                 />
-                <span className="text-[#525c76] text-sm">
+                <span className="text-giv-gray-700 text-sm">
                   Eligible for Matching
                 </span>
               </label>
@@ -139,17 +129,17 @@ export function QFProjectFilters({
 
           {/* Accepts funds on */}
           <div>
-            <h4 className="text-[#1f2333] font-bold text-sm mb-3">
+            <h4 className="text-giv-gray-900 font-bold text-sm mb-3">
               Accepts funds on
             </h4>
             <div className="space-y-3 overflow-y-auto custom-scrollbar">
-              {NETWORKS.map(network => (
+              {NETWROKS_FILTERS.map(network => (
                 <label
                   key={network}
                   className="flex items-center gap-3 cursor-pointer group"
                 >
                   <div
-                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.networks.includes(network) ? 'bg-[#5326ec] border-[#5326ec]' : 'border-[#cfd0d6] bg-white group-hover:border-[#5326ec]'}`}
+                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.networks.includes(network) ? 'bg-giv-primary-500 border-giv-primary-500' : 'border-giv-gray-300 bg-white group-hover:border-giv-primary-500'}`}
                   >
                     {currentFilters.networks.includes(network) && (
                       <Check className="w-3.5 h-3.5 text-white" />
@@ -161,7 +151,7 @@ export function QFProjectFilters({
                     checked={currentFilters.networks.includes(network)}
                     onChange={() => handleCheckboxChange('networks', network)}
                   />
-                  <span className="text-[#525c76] text-sm">{network}</span>
+                  <span className="text-giv-gray-700 text-sm">{network}</span>
                 </label>
               ))}
             </div>
