@@ -104,19 +104,19 @@ export function QFSorting({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-[#ebecf2] rounded-lg text-sm font-bold text-[#1f2333] hover:border-[#5326ec] min-w-[200px] justify-between transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-giv-gray-300 rounded-lg text-sm font-bold text-giv-gray-900 hover:border-giv-primary-500 min-w-[200px] justify-between transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
-          <span className="text-[#5326ec]">{selectedOption.icon}</span>
+          <span className="text-giv-primary-500">{selectedOption.icon}</span>
           <span>{selectedOption.label}</span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-[#82899a] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-giv-gray-700 transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full min-w-[240px] bg-white border border-[#ebecf2] rounded-xl shadow-xl z-30 py-2">
+        <div className="absolute top-full left-0 mt-2 w-full min-w-[240px] bg-white border border-giv-gray-300 rounded-xl shadow-xl z-30 py-2">
           {visibleOptions.map((option, idx) => (
             <button
               key={idx}
@@ -124,17 +124,17 @@ export function QFSorting({
                 onSortChange(option.field, option.direction)
                 setIsOpen(false)
               }}
-              className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-[#f7f7f9] transition-colors ${
+              className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-giv-gray-200 transition-colors cursor-pointer ${
                 option.label === selectedOption.label
-                  ? 'bg-[#f0effb] text-[#5326ec] font-semibold'
-                  : 'text-[#1f2333]'
+                  ? 'bg-giv-primary-050 text-giv-primary-500 font-semibold'
+                  : 'text-giv-gray-900'
               }`}
             >
               <span
                 className={
                   option.label === selectedOption.label
-                    ? 'text-[#5326ec]'
-                    : 'text-[#82899a]'
+                    ? 'text-giv-primary-500'
+                    : 'text-giv-gray-700'
                 }
               >
                 {option.icon}

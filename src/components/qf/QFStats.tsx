@@ -29,28 +29,28 @@ export function QFStats({
 
   return (
     <div className="max-w-7xl mx-auto px-6 mt-4 mb-8">
-      <div className="bg-white rounded-xl border border-[#ebecf2] p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="bg-white rounded-xl border border-giv-gray-300 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_2fr] gap-6">
           <div>
-            <p className="text-sm text-[#82899a] mb-1">Matching Pool</p>
-            <p className="text-2xl font-bold text-[#1f2333]">
+            <p className="text-sm text-giv-gray-700 mb-1">Matching Pool</p>
+            <p className="text-2xl font-bold text-giv-deep-900">
               {formatCurrency(matchingPool)}
             </p>
           </div>
           <div>
             <p className="text-sm text-[#82899a] mb-1">Donations</p>
-            <p className="text-2xl font-bold text-[#1f2333]">
+            <p className="text-2xl font-bold text-giv-deep-900">
               {formatCurrency(totalDonations)}
             </p>
           </div>
           <div>
             <p className="text-sm text-[#82899a] mb-1"># of Donations</p>
-            <p className="text-2xl font-bold text-[#1f2333]">
+            <p className="text-2xl font-bold text-giv-deep-900">
               {donationsCount}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-[#1f2333]">
+          <div className="flex h-full items-end justify-end text-right">
+            <p className="text-2xl font-bold text-giv-deep-900">
               {formatDate(beginDate)} - {formatDate(endDate)}
             </p>
           </div>
