@@ -64,13 +64,11 @@ export function QFProjectsGrid({
     <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl self-start md:self-center">
-          <span className="text-giv-gray-700">
+        <h2 className="text-2xl self-start font-adventor font-bold md:self-center">
+          <span className="text-giv-gray-900">
             {showLoading ? '' : 'Explore'}
           </span>{' '}
-          <span className="text-giv-primary-500 font-semibold">
-            {headerRightText}
-          </span>
+          <span className="text-giv-gray-700">{headerRightText}</span>
         </h2>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">

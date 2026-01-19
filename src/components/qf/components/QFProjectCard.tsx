@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import clsx from 'clsx'
 import { Plus, X } from 'lucide-react'
+import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
+import { IconVerified } from '@/components/icons/IconVerified'
+import { MatchingEligible } from '@/components/icons/MatchingEligible'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
@@ -63,7 +66,7 @@ export function QFProjectCard({
   }
 
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[480px]">
+    <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[505px]">
       {/* Image Layer - Static */}
       <div className="absolute top-0 left-0 w-full h-[220px] z-0 bg-white">
         <ProjectImage
@@ -83,12 +86,12 @@ export function QFProjectCard({
         className={clsx(
           'absolute bottom-0 left-0 right-0 z-20 top-[140px] bg-white pt-5 pb-5 px-5 rounded-t-2xl',
           'transition-transform duration-500 ease-out transform translate-y-[68px] group-hover:translate-y-0',
-          'shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[350px] flex flex-col pointer-events-auto',
+          'shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[370px] flex flex-col pointer-events-auto',
         )}
       >
         {/* Header Section */}
         <div className="mb-2">
-          <h3 className="font-bold text-lg text-giv-gray-900 mb-1 line-clamp-1">
+          <h3 className="font-bold text-lg text-giv-gray-900 font-adventor mb-1 line-clamp-1">
             <Link
               href={`/project/${project.slug}`}
               className="hover:text-giv-primary-500 transition-colors"
@@ -96,13 +99,13 @@ export function QFProjectCard({
               {project.title}
             </Link>
           </h3>
-          <p className="text-sm text-giv-pinky-500 font-medium">
+          <p className="text-base text-giv-pinky-500 font-normal">
             {project.adminUser?.name || 'Unknown Creator'}
           </p>
         </div>
 
         {/* Description */}
-        <p className="text-sm text-giv-gray-700 line-clamp-3 mb-4 grow">
+        <p className="text-base text-giv-gray-700 line-clamp-3 mb-4 grow">
           {project.descriptionSummary}
         </p>
 
@@ -123,36 +126,34 @@ export function QFProjectCard({
           </div>
 
           {/* Right: Total Stats (Box) */}
-          <div className="bg-giv-gray-200 rounded-lg p-2 text-right min-w-[80px]">
-            <div className="text-sm font-bold text-giv-gray-700 leading-tight">
+          <div className="bg-giv-gray-200 rounded-xl p-2 text-center min-w-[80px]">
+            <div className="text-2xl font-adventor font-bold text-giv-gray-700 leading-tight">
               {formatCurrency(totalRaised)}
             </div>
-            <div className="text-[10px] uppercase font-bold text-giv-gray-700 mt-0.5">
-              Total Raised
-            </div>
+            <div className="text-xs text-giv-gray-800 mt-0.5">Total Raised</div>
           </div>
         </div>
 
         {/* Badges/Tags */}
         <div className="flex items-center gap-2 mb-4">
           {project.vouched && (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-giv-jade-500">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+            <span className="inline-flex items-center gap-1 text-xs text-giv-jade-500">
+              <IconVerified width={16} height={16} fill="var(--giv-jade-500)" />
               VERIFIED
             </span>
           )}
           {project.isGivbacksEligible && (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-giv-primary-500 px-1.5 py-0.5">
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-giv-primary-500 px-1.5 py-0.5">
+              <GivBacksEligible
+                width={16}
+                height={16}
+                fill="var(--giv-primary-500)"
+              />
               GIVBACKS
             </span>
           )}
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-giv-cyan-500 px-1.5 py-0.5 rounded">
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white bg-giv-cyan-600 px-1.5 py-0.5 rounded-xl">
+            <MatchingEligible width={12} height={12} fill="white" />
             QF PROJECT
           </span>
         </div>
