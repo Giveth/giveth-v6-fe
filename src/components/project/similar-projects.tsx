@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { QFProjectCard } from '@/components/qf/components/qf-project-card'
+import { QFProjectCard } from '@/components/qf/components/QFProjectCard'
 import { useSimilarProjectsBySlug } from '@/hooks/useProject'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 

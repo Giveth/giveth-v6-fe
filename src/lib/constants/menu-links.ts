@@ -73,3 +73,160 @@ export const givBacksLink = {
   label: 'GIVBacks',
   href: oldFrontendPath('/givbacks', '/givbacks'),
 }
+
+export const projectsLink = {
+  label: 'Projects',
+  href: oldFrontendPath('/projects/all', '/projects/all'),
+}
+
+export const aboutUsLink = {
+  label: 'About Us',
+  href: oldFrontendPath('/about', '/about'),
+}
+
+export const faqLink = {
+  label: 'FAQ',
+  href: oldFrontendPath('/faq', '/faq'),
+}
+
+export const supportLink = {
+  label: 'Support',
+  href: oldFrontendPath('/support', '/support'),
+}
+
+export const joinUsLink = {
+  label: 'Join Us',
+  href: oldFrontendPath('/join', '/join'),
+}
+
+export const documentationLink = {
+  label: 'Documentation',
+  href: 'https://docs.giveth.io',
+  target: '_blank',
+}
+
+export const termsOfUseLink = {
+  label: 'Terms of Use',
+  href: oldFrontendPath('/tos', '/tos'),
+}
+
+export const onboardingGuideLink = {
+  label: 'Onboarding Guide',
+  href: oldFrontendPath('/onboarding', '/onboarding'),
+}
+
+export const partnershipsLink = {
+  label: 'Partnerships',
+  href: oldFrontendPath('/partnerships', '/partnerships'),
+}
+
+export const leaveFeedbackLink = {
+  label: 'Leave Feedback',
+  href: 'https://giveth.typeform.com/feedback',
+  target: '_blank',
+}
+export const hiringLink = {
+  label: "We're Hiring!",
+  href: oldFrontendPath('/hiring', '/hiring'),
+}
+
+export const QaccLink = {
+  label: 'Q/acc',
+  href: 'https://qacc.giveth.io/',
+  target: '_blank',
+}
+
+export const QaccNewsLink = {
+  label: 'Q/acc News',
+  href: 'https://qacc.giveth.io/news',
+  target: '_blank',
+}
+
+export const InstagramLink = {
+  label: 'Instagram',
+  href: 'https://www.instagram.com/giveth.io/',
+  target: '_blank',
+}
+
+export const MediumLink = {
+  label: 'Medium',
+  href: 'https://blog.giveth.io/',
+  target: '_blank',
+}
+
+export const GithubLink = {
+  label: 'Github',
+  href: 'https://github.com/Giveth/',
+  target: '_blank',
+}
+
+export const RedditLink = {
+  label: 'Reddit',
+  href: 'https://www.reddit.com/r/giveth/',
+  target: '_blank',
+}
+
+export const XLink = {
+  label: 'X (Twitter)',
+  href: 'https://x.com/giveth',
+  target: '_blank',
+}
+
+export const WarpcastLink = {
+  label: 'Warpcast',
+  href: 'https://warpcast.com/~/channel/giveth',
+  target: '_blank',
+}
+
+export const YoutubeLink = {
+  label: 'Youtube',
+  href: 'https://www.youtube.com/givethio',
+  target: '_blank',
+}
+
+export const DiscordLink = {
+  label: 'Discord',
+  href: 'https://discord.giveth.io/',
+  target: '_blank',
+}
+
+export const HowItWorksLink = {
+  label: 'How it works?',
+  href: 'https://docs.giveth.io/quadraticfunding',
+  target: '_blank',
+}
+
+export const myProjectsLink = {
+  label: 'My Projects',
+  href: oldFrontendPath('/account?tab=projects', '/account?tab=projects'),
+}
+
+export const myCausesLink = {
+  label: 'My Causes',
+  href: oldFrontendPath('/account?tab=causes', '/account?tab=causes'),
+}
+
+export const myGIVPowerLink = {
+  label: 'My GIVPower',
+  href: oldFrontendPath('/account?tab=givpower', '/account?tab=givpower'),
+}
+
+export const myRecurringDonationsLink = {
+  label: 'My Recurring Donations',
+  href: oldFrontendPath(
+    '/account?tab=recurring-donations',
+    '/account?tab=recurring-donations',
+  ),
+}
+
+export const reportBugLink = {
+  label: 'Report A Bug',
+  href: 'https://giveth.typeform.com/issue-bug?typeform-source=staging.giveth.io',
+  target: '_blank',
+}
+
+export const QFArchiveLink = {
+  label: 'QF Archive',
+  href: oldFrontendPath('/qf-archive', '/qf-archive'),
+  target: '_blank',
+}

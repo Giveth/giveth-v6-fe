@@ -1,19 +1,27 @@
 'use client'
 
-import { redirect } from 'next/navigation'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { type Route } from 'next'
 import { RoundCard } from '@/components/hub/RoundCard'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
+import { QFArchiveLink } from '@/lib/constants/menu-links'
 
 export function ActiveRounds() {
   const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
-
+  const router = useRouter()
   const rounds = activeRoundsData?.activeQfRounds || []
 
-  // If it is onlu one active round redirect to it
-  if (rounds.length === 1) {
-    redirect(`/qf/${rounds[0].slug}`)
-  }
+  useEffect(() => {
+    if (!activeRoundsData) return
+
+    if (rounds.length === 1) {
+      router.push(`/qf/${rounds[0].slug}`)
+    } else if (rounds.length === 0) {
+      router.push(QFArchiveLink.href as unknown as Route)
+    }
+  }, [rounds, activeRoundsData])
 
   return (
     <div className="space-y-8">
@@ -36,9 +44,15 @@ export function ActiveRounds() {
         </div>
       )}
       {rounds.length > 0 && (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {rounds.map(round => (
-            <RoundCard key={round.id} round={round} />
+            <RoundCard
+              key={round.id}
+              round={round}
+              layout={
+                round.displaySize === 'STANDARD' ? 'vertical' : 'horizontal'
+              }
+            />
           ))}
         </div>
       )}

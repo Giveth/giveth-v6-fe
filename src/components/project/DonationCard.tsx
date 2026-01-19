@@ -4,9 +4,11 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
+import { type Route } from 'next'
 import { ShareProjectModal } from '@/components/modals/ShareProjectModal'
 import { DonationMatchCard } from '@/components/project/DonationMatchCard'
 import { useCart } from '@/context/CartContext'
+import { HowItWorksLink } from '@/lib/constants/menu-links'
 import { EContentType } from '@/lib/constants/share-constants'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 import { getProjectActiveRounds } from '@/lib/helpers/projectHelper'
@@ -36,7 +38,7 @@ interface DonationCardProps {
 export function DonationCard({ project }: DonationCardProps) {
   const [showShareModal, setShowShareModal] = useState(false)
   const { addToCart, removeFromCart, isInCart, cartItems } = useCart()
-  const isProjectInCart = isInCart(project.id)
+  const [isProjectInCart, setIsProjectInCart] = useState(isInCart(project.id))
 
   // Stuff related to the rounds selector
   const availableRounds = useMemo(() => {
@@ -56,17 +58,21 @@ export function DonationCard({ project }: DonationCardProps) {
   const handleCartAction = () => {
     if (isProjectInCart) {
       const existingCartItem = cartItems.find(i => i.id === project.id)
-      if (existingCartItem?.roundId) {
-        removeFromCart(existingCartItem.roundId, project.id)
+      setIsProjectInCart(false)
+      if (existingCartItem) {
+        removeFromCart(existingCartItem.roundId ?? 0, project.id)
       }
       return
     } else {
+      setIsProjectInCart(true)
       addToCart({
         id: project.id,
         title: project.title,
         slug: project.slug,
         image: project.image,
-        roundId: selectedRound?.id ? parseInt(selectedRound.id) : undefined,
+        roundId: selectedRound?.qfRound?.id
+          ? parseInt(selectedRound.qfRound.id)
+          : 0,
         roundName: selectedRound?.qfRound?.name ?? undefined,
         recipientAddresses:
           project.addresses?.map(a => ({
@@ -145,11 +151,11 @@ export function DonationCard({ project }: DonationCardProps) {
       {/* Amount and Contributors */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-[32px] font-bold font-adventor text-giv-gray-900">
-          ${selectedRound.sumDonationValueUsd.toFixed(2)}
+          ${selectedRound?.sumDonationValueUsd.toFixed(2) || 0}
         </span>
         <div className="text-left">
           <span className="text-sm font-medium text-giv-gray-900">
-            {selectedRound.countUniqueDonors || 0}
+            {selectedRound?.countUniqueDonors || 0}
           </span>
           <p className="text-sm font-normal text-giv-gray-700">contributors</p>
         </div>
@@ -157,6 +163,7 @@ export function DonationCard({ project }: DonationCardProps) {
 
       {/* Add to Cart Button */}
       <button
+        type="button"
         onClick={handleCartAction}
         className={`w-full h-[48px] mb-2 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all border-2 border-giv-pinky-500 text-white hover:text-giv-pinky-500 bg-giv-pinky-500 hover:bg-white cursor-pointer`}
       >
@@ -183,43 +190,51 @@ export function DonationCard({ project }: DonationCardProps) {
       </button>
 
       {/* Matching Table */}
-      <div className="w-full space-y-3">
-        {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center text-sm font-medium border-b border-giv-gray-300">
-          <span className="text-sm font-medium text-giv-gray-800">
-            Contribution
-          </span>
-          <span></span>
-          <span className="text-sm text-giv-jade-500 text-right">Matching</span>
-        </div>
-
-        {/* Contribution Matching Table */}
-        {selectedRound?.qfRound && (
-          <div className="space-y-0">
-            <DonationMatchCard
-              amount={1}
-              project={project}
-              roundData={selectedRound.qfRound}
-            />
-            <DonationMatchCard
-              amount={10}
-              project={project}
-              roundData={selectedRound.qfRound}
-            />
-            <DonationMatchCard
-              amount={100}
-              project={project}
-              roundData={selectedRound.qfRound}
-            />
+      {selectedRound && (
+        <div className="w-full space-y-3">
+          {/* Header */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center text-sm font-medium border-b border-giv-gray-300">
+            <span className="text-sm font-medium text-giv-gray-800">
+              Contribution
+            </span>
+            <span></span>
+            <span className="text-sm text-giv-jade-500 text-right">
+              Matching
+            </span>
           </div>
-        )}
-      </div>
+
+          {/* Contribution Matching Table */}
+          {selectedRound?.qfRound && (
+            <div className="space-y-0">
+              <DonationMatchCard
+                amount={1}
+                project={project}
+                roundData={selectedRound.qfRound}
+              />
+              <DonationMatchCard
+                amount={10}
+                project={project}
+                roundData={selectedRound.qfRound}
+              />
+              <DonationMatchCard
+                amount={100}
+                project={project}
+                roundData={selectedRound.qfRound}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <Link
-        href="#"
+        href={HowItWorksLink.href as Route}
+        target={HowItWorksLink.target as '_blank'}
+        rel={
+          HowItWorksLink.target === '_blank' ? 'noopener noreferrer' : undefined
+        }
         className="flex items-center gap-1 text-sm text-giv-pinky-500! hover:text-giv-pinky-600! transition-colors mt-3 cursor-pointer"
       >
-        How it works?
+        {HowItWorksLink.label}
         <ChevronRight className="w-3 h-3" />
       </Link>
 

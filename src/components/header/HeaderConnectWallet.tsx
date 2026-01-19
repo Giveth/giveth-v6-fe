@@ -3,16 +3,27 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Copy, LogOut, User } from 'lucide-react'
+import { Check, Copy, LogOut } from 'lucide-react'
+import { type Route } from 'next'
+import { type Address } from 'thirdweb'
 import {
   useActiveAccount,
   useActiveWallet,
   useActiveWalletChain,
 } from 'thirdweb/react'
+import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
+import {
+  createProjectLink,
+  myCausesLink,
+  myGIVPowerLink,
+  myProjectsLink,
+  reportBugLink,
+  supportLink,
+} from '@/lib/constants/menu-links'
 import { getUserName, shortenAddress } from '@/lib/helpers/userHelper'
-import ConnectWalletButton from '../wallet/ConnectWalletButton'
+import { EnsName } from '../account/EnsName'
 
 export function HeaderConnectWallet() {
   const account = useActiveAccount()
@@ -113,7 +124,9 @@ export function HeaderConnectWallet() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {shortenAddress(account.address)}
+                    <EnsName
+                      address={account.address as Address as `0x${string}`}
+                    />
                   </p>
                   <p className="text-xs text-gray-500">
                     {chain?.name || 'Unknown Network'}
@@ -143,8 +156,64 @@ export function HeaderConnectWallet() {
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
-              <User className="w-4 h-4" />
               My Account
+            </Link>
+
+            <Link
+              href={myProjectsLink.href as Route}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              {myProjectsLink.label}
+            </Link>
+
+            <Link
+              href={myCausesLink.href as Route}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              {myCausesLink.label}
+            </Link>
+
+            <Link
+              href="/account"
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              My Donations
+            </Link>
+
+            <Link
+              href={myGIVPowerLink.href as Route}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              {myGIVPowerLink.label}
+            </Link>
+
+            <Link
+              href={createProjectLink.href as Route}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              {createProjectLink.label}
+            </Link>
+
+            <Link
+              href={reportBugLink.href as unknown as Route}
+              target={reportBugLink.target}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              {reportBugLink.label}
+            </Link>
+
+            <Link
+              href={supportLink.href as Route}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              {supportLink.label}
             </Link>
 
             <button

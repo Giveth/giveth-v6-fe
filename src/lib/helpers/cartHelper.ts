@@ -83,6 +83,8 @@ export function useWalletTokens(
     queryFn: async () => {
       const tokens = await getTokensByChainId(selectedChainId)
 
+      console.log(tokens, 'tokens')
+
       const results = await Promise.allSettled(
         tokens.map(async token => {
           // Skip invalid ERC20 definitions
@@ -102,9 +104,7 @@ export function useWalletTokens(
 
             if (balance === 0n) return null
 
-            const priceInUSD = await getTokenPriceInUSDByCoingeckoId(
-              token.coingeckoId,
-            )
+            const priceInUSD = 0
 
             return {
               address: token.address as `0x${string}`,
@@ -116,6 +116,7 @@ export function useWalletTokens(
               formattedBalance: formatUnits(balance, token.decimals),
               priceInUSD,
               isGivbackEligible: token.isGivbacksEligible,
+              coingeckoId: token.coingeckoId ?? null,
             } satisfies WalletTokenWithBalance
           } catch {
             // Ignore broken tokens
@@ -162,7 +163,7 @@ export function formatNumber(
   })
 }
 
-async function getTokenPriceInUSDByCoingeckoId(
+export async function getTokenPriceInUSDByCoingeckoId(
   coingeckoId: string | null | undefined,
 ) {
   if (!coingeckoId) return 0

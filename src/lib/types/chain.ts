@@ -23,4 +23,5 @@ export type WalletTokenWithBalance = {
   balance: string
   formattedBalance: string
   isGivbackEligible?: boolean
+  coingeckoId?: string | null
 }

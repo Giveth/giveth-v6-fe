@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
 import {
+  DonationSortField,
+  SortDirection,
+} from '@/lib/graphql/generated/graphql'
+import {
   donationsByProjectQuery,
   projectBySlugQuery,
   similarProjectsBySlugQuery,
@@ -21,11 +25,23 @@ export const useProjectDonations = (
   skip: number = 0,
   take: number = 10,
   qfRoundId?: number,
+  orderBy?: DonationSortField,
+  orderDirection?: SortDirection,
 ) => {
   return useQuery({
-    queryKey: ['donationsByProject', projectId, skip, take, qfRoundId],
+    queryKey: [
+      'donationsByProject',
+      projectId,
+      skip,
+      take,
+      qfRoundId,
+      orderBy || DonationSortField.CreatedAt,
+      orderDirection || SortDirection.Desc,
+    ],
     queryFn: async () => {
       return graphQLClient.request(donationsByProjectQuery, {
+        orderBy: orderBy || DonationSortField.CreatedAt,
+        orderDirection: orderDirection || SortDirection.Desc,
         projectId,
         skip,
         take,
@@ -33,6 +49,9 @@ export const useProjectDonations = (
       })
     },
     enabled: !!projectId,
+    // This table is interactive (filter/sort/pagination). We prefer refetching
+    // whenever the params change, even if the query key was used recently.
+    staleTime: 0,
   })
 }
 

@@ -111,6 +111,7 @@ export const qfRoundBySlugQuery = graphql(`
       endDate
       allocatedFundUSD
       allocatedFundUSDPreferred
+      allocatedTokenSymbol
     }
   }
 `)
@@ -132,6 +133,8 @@ export const activeQfRoundsQuery = graphql(`
       allocatedFund
       allocatedTokenSymbol
       minimumValidUsdValue
+      displaySize
+      maximumReward
     }
   }
 `)
@@ -141,12 +144,16 @@ export const donationsByProjectQuery = graphql(`
     $projectId: Int!
     $skip: Int
     $take: Int
+    $orderBy: DonationSortField!
+    $orderDirection: SortDirection!
     $qfRoundId: Int
   ) {
     donationsByProject(
       projectId: $projectId
       skip: $skip
       take: $take
+      orderBy: $orderBy
+      orderDirection: $orderDirection
       qfRoundId: $qfRoundId
     ) {
       donations {
@@ -165,6 +172,7 @@ export const donationsByProjectQuery = graphql(`
           lastName
           avatar
         }
+        anonymous
       }
       total
     }
@@ -401,8 +409,18 @@ export const myProjectsQuery = graphql(`
 `)
 
 export const myDonationsQuery = graphql(`
-  query MyDonations($skip: Int = 0, $take: Int = 20) {
-    myDonations(skip: $skip, take: $take) {
+  query MyDonations(
+    $skip: Int = 0
+    $take: Int = 20
+    $orderBy: DonationSortField! = CreatedAt
+    $orderDirection: SortDirection! = DESC
+  ) {
+    myDonations(
+      skip: $skip
+      take: $take
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+    ) {
       total
       donations {
         id

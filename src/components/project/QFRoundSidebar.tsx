@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { ChainIcon } from '@/components/ChainIcon'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 
 interface QFRoundSidebarProps {
   project: {
@@ -40,7 +41,11 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
 
       <div className="mb-4">
         <span className="text-[52px] font-adventor font-bold text-giv-gray-900">
-          ${project.totalDonations.toFixed(2)}
+          $
+          {formatNumber(project.totalDonations, {
+            minDecimals: 2,
+            maxDecimals: 2,
+          })}
         </span>
         <p className="text-base text-giv-gray-700">
           Raised from{' '}
@@ -82,11 +87,7 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
                     <Copy className="w-3.5 h-3.5" />
                   )}
                 </button>
-                <ChainIcon
-                  networkId={item.networkId}
-                  height="h-5"
-                  width="w-5"
-                />
+                <ChainIcon networkId={item.networkId} height={20} width={20} />
               </div>
             </div>
           ))}
