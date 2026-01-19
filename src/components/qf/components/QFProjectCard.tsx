@@ -162,10 +162,10 @@ export function QFProjectCard({
         <div className="mt-auto h-[52px]">
           <button
             onClick={toggleCart}
-            className={`w-full h-[48px] rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            className={`w-full h-[48px] rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isInCart
-                ? 'border-2 border-giv-pinky-500 text-giv-pinky-500 hover:bg-giv-pinky-200'
-                : 'bg-white border-2 border-giv-pinky-500 text-giv-pinky-500 hover:bg-giv-pinky-500 hover:text-white'
+                ? 'border-2 border-giv-pinky-400 text-giv-pinky-400 hover:bg-giv-pinky-400 hover:text-white'
+                : 'border-2 border-giv-pinky-500 text-white bg-giv-pinky-500 hover:bg-white hover:text-giv-pinky-500'
             }`}
           >
             {isInCart ? (
