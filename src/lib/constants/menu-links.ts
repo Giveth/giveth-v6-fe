@@ -224,3 +224,9 @@ export const reportBugLink = {
   href: 'https://giveth.typeform.com/issue-bug?typeform-source=staging.giveth.io',
   target: '_blank',
 }
+
+export const QFArchiveLink = {
+  label: 'QF Archive',
+  href: oldFrontendPath('/qf-archive', '/qf-archive'),
+  target: '_blank',
+}
