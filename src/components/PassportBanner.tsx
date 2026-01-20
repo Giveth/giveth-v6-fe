@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { BadgeCheck, Info } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -12,6 +13,7 @@ let globalSettingScore = {
 }
 
 export function PassportBanner({ roundId }: { roundId?: number }) {
+  const [isLoading, setIsLoading] = useState(false)
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
   const account = useActiveAccount()
 
@@ -21,7 +23,12 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
       : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
-  const { data, isLoading, isError, refetch } = eligibilityQuery
+  const {
+    data,
+    isLoading: isEligibilityLoading,
+    isError,
+    refetch,
+  } = eligibilityQuery
 
   // Fetch global settings
   const globalMinimumMBDScoreQuery = useGlobalConfiguration(
@@ -72,16 +79,27 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
     isEligible = isMBDEligible && isPassportEligible
   }
 
+  // Check if query is loading or has data
+  useEffect(() => {
+    if (isEligibilityLoading || isLoading) {
+      setIsLoading(true)
+    } else {
+      setIsLoading(false)
+    }
+  }, [isEligibilityLoading, isLoading])
+
   const checkEligibility = async () => {
     if (!account?.address) return
 
     if (!isAuthenticated) {
       try {
+        setIsLoading(true)
         await signIn()
         // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
         await refetch()
       } catch (error) {
         console.error('Failed to sign in:', error)
+        setIsLoading(false)
       }
     } else {
       await refetch()
