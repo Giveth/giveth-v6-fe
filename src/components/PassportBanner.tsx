@@ -1,11 +1,20 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, Info } from 'lucide-react'
+import {
+  type HTMLAttributeAnchorTarget,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import Link from 'next/link'
+import { BadgeCheck, ExternalLink, Info } from 'lucide-react'
+import { type Route } from 'next'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
 import { usePassportEligibility } from '@/hooks/usePassportEligibility'
+import { PassportLink } from '@/lib/constants/menu-links'
+import { IconWarning } from './icons/IconWarning'
 
 let globalSettingScore = {
   globalMinimumMBDScore: 0,
@@ -48,6 +57,7 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
     globalMinimumPassportScoreData?.globalConfiguration?.value ?? 0,
   )
 
+  let passportScore = 0
   let isEligible = false
   let isMBDEligible = false
   let isPassportEligible = false
@@ -55,13 +65,12 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
   // Check if we have roundId included and if we have eligibility data
   if (roundId && roundId > 0 && data?.checkPassportEligibility) {
     isEligible = data?.checkPassportEligibility?.isEligible ?? false
+    passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
   }
   // Check global settings
   else {
     const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
-    const passportScore = Number(
-      data?.checkPassportEligibility?.passportScore ?? 0,
-    )
+    passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
     isMBDEligible =
       mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
     isPassportEligible =
@@ -131,8 +140,8 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
           </button>
         </div>
       )}
-      {/* Wallet Connected but no eligibility data */}
-      {account && data && !isEligible && !showLoading && (
+      {/* Wallet Connected but no eligibility data and there is no roundId */}
+      {account && data && !isEligible && !roundId && !showLoading && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>You are not eligible for donation matching.</p>
@@ -142,6 +151,34 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
             className="text-sm text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Re-check Eligibility
+          </button>
+        </div>
+      )}
+      {/* If the user's MBD score is below the threshold for MBD and their passport score is below the threshold for Passport */}
+      {account && data && !isEligible && roundId && !showLoading && (
+        <div className="bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <IconWarning width={24} height={24} />
+          <Link
+            href={PassportLink.href as unknown as Route}
+            target={PassportLink.target as HTMLAttributeAnchorTarget}
+            className="flex items-center gap-2"
+          >
+            <span className="text-giv-primary-500! font-normal disabled:opacity-85">
+              Go to Passport
+            </span>
+            <ExternalLink className="w-3.5 h-3.5 text-giv-primary-500" />
+          </Link>
+          <p className="text-giv-gray-900">
+            to increase your score above{' '}
+            <span className="font-bold">{passportScore}</span> and then click
+            to{' '}
+          </p>
+          <button
+            onClick={checkEligibility}
+            disabled={isAuthLoading}
+            className="text-sm text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Refresh Score
           </button>
         </div>
       )}
