@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { type Route } from 'next'
 import { DonationTableOneTime } from '@/components/account/DonationTableOneTime'
 import { DonationTabs } from '@/components/account/DonationTabs'
+import { EligibilityBanner } from '@/components/eligibility/EligibilityBanner'
 import { myRecurringDonationsLink } from '@/lib/constants/menu-links'
 
 export function DonationsTable() {
@@ -19,6 +20,9 @@ export function DonationsTable() {
   }, [activeTab, router])
   return (
     <div className="bg-white rounded-tr-2xl rounded-b-xl p-8 overflow-hidden">
+      <div className="mb-12">
+        <EligibilityBanner />
+      </div>
       <DonationTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="relative">
         {isLoading && (

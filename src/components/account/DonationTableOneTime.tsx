@@ -17,13 +17,16 @@ import {
 } from '@/lib/graphql/generated/graphql'
 import { getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { ChainIcon } from '../ChainIcon'
+import type { Address } from 'thirdweb'
 
 const PAGE_SIZE = 15
 
 export const DonationTableOneTime = ({
   setIsLoading,
+  address,
 }: {
   setIsLoading: (isLoading: boolean) => void
+  address?: Address
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const { token } = useSiweAuth()
