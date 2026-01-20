@@ -2,13 +2,14 @@
 
 import Image from 'next/image'
 import { Copy, Sparkle } from 'lucide-react'
+import { EnsName } from '@/components/account/EnsName'
 import { IconBoost } from '@/components/icons/IconBoost'
 import { IconDonation } from '@/components/icons/IconDonation'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile, useUserStats } from '@/hooks/useAccount'
 import { formatNumber } from '@/lib/helpers/cartHelper'
-import { shortenAddress } from '@/lib/helpers/userHelper'
+import type { Address } from 'thirdweb'
 
 export function ProfileSection() {
   const { token, walletAddress } = useSiweAuth()
@@ -77,13 +78,11 @@ export function ProfileSection() {
               <p className="text-base text-giv-gray-900">{displayEmail}</p>
               <div className="flex items-center gap-2 text-base">
                 <span className="text-giv-gray-900">
-                  {shortenAddress(
-                    user?.wallets?.[0]?.address ||
-                      walletAddress ||
-                      'No address',
-                    8,
-                    10,
-                  )}
+                  <EnsName
+                    address={
+                      user?.wallets?.[0]?.address as Address as `0x${string}`
+                    }
+                  />
                 </span>
                 <button
                   className="text text-giv-gray-900 hover:text-giv-primary-500 cursor-pointer"
