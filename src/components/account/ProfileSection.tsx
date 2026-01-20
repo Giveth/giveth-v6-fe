@@ -1,10 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { Copy, Sparkle } from 'lucide-react'
+// import { Copy, Sparkle } from 'lucide-react'
+import { Copy } from 'lucide-react'
 import { EnsName } from '@/components/account/EnsName'
-import { IconBoost } from '@/components/icons/IconBoost'
-import { IconDonation } from '@/components/icons/IconDonation'
+// import { IconBoost } from '@/components/icons/IconBoost'
+// import { IconDonation } from '@/components/icons/IconDonation'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile, useUserStats } from '@/hooks/useAccount'
@@ -135,7 +136,7 @@ export function ProfileSection() {
               <span>Projects</span>
             </div>
 
-            <Sparkle
+            {/* <Sparkle
               className="w-3 h-3 text-giv-neutral-900"
               fill="currentColor"
             />
@@ -168,7 +169,7 @@ export function ProfileSection() {
                 {userStats.projectsWithDonationsCount}
               </span>
               <span>projects</span>
-            </div>
+            </div> */}
           </div>
         )}
       </div>

@@ -10,6 +10,9 @@ export function DonationTabs({ activeTab, onTabChange }: DonationTabsProps) {
     onTabChange(tab)
   }
 
+  // For now we don't display other options, so we return null
+  return null
+
   return (
     <div className="flex items-center gap-3 mb-8">
       <button
