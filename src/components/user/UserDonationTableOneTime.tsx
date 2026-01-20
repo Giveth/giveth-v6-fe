@@ -10,7 +10,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { useSiweAuth } from '@/context/AuthContext'
-import { useMyDonations } from '@/hooks/useAccount'
+import { useUserDonations } from '@/hooks/useUser'
 import {
   DonationSortField,
   SortDirection,
@@ -20,9 +20,11 @@ import { ChainIcon } from '../ChainIcon'
 
 const PAGE_SIZE = 15
 
-export const DonationTableOneTime = ({
+export const UserDonationTableOneTime = ({
+  userId,
   setIsLoading,
 }: {
+  userId: number
   setIsLoading: (isLoading: boolean) => void
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -34,7 +36,7 @@ export const DonationTableOneTime = ({
     SortDirection.Desc,
   )
 
-  const { data, isLoading, isFetching } = useMyDonations(token || undefined, {
+  const { data, isLoading, isFetching } = useUserDonations(userId ?? 0, {
     enabled: !!token,
     skip: (currentPage - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
@@ -48,8 +50,8 @@ export const DonationTableOneTime = ({
     setIsLoading(isLoading || isFetching)
   }, [isLoading, isFetching, setIsLoading])
 
-  const donations = data?.myDonations?.donations || []
-  const totalDonations = data?.myDonations?.total || 0
+  const donations = data?.donationsByUser?.donations || []
+  const totalDonations = data?.donationsByUser?.total || 0
   const totalPages = Math.ceil(totalDonations / PAGE_SIZE)
 
   const handlePageChange = (page: number) => {

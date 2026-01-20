@@ -1,11 +1,12 @@
 'use client'
 
 import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { CtaSection } from '@/components/account/CtaGivBacks'
-import { DashboardTabs } from '@/components/account/DashboardTabs'
-import { DonationsTable } from '@/components/account/DonationsTable'
-import { ProfileSection } from '@/components/account/ProfileSection'
+import { UserDashboardTabs } from '@/components/user/UserDashboardTabs'
+import { UserDonationsTable } from '@/components/user/UserDonationsTable'
+import { UserProfileSection } from '@/components/user/UserProfileSection'
+import { useUserByAddress } from '@/hooks/useAccount'
 
 export default function AccountPageClient() {
   const searchParams = useSearchParams()
@@ -23,16 +24,25 @@ export default function AccountPageClient() {
     ? (tabFromUrl as AllowedTab)
     : 'donations'
 
+  // Get user data by slug if exists
+  const pathname = usePathname()
+  const slug = pathname.split('/').pop()
+  const { data: userData, isLoading: isUserLoading } = useUserByAddress(
+    slug || undefined,
+  )
+  const user = userData?.userByAddress
+
   return (
     <div className="min-h-screen bg-giv-gray-200">
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <ProfileSection />
-        <DashboardTabs activeTab={activeTab} />
+        {user && (
+          <UserProfileSection user={user} isUserLoading={isUserLoading} />
+        )}
+        <UserDashboardTabs activeTab={activeTab} />
 
-        {activeTab === 'donations' && <DonationsTable />}
-        {activeTab === 'staking' && <DonationsTable />}
-        {activeTab === 'boosted' && <DonationsTable />}
-        {activeTab === 'projects' && <DonationsTable />}
+        {activeTab === 'donations' && (
+          <UserDonationsTable userId={user?.id ? Number(user.id) : undefined} />
+        )}
       </main>
       <CtaSection />
     </div>

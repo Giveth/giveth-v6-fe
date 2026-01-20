@@ -595,7 +595,7 @@ export const userByAddressQuery = graphql(`
   }
 `)
 
-export const USerDonationsByAddressQuery = graphql(`
+export const DonationsByUserQuery = graphql(`
   query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {
     donationsByUser(userId: $userId, skip: $skip, take: $take) {
       total
