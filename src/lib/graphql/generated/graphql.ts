@@ -1828,7 +1828,7 @@ export type DonationsByUserQueryVariables = Exact<{
 }>;
 
 
-export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null }> } };
+export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2495,6 +2495,11 @@ export const DonationsByUserDocument = new TypedDocumentString(`
       transactionNetworkId
       projectId
       qfRoundId
+      project {
+        id
+        title
+        slug
+      }
     }
   }
 }

@@ -9,7 +9,6 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
-import { useSiweAuth } from '@/context/AuthContext'
 import { useUserDonations } from '@/hooks/useUser'
 import {
   DonationSortField,
@@ -28,7 +27,6 @@ export const UserDonationTableOneTime = ({
   setIsLoading: (isLoading: boolean) => void
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
-  const { token } = useSiweAuth()
   const [orderBy, setOrderBy] = useState<DonationSortField>(
     DonationSortField.CreatedAt,
   )
@@ -37,12 +35,14 @@ export const UserDonationTableOneTime = ({
   )
 
   const { data, isLoading, isFetching } = useUserDonations(userId ?? 0, {
-    enabled: !!token,
+    enabled: true,
     skip: (currentPage - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
     orderBy,
     orderDirection,
   })
+
+  console.log('data UserDonationTableOneTime', data)
 
   useEffect(() => {
     // `isLoading` is only true for the very first load; during pagination/refetch

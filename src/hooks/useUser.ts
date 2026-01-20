@@ -6,7 +6,7 @@ import {
   type PaginatedDonationsEntity,
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
-import { DonationsByUserQuery } from '@/lib/graphql/queries'
+import { donationsByUserQuery } from '@/lib/graphql/queries'
 
 export const useUserDonations = (
   userId?: number,
@@ -29,7 +29,8 @@ export const useUserDonations = (
     ],
     queryFn: async () => {
       const client = graphQLClient
-      return client.request<UserDonationsResponse>(DonationsByUserQuery, {
+      return client.request<UserDonationsResponse>(donationsByUserQuery, {
+        userId: userId ?? 0,
         skip: params?.skip ?? 0,
         take: params?.take ?? 20,
         orderBy: params?.orderBy ?? DonationSortField.CreatedAt,
