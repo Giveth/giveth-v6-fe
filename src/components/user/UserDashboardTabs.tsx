@@ -4,21 +4,13 @@ import { cloneElement, isValidElement } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type Route } from 'next'
 import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
-// import { IconRocket } from '@/components/icons/IconRocket'
-// import { IconSparks } from '@/components/icons/IconSparks'
-// import { IconStake } from '@/components/icons/IconStake'
-// import {
-//   givBacksLink,
-//   myGIVPowerLink,
-//   myProjectsLink,
-// } from '@/lib/constants/menu-links'
 
 interface DashboardTabsProps {
   activeTab: string
   onTabChange?: (tab: string) => void
 }
 
-export const DashboardTabs = ({
+export const UserDashboardTabs = ({
   activeTab,
   onTabChange,
 }: DashboardTabsProps) => {
@@ -29,28 +21,10 @@ export const DashboardTabs = ({
   const tabs = [
     {
       id: 'donations',
-      label: 'My Donations',
+      label: 'Donations',
       icon: <IconPraiseHandBold width={24} height={24} />,
       href: null,
     },
-    // {
-    //   id: 'staking',
-    //   label: 'Staking & Rewards',
-    //   icon: <IconSparks width={24} height={24} />,
-    //   href: givBacksLink.href as unknown as Route,
-    // },
-    // {
-    //   id: 'boosted',
-    //   label: 'Boosted Projects',
-    //   icon: <IconRocket width={24} height={24} />,
-    //   href: myGIVPowerLink.href as unknown as Route,
-    // },
-    // {
-    //   id: 'projects',
-    //   label: 'My projects',
-    //   icon: <IconStake width={24} height={24} />,
-    //   href: myProjectsLink.href as unknown as Route,
-    // },
   ]
 
   const handleTabClick = (tabId: string) => {

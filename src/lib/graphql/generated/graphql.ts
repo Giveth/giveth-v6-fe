@@ -1814,6 +1814,22 @@ export type GlobalConfigurationQueryVariables = Exact<{
 
 export type GlobalConfigurationQuery = { __typename?: 'Query', globalConfiguration?: { __typename?: 'GlobalConfigurationEntity', id: string, key: string, value?: string | null, description?: string | null, type?: string | null, isActive: boolean, createdAt: any, updatedAt: any } | null };
 
+export type UserByAddressQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+}>;
+
+
+export type UserByAddressQuery = { __typename?: 'Query', userByAddress?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, totalDonated: number, totalReceived: number, createdAt: any, wallets: Array<{ __typename?: 'UserWalletEntity', address: string, chainType: ChainType, isPrimary: boolean }> } | null };
+
+export type DonationsByUserQueryVariables = Exact<{
+  userId: Scalars['Int']['input'];
+  skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+}>;
+
+
+export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -2444,3 +2460,47 @@ export const GlobalConfigurationDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<GlobalConfigurationQuery, GlobalConfigurationQueryVariables>;
+export const UserByAddressDocument = new TypedDocumentString(`
+    query UserByAddress($address: String!) {
+  userByAddress(address: $address) {
+    id
+    name
+    firstName
+    lastName
+    avatar
+    primaryEns
+    totalDonated
+    totalReceived
+    wallets {
+      address
+      chainType
+      isPrimary
+    }
+    createdAt
+  }
+}
+    `) as unknown as TypedDocumentString<UserByAddressQuery, UserByAddressQueryVariables>;
+export const DonationsByUserDocument = new TypedDocumentString(`
+    query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {
+  donationsByUser(userId: $userId, skip: $skip, take: $take) {
+    total
+    donations {
+      id
+      createdAt
+      amount
+      currency
+      valueUsd
+      status
+      transactionId
+      transactionNetworkId
+      projectId
+      qfRoundId
+      project {
+        id
+        title
+        slug
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<DonationsByUserQuery, DonationsByUserQueryVariables>;

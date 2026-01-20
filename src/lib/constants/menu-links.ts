@@ -230,3 +230,9 @@ export const QFArchiveLink = {
   href: oldFrontendPath('/qf-archive', '/qf-archive'),
   target: '_blank',
 }
+
+export const PassportLink = {
+  label: 'Passport',
+  href: 'https://app.passport.xyz/',
+  target: '_blank',
+}

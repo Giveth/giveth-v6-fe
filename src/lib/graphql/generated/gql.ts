@@ -43,6 +43,8 @@ type Documents = {
     "\n  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {\n    checkPassportEligibility(input: $input) {\n      isEligible\n      passportScore\n      mbdScore\n      threshold\n      expirationDate\n      message\n      eligibility {\n        id\n        address\n        score\n        mbdScore\n        lastScoreTimestamp\n        expirationTimestamp\n        stamps\n        error\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": typeof types.CheckPassportEligibilityDocument,
     "\n  query GlobalConfigurations($isActive: Boolean) {\n    globalConfigurations(isActive: $isActive) {\n      id\n      key\n      value\n      description\n      type\n      isActive\n      createdAt\n      updatedAt\n    }\n  }\n": typeof types.GlobalConfigurationsDocument,
     "\n  query GlobalConfiguration($key: String!) {\n    globalConfiguration(key: $key) {\n      id\n      key\n      value\n      description\n      type\n      isActive\n      createdAt\n      updatedAt\n    }\n  }\n": typeof types.GlobalConfigurationDocument,
+    "\n  query UserByAddress($address: String!) {\n    userByAddress(address: $address) {\n      id\n      name\n      firstName\n      lastName\n      avatar\n      primaryEns\n      totalDonated\n      totalReceived\n      wallets {\n        address\n        chainType\n        isPrimary\n      }\n      createdAt\n    }\n  }\n": typeof types.UserByAddressDocument,
+    "\n  query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {\n    donationsByUser(userId: $userId, skip: $skip, take: $take) {\n      total\n      donations {\n        id\n        createdAt\n        amount\n        currency\n        valueUsd\n        status\n        transactionId\n        transactionNetworkId\n        projectId\n        qfRoundId\n        project {\n          id\n          title\n          slug\n        }\n      }\n    }\n  }\n": typeof types.DonationsByUserDocument,
 };
 const documents: Documents = {
     "\n  mutation CreateProject($input: CreateProjectInput!) {\n    createProject(input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      createdAt\n      updatedAt\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n      }\n    }\n  }\n": types.CreateProjectDocument,
@@ -73,6 +75,8 @@ const documents: Documents = {
     "\n  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {\n    checkPassportEligibility(input: $input) {\n      isEligible\n      passportScore\n      mbdScore\n      threshold\n      expirationDate\n      message\n      eligibility {\n        id\n        address\n        score\n        mbdScore\n        lastScoreTimestamp\n        expirationTimestamp\n        stamps\n        error\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": types.CheckPassportEligibilityDocument,
     "\n  query GlobalConfigurations($isActive: Boolean) {\n    globalConfigurations(isActive: $isActive) {\n      id\n      key\n      value\n      description\n      type\n      isActive\n      createdAt\n      updatedAt\n    }\n  }\n": types.GlobalConfigurationsDocument,
     "\n  query GlobalConfiguration($key: String!) {\n    globalConfiguration(key: $key) {\n      id\n      key\n      value\n      description\n      type\n      isActive\n      createdAt\n      updatedAt\n    }\n  }\n": types.GlobalConfigurationDocument,
+    "\n  query UserByAddress($address: String!) {\n    userByAddress(address: $address) {\n      id\n      name\n      firstName\n      lastName\n      avatar\n      primaryEns\n      totalDonated\n      totalReceived\n      wallets {\n        address\n        chainType\n        isPrimary\n      }\n      createdAt\n    }\n  }\n": types.UserByAddressDocument,
+    "\n  query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {\n    donationsByUser(userId: $userId, skip: $skip, take: $take) {\n      total\n      donations {\n        id\n        createdAt\n        amount\n        currency\n        valueUsd\n        status\n        transactionId\n        transactionNetworkId\n        projectId\n        qfRoundId\n        project {\n          id\n          title\n          slug\n        }\n      }\n    }\n  }\n": types.DonationsByUserDocument,
 };
 
 /**
@@ -187,6 +191,14 @@ export function graphql(source: "\n  query GlobalConfigurations($isActive: Boole
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query GlobalConfiguration($key: String!) {\n    globalConfiguration(key: $key) {\n      id\n      key\n      value\n      description\n      type\n      isActive\n      createdAt\n      updatedAt\n    }\n  }\n"): typeof import('./graphql').GlobalConfigurationDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query UserByAddress($address: String!) {\n    userByAddress(address: $address) {\n      id\n      name\n      firstName\n      lastName\n      avatar\n      primaryEns\n      totalDonated\n      totalReceived\n      wallets {\n        address\n        chainType\n        isPrimary\n      }\n      createdAt\n    }\n  }\n"): typeof import('./graphql').UserByAddressDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {\n    donationsByUser(userId: $userId, skip: $skip, take: $take) {\n      total\n      donations {\n        id\n        createdAt\n        amount\n        currency\n        valueUsd\n        status\n        transactionId\n        transactionNetworkId\n        projectId\n        qfRoundId\n        project {\n          id\n          title\n          slug\n        }\n      }\n    }\n  }\n"): typeof import('./graphql').DonationsByUserDocument;
 
 
 export function graphql(source: string) {

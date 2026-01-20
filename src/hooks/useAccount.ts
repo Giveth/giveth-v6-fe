@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { env } from '@/lib/env'
-import { createGraphQLClient } from '@/lib/graphql/client'
+import { createGraphQLClient, graphQLClient } from '@/lib/graphql/client'
 import {
   type DonationEntity,
   DonationSortField,
@@ -21,6 +21,7 @@ import {
 import {
   myDonationsQuery,
   myProjectsQuery,
+  userByAddressQuery,
   userProfileQuery,
   userStatsQuery,
 } from '@/lib/graphql/queries'
@@ -270,4 +271,15 @@ export const useUploadAvatar = (token?: string) =>
         token,
         endpoint: env.GRAPHQL_ENDPOINT,
       }),
+  })
+
+export const useUserByAddress = (address?: string) =>
+  useQuery({
+    queryKey: ['userByAddress', address],
+    queryFn: async () => {
+      return graphQLClient.request<{
+        userByAddress: UserEntity | null
+      }>(userByAddressQuery, { address })
+    },
+    enabled: !!address,
   })

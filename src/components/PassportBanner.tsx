@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, Info } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -12,6 +13,7 @@ let globalSettingScore = {
 }
 
 export function PassportBanner({ roundId }: { roundId?: number }) {
+  const [isChecking, setIsChecking] = useState(false)
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
   const account = useActiveAccount()
 
@@ -21,7 +23,12 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
       : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
-  const { data, isLoading, isError, refetch } = eligibilityQuery
+  const {
+    data,
+    isLoading: isEligibilityLoading,
+    isError,
+    refetch,
+  } = eligibilityQuery
 
   // Fetch global settings
   const globalMinimumMBDScoreQuery = useGlobalConfiguration(
@@ -47,22 +54,13 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
 
   // Check if we have roundId included and if we have eligibility data
   if (roundId && roundId > 0 && data?.checkPassportEligibility) {
-    const mbdScore = Number(data?.checkPassportEligibility.mbdScore ?? 0)
-    const passportScore = Number(
-      data?.checkPassportEligibility.passportScore ?? 0,
-    )
-    isMBDEligible =
-      mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
-    isPassportEligible =
-      passportScore > 0 &&
-      passportScore >= globalSettingScore.globalMinimumPassportScore
-    isEligible = isMBDEligible && isPassportEligible
+    isEligible = data?.checkPassportEligibility?.isEligible ?? false
   }
   // Check global settings
   else {
-    const mbdScore = Number(globalSettingScore.globalMinimumMBDScore ?? 0)
+    const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
     const passportScore = Number(
-      globalSettingScore.globalMinimumPassportScore ?? 0,
+      data?.checkPassportEligibility?.passportScore ?? 0,
     )
     isMBDEligible =
       mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
@@ -71,39 +69,54 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
       passportScore >= globalSettingScore.globalMinimumPassportScore
     isEligible = isMBDEligible && isPassportEligible
   }
+
+  const showLoading = useMemo(
+    () => isChecking || isEligibilityLoading || isAuthLoading,
+    [isChecking, isEligibilityLoading, isAuthLoading],
+  )
+
+  useEffect(() => {
+    if (!isEligibilityLoading && !isAuthLoading && isChecking) {
+      setIsChecking(false)
+    }
+  }, [isEligibilityLoading, isAuthLoading, isChecking])
 
   const checkEligibility = async () => {
     if (!account?.address) return
 
     if (!isAuthenticated) {
       try {
+        setIsChecking(true)
         await signIn()
         // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
         await refetch()
       } catch (error) {
         console.error('Failed to sign in:', error)
+        setIsChecking(false)
       }
     } else {
+      setIsChecking(true)
       await refetch()
+      setIsChecking(false)
     }
   }
 
   return (
     <>
-      {isLoading && (
+      {showLoading && (
         <div className="bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           Checking Eligibility...
         </div>
       )}
       {/* Wallet Not Connected */}
-      {!account && !isLoading && !isError && (
+      {!account && !showLoading && !isError && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           Connect your wallet to verify your eligibility for donation matching.
         </div>
       )}
       {/* Wallet Connected but no eligibility data yet and user is not signed in */}
-      {account && !data && !isLoading && !isError && !isAuthenticated && (
+      {account && !data && !showLoading && !isError && !isAuthenticated && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>
@@ -119,7 +132,7 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
         </div>
       )}
       {/* Wallet Connected but no eligibility data */}
-      {account && data && !isEligible && (
+      {account && data && !isEligible && !showLoading && (
         <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>You are not eligible for donation matching.</p>
@@ -133,7 +146,7 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
         </div>
       )}
       {/* Wallet Connected And Has Eligibility Data */}
-      {account && data && isEligible && (
+      {account && data && isEligible && !showLoading && (
         <div className="bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
           <p>You donations are eligible to be matched!</p>

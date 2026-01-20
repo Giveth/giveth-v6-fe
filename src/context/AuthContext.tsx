@@ -221,6 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: false,
         error: error instanceof Error ? error.message : 'Authentication failed',
       }))
+      throw error
     }
   }, [account, chain?.id, siweService])
 

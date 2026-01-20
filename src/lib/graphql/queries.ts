@@ -573,3 +573,49 @@ export const globalConfigurationQuery = graphql(`
     }
   }
 `)
+
+export const userByAddressQuery = graphql(`
+  query UserByAddress($address: String!) {
+    userByAddress(address: $address) {
+      id
+      name
+      firstName
+      lastName
+      avatar
+      primaryEns
+      totalDonated
+      totalReceived
+      wallets {
+        address
+        chainType
+        isPrimary
+      }
+      createdAt
+    }
+  }
+`)
+
+export const donationsByUserQuery = graphql(`
+  query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {
+    donationsByUser(userId: $userId, skip: $skip, take: $take) {
+      total
+      donations {
+        id
+        createdAt
+        amount
+        currency
+        valueUsd
+        status
+        transactionId
+        transactionNetworkId
+        projectId
+        qfRoundId
+        project {
+          id
+          title
+          slug
+        }
+      }
+    }
+  }
+`)
