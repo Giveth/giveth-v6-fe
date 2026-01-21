@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { format } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { QF_ROUND_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
@@ -8,6 +7,7 @@ import type {
   ActiveQfRoundsQuery,
   ArchivedQfRoundsQuery,
 } from '@/lib/graphql/generated/graphql'
+import { getDateRange } from '@/lib/helpers/dateHelper'
 import { truncateText } from '@/lib/helpers/textHelper'
 import type { Route } from 'next'
 
@@ -66,10 +66,9 @@ export function RoundCard({
 
         {layoutOption === 'vertical' && (
           <div className="mt-auto">
-            <DateContainer
-              beginDate={round.beginDate}
-              endDate={round.endDate}
-            />
+            <p className="text-xl font-bold text-giv-deep-900">
+              {getDateRange(round.beginDate, round.endDate)}
+            </p>
           </div>
         )}
 
@@ -93,31 +92,13 @@ export function RoundCard({
 
         {layoutOption === 'horizontal' && (
           <div className="flex justify-between items-center">
-            <DateContainer
-              beginDate={round.beginDate}
-              endDate={round.endDate}
-            />
+            <p className="text-xl font-bold text-giv-deep-900">
+              {getDateRange(round.beginDate, round.endDate)}
+            </p>
             <ExploreButton href={`/qf/${round.slug}` as Route} />
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-const DateContainer = ({
-  beginDate,
-  endDate,
-}: {
-  beginDate: string
-  endDate: string
-}) => {
-  return (
-    <div className="flex justify-between items-center">
-      <p className="text-xl font-bold text-giv-deep-900">
-        {format(new Date(beginDate), 'MMMM d')} -{' '}
-        {format(new Date(endDate), 'MMMM d')}
-      </p>
     </div>
   )
 }
