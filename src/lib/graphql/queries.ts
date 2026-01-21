@@ -63,6 +63,9 @@ export const projectBySlugQuery = graphql(`
         firstName
         lastName
         avatar
+        wallets {
+          address
+        }
       }
       categories {
         id

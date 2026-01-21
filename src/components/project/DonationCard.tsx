@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
@@ -42,13 +42,28 @@ export function DonationCard({ project }: DonationCardProps) {
   }, [project])
 
   const defaultRound = availableRounds[0] ?? undefined
+  const defaultRoundId = defaultRound?.qfRound?.id
 
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(
-    defaultRound?.id,
+    defaultRoundId,
   )
 
+  useEffect(() => {
+    if (availableRounds.length === 0) {
+      setSelectedRoundId(undefined)
+      return
+    }
+
+    const hasSelectedRound = availableRounds.some(
+      r => r.qfRound?.id === selectedRoundId,
+    )
+    if (!hasSelectedRound) {
+      setSelectedRoundId(availableRounds[0]?.qfRound?.id)
+    }
+  }, [availableRounds, selectedRoundId])
+
   const selectedRound =
-    availableRounds.find(r => r.id === selectedRoundId) ?? defaultRound
+    availableRounds.find(r => r.qfRound?.id === selectedRoundId) ?? defaultRound
 
   // Stuff related to the cart action
   const handleCartAction = () => {
