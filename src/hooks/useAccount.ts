@@ -91,6 +91,7 @@ export type MyDonation = Pick<
   | 'transactionId'
   | 'transactionNetworkId'
   | 'createdAt'
+  | 'qfRoundName'
 > & {
   project?: Pick<ProjectEntity, 'id' | 'title' | 'slug'> | null
 }
