@@ -269,9 +269,14 @@ export const UserDonationTableOneTime = ({
                         ${donation.valueUsd?.toFixed(2) ?? '0.00'}
                       </td>
                       <td className="px-1 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#f7f7f9] text-[#82899a]">
-                          ---
-                        </span>
+                        <td className="px-1 py-4">
+                          {donation.qfRoundName && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-giv-primary-500 border-2 border-giv-primary-500">
+                              {donation.qfRoundName}
+                            </span>
+                          )}
+                          {!donation.qfRoundName && <span>---</span>}
+                        </td>
                       </td>
                     </tr>
                   )

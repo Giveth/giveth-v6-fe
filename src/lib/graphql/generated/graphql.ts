@@ -227,6 +227,7 @@ export type DonationEntity = {
   projectId: Scalars['Int']['output'];
   qfRoundErrorMessage?: Maybe<Scalars['String']['output']>;
   qfRoundId?: Maybe<Scalars['Int']['output']>;
+  qfRoundName?: Maybe<Scalars['String']['output']>;
   qfRoundUserScore?: Maybe<Scalars['Float']['output']>;
   status: DonationStatus;
   toWalletAddress: Scalars['String']['output'];
@@ -1757,7 +1758,7 @@ export type MyDonationsQueryVariables = Exact<{
 }>;
 
 
-export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export type ProjectUpdatesQueryVariables = Exact<{
   input: ProjectUpdateQueryInput;
@@ -1828,7 +1829,7 @@ export type DonationsByUserQueryVariables = Exact<{
 }>;
 
 
-export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2311,6 +2312,7 @@ export const MyDonationsDocument = new TypedDocumentString(`
       transactionId
       transactionNetworkId
       createdAt
+      qfRoundName
       project {
         id
         title
@@ -2495,6 +2497,7 @@ export const DonationsByUserDocument = new TypedDocumentString(`
       transactionNetworkId
       projectId
       qfRoundId
+      qfRoundName
       project {
         id
         title

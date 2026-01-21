@@ -411,6 +411,7 @@ export const myDonationsQuery = graphql(`
         transactionId
         transactionNetworkId
         createdAt
+        qfRoundName
         project {
           id
           title
@@ -610,6 +611,7 @@ export const donationsByUserQuery = graphql(`
         transactionNetworkId
         projectId
         qfRoundId
+        qfRoundName
         project {
           id
           title

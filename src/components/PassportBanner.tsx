@@ -21,15 +21,22 @@ let globalSettingScore = {
   globalMinimumPassportScore: 0,
 }
 
-export function PassportBanner({ roundId }: { roundId?: number }) {
+/**
+ *  Admin Pro defines global thresholds for all concurrently active QF rounds:
+ *  - Minimum Model-Based Detection (MBD) score
+ *  - Minimum Passport Stamp score
+ *  If both thresholds are set to 0:
+ *  - Passport eligibility checks are disabled
+ *  - All Passport-related UI (banners, messages) is hidden
+ */
+
+export function PassportBanner() {
   const [isChecking, setIsChecking] = useState(false)
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
   const account = useActiveAccount()
 
   const eligibilityQuery = usePassportEligibility(
-    account?.address
-      ? { address: account.address, qfRoundId: roundId ?? undefined }
-      : undefined,
+    account?.address ? { address: account.address } : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
   const {
@@ -62,22 +69,14 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
   let isMBDEligible = false
   let isPassportEligible = false
 
-  // Check if we have roundId included and if we have eligibility data
-  if (roundId && roundId > 0 && data?.checkPassportEligibility) {
-    isEligible = data?.checkPassportEligibility?.isEligible ?? false
-    passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
-  }
-  // Check global settings
-  else {
-    const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
-    passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
-    isMBDEligible =
-      mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
-    isPassportEligible =
-      passportScore > 0 &&
-      passportScore >= globalSettingScore.globalMinimumPassportScore
-    isEligible = isMBDEligible && isPassportEligible
-  }
+  const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
+  passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
+  isMBDEligible =
+    mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
+  isPassportEligible =
+    passportScore > 0 &&
+    passportScore >= globalSettingScore.globalMinimumPassportScore
+  isEligible = isMBDEligible && isPassportEligible
 
   const showLoading = useMemo(
     () => isChecking || isEligibilityLoading || isAuthLoading,
@@ -110,6 +109,13 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
     }
   }
 
+  if (
+    globalSettingScore.globalMinimumMBDScore === 0 &&
+    globalSettingScore.globalMinimumPassportScore === 0
+  ) {
+    return null
+  }
+
   return (
     <>
       {showLoading && (
@@ -140,22 +146,8 @@ export function PassportBanner({ roundId }: { roundId?: number }) {
           </button>
         </div>
       )}
-      {/* Wallet Connected but no eligibility data and there is no roundId */}
-      {account && data && !isEligible && !roundId && !showLoading && (
-        <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
-          <Info className="w-6 h-6 text-giv-warning-600" />
-          <p>You are not eligible for donation matching.</p>
-          <button
-            onClick={checkEligibility}
-            disabled={isAuthLoading}
-            className="text-sm text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Re-check Eligibility
-          </button>
-        </div>
-      )}
       {/* If the user's MBD score is below the threshold for MBD and their passport score is below the threshold for Passport */}
-      {account && data && !isEligible && roundId && !showLoading && (
+      {account && data && !isEligible && !showLoading && (
         <div className="bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <IconWarning width={24} height={24} />
           <Link

@@ -7,6 +7,7 @@ import { useActiveAccount } from 'thirdweb/react'
 import { IconRotate } from '@/components/icons/IconRotate'
 import { MatchingEligible } from '@/components/icons/MatchingEligible'
 import { useSiweAuth } from '@/context/AuthContext'
+import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
 import { usePassportEligibility } from '@/hooks/usePassportEligibility'
 import { PassportLink } from '@/lib/constants/menu-links'
@@ -16,15 +17,27 @@ let globalSettingScore = {
   globalMinimumPassportScore: 0,
 }
 
-export function EligibilityBanner({ roundId }: { roundId?: number }) {
+/**
+ *  Admin Pro defines global thresholds for all concurrently active QF rounds:
+ *  - Minimum Model-Based Detection (MBD) score
+ *  - Minimum Passport Stamp score
+ *  If both thresholds are set to 0:
+ *  - Passport eligibility checks are disabled
+ *  - All Passport-related UI (banners, messages) is hidden
+ */
+
+export function EligibilityBanner() {
   const [isChecking, setIsChecking] = useState(false)
+
+  // Get list of active QF rounds
+  const activeQfRoundsQuery = useActiveQfRounds()
+  const { data: activeQfRoundsData } = activeQfRoundsQuery
+
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
   const account = useActiveAccount()
 
   const eligibilityQuery = usePassportEligibility(
-    account?.address
-      ? { address: account.address, qfRoundId: roundId ?? undefined }
-      : undefined,
+    account?.address ? { address: account.address } : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
   const { data, isLoading: isEligibilityLoading, refetch } = eligibilityQuery
@@ -61,22 +74,14 @@ export function EligibilityBanner({ roundId }: { roundId?: number }) {
   let isMBDEligible = false
   let isPassportEligible = false
 
-  // Check if we have roundId included and if we have eligibility data
-  if (roundId && roundId > 0 && data?.checkPassportEligibility) {
-    isEligible = data?.checkPassportEligibility?.isEligible ?? false
-    passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
-  }
-  // Check global settings
-  else {
-    const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
-    passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
-    isMBDEligible =
-      mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
-    isPassportEligible =
-      passportScore > 0 &&
-      passportScore >= globalSettingScore.globalMinimumPassportScore
-    isEligible = isMBDEligible && isPassportEligible
-  }
+  const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
+  passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
+  isMBDEligible =
+    mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
+  isPassportEligible =
+    passportScore > 0 &&
+    passportScore >= globalSettingScore.globalMinimumPassportScore
+  isEligible = isMBDEligible && isPassportEligible
 
   const showLoading = useMemo(
     () => isChecking || isEligibilityLoading || isAuthLoading,
@@ -99,6 +104,9 @@ export function EligibilityBanner({ roundId }: { roundId?: number }) {
       setIsChecking(false)
     }
   }
+
+  // If no active QF rounds, return null (after hooks to keep order stable)
+  if (!activeQfRoundsData?.activeQfRounds?.length) return null
 
   return (
     <>
@@ -178,7 +186,9 @@ export function EligibilityBanner({ roundId }: { roundId?: number }) {
           <div className="flex justify-between items-center gap-3">
             <p className="text-lg font-medium text-giv-gray-900 [font-family:var(--font-inter)]">
               Please go to Passport to increase your score to{' '}
-              <span className="font-bold">over {passportScore.toString()}</span>
+              <span className="font-bold">
+                over {globalSettingScore.globalMinimumPassportScore.toString()}
+              </span>
               , then come back here and click Refresh Score to check.
             </p>
           </div>

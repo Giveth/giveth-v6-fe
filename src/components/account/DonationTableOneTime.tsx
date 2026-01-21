@@ -258,7 +258,7 @@ export const DonationTableOneTime = ({
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <ExternalLink className="w-3.5 h-3.5 text-[#82899a]" />
+                              <ExternalLink className="w-3.5 h-3.5 text-giv-gray-700" />
                             </a>
                           )}
                         </div>
@@ -267,9 +267,12 @@ export const DonationTableOneTime = ({
                         ${donation.valueUsd?.toFixed(2) ?? '0.00'}
                       </td>
                       <td className="px-1 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#f7f7f9] text-[#82899a]">
-                          ---
-                        </span>
+                        {donation.qfRoundName && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-giv-primary-500 border-2 border-giv-primary-500">
+                            {donation.qfRoundName}
+                          </span>
+                        )}
+                        {!donation.qfRoundName && <span>---</span>}
                       </td>
                     </tr>
                   )
