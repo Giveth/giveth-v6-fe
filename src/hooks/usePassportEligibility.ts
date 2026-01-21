@@ -1,13 +1,16 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useSiweAuth } from '@/context/AuthContext'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import type {
   CheckEligibilityResultEntity,
   CheckPassportEligibilityInput,
 } from '@/lib/graphql/generated/graphql'
-import { checkPassportEligibilityQuery } from '@/lib/graphql/queries'
+import {
+  checkPassportEligibilityQuery,
+  refreshPassportEligibilityQuery,
+} from '@/lib/graphql/queries'
 
 type CheckPassportEligibilityResponse = {
   checkPassportEligibility: CheckEligibilityResultEntity
@@ -43,5 +46,30 @@ export const usePassportEligibility = (
       )
     },
     enabled: !!input?.address && !!jwt && (options?.enabled ?? true),
+  })
+}
+
+export const useRefreshPassportEligibility = () => {
+  const { token } = useSiweAuth()
+  const jwt = token ?? undefined
+
+  return useMutation<CheckPassportEligibilityResponse, Error, string>({
+    mutationFn: async address => {
+      if (!address) {
+        throw new Error('Missing input for refreshPassportEligibility')
+      }
+      if (!jwt) throw new Error('Missing JWT token')
+
+      const client = createGraphQLClient({
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+
+      return client.request<CheckPassportEligibilityResponse>(
+        refreshPassportEligibilityQuery,
+        { address },
+      )
+    },
   })
 }

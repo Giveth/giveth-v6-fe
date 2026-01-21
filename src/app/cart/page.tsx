@@ -20,7 +20,7 @@ export default function CartPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-gray-200">
       {isLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-giv-primary-500" />

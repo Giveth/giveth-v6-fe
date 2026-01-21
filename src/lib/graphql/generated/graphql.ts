@@ -1801,6 +1801,13 @@ export type CheckPassportEligibilityQueryVariables = Exact<{
 
 export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
 
+export type RefreshPassportScoreMutationVariables = Exact<{
+  address: Scalars['String']['input'];
+}>;
+
+
+export type RefreshPassportScoreMutation = { __typename?: 'Mutation', refreshPassportScore: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
+
 export type GlobalConfigurationsQueryVariables = Exact<{
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
@@ -2437,6 +2444,30 @@ export const CheckPassportEligibilityDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;
+export const RefreshPassportScoreDocument = new TypedDocumentString(`
+    mutation RefreshPassportScore($address: String!) {
+  refreshPassportScore(input: {address: $address}) {
+    isEligible
+    passportScore
+    mbdScore
+    threshold
+    expirationDate
+    message
+    eligibility {
+      id
+      address
+      score
+      mbdScore
+      lastScoreTimestamp
+      expirationTimestamp
+      stamps
+      error
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<RefreshPassportScoreMutation, RefreshPassportScoreMutationVariables>;
 export const GlobalConfigurationsDocument = new TypedDocumentString(`
     query GlobalConfigurations($isActive: Boolean) {
   globalConfigurations(isActive: $isActive) {
