@@ -548,6 +548,31 @@ export const checkPassportEligibilityQuery = graphql(`
   }
 `)
 
+export const refreshPassportEligibilityQuery = graphql(`
+  mutation RefreshPassportScore($address: String!) {
+    refreshPassportScore(input: { address: $address }) {
+      isEligible
+      passportScore
+      mbdScore
+      threshold
+      expirationDate
+      message
+      eligibility {
+        id
+        address
+        score
+        mbdScore
+        lastScoreTimestamp
+        expirationTimestamp
+        stamps
+        error
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`)
+
 export const globalConfigurationsQuery = graphql(`
   query GlobalConfigurations($isActive: Boolean) {
     globalConfigurations(isActive: $isActive) {

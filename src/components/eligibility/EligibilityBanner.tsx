@@ -9,7 +9,10 @@ import { MatchingEligible } from '@/components/icons/MatchingEligible'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
-import { usePassportEligibility } from '@/hooks/usePassportEligibility'
+import {
+  usePassportEligibility,
+  useRefreshPassportEligibility,
+} from '@/hooks/usePassportEligibility'
 import { PassportLink } from '@/lib/constants/menu-links'
 
 let globalSettingScore = {
@@ -41,6 +44,9 @@ export function EligibilityBanner() {
     { enabled: !!account?.address && isAuthenticated },
   )
   const { data, isLoading: isEligibilityLoading, refetch } = eligibilityQuery
+  const { mutateAsync: refreshEligibility } = useRefreshPassportEligibility()
+
+  let userEligibility = data?.checkPassportEligibility
 
   // Fetch global settings
   const globalMinimumMBDScoreQuery = useGlobalConfiguration(
@@ -61,21 +67,20 @@ export function EligibilityBanner() {
   )
 
   const isTooOld = useMemo(() => {
-    const expirationDate =
-      data?.checkPassportEligibility?.expirationDate || null
+    const expirationDate = userEligibility?.expirationDate || null
     if (!expirationDate) return false
     const parsed = new Date(expirationDate)
     if (Number.isNaN(parsed.getTime())) return false
     return parsed < new Date()
-  }, [data?.checkPassportEligibility?.expirationDate, isEligibilityLoading])
+  }, [userEligibility?.expirationDate, isEligibilityLoading])
 
   let passportScore = 0
   let isEligible = false
   let isMBDEligible = false
   let isPassportEligible = false
 
-  const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
-  passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
+  const mbdScore = Number(userEligibility?.mbdScore ?? 0)
+  passportScore = Number(userEligibility?.passportScore ?? 0)
   isMBDEligible =
     mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
   isPassportEligible =
@@ -96,7 +101,8 @@ export function EligibilityBanner() {
       if (!isAuthenticated) {
         await signIn()
       }
-      // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
+      // After sign-in, the JWT becomes available, so refresh to get fresh eligibility.
+      await refreshEligibility(account.address)
       await refetch()
     } catch (error) {
       console.error('Failed to sign in:', error)
@@ -110,6 +116,17 @@ export function EligibilityBanner() {
 
   return (
     <>
+      <div>
+        Global Minimum MBD Score: {globalSettingScore.globalMinimumMBDScore}
+        <br />
+        Global Minimum Passport Score:{' '}
+        {globalSettingScore.globalMinimumPassportScore}
+        <br />
+        User MBD Score: {mbdScore}
+        <br />
+        User Passport Score: {passportScore}
+        <br />
+      </div>
       {/* Check passport expiration date */}
       {isTooOld && (
         <div className="p-4 space-y-2 border border-giv-warning-600 rounded-2xl">
@@ -222,7 +239,7 @@ export function EligibilityBanner() {
               className="text-xs font-bold text-giv-pinky-400 cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3"
             >
               <span className="flex items-center gap-2">
-                {isChecking ? 'Checking Eligibility...' : 'Check Eligibility'}
+                {isChecking ? 'Refreshing Score...' : 'Refresh Score'}
                 <IconRotate
                   width={20}
                   height={20}
