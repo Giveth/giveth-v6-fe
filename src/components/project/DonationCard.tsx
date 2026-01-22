@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
 import { type Route } from 'next'
 import { ShareProjectModal } from '@/components/modals/ShareProjectModal'
 import { DonationMatchCard } from '@/components/project/DonationMatchCard'
@@ -36,13 +37,21 @@ export function DonationCard({ project }: DonationCardProps) {
   const { addToCart, removeFromCart, isInCart, cartItems } = useCart()
   const [isProjectInCart, setIsProjectInCart] = useState(isInCart(project.id))
 
+  // Get query string parameters from the URL
+  const searchParams = useSearchParams()
+  const roundIdFromUrl = searchParams.get('roundId')
+
   // Stuff related to the rounds selector
   const availableRounds = useMemo(() => {
     return getProjectActiveRounds(project as unknown as ProjectEntity)
   }, [project])
 
-  const defaultRound = availableRounds[0] ?? undefined
-  const defaultRoundId = defaultRound?.qfRound?.id
+  const defaultRound = roundIdFromUrl
+    ? availableRounds.find(r => r.qfRound?.id === roundIdFromUrl)
+    : (availableRounds[0] ?? undefined)
+  const defaultRoundId = roundIdFromUrl
+    ? roundIdFromUrl
+    : defaultRound?.qfRound?.id
 
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(
     defaultRoundId,
@@ -138,14 +147,17 @@ export function DonationCard({ project }: DonationCardProps) {
                     setSelectedRoundId(r.qfRound?.id ?? undefined)
                   }
                   className="
-                  cursor-pointer rounded-xl px-3 py-2 text-sm
-                  text-giv-gray-900 outline-none
-                  hover:bg-giv-gray-200
-                  focus:bg-giv-gray-200
-                "
+                    cursor-pointer rounded-xl px-3 py-2 text-sm
+                    text-giv-gray-900 outline-none
+                    hover:bg-giv-gray-200
+                    focus:bg-giv-gray-200
+                  "
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="truncate">{r.qfRound?.name}</span>
+                    {r.qfRound?.id === selectedRoundId && (
+                      <Check className="w-4 h-4 text-giv-primary-500" />
+                    )}
                   </div>
                 </DropdownMenu.Item>
               ))}

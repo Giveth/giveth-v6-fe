@@ -68,10 +68,8 @@ export function QFProjectCard({
 
   // Setup project link
   const projectLink = roundId
-    ? `/project/${project.slug}`
-    : `/project/${project.slug}?roundId=${roundId}`
-
-  console.log(project.adminUser)
+    ? `/project/${project.slug}?roundId=${roundId}`
+    : `/project/${project.slug}`
 
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[505px]">
