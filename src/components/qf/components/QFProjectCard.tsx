@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import clsx from 'clsx'
 import { Plus, X } from 'lucide-react'
+import { type Route } from 'next'
 import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { IconVerified } from '@/components/icons/IconVerified'
 import { MatchingEligible } from '@/components/icons/MatchingEligible'
@@ -65,6 +66,13 @@ export function QFProjectCard({
     }
   }
 
+  // Setup project link
+  const projectLink = roundId
+    ? `/project/${project.slug}`
+    : `/project/${project.slug}?roundId=${roundId}`
+
+  console.log(project.adminUser)
+
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[505px]">
       {/* Image Layer - Static */}
@@ -76,7 +84,7 @@ export function QFProjectCard({
         />
         {/* Overlay Link */}
         <Link
-          href={`/project/${project.slug}`}
+          href={projectLink as unknown as Route}
           className="absolute inset-0 z-10"
         />
       </div>
@@ -93,15 +101,20 @@ export function QFProjectCard({
         <div className="mb-2">
           <h3 className="font-bold text-lg text-giv-gray-900 font-adventor mb-1 line-clamp-1">
             <Link
-              href={`/project/${project.slug}`}
+              href={projectLink as unknown as Route}
               className="hover:text-giv-primary-500 transition-colors"
             >
               {project.title}
             </Link>
           </h3>
-          <p className="text-base text-giv-pinky-500 font-normal">
+          <Link
+            href={
+              `/user/${project.adminUser?.wallets?.[0]?.address}` as unknown as Route
+            }
+            className="text-base text-giv-pinky-500! hover:text-giv-primary-500! transition-colors"
+          >
             {project.adminUser?.name || 'Unknown Creator'}
-          </p>
+          </Link>
         </div>
 
         {/* Description */}
