@@ -16,6 +16,10 @@ type CheckPassportEligibilityResponse = {
   checkPassportEligibility: CheckEligibilityResultEntity
 }
 
+type RefreshPassportEligibilityResponse = {
+  refreshPassportScore: CheckEligibilityResultEntity
+}
+
 export const usePassportEligibility = (
   input?: CheckPassportEligibilityInput,
   options?: { enabled?: boolean },
@@ -53,7 +57,7 @@ export const useRefreshPassportEligibility = () => {
   const { token } = useSiweAuth()
   const jwt = token ?? undefined
 
-  return useMutation<CheckPassportEligibilityResponse, Error, string>({
+  return useMutation<RefreshPassportEligibilityResponse, Error, string>({
     mutationFn: async address => {
       if (!address) {
         throw new Error('Missing input for refreshPassportEligibility')
@@ -66,7 +70,7 @@ export const useRefreshPassportEligibility = () => {
         },
       })
 
-      return client.request<CheckPassportEligibilityResponse>(
+      return client.request<RefreshPassportEligibilityResponse>(
         refreshPassportEligibilityQuery,
         { address },
       )

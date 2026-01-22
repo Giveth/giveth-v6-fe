@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowUpRight } from 'lucide-react'
@@ -31,6 +31,12 @@ let globalSettingScore = {
 
 export function EligibilityBanner() {
   const [isChecking, setIsChecking] = useState(false)
+  const [userPassportData, setUserPassportData] = useState({
+    passportScore: 0,
+    mbdScore: 0,
+    isEligible: false,
+    expirationDate: null,
+  })
 
   // Get list of active QF rounds
   const activeQfRoundsQuery = useActiveQfRounds()
@@ -43,10 +49,20 @@ export function EligibilityBanner() {
     account?.address ? { address: account.address } : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
-  const { data, isLoading: isEligibilityLoading, refetch } = eligibilityQuery
+  const { data, isLoading: isEligibilityLoading } = eligibilityQuery
   const { mutateAsync: refreshEligibility } = useRefreshPassportEligibility()
 
-  let userEligibility = data?.checkPassportEligibility
+  // Update user passport data
+  useEffect(() => {
+    if (data) {
+      setUserPassportData({
+        passportScore: data.checkPassportEligibility.passportScore ?? 0,
+        mbdScore: data.checkPassportEligibility.mbdScore ?? 0,
+        isEligible: data.checkPassportEligibility.isEligible,
+        expirationDate: data.checkPassportEligibility.expirationDate ?? null,
+      })
+    }
+  }, [data])
 
   // Fetch global settings
   const globalMinimumMBDScoreQuery = useGlobalConfiguration(
@@ -67,20 +83,20 @@ export function EligibilityBanner() {
   )
 
   const isTooOld = useMemo(() => {
-    const expirationDate = userEligibility?.expirationDate || null
+    const expirationDate = userPassportData?.expirationDate || null
     if (!expirationDate) return false
     const parsed = new Date(expirationDate)
     if (Number.isNaN(parsed.getTime())) return false
     return parsed < new Date()
-  }, [userEligibility?.expirationDate, isEligibilityLoading])
+  }, [userPassportData?.expirationDate, isEligibilityLoading])
 
   let passportScore = 0
   let isEligible = false
   let isMBDEligible = false
   let isPassportEligible = false
 
-  const mbdScore = Number(userEligibility?.mbdScore ?? 0)
-  passportScore = Number(userEligibility?.passportScore ?? 0)
+  const mbdScore = Number(userPassportData?.mbdScore ?? 0)
+  passportScore = Number(userPassportData?.passportScore ?? 0)
   isMBDEligible =
     mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
   isPassportEligible =
@@ -102,8 +118,16 @@ export function EligibilityBanner() {
         await signIn()
       }
       // After sign-in, the JWT becomes available, so refresh to get fresh eligibility.
-      await refreshEligibility(account.address)
-      await refetch()
+      const response = await refreshEligibility(account.address)
+
+      if (response?.refreshPassportScore) {
+        setUserPassportData({
+          passportScore: response.refreshPassportScore.passportScore ?? 0,
+          mbdScore: response.refreshPassportScore.mbdScore ?? 0,
+          isEligible: response.refreshPassportScore.isEligible,
+          expirationDate: response.refreshPassportScore.expirationDate ?? null,
+        })
+      }
     } catch (error) {
       console.error('Failed to sign in:', error)
     } finally {
@@ -215,8 +239,7 @@ export function EligibilityBanner() {
               <p className="text-lg font-medium text-giv-gray-900 [font-family:var(--font-inter)] rounded-lg py-3 px-4 bg-giv-gray-200">
                 <span>Your Passport score</span>
                 <span className="font-bold ml-12">
-                  {data?.checkPassportEligibility?.passportScore?.toString() ??
-                    0}
+                  {userPassportData?.passportScore?.toString() ?? 0}
                 </span>
               </p>
               <Link

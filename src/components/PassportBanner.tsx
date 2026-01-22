@@ -12,7 +12,10 @@ import { type Route } from 'next'
 import { useActiveAccount } from 'thirdweb/react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
-import { usePassportEligibility } from '@/hooks/usePassportEligibility'
+import {
+  usePassportEligibility,
+  useRefreshPassportEligibility,
+} from '@/hooks/usePassportEligibility'
 import { PassportLink } from '@/lib/constants/menu-links'
 import { IconWarning } from './icons/IconWarning'
 
@@ -32,6 +35,13 @@ let globalSettingScore = {
 
 export function PassportBanner() {
   const [isChecking, setIsChecking] = useState(false)
+  const [userPassportData, setUserPassportData] = useState({
+    passportScore: 0,
+    mbdScore: 0,
+    isEligible: false,
+    expirationDate: null,
+  })
+
   const { signIn, isAuthenticated, isLoading: isAuthLoading } = useSiweAuth()
   const account = useActiveAccount()
 
@@ -45,6 +55,20 @@ export function PassportBanner() {
     isError,
     refetch,
   } = eligibilityQuery
+
+  const { mutateAsync: refreshEligibility } = useRefreshPassportEligibility()
+
+  // Update user passport data
+  useEffect(() => {
+    if (data) {
+      setUserPassportData({
+        passportScore: data.checkPassportEligibility.passportScore ?? 0,
+        mbdScore: data.checkPassportEligibility.mbdScore ?? 0,
+        isEligible: data.checkPassportEligibility.isEligible,
+        expirationDate: data.checkPassportEligibility.expirationDate ?? null,
+      })
+    }
+  }, [data])
 
   // Fetch global settings
   const globalMinimumMBDScoreQuery = useGlobalConfiguration(
@@ -69,8 +93,8 @@ export function PassportBanner() {
   let isMBDEligible = false
   let isPassportEligible = false
 
-  const mbdScore = Number(data?.checkPassportEligibility?.mbdScore ?? 0)
-  passportScore = Number(data?.checkPassportEligibility?.passportScore ?? 0)
+  const mbdScore = Number(userPassportData?.mbdScore ?? 0)
+  passportScore = Number(userPassportData?.passportScore ?? 0)
   isMBDEligible =
     mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
   isPassportEligible =
@@ -97,7 +121,16 @@ export function PassportBanner() {
         setIsChecking(true)
         await signIn()
         // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
-        await refetch()
+        const response = await refreshEligibility(account.address)
+        if (response?.refreshPassportScore) {
+          setUserPassportData({
+            passportScore: response.refreshPassportScore.passportScore ?? 0,
+            mbdScore: response.refreshPassportScore.mbdScore ?? 0,
+            isEligible: response.refreshPassportScore.isEligible,
+            expirationDate:
+              response.refreshPassportScore.expirationDate ?? null,
+          })
+        }
       } catch (error) {
         console.error('Failed to sign in:', error)
         setIsChecking(false)
