@@ -1,23 +1,97 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { DonationSummary } from '@/components/cart/pending/DonationSummary'
 import { PendingHero } from '@/components/cart/pending/PendingHero'
+import { useCart, type DonationRound } from '@/context/CartContext'
+import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
+import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
+import {
+  clearCheckoutReceipt,
+  saveCheckoutReceipt,
+} from '@/lib/helpers/checkoutReceipt'
 
 export default function PendingPage() {
   const router = useRouter()
+  const { cartItems, isAnonymous } = useCart()
+  const { state, checkoutAllRounds } = useMultiRoundCheckout()
+  const startedRef = useRef(false)
+
+  const { qfRoundGroups, nonQfProjects } = useMemo(
+    () => groupCartItemsByRound(cartItems),
+    [cartItems],
+  )
+
+  const roundsForCheckout: DonationRound[] = useMemo(() => {
+    return qfRoundGroups.map(group => {
+      const fallbackToken = group.projects.find(
+        p => p.selectedToken,
+      )?.selectedToken
+
+      return {
+        roundId: group.roundId,
+        roundName: group.roundName,
+        selectedChainId: group.selectedChainId,
+        selectedToken: group.selectedToken ?? fallbackToken,
+        tokenSymbol: group.tokenSymbol,
+        tokenAddress: group.tokenAddress,
+        tokenDecimals: group.tokenDecimals,
+        projects: group.projects,
+        totalAmount: group.totalAmount,
+        totalUsdValue: group.totalUsdValue,
+      }
+    })
+  }, [qfRoundGroups])
+
+  // If user lands here with an empty cart, bounce back.
   useEffect(() => {
-    setTimeout(() => {
+    if (cartItems.length === 0) router.push('/cart' as never)
+  }, [cartItems.length, router])
+
+  // Start processing immediately when page loads.
+  useEffect(() => {
+    if (startedRef.current) return
+    if (roundsForCheckout.length === 0) return
+    startedRef.current = true
+    clearCheckoutReceipt()
+    void checkoutAllRounds(roundsForCheckout, { anonymous: isAnonymous })
+  }, [checkoutAllRounds, roundsForCheckout, isAnonymous])
+
+  // Move to success page once processing is complete (even if some rounds failed).
+  useEffect(() => {
+    if (state.status === 'completed') {
+      saveCheckoutReceipt({
+        createdAt: Date.now(),
+        qfRoundGroups,
+        nonQfProjects,
+        roundStatuses: Array.from(state.roundStatuses.entries()),
+        overallStatus: state.status,
+        overallError: state.overallError,
+      })
       router.push('/cart/success' as never)
-    }, 2000)
-  }, [])
+    }
+  }, [
+    state.status,
+    state.overallError,
+    state.roundStatuses,
+    router,
+    qfRoundGroups,
+    nonQfProjects,
+  ])
+
   return (
     <div className="bg-giv-gray-200 flex flex-col">
       <main className="flex-1 pb-8">
         <PendingHero />
         <div className="max-w-7xl mx-auto px-4 space-y-6 mt-6">
-          <DonationSummary />
+          <DonationSummary
+            qfRoundGroups={qfRoundGroups}
+            nonQfProjects={nonQfProjects}
+            roundStatuses={state.roundStatuses}
+            overallStatus={state.status}
+            overallError={state.overallError}
+          />
         </div>
       </main>
     </div>

@@ -21,8 +21,12 @@ import {
   useSwitchActiveWalletChain,
 } from 'thirdweb/react'
 import { parseUnits } from 'viem'
+import { useSiweAuth } from '@/context/AuthContext'
 import type { DonationRound } from '@/context/CartContext'
 import type { BatchDonationDetails } from '@/lib/contracts/donation-handler'
+import { createGraphQLClient } from '@/lib/graphql/client'
+import type { CreateDonationInput } from '@/lib/graphql/generated/graphql'
+import { createDonationMutation } from '@/lib/graphql/queries'
 import { useDonation, type DonationStatus } from './useDonation'
 
 export interface RoundCheckoutStatus {
@@ -47,7 +51,10 @@ export interface MultiRoundCheckoutState {
 
 export interface UseMultiRoundCheckoutReturn {
   state: MultiRoundCheckoutState
-  checkoutAllRounds: (rounds: DonationRound[]) => Promise<void>
+  checkoutAllRounds: (
+    rounds: DonationRound[],
+    options?: { anonymous?: boolean },
+  ) => Promise<void>
   reset: () => void
   validateRounds: (rounds: DonationRound[]) => {
     valid: boolean
@@ -62,6 +69,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
   const account = useActiveAccount()
   const activeChain = useActiveWalletChain()
   const switchChain = useSwitchActiveWalletChain()
+  const { token } = useSiweAuth()
   const { batchDonate, reset: resetDonation } = useDonation()
 
   const [state, setState] = useState<MultiRoundCheckoutState>({
@@ -101,9 +109,15 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
       }
 
       // Check that projects have wallet addresses
-      const projectsWithoutAddress = round.projects.filter(
-        p => !p.walletAddress,
-      )
+      const projectsWithoutAddress = round.projects.filter(p => {
+        const hasDirect = Boolean(p.walletAddress)
+        const hasByChain = Boolean(
+          p.recipientAddresses?.some(
+            a => a.networkId === round.selectedChainId,
+          ),
+        )
+        return !hasDirect && !hasByChain
+      })
       if (projectsWithoutAddress.length > 0) {
         errors.push(
           `Round "${round.roundName}" has ${projectsWithoutAddress.length} project(s) without wallet addresses.`,
@@ -146,7 +160,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
    * Execute checkout for all rounds
    */
   const checkoutAllRounds = useCallback(
-    async (rounds: DonationRound[]) => {
+    async (rounds: DonationRound[], options?: { anonymous?: boolean }) => {
       if (!account) {
         setState(prev => ({
           ...prev,
@@ -232,15 +246,27 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           // Prepare batch donation details
           const tokenDecimals = getTokenDecimals(round.tokenSymbol)
 
-          const donations = round.projects.map(project => ({
-            projectAddress:
-              project.walletAddress ||
-              '0x0000000000000000000000000000000000000000',
-            amount: parseUnits(project.donationAmount || '0', tokenDecimals),
-            tokenAddress: round.tokenAddress,
-            tokenSymbol: round.tokenSymbol,
-            chainId: round.selectedChainId,
-          }))
+          const donations = round.projects.map(project => {
+            const resolvedRecipient =
+              project.walletAddress ??
+              project.recipientAddresses?.find(
+                a => a.networkId === round.selectedChainId,
+              )?.address
+
+            if (!resolvedRecipient) {
+              throw new Error(
+                `Missing recipient address for project "${project.title}" on chain ${round.selectedChainId}`,
+              )
+            }
+
+            return {
+              projectAddress: resolvedRecipient,
+              amount: parseUnits(project.donationAmount || '0', tokenDecimals),
+              tokenAddress: round.tokenAddress,
+              tokenSymbol: round.tokenSymbol,
+              chainId: round.selectedChainId,
+            }
+          })
 
           const totalAmount = donations.reduce(
             (sum, d) => sum + d.amount,
@@ -265,7 +291,71 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           })
 
           // Execute the donation
-          await batchDonate(batchDetails)
+          const result = await batchDonate(batchDetails)
+          if (!result.success) {
+            throw new Error(result.error || 'Transaction failed')
+          }
+
+          // Persist donation records in backend (one per project) after tx succeeds.
+          // NOTE: We don't fail the on-chain donation if this step fails; we log and continue.
+          const txHash = result.transactionHash
+          if (txHash) {
+            // Backend requires auth for createDonation (UNAUTHENTICATED otherwise).
+            // If user isn't signed in, skip persistence without affecting on-chain donation.
+            if (!token) {
+              console.warn(
+                'Skipping createDonation persistence: missing JWT token (user not signed in).',
+              )
+            } else {
+              const createInputs: CreateDonationInput[] = round.projects.map(
+                project => ({
+                  amount: Number(project.donationAmount || 0),
+                  anonymous: options?.anonymous,
+                  chainType: 'EVM',
+                  currency: round.tokenSymbol,
+                  fromWalletAddress: account.address,
+                  projectId: Number(project.id),
+                  qfRoundId: round.roundId,
+                  toWalletAddress:
+                    project.walletAddress ??
+                    project.recipientAddresses?.find(
+                      a => a.networkId === round.selectedChainId,
+                    )?.address ??
+                    '',
+                  tokenAddress:
+                    round.tokenAddress ===
+                      '0x0000000000000000000000000000000000000000' ||
+                    !round.tokenAddress
+                      ? undefined
+                      : round.tokenAddress,
+                  transactionId: txHash,
+                  transactionNetworkId: round.selectedChainId,
+                }),
+              )
+
+              const saveResults = await Promise.allSettled(
+                createInputs.map(input =>
+                  createGraphQLClient({
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }).request(createDonationMutation, { input }),
+                ),
+              )
+
+              const failedSaves = saveResults.filter(
+                r => r.status === 'rejected',
+              )
+              if (failedSaves.length > 0) {
+                console.error(
+                  `Failed to persist ${failedSaves.length} donation record(s) for round ${round.roundId}`,
+                  failedSaves.map(r =>
+                    r.status === 'rejected' ? r.reason : undefined,
+                  ),
+                )
+              }
+            }
+          }
 
           // Success! Update status
           completed++
@@ -274,7 +364,8 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             newStatuses.set(round.roundId, {
               ...newStatuses.get(round.roundId)!,
               status: 'success',
-              // Note: transactionHash would need to be returned from batchDonate
+              transactionHash: result.transactionHash,
+              bundleId: result.bundleId,
             })
             return {
               ...prev,

@@ -171,7 +171,10 @@ export function useDonation(): UseDonationReturn {
         }
 
         // For ERC20 tokens, need approval first
-        const tokenContract = getERC20Contract(details.tokenAddress)
+        const tokenContract = getERC20Contract(
+          details.chainId,
+          details.tokenAddress,
+        )
 
         const approvalTx = prepareTokenApproval(
           tokenContract,
@@ -372,7 +375,10 @@ export function useDonation(): UseDonationReturn {
         )
 
         // For ERC20 tokens, prepare approval
-        const tokenContract = getERC20Contract(details.tokenAddress)
+        const tokenContract = getERC20Contract(
+          details.chainId,
+          details.tokenAddress,
+        )
 
         const approvalTx = prepareTokenApproval(
           tokenContract,

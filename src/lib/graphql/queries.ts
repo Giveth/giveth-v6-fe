@@ -208,6 +208,13 @@ export const projectsQuery = graphql(`
         countUniqueDonors
         vouched
         isGivbacksEligible
+        addresses {
+          id
+          address
+          networkId
+          title
+          chainType
+        }
         adminUser {
           id
           name
@@ -223,6 +230,19 @@ export const projectsQuery = graphql(`
         }
       }
       total
+    }
+  }
+`)
+
+export const createDonationMutation = graphql(`
+  mutation CreateDonation($input: CreateDonationInput!) {
+    createDonation(input: $input) {
+      id
+      status
+      transactionId
+      transactionNetworkId
+      projectId
+      qfRoundId
     }
   }
 `)

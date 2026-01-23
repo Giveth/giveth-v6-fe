@@ -13,6 +13,10 @@ export interface ProjectCartItem {
   selectedToken?: WalletTokenWithBalance
   // Donation details
   walletAddress?: string // Project's receiving wallet address
+  recipientAddresses?: Array<{
+    address: string
+    networkId: number
+  }> // Project's recipient addresses (used to resolve walletAddress by selected chain)
   donationAmount?: string // Amount to donate
   tokenSymbol?: string // Token symbol (e.g., 'USDT', 'USDC')
   tokenDecimals?: number // Token decimals
@@ -155,7 +159,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     // can reflect the selected chain immediately.
     setCartItems(prev =>
       prev.map(item =>
-        item.roundId === roundId ? { ...item, chainId } : item,
+        item.roundId === roundId
+          ? {
+              ...item,
+              chainId,
+              walletAddress:
+                item.recipientAddresses?.find(a => a.networkId === chainId)
+                  ?.address ?? undefined,
+            }
+          : item,
       ),
     )
 
@@ -244,6 +256,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               tokenSymbol,
               tokenAddress,
               chainId,
+              walletAddress:
+                item.recipientAddresses?.find(a => a.networkId === chainId)
+                  ?.address ??
+                item.walletAddress ??
+                undefined,
               estimatedMatchingValue,
             }
           : item,

@@ -22,6 +22,10 @@ interface DonationCardProps {
     image?: string | null
     totalDonations: number
     countUniqueDonors?: number | null | undefined
+    addresses?: Array<{
+      address: string
+      networkId: number
+    }> | null
     projectQfRounds?: Array<{
       qfRound?: {
         id: string
@@ -96,6 +100,11 @@ export function DonationCard({ project }: DonationCardProps) {
           ? parseInt(selectedRound.qfRound.id)
           : 0,
         roundName: selectedRound?.qfRound?.name ?? undefined,
+        recipientAddresses:
+          project.addresses?.map(a => ({
+            address: a.address,
+            networkId: a.networkId,
+          })) ?? undefined,
       })
     }
   }
