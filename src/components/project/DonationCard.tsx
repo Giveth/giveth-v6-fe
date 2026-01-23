@@ -11,6 +11,7 @@ import { DonationMatchCard } from '@/components/project/DonationMatchCard'
 import { useCart } from '@/context/CartContext'
 import { HowItWorksLink } from '@/lib/constants/menu-links'
 import { EContentType } from '@/lib/constants/share-constants'
+import { env } from '@/lib/env'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 import { getProjectActiveRounds } from '@/lib/helpers/projectHelper'
 
@@ -281,6 +282,7 @@ export function DonationCard({ project }: DonationCardProps) {
       <ShareProjectModal
         open={showShareModal}
         onOpenChange={setShowShareModal}
+        shareUrl={`${env.FRONTEND_URL}/project/${project.slug}?roundId=${selectedRoundId}`}
         projectSlug={project.slug}
         contentType={EContentType.thisProject}
         isCause={false}
