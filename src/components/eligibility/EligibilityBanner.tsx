@@ -101,7 +101,7 @@ export function EligibilityBanner() {
   }
   // Second if MBD score less than global minimum, we check Passport Score
   else if (userPassportScore >= globalSettingScore.globalMinimumPassportScore) {
-    isUserEligible = false
+    isUserEligible = true
   } else {
     isUserEligible = false
   }
