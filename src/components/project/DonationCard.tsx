@@ -84,7 +84,9 @@ export function DonationCard({ project }: DonationCardProps) {
   // Stuff related to the cart action
   const handleCartAction = () => {
     if (isProjectInCart) {
-      const existingCartItem = cartItems.find(i => i.id === project.id)
+      const existingCartItem = cartItems.find(
+        i => i.id === project.id && i.roundId === Number(selectedRoundId),
+      )
       setIsProjectInCart(false)
       if (existingCartItem) {
         removeFromCart(existingCartItem.roundId ?? 0, project.id)
