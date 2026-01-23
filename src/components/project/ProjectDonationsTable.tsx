@@ -40,28 +40,30 @@ export function ProjectDonationsTable({
 }: ProjectDonationsTableProps) {
   const [currentPage, setCurrentPage] = useState(0)
   const [filter, setFilter] = useState<FilterType>({ type: 'all' })
+  const [useUrlFilter, setUseUrlFilter] = useState(true)
   const donationsPerPage = 10
 
   // Get query string parameters from the URL
   const searchParams = useSearchParams()
   const roundIdFromUrl = searchParams.get('roundId')
 
-  const qfRoundId = roundIdFromUrl
-    ? parseInt(roundIdFromUrl)
-    : filter.type === 'round'
-      ? parseInt(filter.id)
-      : undefined
+  const qfRoundId =
+    useUrlFilter && roundIdFromUrl
+      ? parseInt(roundIdFromUrl)
+      : filter.type === 'round'
+        ? parseInt(filter.id)
+        : undefined
 
   // Setup filter based on the roundId from the URL if exists
   useEffect(() => {
-    if (roundIdFromUrl) {
+    if (useUrlFilter && roundIdFromUrl) {
       setFilter({
         type: 'round',
         id: roundIdFromUrl,
         name: qfRounds.find(r => r.id === roundIdFromUrl)?.name || '',
       })
     }
-  }, [roundIdFromUrl])
+  }, [roundIdFromUrl, qfRounds, useUrlFilter])
 
   // Set up sorting
   const [orderBy, setOrderBy] = useState<DonationSortField>(
@@ -154,6 +156,7 @@ export function ProjectDonationsTable({
           selectedFilter={filter}
           onSelect={newFilter => {
             setFilter(newFilter)
+            setUseUrlFilter(false)
             setCurrentPage(0)
           }}
         />

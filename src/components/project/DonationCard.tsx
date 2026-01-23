@@ -112,7 +112,9 @@ export function DonationCard({ project }: DonationCardProps) {
   // Change the round and update the isProjectInCart state
   const changeRound = (roundId: string | undefined) => {
     setSelectedRoundId(roundId)
-    const existingCartItem = cartItems.find(i => i.id === project.id)
+    const existingCartItem = cartItems.find(
+      i => i.id === project.id && i.roundId === Number(roundId),
+    )
     if (existingCartItem && existingCartItem.roundId === Number(roundId)) {
       setIsProjectInCart(true)
     } else {
