@@ -1702,7 +1702,14 @@ export type ProjectsQueryVariables = Exact<{
 }>;
 
 
-export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, reviewStatus: ReviewStatus, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, wallets: Array<{ __typename?: 'UserWalletEntity', address: string }> } | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
+export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, reviewStatus: ReviewStatus, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, wallets: Array<{ __typename?: 'UserWalletEntity', address: string }> } | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
+
+export type CreateDonationMutationVariables = Exact<{
+  input: CreateDonationInput;
+}>;
+
+
+export type CreateDonationMutation = { __typename?: 'Mutation', createDonation: { __typename?: 'DonationEntity', id: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null } };
 
 export type SimilarProjectsBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
