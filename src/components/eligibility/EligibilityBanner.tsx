@@ -82,6 +82,7 @@ export function EligibilityBanner() {
     globalMinimumPassportScoreData?.globalConfiguration?.value ?? 0,
   )
 
+  // Check if user passport is too old, if it is user need to check eligibility again
   const isTooOld = useMemo(() => {
     const expirationDate = userPassportData?.expirationDate || null
     if (!expirationDate) return false
@@ -90,19 +91,20 @@ export function EligibilityBanner() {
     return parsed < new Date()
   }, [userPassportData?.expirationDate, isEligibilityLoading])
 
-  let passportScore = 0
-  let isEligible = false
-  let isMBDEligible = false
-  let isPassportEligible = false
+  let isUserEligible = false // By default, user is not eligible
+  const userMBDScore = Number(userPassportData?.mbdScore ?? 0)
+  const userPassportScore = Number(userPassportData?.passportScore ?? 0)
 
-  const mbdScore = Number(userPassportData?.mbdScore ?? 0)
-  passportScore = Number(userPassportData?.passportScore ?? 0)
-  isMBDEligible =
-    mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
-  isPassportEligible =
-    passportScore > 0 &&
-    passportScore >= globalSettingScore.globalMinimumPassportScore
-  isEligible = isMBDEligible && isPassportEligible
+  // First we check MBD Score
+  if (userMBDScore >= globalSettingScore.globalMinimumMBDScore) {
+    isUserEligible = true
+  }
+  // Second if MBD score less than global minimum, we check Passport Score
+  else if (userPassportScore >= globalSettingScore.globalMinimumPassportScore) {
+    isUserEligible = false
+  } else {
+    isUserEligible = false
+  }
 
   const showLoading = useMemo(
     () => isChecking || isEligibilityLoading || isAuthLoading,
@@ -146,9 +148,9 @@ export function EligibilityBanner() {
         Global Minimum Passport Score:{' '}
         {globalSettingScore.globalMinimumPassportScore}
         <br />
-        User MBD Score: {mbdScore}
+        User MBD Score: {userMBDScore}
         <br />
-        User Passport Score: {passportScore}
+        User Passport Score: {userPassportScore}
         <br />
       </div>
       {/* Check passport expiration date */}
@@ -189,7 +191,7 @@ export function EligibilityBanner() {
         </div>
       )}
       {/* Wallet Connected And Has Eligibility Data */}
-      {account && data && isEligible && !showLoading && !isTooOld && (
+      {account && data && isUserEligible && !showLoading && !isTooOld && (
         <div className="p-4 space-y-2 border border-giv-jade-600 rounded-2xl">
           <div className="flex items-center gap-2">
             <MatchingEligible
@@ -211,7 +213,7 @@ export function EligibilityBanner() {
         </div>
       )}
       {/* Wallet Connected And Has No Eligibility Data */}
-      {account && data && !isEligible && !isTooOld && (
+      {account && data && !isUserEligible && !isTooOld && (
         <div className="p-4 space-y-2 border border-giv-primary-500 rounded-2xl">
           <div className="flex items-center gap-2">
             <MatchingEligible
