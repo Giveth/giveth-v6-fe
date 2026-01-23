@@ -49,12 +49,7 @@ export function PassportBanner() {
     account?.address ? { address: account.address } : undefined,
     { enabled: !!account?.address && isAuthenticated },
   )
-  const {
-    data,
-    isLoading: isEligibilityLoading,
-    isError,
-    refetch,
-  } = eligibilityQuery
+  const { data, isLoading: isEligibilityLoading, isError } = eligibilityQuery
 
   const { mutateAsync: refreshEligibility } = useRefreshPassportEligibility()
 
@@ -88,56 +83,48 @@ export function PassportBanner() {
     globalMinimumPassportScoreData?.globalConfiguration?.value ?? 0,
   )
 
-  let passportScore = 0
-  let isEligible = false
-  let isMBDEligible = false
-  let isPassportEligible = false
+  let isUserEligible = false // By default, user is not eligible
+  const userMBDScore = Number(userPassportData?.mbdScore ?? 0)
+  const userPassportScore = Number(userPassportData?.passportScore ?? 0)
 
-  const mbdScore = Number(userPassportData?.mbdScore ?? 0)
-  passportScore = Number(userPassportData?.passportScore ?? 0)
-  isMBDEligible =
-    mbdScore > 0 && mbdScore >= globalSettingScore.globalMinimumMBDScore
-  isPassportEligible =
-    passportScore > 0 &&
-    passportScore >= globalSettingScore.globalMinimumPassportScore
-  isEligible = isMBDEligible && isPassportEligible
+  // First we check MBD Score
+  if (userMBDScore >= globalSettingScore.globalMinimumMBDScore) {
+    isUserEligible = true
+  }
+  // Second if MBD score less than global minimum, we check Passport Score
+  else if (userPassportScore >= globalSettingScore.globalMinimumPassportScore) {
+    isUserEligible = false
+  } else {
+    isUserEligible = false
+  }
 
   const showLoading = useMemo(
-    () => isChecking || isEligibilityLoading || isAuthLoading,
+    () => isEligibilityLoading || isAuthLoading,
     [isChecking, isEligibilityLoading, isAuthLoading],
   )
-
-  useEffect(() => {
-    if (!isEligibilityLoading && !isAuthLoading && isChecking) {
-      setIsChecking(false)
-    }
-  }, [isEligibilityLoading, isAuthLoading, isChecking])
 
   const checkEligibility = async () => {
     if (!account?.address) return
 
-    if (!isAuthenticated) {
-      try {
-        setIsChecking(true)
+    setIsChecking(true)
+    try {
+      if (!isAuthenticated) {
         await signIn()
-        // After sign-in, the JWT becomes available, so refetch to get fresh eligibility.
-        const response = await refreshEligibility(account.address)
-        if (response?.refreshPassportScore) {
-          setUserPassportData({
-            passportScore: response.refreshPassportScore.passportScore ?? 0,
-            mbdScore: response.refreshPassportScore.mbdScore ?? 0,
-            isEligible: response.refreshPassportScore.isEligible,
-            expirationDate:
-              response.refreshPassportScore.expirationDate ?? null,
-          })
-        }
-      } catch (error) {
-        console.error('Failed to sign in:', error)
-        setIsChecking(false)
       }
-    } else {
-      setIsChecking(true)
-      await refetch()
+      // After sign-in, the JWT becomes available, so refresh to get fresh eligibility.
+      const response = await refreshEligibility(account.address)
+
+      if (response?.refreshPassportScore) {
+        setUserPassportData({
+          passportScore: response.refreshPassportScore.passportScore ?? 0,
+          mbdScore: response.refreshPassportScore.mbdScore ?? 0,
+          isEligible: response.refreshPassportScore.isEligible,
+          expirationDate: response.refreshPassportScore.expirationDate ?? null,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to sign in:', error)
+    } finally {
       setIsChecking(false)
     }
   }
@@ -180,7 +167,7 @@ export function PassportBanner() {
         </div>
       )}
       {/* If the user's MBD score is below the threshold for MBD and their passport score is below the threshold for Passport */}
-      {account && data && !isEligible && !showLoading && (
+      {account && data && !isUserEligible && (
         <div className="bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <IconWarning width={24} height={24} />
           <Link
@@ -195,20 +182,21 @@ export function PassportBanner() {
           </Link>
           <p className="text-giv-gray-900">
             to increase your score above{' '}
-            <span className="font-bold">{passportScore}</span> and then click
-            to{' '}
+            <span className="font-bold">{userPassportScore}</span> and then
+            click to{' '}
           </p>
           <button
+            type="button"
             onClick={checkEligibility}
             disabled={isAuthLoading}
             className="text-sm text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Refresh Score
+            {isChecking ? 'Refreshing Score...' : 'Refresh Score'}
           </button>
         </div>
       )}
       {/* Wallet Connected And Has Eligibility Data */}
-      {account && data && isEligible && !showLoading && (
+      {account && data && isUserEligible && !showLoading && (
         <div className="bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
           <p>You donations are eligible to be matched!</p>
