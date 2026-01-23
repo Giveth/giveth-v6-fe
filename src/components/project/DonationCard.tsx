@@ -33,18 +33,14 @@ interface DonationCardProps {
 }
 
 export function DonationCard({ project }: DonationCardProps) {
-  const [showShareModal, setShowShareModal] = useState(false)
-  const { addToCart, removeFromCart, isInCart, cartItems } = useCart()
-  const [isProjectInCart, setIsProjectInCart] = useState(isInCart(project.id))
-
-  // Get query string parameters from the URL
-  const searchParams = useSearchParams()
-  const roundIdFromUrl = searchParams.get('roundId')
-
   // Stuff related to the rounds selector
   const availableRounds = useMemo(() => {
     return getProjectActiveRounds(project as unknown as ProjectEntity)
   }, [project])
+
+  // Get query string parameters from the URL
+  const searchParams = useSearchParams()
+  const roundIdFromUrl = searchParams.get('roundId')
 
   const defaultRound = roundIdFromUrl
     ? availableRounds.find(r => r.qfRound?.id === roundIdFromUrl)
@@ -55,6 +51,12 @@ export function DonationCard({ project }: DonationCardProps) {
 
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(
     defaultRoundId,
+  )
+
+  const [showShareModal, setShowShareModal] = useState(false)
+  const { addToCart, removeFromCart, isInCart, cartItems } = useCart()
+  const [isProjectInCart, setIsProjectInCart] = useState(
+    isInCart(project.id, defaultRoundId ? parseInt(defaultRoundId) : undefined),
   )
 
   useEffect(() => {
@@ -95,6 +97,20 @@ export function DonationCard({ project }: DonationCardProps) {
           : 0,
         roundName: selectedRound?.qfRound?.name ?? undefined,
       })
+    }
+  }
+
+  // Change the round and update the isProjectInCart state
+  const changeRound = (roundId: string | undefined) => {
+    setSelectedRoundId(roundId)
+    const existingCartItem = cartItems.find(i => i.id === project.id)
+    console.log('existingCartItem', existingCartItem)
+    console.log('roundId', roundId)
+    if (existingCartItem && existingCartItem.roundId === Number(roundId)) {
+      setIsProjectInCart(true)
+      console.log('isProjectInCart', true)
+    } else {
+      setIsProjectInCart(false)
     }
   }
 
@@ -143,9 +159,7 @@ export function DonationCard({ project }: DonationCardProps) {
               {availableRounds.map(r => (
                 <DropdownMenu.Item
                   key={r.qfRound?.id}
-                  onSelect={() =>
-                    setSelectedRoundId(r.qfRound?.id ?? undefined)
-                  }
+                  onSelect={() => changeRound(r.qfRound?.id ?? undefined)}
                   className="
                     cursor-pointer rounded-xl px-3 py-2 text-sm
                     text-giv-gray-900 outline-none
