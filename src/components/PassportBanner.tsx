@@ -182,8 +182,10 @@ export function PassportBanner() {
           </Link>
           <p className="text-giv-gray-900">
             to increase your score above{' '}
-            <span className="font-bold">{userPassportScore}</span> and then
-            click to{' '}
+            <span className="font-bold">
+              {globalSettingScore.globalMinimumPassportScore}
+            </span>{' '}
+            and then click to{' '}
           </p>
           <button
             type="button"
