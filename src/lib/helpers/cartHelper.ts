@@ -83,8 +83,6 @@ export function useWalletTokens(
     queryFn: async () => {
       const tokens = await getTokensByChainId(selectedChainId)
 
-      console.log(tokens, 'tokens')
-
       const results = await Promise.allSettled(
         tokens.map(async token => {
           // Skip invalid ERC20 definitions

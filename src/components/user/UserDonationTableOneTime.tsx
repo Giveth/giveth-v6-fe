@@ -42,8 +42,6 @@ export const UserDonationTableOneTime = ({
     orderDirection,
   })
 
-  console.log('data UserDonationTableOneTime', data)
-
   useEffect(() => {
     // `isLoading` is only true for the very first load; during pagination/refetch
     // React Query uses `isFetching`.

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   ArrowDown,
   ArrowUp,
@@ -41,7 +42,26 @@ export function ProjectDonationsTable({
   const [filter, setFilter] = useState<FilterType>({ type: 'all' })
   const donationsPerPage = 10
 
-  const qfRoundId = filter.type === 'round' ? parseInt(filter.id) : undefined
+  // Get query string parameters from the URL
+  const searchParams = useSearchParams()
+  const roundIdFromUrl = searchParams.get('roundId')
+
+  const qfRoundId = roundIdFromUrl
+    ? parseInt(roundIdFromUrl)
+    : filter.type === 'round'
+      ? parseInt(filter.id)
+      : undefined
+
+  // Setup filter based on the roundId from the URL if exists
+  useEffect(() => {
+    if (roundIdFromUrl) {
+      setFilter({
+        type: 'round',
+        id: roundIdFromUrl,
+        name: qfRounds.find(r => r.id === roundIdFromUrl)?.name || '',
+      })
+    }
+  }, [roundIdFromUrl])
 
   // Set up sorting
   const [orderBy, setOrderBy] = useState<DonationSortField>(

@@ -1702,7 +1702,7 @@ export type ProjectsQueryVariables = Exact<{
 }>;
 
 
-export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, reviewStatus: ReviewStatus, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null } | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
+export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, image?: string | null, reviewStatus: ReviewStatus, descriptionSummary?: string | null, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, wallets: Array<{ __typename?: 'UserWalletEntity', address: string }> } | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', id: string, qfRoundId: number, sumDonationValueUsd: number, countUniqueDonors: number }> }> } };
 
 export type SimilarProjectsBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -2136,6 +2136,9 @@ export const ProjectsDocument = new TypedDocumentString(`
       adminUser {
         id
         name
+        wallets {
+          address
+        }
       }
       projectQfRounds {
         id
