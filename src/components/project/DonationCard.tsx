@@ -123,6 +123,14 @@ export function DonationCard({ project }: DonationCardProps) {
     }
   }
 
+  // Cartitems change
+  useEffect(() => {
+    const existingCartItem = cartItems.find(
+      i => i.id === project.id && i.roundId === Number(selectedRoundId),
+    )
+    setIsProjectInCart(Boolean(existingCartItem))
+  }, [cartItems, project, selectedRoundId])
+
   return (
     <div className="h-full bg-white rounded-xl p-4">
       {/* If there is only one round, show the round name */}
