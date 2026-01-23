@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 interface ProjectHeroProps {
   project: {
     title: string
@@ -6,6 +8,9 @@ interface ProjectHeroProps {
       name?: string | null
       firstName?: string | null
       lastName?: string | null
+      wallets?: {
+        address: string
+      }[]
     } | null
   }
 }
@@ -15,6 +20,7 @@ export function ProjectHero({ project }: ProjectHeroProps) {
     project.adminUser?.name ||
     `${project.adminUser?.firstName || ''} ${project.adminUser?.lastName || ''}`.trim() ||
     'Unknown'
+  const adminAddress = project.adminUser?.wallets?.[0]?.address
 
   return (
     <div className="relative rounded-2xl overflow-hidden h-[380px] lg:h-full">
@@ -36,7 +42,12 @@ export function ProjectHero({ project }: ProjectHeroProps) {
         <h1 className="text-[41px] font-bold font-adventor text-white mb-2">
           {project.title}
         </h1>
-        <p className="text-xl text-giv-gray-100">{adminName}</p>
+        <Link
+          href={`/user/${adminAddress}`}
+          className="text-xl text-giv-gray-100! hover:opacity-80 transition-opacity duration-300"
+        >
+          {adminName}
+        </Link>
       </div>
     </div>
   )

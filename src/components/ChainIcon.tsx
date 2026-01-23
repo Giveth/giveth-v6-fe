@@ -74,8 +74,6 @@ export const ChainIcon = memo(function ChainIcon({
   // Fallback to cached image
   const iconData = getCachedChainIcon(networkId)
 
-  console.log(networkId, iconData)
-
   return (
     <div
       style={{ height: `${height}px`, width: `${width}px` }}

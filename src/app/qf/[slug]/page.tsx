@@ -121,7 +121,7 @@ export default function QFRoundPage() {
   return (
     <div className="min-h-screen bg-giv-gray-200">
       {/* Passport Banner */}
-      <PassportBanner roundId={roundId} />
+      <PassportBanner />
 
       <QFHero
         bannerImage={qfRound.bannerBgImage ?? undefined}

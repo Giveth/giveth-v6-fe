@@ -5,7 +5,10 @@ interface DonationTabsProps {
   onTabChange: (tab: string) => void
 }
 
-export function DonationTabs({ activeTab, onTabChange }: DonationTabsProps) {
+export function UserDonationTabs({
+  activeTab,
+  onTabChange,
+}: DonationTabsProps) {
   const handleTabClick = (tab: string) => {
     onTabChange(tab)
   }

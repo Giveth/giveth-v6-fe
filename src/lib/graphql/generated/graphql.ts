@@ -227,6 +227,7 @@ export type DonationEntity = {
   projectId: Scalars['Int']['output'];
   qfRoundErrorMessage?: Maybe<Scalars['String']['output']>;
   qfRoundId?: Maybe<Scalars['Int']['output']>;
+  qfRoundName?: Maybe<Scalars['String']['output']>;
   qfRoundUserScore?: Maybe<Scalars['Float']['output']>;
   status: DonationStatus;
   toWalletAddress: Scalars['String']['output'];
@@ -1666,7 +1667,7 @@ export type ProjectBySlugQueryVariables = Exact<{
 }>;
 
 
-export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, socialMedia?: Array<{ __typename?: 'ProjectSocialMediaEntity', id: string, type: string, link: string }> | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', countUniqueDonors: number, sumDonationValueUsd: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null }> } };
+export type ProjectBySlugQuery = { __typename?: 'Query', projectBySlug: { __typename?: 'ProjectEntity', id: string, title: string, slug: string, description?: string | null, descriptionSummary?: string | null, image?: string | null, impactLocation?: string | null, createdAt: any, updatedAt: any, totalDonations: number, countUniqueDonors?: number | null, vouched: boolean, isGivbacksEligible: boolean, socialMedia?: Array<{ __typename?: 'ProjectSocialMediaEntity', id: string, type: string, link: string }> | null, adminUser?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, wallets: Array<{ __typename?: 'UserWalletEntity', address: string }> } | null, categories?: Array<{ __typename?: 'CategoryEntity', id: string, name: string, value?: string | null, mainCategory?: { __typename?: 'MainCategoryEntity', id: string, title: string, slug: string } | null }> | null, addresses?: Array<{ __typename?: 'ProjectAddressEntity', id: string, address: string, networkId: number, title?: string | null, chainType: ChainType }> | null, projectQfRounds: Array<{ __typename?: 'ProjectQfRoundEntity', countUniqueDonors: number, sumDonationValueUsd: number, qfRound?: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string, isActive: boolean } | null }> } };
 
 export type QfRoundBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1764,7 +1765,7 @@ export type MyDonationsQueryVariables = Exact<{
 }>;
 
 
-export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export type ProjectUpdatesQueryVariables = Exact<{
   input: ProjectUpdateQueryInput;
@@ -1807,6 +1808,13 @@ export type CheckPassportEligibilityQueryVariables = Exact<{
 
 export type CheckPassportEligibilityQuery = { __typename?: 'Query', checkPassportEligibility: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
 
+export type RefreshPassportScoreMutationVariables = Exact<{
+  address: Scalars['String']['input'];
+}>;
+
+
+export type RefreshPassportScoreMutation = { __typename?: 'Mutation', refreshPassportScore: { __typename?: 'CheckEligibilityResultEntity', isEligible: boolean, passportScore?: number | null, mbdScore?: number | null, threshold?: number | null, expirationDate?: any | null, message?: string | null, eligibility?: { __typename?: 'PassportEligibilityEntity', id: string, address: string, score?: number | null, mbdScore?: number | null, lastScoreTimestamp?: any | null, expirationTimestamp?: any | null, stamps?: any | null, error?: string | null, createdAt: any, updatedAt: any } | null } };
+
 export type GlobalConfigurationsQueryVariables = Exact<{
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
@@ -1820,6 +1828,22 @@ export type GlobalConfigurationQueryVariables = Exact<{
 
 
 export type GlobalConfigurationQuery = { __typename?: 'Query', globalConfiguration?: { __typename?: 'GlobalConfigurationEntity', id: string, key: string, value?: string | null, description?: string | null, type?: string | null, isActive: boolean, createdAt: any, updatedAt: any } | null };
+
+export type UserByAddressQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+}>;
+
+
+export type UserByAddressQuery = { __typename?: 'Query', userByAddress?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null, primaryEns?: string | null, totalDonated: number, totalReceived: number, createdAt: any, wallets: Array<{ __typename?: 'UserWalletEntity', address: string, chainType: ChainType, isPrimary: boolean }> } | null };
+
+export type DonationsByUserQueryVariables = Exact<{
+  userId: Scalars['Int']['input'];
+  skip?: Scalars['Int']['input'];
+  take?: Scalars['Int']['input'];
+}>;
+
+
+export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -1988,6 +2012,9 @@ export const ProjectBySlugDocument = new TypedDocumentString(`
       firstName
       lastName
       avatar
+      wallets {
+        address
+      }
     }
     categories {
       id
@@ -2321,6 +2348,7 @@ export const MyDonationsDocument = new TypedDocumentString(`
       transactionId
       transactionNetworkId
       createdAt
+      qfRoundName
       project {
         id
         title
@@ -2442,6 +2470,30 @@ export const CheckPassportEligibilityDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CheckPassportEligibilityQuery, CheckPassportEligibilityQueryVariables>;
+export const RefreshPassportScoreDocument = new TypedDocumentString(`
+    mutation RefreshPassportScore($address: String!) {
+  refreshPassportScore(input: {address: $address}) {
+    isEligible
+    passportScore
+    mbdScore
+    threshold
+    expirationDate
+    message
+    eligibility {
+      id
+      address
+      score
+      mbdScore
+      lastScoreTimestamp
+      expirationTimestamp
+      stamps
+      error
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<RefreshPassportScoreMutation, RefreshPassportScoreMutationVariables>;
 export const GlobalConfigurationsDocument = new TypedDocumentString(`
     query GlobalConfigurations($isActive: Boolean) {
   globalConfigurations(isActive: $isActive) {
@@ -2470,3 +2522,48 @@ export const GlobalConfigurationDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<GlobalConfigurationQuery, GlobalConfigurationQueryVariables>;
+export const UserByAddressDocument = new TypedDocumentString(`
+    query UserByAddress($address: String!) {
+  userByAddress(address: $address) {
+    id
+    name
+    firstName
+    lastName
+    avatar
+    primaryEns
+    totalDonated
+    totalReceived
+    wallets {
+      address
+      chainType
+      isPrimary
+    }
+    createdAt
+  }
+}
+    `) as unknown as TypedDocumentString<UserByAddressQuery, UserByAddressQueryVariables>;
+export const DonationsByUserDocument = new TypedDocumentString(`
+    query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {
+  donationsByUser(userId: $userId, skip: $skip, take: $take) {
+    total
+    donations {
+      id
+      createdAt
+      amount
+      currency
+      valueUsd
+      status
+      transactionId
+      transactionNetworkId
+      projectId
+      qfRoundId
+      qfRoundName
+      project {
+        id
+        title
+        slug
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<DonationsByUserQuery, DonationsByUserQueryVariables>;

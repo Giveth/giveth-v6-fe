@@ -9,8 +9,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
-import { useSiweAuth } from '@/context/AuthContext'
-import { useMyDonations } from '@/hooks/useAccount'
+import { useUserDonations } from '@/hooks/useUser'
 import {
   DonationSortField,
   SortDirection,
@@ -20,13 +19,14 @@ import { ChainIcon } from '../ChainIcon'
 
 const PAGE_SIZE = 15
 
-export const DonationTableOneTime = ({
+export const UserDonationTableOneTime = ({
+  userId,
   setIsLoading,
 }: {
+  userId: number
   setIsLoading: (isLoading: boolean) => void
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
-  const { token } = useSiweAuth()
   const [orderBy, setOrderBy] = useState<DonationSortField>(
     DonationSortField.CreatedAt,
   )
@@ -34,13 +34,15 @@ export const DonationTableOneTime = ({
     SortDirection.Desc,
   )
 
-  const { data, isLoading, isFetching } = useMyDonations(token || undefined, {
-    enabled: !!token,
+  const { data, isLoading, isFetching } = useUserDonations(userId ?? 0, {
+    enabled: true,
     skip: (currentPage - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
     orderBy,
     orderDirection,
   })
+
+  console.log('data UserDonationTableOneTime', data)
 
   useEffect(() => {
     // `isLoading` is only true for the very first load; during pagination/refetch
@@ -48,8 +50,8 @@ export const DonationTableOneTime = ({
     setIsLoading(isLoading || isFetching)
   }, [isLoading, isFetching, setIsLoading])
 
-  const donations = data?.myDonations?.donations || []
-  const totalDonations = data?.myDonations?.total || 0
+  const donations = data?.donationsByUser?.donations || []
+  const totalDonations = data?.donationsByUser?.total || 0
   const totalPages = Math.ceil(totalDonations / PAGE_SIZE)
 
   const handlePageChange = (page: number) => {
@@ -258,7 +260,7 @@ export const DonationTableOneTime = ({
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <ExternalLink className="w-3.5 h-3.5 text-giv-gray-700" />
+                              <ExternalLink className="w-3.5 h-3.5 text-[#82899a]" />
                             </a>
                           )}
                         </div>
@@ -267,12 +269,14 @@ export const DonationTableOneTime = ({
                         ${donation.valueUsd?.toFixed(2) ?? '0.00'}
                       </td>
                       <td className="px-1 py-4">
-                        {donation.qfRoundName && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-giv-primary-500 border-2 border-giv-primary-500">
-                            {donation.qfRoundName}
-                          </span>
-                        )}
-                        {!donation.qfRoundName && <span>---</span>}
+                        <td className="px-1 py-4">
+                          {donation.qfRoundName && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-giv-primary-500 border-2 border-giv-primary-500">
+                              {donation.qfRoundName}
+                            </span>
+                          )}
+                          {!donation.qfRoundName && <span>---</span>}
+                        </td>
                       </td>
                     </tr>
                   )

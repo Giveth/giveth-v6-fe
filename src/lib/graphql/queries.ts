@@ -63,6 +63,9 @@ export const projectBySlugQuery = graphql(`
         firstName
         lastName
         avatar
+        wallets {
+          address
+        }
       }
       categories {
         id
@@ -431,6 +434,7 @@ export const myDonationsQuery = graphql(`
         transactionId
         transactionNetworkId
         createdAt
+        qfRoundName
         project {
           id
           title
@@ -564,6 +568,31 @@ export const checkPassportEligibilityQuery = graphql(`
   }
 `)
 
+export const refreshPassportEligibilityQuery = graphql(`
+  mutation RefreshPassportScore($address: String!) {
+    refreshPassportScore(input: { address: $address }) {
+      isEligible
+      passportScore
+      mbdScore
+      threshold
+      expirationDate
+      message
+      eligibility {
+        id
+        address
+        score
+        mbdScore
+        lastScoreTimestamp
+        expirationTimestamp
+        stamps
+        error
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`)
+
 export const globalConfigurationsQuery = graphql(`
   query GlobalConfigurations($isActive: Boolean) {
     globalConfigurations(isActive: $isActive) {
@@ -590,6 +619,53 @@ export const globalConfigurationQuery = graphql(`
       isActive
       createdAt
       updatedAt
+    }
+  }
+`)
+
+export const userByAddressQuery = graphql(`
+  query UserByAddress($address: String!) {
+    userByAddress(address: $address) {
+      id
+      name
+      firstName
+      lastName
+      avatar
+      primaryEns
+      totalDonated
+      totalReceived
+      wallets {
+        address
+        chainType
+        isPrimary
+      }
+      createdAt
+    }
+  }
+`)
+
+export const donationsByUserQuery = graphql(`
+  query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {
+    donationsByUser(userId: $userId, skip: $skip, take: $take) {
+      total
+      donations {
+        id
+        createdAt
+        amount
+        currency
+        valueUsd
+        status
+        transactionId
+        transactionNetworkId
+        projectId
+        qfRoundId
+        qfRoundName
+        project {
+          id
+          title
+          slug
+        }
+      }
     }
   }
 `)
