@@ -218,6 +218,9 @@ export const projectsQuery = graphql(`
         adminUser {
           id
           name
+          wallets {
+            address
+          }
         }
         projectQfRounds {
           id

@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { useProjectEstimatedMatching } from '@/hooks/projectHooks'
 import { useQfRoundBySlug } from '@/hooks/useQfRoundBySlug'
+import { useQfRoundStats } from '@/hooks/useQfRoundStats'
 import type { QfRoundEntity } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { calculateEstimatedMatchingWithDonationAmount } from '@/lib/helpers/projectHelper'
@@ -17,6 +18,8 @@ export const DonationMatchCard = ({
   roundData: QfRoundEntity
 }) => {
   const { data: fullRoundData } = useQfRoundBySlug(roundData?.slug)
+
+  const { data: qfRoundStats } = useQfRoundStats(Number(roundData?.id))
 
   // Get user wallet address
   const account = useActiveAccount()
@@ -67,14 +70,19 @@ export const DonationMatchCard = ({
         <ArrowRight className="w-4 h-4" />
       </span>
 
-      <span className="text-giv-jade-500 text-right font-medium">
-        {fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ? '$' : ''}
-        {formatNumber(esMatching)}{' '}
-        {fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol &&
-        !fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred
-          ? fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol
-          : ''}
-      </span>
+      {qfRoundStats && qfRoundStats.qfRoundStats.donationsCount < 10 && (
+        <span className="text-giv-jade-500 text-right font-medium">TBD</span>
+      )}
+      {qfRoundStats && qfRoundStats.qfRoundStats.donationsCount >= 10 && (
+        <span className="text-giv-jade-500 text-right font-medium">
+          {fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ? '$' : ''}
+          {formatNumber(esMatching)}{' '}
+          {fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol &&
+          !fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred
+            ? fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol
+            : ''}
+        </span>
+      )}
     </div>
   )
 }
