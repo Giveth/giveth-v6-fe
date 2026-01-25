@@ -3,7 +3,7 @@ import path from 'node:path'
 import type { CodegenConfig } from '@graphql-codegen/cli'
 
 // GraphQL Codegen executes this config in Node (not in the Next.js runtime),
-// so Next's `.env*` files aren't loaded unless we do it explicitly.
+// so Next's `.env*` files aren't loaded unless we do it explicitly
 function loadDotEnvFiles() {
   const cwd = process.cwd()
   const nodeEnv = process.env.NODE_ENV || 'development'
