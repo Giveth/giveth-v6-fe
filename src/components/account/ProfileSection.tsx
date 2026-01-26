@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 // import { Copy, Sparkle } from 'lucide-react'
 import { Copy } from 'lucide-react'
@@ -13,6 +14,8 @@ import { formatNumber } from '@/lib/helpers/cartHelper'
 import type { Address } from 'thirdweb'
 
 export function ProfileSection() {
+  const [copied, setCopied] = useState(false)
+  const copyTimerRef = useRef<number | null>(null)
   const { token, walletAddress } = useSiweAuth()
   const { data: profileData, isLoading: isProfileLoading } = useProfile(
     token || undefined,
@@ -48,6 +51,24 @@ export function ProfileSection() {
   // Fallbacks
   const displayName = user?.name || user?.firstName || 'Anonymous User'
   const displayEmail = user?.email || 'No email'
+  const addressToCopy =
+    user?.wallets?.[0]?.address || walletAddress || 'No address'
+
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(addressToCopy)
+      setCopied(true)
+      if (copyTimerRef.current) {
+        window.clearTimeout(copyTimerRef.current)
+      }
+      copyTimerRef.current = window.setTimeout(() => {
+        setCopied(false)
+        copyTimerRef.current = null
+      }, 1500)
+    } catch {
+      // ignore clipboard errors
+    }
+  }
 
   return (
     <>
@@ -87,16 +108,13 @@ export function ProfileSection() {
                 </span>
                 <button
                   className="text text-giv-gray-900 hover:text-giv-primary-500 cursor-pointer"
-                  onClick={() =>
-                    navigator.clipboard.writeText(
-                      user?.wallets?.[0]?.address ||
-                        walletAddress ||
-                        'No address',
-                    )
-                  }
+                  onClick={handleCopyAddress}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
+                {copied && (
+                  <span className="text-xs text-giv-primary-500">Copied!</span>
+                )}
               </div>
             </div>
           </div>
