@@ -13,17 +13,25 @@ import { EligibilityBanner } from '@/components/eligibility/EligibilityBanner'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 import { useCart } from '@/context/CartContext'
 import type { RoundCheckoutStatus } from '@/hooks/useMultiRoundCheckout'
+import { useProjectById } from '@/hooks/useProject'
+import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import { loadCheckoutReceipt } from '@/lib/helpers/checkoutReceipt'
 
 export function SuccessDonationSummary() {
-  const { clearCart } = useCart()
+  const { clearCart, givethPercentage } = useCart()
   const [receipt, setReceipt] =
     useState<ReturnType<typeof loadCheckoutReceipt>>(null)
   const [expandedRounds, setExpandedRounds] = useState<Set<string>>(
     new Set<string>(),
   )
+
+  const effectiveGivethPercentage =
+    receipt?.givethPercentage ?? givethPercentage
+
+  // Get Giveth project data
+  const givethProjectData = useProjectById(GIVETH_PROJECT_ID)
 
   useEffect(() => {
     const r = loadCheckoutReceipt()
@@ -125,6 +133,12 @@ export function SuccessDonationSummary() {
           const isSuccess = status?.status === 'success'
           const isFailed = status?.status === 'error'
 
+          const givethAmountForRound =
+            effectiveGivethPercentage > 0 && effectiveGivethPercentage < 100
+              ? (Number(round.totalAmount) * effectiveGivethPercentage) /
+                (100 - effectiveGivethPercentage)
+              : 0
+
           return (
             <div
               key={roundKey}
@@ -134,7 +148,9 @@ export function SuccessDonationSummary() {
               <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
                 <p className="text-giv-gray-800 text-base font-normal">
                   <span className="font-medium">
-                    {round.totalAmount} {round.tokenSymbol}
+                    {givethAmountForRound > 0
+                      ? `${givethAmountForRound} ${round.tokenSymbol}`
+                      : `${round.totalAmount} ${round.tokenSymbol}`}
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
@@ -225,6 +241,21 @@ export function SuccessDonationSummary() {
                         <span className="font-medium">{project.title}</span>
                       </div>
                     ))}
+                  </div>
+                )}
+                {effectiveGivethPercentage > 0 && (
+                  <div className="text-giv-gray-700 text-sm font-normal mt-2">
+                    <div className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal">
+                      <span className="font-medium">
+                        {givethAmountForRound > 0
+                          ? `${givethAmountForRound} ${round.tokenSymbol}`
+                          : `${round.totalAmount} ${round.tokenSymbol}`}
+                      </span>
+                    </div>
+                    <span>to</span>
+                    <span className="font-medium">
+                      {givethProjectData?.data?.project?.title}
+                    </span>
                   </div>
                 )}
               </div>

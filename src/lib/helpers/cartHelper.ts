@@ -8,6 +8,7 @@ import { graphQLClient } from '@/lib/graphql/client'
 import type { TokensByNetworkQuery } from '@/lib/graphql/generated/graphql'
 import { tokensByNetworkQuery } from '@/lib/graphql/queries'
 import type { GroupedProjects } from '@/lib/types/cart'
+import { GIVETH_PROJECT_ID } from '../constants/app-main'
 import { thirdwebClient } from '../thirdweb/client'
 import { type WalletTokenWithBalance } from '../types/chain'
 
@@ -82,8 +83,6 @@ export function useWalletTokens(
     enabled: Boolean(accountAddress && selectedChainId),
     queryFn: async () => {
       const tokens = await getTokensByChainId(selectedChainId)
-
-      console.log(tokens)
 
       const results = await Promise.allSettled(
         tokens.map(async token => {
@@ -252,4 +251,27 @@ export const calculateRoundTotalMatchingValue = (
       const amount = item.estimatedMatchingValue ?? 0
       return sum + amount
     }, 0)
+}
+
+export function applyGivethPercentageToCartItems(
+  cartItems: ProjectCartItem[],
+  givethPercentage: number,
+) {
+  const percentage = Number(givethPercentage)
+
+  if (!Number.isFinite(percentage) || percentage <= 0) return cartItems
+
+  const ratio = Math.max(0, 1 - Math.min(percentage, 100) / 100)
+
+  return cartItems.map(item => {
+    if (item.id === String(GIVETH_PROJECT_ID)) return item
+
+    const amount = Number(item.donationAmount)
+    if (!Number.isFinite(amount)) return item
+
+    return {
+      ...item,
+      donationAmount: (amount * ratio).toString(),
+    }
+  })
 }

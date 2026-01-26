@@ -6,7 +6,10 @@ import { DonationSummary } from '@/components/cart/pending/DonationSummary'
 import { PendingHero } from '@/components/cart/pending/PendingHero'
 import { useCart, type DonationRound } from '@/context/CartContext'
 import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
-import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
+import {
+  applyGivethPercentageToCartItems,
+  groupCartItemsByRound,
+} from '@/lib/helpers/cartHelper'
 import {
   clearCheckoutReceipt,
   saveCheckoutReceipt,
@@ -14,13 +17,26 @@ import {
 
 export default function PendingPage() {
   const router = useRouter()
-  const { cartItems, isAnonymous } = useCart()
+  const { cartItems, isAnonymous, givethPercentage } = useCart()
   const { state, checkoutAllRounds } = useMultiRoundCheckout()
   const startedRef = useRef(false)
+  const checkoutGivethPercentageRef = useRef(givethPercentage)
+
+  const effectiveGivethPercentage = startedRef.current
+    ? checkoutGivethPercentageRef.current
+    : givethPercentage
+
+  // Reduce cart items by Giveth percentage if we are donating to Giveth
+  const adjustedCartItems = useMemo(() => {
+    return applyGivethPercentageToCartItems(
+      cartItems,
+      effectiveGivethPercentage,
+    )
+  }, [cartItems, effectiveGivethPercentage])
 
   const { qfRoundGroups, nonQfProjects } = useMemo(
-    () => groupCartItemsByRound(cartItems),
-    [cartItems],
+    () => groupCartItemsByRound(adjustedCartItems),
+    [adjustedCartItems],
   )
 
   const roundsForCheckout: DonationRound[] = useMemo(() => {
@@ -54,6 +70,7 @@ export default function PendingPage() {
     if (startedRef.current) return
     if (roundsForCheckout.length === 0) return
     startedRef.current = true
+    checkoutGivethPercentageRef.current = givethPercentage
     clearCheckoutReceipt()
     void checkoutAllRounds(roundsForCheckout, { anonymous: isAnonymous })
   }, [checkoutAllRounds, roundsForCheckout, isAnonymous])
@@ -68,6 +85,7 @@ export default function PendingPage() {
         roundStatuses: Array.from(state.roundStatuses.entries()),
         overallStatus: state.status,
         overallError: state.overallError,
+        givethPercentage: effectiveGivethPercentage,
       })
       router.push('/cart/success' as never)
     }
@@ -78,6 +96,7 @@ export default function PendingPage() {
     router,
     qfRoundGroups,
     nonQfProjects,
+    effectiveGivethPercentage,
   ])
 
   return (
@@ -91,6 +110,7 @@ export default function PendingPage() {
             roundStatuses={state.roundStatuses}
             overallStatus={state.status}
             overallError={state.overallError}
+            givethPercentage={effectiveGivethPercentage}
           />
         </div>
       </main>

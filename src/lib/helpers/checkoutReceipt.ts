@@ -11,8 +11,13 @@ export type CheckoutReceipt = {
   roundStatuses: Array<[number, RoundCheckoutStatus]>
   overallStatus: 'idle' | 'preparing' | 'in_progress' | 'completed' | 'failed'
   overallError?: string
+  givethPercentage?: number
 }
 
+/**
+ * Saves the checkout receipt to session storage.
+ * @param receipt - The checkout receipt to save.
+ */
 export function saveCheckoutReceipt(receipt: CheckoutReceipt) {
   if (typeof window === 'undefined') return
   try {
@@ -22,6 +27,10 @@ export function saveCheckoutReceipt(receipt: CheckoutReceipt) {
   }
 }
 
+/**
+ * Loads the checkout receipt from session storage.
+ * @returns The checkout receipt or null if it doesn't exist.
+ */
 export function loadCheckoutReceipt(): CheckoutReceipt | null {
   if (typeof window === 'undefined') return null
   try {
@@ -33,6 +42,9 @@ export function loadCheckoutReceipt(): CheckoutReceipt | null {
   }
 }
 
+/**
+ * Clears the checkout receipt from session storage.
+ */
 export function clearCheckoutReceipt() {
   if (typeof window === 'undefined') return
   try {

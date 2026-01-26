@@ -22,7 +22,10 @@ import {
 } from 'thirdweb/react'
 import { parseUnits } from 'viem'
 import { useSiweAuth } from '@/context/AuthContext'
+import { useCart } from '@/context/CartContext'
 import type { DonationRound } from '@/context/CartContext'
+import { useProjectById } from '@/hooks/useProject'
+import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import type { BatchDonationDetails } from '@/lib/contracts/donation-handler'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import type { CreateDonationInput } from '@/lib/graphql/generated/graphql'
@@ -70,6 +73,8 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
   const activeChain = useActiveWalletChain()
   const switchChain = useSwitchActiveWalletChain()
   const { token } = useSiweAuth()
+  const { givethPercentage, setGivethPercentage } = useCart()
+  const { data: givethProjectData } = useProjectById(GIVETH_PROJECT_ID)
   const { batchDonate, reset: resetDonation } = useDonation()
 
   const [state, setState] = useState<MultiRoundCheckoutState>({
@@ -268,6 +273,39 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             }
           })
 
+          const shouldAddGivethDonation =
+            givethPercentage > 0 &&
+            givethPercentage < 100 &&
+            !round.projects.some(
+              project => project.id === String(GIVETH_PROJECT_ID),
+            )
+
+          if (shouldAddGivethDonation) {
+            const givethRecipient = givethProjectData?.project?.addresses?.find(
+              address => address.networkId === round.selectedChainId,
+            )?.address
+
+            if (!givethRecipient) {
+              console.warn(
+                `Missing Giveth recipient address for chain ${round.selectedChainId}. Skipping Giveth percentage donation.`,
+              )
+            } else {
+              const roundTotalAmount = Number(round.totalAmount || '0')
+              const givethAmount =
+                roundTotalAmount * (givethPercentage / (100 - givethPercentage))
+
+              if (givethAmount > 0) {
+                donations.push({
+                  projectAddress: givethRecipient,
+                  amount: parseUnits(givethAmount.toString(), tokenDecimals),
+                  tokenAddress: round.tokenAddress,
+                  tokenSymbol: round.tokenSymbol,
+                  chainId: round.selectedChainId,
+                })
+              }
+            }
+          }
+
           const totalAmount = donations.reduce(
             (sum, d) => sum + d.amount,
             BigInt(0),
@@ -332,6 +370,38 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                   transactionNetworkId: round.selectedChainId,
                 }),
               )
+
+              if (shouldAddGivethDonation) {
+                const givethRecipient =
+                  givethProjectData?.project?.addresses?.find(
+                    address => address.networkId === round.selectedChainId,
+                  )?.address
+                const roundTotalAmount = Number(round.totalAmount || '0')
+                const givethAmount =
+                  roundTotalAmount *
+                  (givethPercentage / (100 - givethPercentage))
+
+                if (givethRecipient && givethAmount > 0) {
+                  createInputs.push({
+                    amount: givethAmount,
+                    anonymous: options?.anonymous,
+                    chainType: 'EVM',
+                    currency: round.tokenSymbol,
+                    fromWalletAddress: account.address,
+                    projectId: GIVETH_PROJECT_ID,
+                    qfRoundId: round.roundId,
+                    toWalletAddress: givethRecipient,
+                    tokenAddress:
+                      round.tokenAddress ===
+                        '0x0000000000000000000000000000000000000000' ||
+                      !round.tokenAddress
+                        ? undefined
+                        : round.tokenAddress,
+                    transactionId: txHash,
+                    transactionNetworkId: round.selectedChainId,
+                  })
+                }
+              }
 
               const saveResults = await Promise.allSettled(
                 createInputs.map(input =>
@@ -407,8 +477,22 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               ? `${failed} of ${rounds.length} rounds failed`
               : undefined,
       }))
+
+      if (givethPercentage > 0) {
+        setGivethPercentage(0)
+      }
     },
-    [account, activeChain, switchChain, batchDonate, validateRounds],
+    [
+      account,
+      activeChain,
+      switchChain,
+      batchDonate,
+      validateRounds,
+      token,
+      givethPercentage,
+      givethProjectData?.project,
+      setGivethPercentage,
+    ],
   )
 
   return {

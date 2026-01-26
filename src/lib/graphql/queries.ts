@@ -98,6 +98,24 @@ export const projectBySlugQuery = graphql(`
   }
 `)
 
+export const projectByIDQuery = graphql(`
+  query Project($id: Int!) {
+    project(id: $id) {
+      id
+      title
+      slug
+      description
+      image
+      status
+      addresses {
+        address
+        networkId
+        chainType
+      }
+    }
+  }
+`)
+
 export const qfRoundBySlugQuery = graphql(`
   query QfRoundBySlug($slug: String!) {
     qfRoundBySlug(slug: $slug) {
