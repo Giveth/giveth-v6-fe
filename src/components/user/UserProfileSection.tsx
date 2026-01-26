@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { Copy } from 'lucide-react'
 import { EnsName } from '@/components/account/EnsName'
@@ -16,6 +17,9 @@ export function UserProfileSection({
   user: UserEntity
   isUserLoading: boolean
 }) {
+  const [copied, setCopied] = useState(false)
+  const copyTimerRef = useRef<number | null>(null)
+  const addressToCopy = user?.wallets?.[0]?.address || 'No address'
   const { data: userStatsData, isLoading: isUserStatsLoading } = useUserStats(
     user?.id ? Number(user.id) : undefined,
     undefined,
@@ -38,6 +42,22 @@ export function UserProfileSection({
 
   // Fallbacks
   const displayName = user?.name || user?.firstName || 'Anonymous User'
+
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(addressToCopy)
+      setCopied(true)
+      if (copyTimerRef.current) {
+        window.clearTimeout(copyTimerRef.current)
+      }
+      copyTimerRef.current = window.setTimeout(() => {
+        setCopied(false)
+        copyTimerRef.current = null
+      }, 1500)
+    } catch {
+      // ignore clipboard errors
+    }
+  }
 
   return (
     <>
@@ -76,14 +96,13 @@ export function UserProfileSection({
                 </span>
                 <button
                   className="text text-giv-gray-900 hover:text-giv-primary-500 cursor-pointer"
-                  onClick={() =>
-                    navigator.clipboard.writeText(
-                      user?.wallets?.[0]?.address || 'No address',
-                    )
-                  }
+                  onClick={handleCopyAddress}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
+                {copied && (
+                  <span className="text-xs text-giv-primary-500">Copied!</span>
+                )}
               </div>
             </div>
           </div>
