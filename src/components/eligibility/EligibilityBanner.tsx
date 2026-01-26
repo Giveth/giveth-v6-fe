@@ -140,6 +140,14 @@ export function EligibilityBanner() {
   // If no active QF rounds, return null (after hooks to keep order stable)
   if (!activeQfRoundsData?.activeQfRounds?.length) return null
 
+  // If global minimum MBD score and global minimum passport score are 0, return null
+  if (
+    globalSettingScore.globalMinimumMBDScore === 0 &&
+    globalSettingScore.globalMinimumPassportScore === 0
+  ) {
+    return null
+  }
+
   return (
     <>
       <div>
