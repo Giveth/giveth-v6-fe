@@ -3,11 +3,18 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
+import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
+import { useSiweAuth } from '@/context/AuthContext'
 import { type ProjectCartItem } from '@/context/CartContext'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
+import {
+  primaryWallets,
+  supportedChains,
+  thirdwebClient,
+} from '@/lib/thirdweb/client'
 import { type GroupedProjects } from '@/lib/types/cart'
 import { InsufficientFund } from '../modals/InsufficientFund'
 
@@ -19,6 +26,10 @@ export function DonationSidebar({
   nonQfProjects: ProjectCartItem[]
 }) {
   const router = useRouter()
+
+  const { signIn, isAuthenticated, token } = useSiweAuth()
+  const account = useActiveAccount()
+  const { connect } = useConnectModal()
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
 
@@ -40,7 +51,7 @@ export function DonationSidebar({
 
   const hasAnyItems = qfRoundGroups.length > 0 || nonQfProjects.length > 0
 
-  const handleDonateButtonClick = () => {
+  const handleDonateButtonClick = async () => {
     // Check is cart group value match user wallet balance
     const totalGroupCartValueUsd = qfRoundGroups.reduce((acc, group) => {
       return acc + Number(group.totalUsdValue)
@@ -86,6 +97,36 @@ export function DonationSidebar({
       return
     }
 
+    // Require wallet connection and SIWE auth before proceeding
+    if (!account?.address) {
+      try {
+        await connect({
+          client: thirdwebClient,
+          wallets: primaryWallets,
+          chains: supportedChains,
+          size: 'compact',
+          showThirdwebBranding: false,
+        })
+      } catch {
+        return
+      }
+      if (!account?.address) return
+    }
+    if (!isAuthenticated) {
+      try {
+        await signIn()
+      } catch {
+        return
+      }
+    }
+    const storedToken =
+      typeof window !== 'undefined'
+        ? (window.localStorage.getItem('giveth_token') ?? undefined)
+        : undefined
+    const jwt = token ?? storedToken
+    if (!jwt) return
+
+    // Redirect to pending page
     router.push('/cart/pending')
   }
 
@@ -170,7 +211,6 @@ export function DonationSidebar({
           Donate now
           <ArrowRight className="w-5 h-5" />
         </button>
-
         <AnonymousOption />
       </div>
 

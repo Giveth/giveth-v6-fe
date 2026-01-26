@@ -83,6 +83,8 @@ export function useWalletTokens(
     queryFn: async () => {
       const tokens = await getTokensByChainId(selectedChainId)
 
+      console.log(tokens)
+
       const results = await Promise.allSettled(
         tokens.map(async token => {
           // Skip invalid ERC20 definitions
@@ -100,7 +102,7 @@ export function useWalletTokens(
               address: accountAddress!,
             })
 
-            if (balance === 0n) return null
+            // if (balance === 0n) return null
 
             const priceInUSD = 0
 
@@ -123,9 +125,12 @@ export function useWalletTokens(
         }),
       )
 
-      return results.flatMap(r =>
-        r.status === 'fulfilled' && r.value ? [r.value] : [],
-      )
+      // Sort results by balance in descending order
+      const sortedResults = results
+        .flatMap(r => (r.status === 'fulfilled' && r.value ? [r.value] : []))
+        .sort((a, b) => Number(b.formattedBalance) - Number(a.formattedBalance))
+
+      return sortedResults
     },
   })
 }
