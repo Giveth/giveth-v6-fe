@@ -129,6 +129,7 @@ export function PassportBanner() {
     }
   }
 
+  // If global minimum MBD score and global minimum passport score are 0, return null
   if (
     globalSettingScore.globalMinimumMBDScore === 0 &&
     globalSettingScore.globalMinimumPassportScore === 0
