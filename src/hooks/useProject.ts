@@ -6,6 +6,7 @@ import {
 } from '@/lib/graphql/generated/graphql'
 import {
   donationsByProjectQuery,
+  projectByIDQuery,
   projectBySlugQuery,
   similarProjectsBySlugQuery,
 } from '@/lib/graphql/queries'
@@ -70,5 +71,21 @@ export const useSimilarProjectsBySlug = (
       })
     },
     enabled: !!slug,
+  })
+}
+
+/**
+ * Hook to get a project by its ID
+ *
+ * @param projectId - The ID of the project
+ * @returns The project
+ */
+export const useProjectById = (projectId: number) => {
+  return useQuery({
+    queryKey: ['projectById', projectId],
+    queryFn: async () => {
+      return graphQLClient.request(projectByIDQuery, { id: projectId })
+    },
+    enabled: !!projectId,
   })
 }

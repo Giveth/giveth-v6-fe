@@ -12,6 +12,8 @@ import {
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 import type { ProjectCartItem } from '@/context/CartContext'
 import type { RoundCheckoutStatus } from '@/hooks/useMultiRoundCheckout'
+import { useProjectById } from '@/hooks/useProject'
+import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import type { GroupedProjects } from '@/lib/types/cart'
@@ -29,12 +31,14 @@ export function DonationSummary({
   roundStatuses,
   overallStatus,
   overallError,
+  givethPercentage,
 }: {
   qfRoundGroups: GroupedProjects[]
   nonQfProjects: ProjectCartItem[]
   roundStatuses: Map<number, RoundCheckoutStatus>
   overallStatus: OverallStatus
   overallError?: string
+  givethPercentage: number
 }) {
   const totalProjects =
     qfRoundGroups.reduce((acc, r) => acc + r.projects.length, 0) +
@@ -99,6 +103,9 @@ export function DonationSummary({
     }
   }
 
+  // Get Giveth project data
+  const givethProjectData = useProjectById(GIVETH_PROJECT_ID)
+
   return (
     <div className="p-4 bg-white rounded-2xl overflow-hidden">
       {/* Header */}
@@ -132,6 +139,11 @@ export function DonationSummary({
         {qfRoundGroups.map(round => {
           const status = getRoundStatus(round.roundId)
           const roundKey = String(round.roundId)
+          const roundTotalAmount = Number(round.totalAmount || 0)
+          const givethAmountForRound =
+            givethPercentage > 0 && givethPercentage < 100
+              ? (roundTotalAmount * givethPercentage) / (100 - givethPercentage)
+              : 0
           return (
             <div
               key={roundKey}
@@ -207,6 +219,24 @@ export function DonationSummary({
                         <span className="font-medium">{project.title}</span>
                       </div>
                     ))}
+                  </div>
+                )}
+                {givethPercentage > 0 && (
+                  <div className="text-giv-gray-700 text-sm font-normal mt-2">
+                    <div
+                      key={GIVETH_PROJECT_ID}
+                      className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal"
+                    >
+                      {/* Amount */}
+                      <span className="font-medium">
+                        {formatNumber(givethAmountForRound)} {round.tokenSymbol}
+                      </span>
+
+                      <span>to</span>
+                      <span className="font-medium">
+                        {givethProjectData?.data?.project?.title ?? 'Giveth'}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
