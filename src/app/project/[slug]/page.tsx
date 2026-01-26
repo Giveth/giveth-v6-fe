@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { PassportBanner } from '@/components/PassportBanner'
 import { AboutTab } from '@/components/project/about-tab'
+import { SimilarProjects } from '@/components/project/AimilarProjects'
 import { AllTimeDonations } from '@/components/project/AllTimeDonations'
 import { DonationCard } from '@/components/project/DonationCard'
 import { GivbacksInfoBox } from '@/components/project/GivbacksInfoBox'
@@ -12,11 +13,17 @@ import { ProjectHero } from '@/components/project/ProjectHero'
 import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
 import { ProjectTabs } from '@/components/project/ProjectTabs'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
-import { SimilarProjects } from '@/components/project/similar-projects'
 import { UpdatesTab } from '@/components/project/updates-tab'
 import { useProjectBySlug } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
-import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
+import {
+  type ProjectBySlugQuery,
+  type ProjectEntity,
+} from '@/lib/graphql/generated/graphql'
+
+type QfRoundSelection = NonNullable<
+  NonNullable<ProjectBySlugQuery['projectBySlug']['projectQfRounds']>[number]
+>
 
 export default function ProjectPage() {
   const params = useParams()
@@ -26,7 +33,11 @@ export default function ProjectPage() {
   const project = data?.projectBySlug
   const projectId = project?.id ? parseInt(project.id) : undefined
   const { data: updatesCountData } = useProjectUpdatesCount(projectId)
-  const updatesCount = updatesCountData?.projectUpdates.totalCount ?? null
+  const updatesCount = updatesCountData?.projectUpdates?.totalCount ?? null
+
+  const [selectedRound, setSelectedRound] = useState<
+    QfRoundSelection | undefined
+  >(undefined)
 
   if (isLoading)
     return (
@@ -76,17 +87,19 @@ export default function ProjectPage() {
               <div className="lg:col-span-2">
                 <ProjectDonationsTable
                   projectId={parseInt(project.id)}
-                  qfRounds={(project.projectQfRounds || [])
-                    .map(pqr => ({
-                      id: pqr.qfRound?.id || '',
-                      name: pqr.qfRound?.name || '',
-                      isActive: pqr.qfRound?.isActive || false,
-                    }))
-                    .filter(r => r.id && r.name)}
+                  qfRoundEntries={
+                    (project.projectQfRounds || []).filter(
+                      pqr => pqr.qfRound?.id,
+                    ) as QfRoundSelection[]
+                  }
+                  setSelectedRound={setSelectedRound}
                 />
               </div>
               <div>
-                <QFRoundSidebar project={project} />
+                <QFRoundSidebar
+                  project={project}
+                  selectedRound={selectedRound}
+                />
               </div>
             </div>
           )}

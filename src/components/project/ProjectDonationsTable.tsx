@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   ArrowDown,
@@ -20,6 +20,7 @@ import {
   DonationSortField,
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
+import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { shortenAddress } from '@/lib/helpers/userHelper'
 import { ProjectImage } from './ProjectImage'
@@ -27,17 +28,32 @@ import { EnsName } from '../account/EnsName'
 
 interface ProjectDonationsTableProps {
   projectId: number
-  qfRounds?: Array<{
-    id: string
-    name: string
-    isActive: boolean
-  }>
+  qfRoundEntries?: Array<
+    NonNullable<ProjectBySlugQuery['projectBySlug']['projectQfRounds']>[number]
+  >
+  setSelectedRound: (
+    round:
+      | NonNullable<
+          NonNullable<
+            ProjectBySlugQuery['projectBySlug']['projectQfRounds']
+          >[number]
+        >
+      | undefined,
+  ) => void
 }
+
+type QfRoundOption = NonNullable<
+  NonNullable<
+    ProjectBySlugQuery['projectBySlug']['projectQfRounds']
+  >[number]['qfRound']
+>
 
 export function ProjectDonationsTable({
   projectId,
-  qfRounds = [],
+  qfRoundEntries = [],
+  setSelectedRound,
 }: ProjectDonationsTableProps) {
+  const lastSelectedRoundIdRef = useRef<string | undefined>(undefined)
   const [currentPage, setCurrentPage] = useState(0)
   const [filter, setFilter] = useState<FilterType>({ type: 'all' })
   const [useUrlFilter, setUseUrlFilter] = useState(true)
@@ -54,16 +70,33 @@ export function ProjectDonationsTable({
         ? parseInt(filter.id)
         : undefined
 
+  useEffect(() => {
+    const nextRoundId = qfRoundId ? qfRoundId.toString() : undefined
+    if (lastSelectedRoundIdRef.current === nextRoundId) return
+    lastSelectedRoundIdRef.current = nextRoundId
+
+    if (!nextRoundId) {
+      setSelectedRound(undefined)
+      return
+    }
+
+    const roundEntry = qfRoundEntries.find(r => r.qfRound?.id === nextRoundId)
+    setSelectedRound(roundEntry)
+  }, [qfRoundEntries, qfRoundId, setSelectedRound])
+
   // Setup filter based on the roundId from the URL if exists
   useEffect(() => {
     if (useUrlFilter && roundIdFromUrl) {
+      const roundName =
+        qfRoundEntries.find(r => r.qfRound?.id === roundIdFromUrl)?.qfRound
+          ?.name || ''
       setFilter({
         type: 'round',
         id: roundIdFromUrl,
-        name: qfRounds.find(r => r.id === roundIdFromUrl)?.name || '',
+        name: roundName,
       })
     }
-  }, [roundIdFromUrl, qfRounds, useUrlFilter])
+  }, [qfRoundEntries, roundIdFromUrl, useUrlFilter])
 
   // Set up sorting
   const [orderBy, setOrderBy] = useState<DonationSortField>(
@@ -148,16 +181,27 @@ export function ProjectDonationsTable({
     setOrderDirection(SortDirection.Desc)
   }
 
+  const dropdownRounds: QfRoundOption[] = qfRoundEntries
+    .map(entry => entry.qfRound)
+    .filter((round): round is QfRoundOption => Boolean(round))
+
   return (
     <>
       <div className="mb-4">
         <DonationTableDropdown
-          qfRounds={qfRounds}
+          qfRounds={dropdownRounds}
           selectedFilter={filter}
           onSelect={newFilter => {
             setFilter(newFilter)
             setUseUrlFilter(false)
             setCurrentPage(0)
+            const roundEntry =
+              newFilter.type === 'round'
+                ? qfRoundEntries.find(
+                    entry => entry.qfRound?.id === newFilter.id,
+                  )
+                : undefined
+            setSelectedRound(roundEntry)
           }}
         />
       </div>
