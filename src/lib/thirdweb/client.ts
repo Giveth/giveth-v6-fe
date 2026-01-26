@@ -31,6 +31,8 @@ const baseWallets: Wallet[] = [
   createWallet('com.coinbase.wallet'),
 ]
 
+export const primaryWallets = baseWallets
+
 const walletConnectWallet = env.WALLETCONNECT_PROJECT_ID
   ? walletConnect()
   : undefined

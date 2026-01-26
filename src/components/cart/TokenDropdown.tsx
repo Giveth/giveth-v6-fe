@@ -27,6 +27,8 @@ export const TokenDropdown = ({
   selectedChainId: number
   setRoundSelectedToken: (token: WalletTokenWithBalance) => void
 }) => {
+  const [hide0BalanceTokens, setHide0BalanceTokens] = useState(false)
+
   const account = useActiveAccount()
   const accountAddress = account?.address
 
@@ -85,10 +87,33 @@ export const TokenDropdown = ({
             shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
           "
         >
+          {walletTokens && walletTokens.length > 0 && (
+            <DropdownMenu.Item
+              onSelect={event => event.preventDefault()}
+              className="
+                cursor-default rounded-lg px-3 py-2 text-sm
+                text-[#1f2333] outline-none
+                hover:-giv-gray-200
+                focus:-giv-gray-200
+              "
+            >
+              <div className="flex items-center justify-start gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hide0BalanceTokens}
+                    onChange={e => setHide0BalanceTokens(e.target.checked)}
+                  />
+                  Hide 0 balance tokens
+                </label>
+              </div>
+            </DropdownMenu.Item>
+          )}
           <TokenDropdownItems
             walletTokens={walletTokens}
             isLoading={isLoading}
             onSelectToken={handleSelectToken}
+            hide0BalanceTokens={hide0BalanceTokens}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
@@ -100,10 +125,12 @@ function TokenDropdownItems({
   walletTokens,
   isLoading,
   onSelectToken,
+  hide0BalanceTokens,
 }: {
   walletTokens: WalletTokenWithBalance[] | undefined
   isLoading: boolean
   onSelectToken: (t: WalletTokenWithBalance) => void
+  hide0BalanceTokens: boolean
 }) {
   if (isLoading) {
     return <div className="px-3 py-2 text-sm text-[#82899a]">Loading...</div>
@@ -113,9 +140,17 @@ function TokenDropdownItems({
     return <div className="px-3 py-2 text-sm text-[#82899a]">No tokens</div>
   }
 
+  let filteredWalletTokens = walletTokens
+
+  if (hide0BalanceTokens) {
+    filteredWalletTokens = filteredWalletTokens.filter(
+      t => t.formattedBalance !== '0',
+    )
+  }
+
   return (
     <>
-      {walletTokens.map(t => (
+      {filteredWalletTokens.map(t => (
         <DropdownMenu.Item
           key={t.address}
           onSelect={() => {
@@ -124,8 +159,8 @@ function TokenDropdownItems({
           className="
             cursor-pointer rounded-lg px-3 py-2 text-sm
             text-[#1f2333] outline-none
-            hover:bg-[#f7f7f9]
-            focus:bg-[#f7f7f9]
+            hover:-giv-gray-200
+            focus:-giv-gray-200
           "
         >
           <div className="flex items-center justify-start gap-4">

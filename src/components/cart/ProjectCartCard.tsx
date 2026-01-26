@@ -1,10 +1,9 @@
-import Image from 'next/image'
 import { X } from 'lucide-react'
 import { defineChain } from 'thirdweb/chains'
 import { TokenIcon, TokenProvider } from 'thirdweb/react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
+import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
-import { QF_ROUND_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
@@ -21,31 +20,17 @@ export const ProjectCartCard = ({
   const handleRemoveItem = (roundId: number, itemId: string) => {
     removeFromCart(roundId, itemId)
   }
+
   return (
     <div className="px-4 py-4 border border-giv-gray-300 mb-4 mn-last:mb-0 rounded-xl hover:bg-giv-gray-200 transition-colors">
       {/* Project Info */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          {project.image && (
-            <Image
-              src={project.image ?? ''}
-              alt={project.title}
-              className="w-14 h-[45px] rounded-md overflow-hidden"
-              width={56}
-              height={45}
-              unoptimized
-            />
-          )}
-          {!project.image && (
-            <Image
-              src={QF_ROUND_FALLBACK_IMAGE}
-              alt="Project Fallback Image"
-              className="w-14 h-[45px] rounded-md overflow-hidden"
-              width={56}
-              height={45}
-              unoptimized
-            />
-          )}
+          <ProjectImage
+            src={project.image}
+            alt={project.title}
+            className="w-14 h-[45px] rounded-md overflow-hidden"
+          />
           <h4 className="text-base font-medium text-giv-gray-900">
             {project.title}
           </h4>
