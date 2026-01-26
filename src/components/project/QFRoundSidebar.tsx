@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { ChainIcon } from '@/components/ChainIcon'
+import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 
 interface QFRoundSidebarProps {
@@ -13,9 +14,15 @@ interface QFRoundSidebarProps {
       chainType: string
     }> | null
   }
+  selectedRound?: NonNullable<
+    NonNullable<ProjectBySlugQuery['projectBySlug']['projectQfRounds']>[number]
+  >
 }
 
-export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
+export function QFRoundSidebar({
+  project,
+  selectedRound,
+}: QFRoundSidebarProps) {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null)
 
   // Transform addresses to match expected format
@@ -33,16 +40,23 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
       console.error('Failed to copy address:', err)
     }
   }
+  const totalDonations =
+    selectedRound?.sumDonationValueUsd ?? project.totalDonations
+
+  const countUniqueDonors =
+    (selectedRound?.countUniqueDonors ?? project.countUniqueDonors) || 0
   return (
     <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
       <h3 className="text-base font-medium text-giv-gray-900 border-b border-giv-gray-300 pb-2 mb-4">
-        QF round 3 donations
+        {selectedRound?.qfRound?.name
+          ? `${selectedRound.qfRound.name} donations`
+          : 'All donations'}
       </h3>
 
       <div className="mb-4">
         <span className="text-[52px] font-adventor font-bold text-giv-gray-900">
           $
-          {formatNumber(project.totalDonations, {
+          {formatNumber(totalDonations, {
             minDecimals: 2,
             maxDecimals: 2,
           })}
@@ -50,7 +64,7 @@ export function QFRoundSidebar({ project }: QFRoundSidebarProps) {
         <p className="text-base text-giv-gray-700">
           Raised from{' '}
           <span className="text-giv-gray-900 font-medium">
-            {project.countUniqueDonors || 0}
+            {countUniqueDonors || 0}
           </span>{' '}
           contributors
         </p>
