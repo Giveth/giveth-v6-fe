@@ -150,17 +150,6 @@ export function EligibilityBanner() {
 
   return (
     <>
-      <div>
-        Global Minimum MBD Score: {globalSettingScore.globalMinimumMBDScore}
-        <br />
-        Global Minimum Passport Score:{' '}
-        {globalSettingScore.globalMinimumPassportScore}
-        <br />
-        User MBD Score: {userMBDScore}
-        <br />
-        User Passport Score: {userPassportScore}
-        <br />
-      </div>
       {/* Check passport expiration date */}
       {isTooOld && (
         <div className="p-4 space-y-2 border border-giv-warning-600 rounded-2xl">
