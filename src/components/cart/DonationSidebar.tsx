@@ -6,6 +6,8 @@ import { ArrowRight } from 'lucide-react'
 import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
+import { InsufficientFund } from '@/components/modals/InsufficientFund'
+import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { type ProjectCartItem } from '@/context/CartContext'
 import { formatNumber } from '@/lib/helpers/cartHelper'
@@ -16,7 +18,6 @@ import {
   thirdwebClient,
 } from '@/lib/thirdweb/client'
 import { type GroupedProjects } from '@/lib/types/cart'
-import { InsufficientFund } from '../modals/InsufficientFund'
 
 export function DonationSidebar({
   qfRoundGroups,
@@ -29,7 +30,7 @@ export function DonationSidebar({
 }) {
   const router = useRouter()
 
-  const { signIn, isAuthenticated, token } = useSiweAuth()
+  const { signIn, isAuthenticated, token, walletAddress } = useSiweAuth()
   const account = useActiveAccount()
   const { connect } = useConnectModal()
 
@@ -131,7 +132,7 @@ export function DonationSidebar({
   return (
     <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
       {/* Credit Card Option */}
-      <div className="bg-white p-5 rounded-2xl">
+      {/* <div className="bg-white p-5 rounded-2xl">
         <p className="text-base font-medium text-giv-gray-900 mb-3">
           New to crypto? REMOVE THIS PART
         </p>
@@ -139,7 +140,7 @@ export function DonationSidebar({
           Donate with your credit card
           <span className="text-giv-primary-400">New*</span>
         </button>
-      </div>
+      </div> */}
 
       {/* Donation Summary */}
 
@@ -147,45 +148,54 @@ export function DonationSidebar({
         <h3 className="text-base font-medium text-giv-gray-900 mb-2 pb-2 border-b border-giv-gray-300">
           Donation Summary
         </h3>
+        {!walletAddress && (
+          <div className="flex flex-col justify-center items-center h-48">
+            <div className="text-base font-medium text-giv-gray-800 pb-2">
+              Connect your wallet to begin
+            </div>
+            <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
+          </div>
+        )}
         <div className="pt-2 space-y-4">
-          {qfRoundGroups.map(group => {
-            // Show only number of the project that have amout
-            const projectsWithAmount = group.projects.filter(
-              project => Number(project.donationAmount) > 0,
-            )
-            const numberOfProjectsWithAmount = projectsWithAmount.length
+          {walletAddress &&
+            qfRoundGroups.map(group => {
+              // Show only number of the project that have amout
+              const projectsWithAmount = group.projects.filter(
+                project => Number(project.donationAmount) > 0,
+              )
+              const numberOfProjectsWithAmount = projectsWithAmount.length
 
-            // Reduce group amount by giveth percentage
-            const reducedGroupAmount =
-              Number(group.totalAmount) * (1 - givethPercentage / 100)
-            const reducedGroupAmountUsd =
-              Number(group.totalUsdValue) * (1 - givethPercentage / 100)
+              // Reduce group amount by giveth percentage
+              const reducedGroupAmount =
+                Number(group.totalAmount) * (1 - givethPercentage / 100)
+              const reducedGroupAmountUsd =
+                Number(group.totalUsdValue) * (1 - givethPercentage / 100)
 
-            return (
-              <div
-                key={group.roundId}
-                className="p-3 rounded-lg border border-giv-gray-300"
-              >
-                <p className="text-base text-giv-gray-900 font-medium">
-                  {formatNumber(reducedGroupAmount, {
-                    minDecimals: 2,
-                    maxDecimals: 6,
-                  })}{' '}
-                  {group.tokenSymbol}{' '}
-                  <span className="font-normal">
-                    (~${formatNumber(reducedGroupAmountUsd)}) to
-                  </span>{' '}
-                  {numberOfProjectsWithAmount} project
-                  {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
-                  <span className="font-normal">in</span>
-                </p>
-                <p className="text-base text-giv-gray-900 font-medium mt-0.5">
-                  {group.roundName} <span className="font-normal">on</span>{' '}
-                  {getChainName(group.selectedChainId)}
-                </p>
-              </div>
-            )
-          })}
+              return (
+                <div
+                  key={group.roundId}
+                  className="p-3 rounded-lg border border-giv-gray-300"
+                >
+                  <p className="text-base text-giv-gray-900 font-medium">
+                    {formatNumber(reducedGroupAmount, {
+                      minDecimals: 2,
+                      maxDecimals: 6,
+                    })}{' '}
+                    {group.tokenSymbol}{' '}
+                    <span className="font-normal">
+                      (~${formatNumber(reducedGroupAmountUsd)}) to
+                    </span>{' '}
+                    {numberOfProjectsWithAmount} project
+                    {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
+                    <span className="font-normal">in</span>
+                  </p>
+                  <p className="text-base text-giv-gray-900 font-medium mt-0.5">
+                    {group.roundName} <span className="font-normal">on</span>{' '}
+                    {getChainName(group.selectedChainId)}
+                  </p>
+                </div>
+              )
+            })}
           {nonQfProjects.map(project => (
             <div
               key={project.id}
@@ -209,19 +219,22 @@ export function DonationSidebar({
           ))}
         </div>
 
-        <DonateToGiveth />
-
-        {/* Donate Button */}
-        <button
-          onClick={handleDonateButtonClick}
-          disabled={!hasDonationAmount}
-          className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center 
-          justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        <div
+          className={`${walletAddress ? 'block' : 'opacity-50 cursor-not-allowed'}`}
         >
-          Donate now
-          <ArrowRight className="w-5 h-5" />
-        </button>
-        <AnonymousOption />
+          <DonateToGiveth />
+          {/* Donate Button */}
+          <button
+            onClick={handleDonateButtonClick}
+            disabled={!hasDonationAmount}
+            className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center 
+          justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Donate now
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <AnonymousOption />
+        </div>
       </div>
 
       <InsufficientFund
