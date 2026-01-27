@@ -146,6 +146,10 @@ export function SuccessDonationSummary() {
                 (100 - effectiveGivethPercentage)
               : 0
 
+          const totalAmountForRound = round.projects
+            .filter(p => Number(p.donationAmount) > 0)
+            .reduce((acc, p) => acc + Number(p.donationAmount), 0)
+
           return (
             <div
               key={roundKey}
@@ -155,8 +159,8 @@ export function SuccessDonationSummary() {
               <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
                 <p className="text-giv-gray-800 text-base font-normal">
                   <span className="font-medium">
-                    {givethAmountForRound > 0
-                      ? `${givethAmountForRound} ${round.tokenSymbol}`
+                    {totalAmountForRound > 0
+                      ? `${totalAmountForRound} ${round.tokenSymbol}`
                       : `${round.totalAmount} ${round.tokenSymbol}`}
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
