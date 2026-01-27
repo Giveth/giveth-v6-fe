@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { CheckCircle2 } from 'lucide-react'
 
 export function SuccessHero() {
   return (
@@ -19,6 +20,10 @@ export function SuccessHero() {
       <h1 className="text-3xl font-bold text-giv-gray-900 mb-2 [font-family:var(--font-inter)]">
         You're a giver now!
       </h1>
+      <div className="mb-4 px-3 py-2 mx-auto w-fit rounded-xl border border-giv-gray-400 bg-giv-gray-200 text-giv-jade-600 text-sm font-medium [font-family:var(--font-inter)] flex items-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-giv-jade-600" /> All donations are
+        received
+      </div>
     </div>
   )
 }
