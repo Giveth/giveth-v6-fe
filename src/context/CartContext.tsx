@@ -150,6 +150,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         item => item.id === project.id && item.roundId === project.roundId,
       )
       if (isDuplicate) return prev
+
+      // Get round data about selected token from the item inside that round
+      const round = donationRounds.find(r => r.roundId === project.roundId)
+      if (round) {
+        project.selectedToken = round.projects[0]?.selectedToken
+      }
+
       return [...prev, project]
     })
   }
