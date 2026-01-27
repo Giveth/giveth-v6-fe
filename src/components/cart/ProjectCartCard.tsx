@@ -1,19 +1,19 @@
 import { X } from 'lucide-react'
-import { defineChain } from 'thirdweb/chains'
-import { TokenIcon, TokenProvider } from 'thirdweb/react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
 import { ProjectImage } from '@/components/project/ProjectImage'
+import { TokenIcon } from '@/components/TokenIcon'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
-import { thirdwebClient } from '@/lib/thirdweb/client'
 
 export const ProjectCartCard = ({
   roundData,
   project,
+  selectedAmountVsDollars,
 }: {
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
   project: ProjectCartItem
+  selectedAmountVsDollars: number
 }) => {
   const { updateProjectDonation, removeFromCart } = useCart()
 
@@ -53,37 +53,84 @@ export const ProjectCartCard = ({
 
         <div className="flex items-center text-base font-medium gap-2 border border-giv-gray-100 rounded-md pr-3 pl-2 py-2">
           {project.selectedToken?.symbol && project.selectedToken?.address && (
-            <TokenProvider
+            <TokenIcon
+              tokenSymbol={project.selectedToken.symbol}
+              networkId={project.selectedToken.chainId}
               address={project.selectedToken.address}
-              chain={defineChain(project.selectedToken.chainId)}
-              client={thirdwebClient}
-            >
-              <TokenIcon className="h-5 w-5" />
-            </TokenProvider>
+              height={20}
+              width={20}
+            />
           )}
-          <span className="text-giv-gray-700">
-            {project.selectedToken?.symbol ?? ''}
-          </span>
-          <input
-            type="text"
-            value={project.donationAmount ?? '0'}
-            onChange={e => {
-              updateProjectDonation(
-                Number(roundData?.id ?? 0),
-                project.id,
-                String(e.target.value),
-                project.selectedToken?.symbol ?? '',
-                project.selectedToken?.address ?? '',
-                project.selectedToken?.chainId ?? 0,
-              )
-            }}
-            className="w-full max-[480px]:w-24 md:w-16 focus:w-28 transition-[width] duration-200 ease-out text-base p-0 font-medium text-left text-giv-gray-900 focus:outline-none"
-          />
+
+          {/* If selectedAmountVsDollars is 0, show the amount input */}
+          {selectedAmountVsDollars === 0 && (
+            <>
+              <span className="text-giv-gray-700">
+                {project.selectedToken?.symbol ?? ''}
+              </span>
+              <input
+                type="text"
+                value={project.donationAmount ?? '0'}
+                onChange={e => {
+                  updateProjectDonation(
+                    Number(roundData?.id ?? 0),
+                    project.id,
+                    String(e.target.value),
+                    project.selectedToken?.symbol ?? '',
+                    project.selectedToken?.address ?? '',
+                    project.selectedToken?.chainId ?? 0,
+                  )
+                }}
+                autoComplete="off"
+                className="w-full max-[480px]:w-24 md:w-16 focus:w-28 transition-[width] duration-200 ease-out text-base p-0 font-medium text-left text-giv-gray-900 focus:outline-none"
+              />
+            </>
+          )}
+          {/* If selectedAmountVsDollars is 1, show the amount input in dollars */}
+          {selectedAmountVsDollars === 1 && (
+            <>
+              $
+              <input
+                type="text"
+                value={formatNumber(
+                  Number(project.donationAmount ?? 0) *
+                    (project.selectedToken?.priceInUSD ?? 0),
+                )}
+                onChange={e => {
+                  updateProjectDonation(
+                    Number(roundData?.id ?? 0),
+                    project.id,
+                    String(
+                      Number(e.target.value) /
+                        (project.selectedToken?.priceInUSD ?? 0),
+                    ),
+                    project.selectedToken?.symbol ?? '',
+                    project.selectedToken?.address ?? '',
+                    project.selectedToken?.chainId ?? 0,
+                  )
+                }}
+                autoComplete="off"
+                className="w-full max-[480px]:w-24 md:w-16 focus:w-28 transition-[width] duration-200 ease-out text-base p-0 font-medium text-left text-giv-gray-900 focus:outline-none"
+              />
+            </>
+          )}
           <span className="px-2 py-1 bg-giv-gray-300 rounded-lg text-xs text-giv-gray-700">
-            ${' '}
-            {formatNumber(
-              (project.selectedToken?.priceInUSD ?? 0) *
-                Number(project.donationAmount ?? 0),
+            {selectedAmountVsDollars === 1 && (
+              <>
+                <span className="text-giv-gray-700">
+                  {project.selectedToken?.symbol ?? ''}
+                </span>{' '}
+                {formatNumber(Number(project.donationAmount ?? 0))}
+              </>
+            )}
+            {selectedAmountVsDollars === 0 && (
+              <>
+                ${' '}
+                {formatNumber(
+                  (project.selectedToken?.priceInUSD ?? 0) *
+                    Number(project.donationAmount ?? 0),
+                )}
+              </>
             )}
           </span>
         </div>

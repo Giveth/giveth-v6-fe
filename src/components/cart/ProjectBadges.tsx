@@ -62,7 +62,7 @@ export const ProjectBadges = ({
 
   const isDonationMatchedColor = isDonationMatched ? 'green' : 'gray'
   const isDonationMatchedMessage = isDonationMatched
-    ? 'Donation will be matched'
+    ? 'in matching'
     : 'unlocks matching funds'
 
   // Get estimated matching for the project

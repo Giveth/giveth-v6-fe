@@ -30,6 +30,12 @@ export function DonationRound({
   const [roundSelectedToken, setRoundSelectedToken] = useState<
     WalletTokenWithBalance | undefined
   >(undefined)
+
+  // Value to show in the amount input (0 for amount, 1 for dollars)
+  // If user clicks on the arrow button, the value will be toggled between entering amount or the selected token's price in USD
+  const [selectedAmountVsDollars, setSelectedAmountVsDollars] =
+    useState<number>(0)
+
   return (
     <div className="bg-white p-4 rounded-2xl border-4 border-giv-gray-500 overflow-hidden">
       {/* Round Header */}
@@ -54,12 +60,14 @@ export function DonationRound({
           <TokenDropdown
             selectedChainId={cartRoundData.selectedChainId}
             setRoundSelectedToken={setRoundSelectedToken}
+            roundId={Number(roundData.id) ?? 0}
           />
 
           <AmountInput
             roundId={cartRoundData.roundId}
             selectedToken={roundSelectedToken}
             cartItems={cartRoundData.projects}
+            setSelectedAmountVsDollars={setSelectedAmountVsDollars}
           />
         </div>
       </div>
@@ -71,6 +79,7 @@ export function DonationRound({
             key={project.id}
             roundData={roundData}
             project={project}
+            selectedAmountVsDollars={selectedAmountVsDollars}
           />
         ))}
       </div>

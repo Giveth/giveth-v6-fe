@@ -1,16 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
-import { getContract } from 'thirdweb'
+import { getContract, readContract } from 'thirdweb'
 import { defineChain } from 'thirdweb/chains'
 import { balanceOf } from 'thirdweb/extensions/erc20'
 import { formatUnits } from 'viem'
 import { type ProjectCartItem } from '@/context/CartContext'
+import {
+  chainlinkAggregatorAbi,
+  uniswapV2FactoryAbi,
+  uniswapV2PairAbi,
+} from '@/lib/abis/abis'
+import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import { graphQLClient } from '@/lib/graphql/client'
 import type { TokensByNetworkQuery } from '@/lib/graphql/generated/graphql'
 import { tokensByNetworkQuery } from '@/lib/graphql/queries'
+import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { GroupedProjects } from '@/lib/types/cart'
-import { GIVETH_PROJECT_ID } from '../constants/app-main'
-import { thirdwebClient } from '../thirdweb/client'
-import { type WalletTokenWithBalance } from '../types/chain'
+import { type WalletTokenWithBalance } from '@/lib/types/chain'
+
+const MAINNET_CHAIN_ID = 1
+const UNISWAP_V2_FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+const MAINNET_WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+const MAINNET_USDC_ADDRESS = '0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+const MAINNET_USDC_DECIMALS = 6
+const MAINNET_WETH_USD_FEED_ADDRESS =
+  '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'
 
 /**
  * Group cart items by round
@@ -180,18 +193,184 @@ export async function getTokenPriceInUSDByCoingeckoId(
     staleTime: 60_000,
     gcTime: 60_000 * 5,
     queryFn: async () => {
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(
-          coingeckoId,
-        )}&vs_currencies=usd`,
-      )
+      try {
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(
+            coingeckoId,
+          )}&vs_currencies=usd`,
+        )
 
-      if (!res.ok) return 0
+        if (!res.ok) return 0
 
-      const data = (await res.json()) as Record<string, { usd?: number }>
-      return data?.[coingeckoId]?.usd ?? 0
+        const data = (await res.json()) as Record<string, { usd?: number }>
+        return data?.[coingeckoId]?.usd ?? 0
+      } catch {
+        return 0
+      }
     },
   })
+}
+
+async function getEthPriceUsdCached() {
+  const { getQueryClient } = await import('@/lib/react-query/query-client')
+  const queryClient = getQueryClient()
+
+  return await queryClient.fetchQuery({
+    queryKey: ['chainlink', 'ethUsd'],
+    staleTime: 60_000,
+    gcTime: 60_000 * 5,
+    queryFn: async () => {
+      try {
+        const contract = getContract({
+          client: thirdwebClient,
+          chain: defineChain(MAINNET_CHAIN_ID),
+          address: MAINNET_WETH_USD_FEED_ADDRESS,
+          abi: chainlinkAggregatorAbi,
+        })
+        const price = await readContract({
+          contract,
+          method: 'latestAnswer',
+          params: [],
+        })
+        return Number(price) / 1e8
+      } catch {
+        return 0
+      }
+    },
+  })
+}
+
+async function getUniswapV2PairAddress(
+  tokenA: `0x${string}`,
+  tokenB: `0x${string}`,
+) {
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(MAINNET_CHAIN_ID),
+    address: UNISWAP_V2_FACTORY_ADDRESS,
+    abi: uniswapV2FactoryAbi,
+  })
+  const pair = (await readContract({
+    contract,
+    method: 'getPair',
+    params: [tokenA, tokenB],
+  })) as string
+
+  return pair
+}
+
+async function getTokenPriceFromUniswapV2Pair(
+  tokenAddress: `0x${string}`,
+  tokenDecimals: number,
+  quoteTokenAddress: `0x${string}`,
+  quoteTokenDecimals: number,
+) {
+  const pairAddress = await getUniswapV2PairAddress(
+    tokenAddress,
+    quoteTokenAddress,
+  )
+
+  if (
+    !pairAddress ||
+    pairAddress === '0x0000000000000000000000000000000000000000'
+  )
+    return 0
+
+  const pairContract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(MAINNET_CHAIN_ID),
+    address: pairAddress as `0x${string}`,
+    abi: uniswapV2PairAbi,
+  })
+
+  const [reserves, token0, token1] = await Promise.all([
+    readContract({
+      contract: pairContract,
+      method: 'getReserves',
+      params: [],
+    }) as Promise<[bigint, bigint, number]>,
+    readContract({
+      contract: pairContract,
+      method: 'token0',
+      params: [],
+    }) as Promise<string>,
+    readContract({
+      contract: pairContract,
+      method: 'token1',
+      params: [],
+    }) as Promise<string>,
+  ])
+
+  const tokenAddressLower = tokenAddress.toLowerCase()
+  const quoteTokenLower = quoteTokenAddress.toLowerCase()
+  const token0Address = token0.toLowerCase()
+  const token1Address = token1.toLowerCase()
+
+  let tokenReserve: number
+  let quoteReserve: number
+
+  if (
+    tokenAddressLower === token0Address &&
+    quoteTokenLower === token1Address
+  ) {
+    tokenReserve = Number(reserves[0])
+    quoteReserve = Number(reserves[1])
+  } else if (
+    tokenAddressLower === token1Address &&
+    quoteTokenLower === token0Address
+  ) {
+    tokenReserve = Number(reserves[1])
+    quoteReserve = Number(reserves[0])
+  } else {
+    return 0
+  }
+
+  if (tokenReserve === 0 || quoteReserve === 0) return 0
+
+  const tokenAmount = tokenReserve / 10 ** tokenDecimals
+  const quoteAmount = quoteReserve / 10 ** quoteTokenDecimals
+
+  return quoteAmount / tokenAmount
+}
+
+export async function getPriceFromUniswapV2(
+  tokenAddress: `0x${string}`,
+  tokenDecimals: number,
+  chainId: number = MAINNET_CHAIN_ID,
+) {
+  if (chainId !== MAINNET_CHAIN_ID) return 0
+
+  const normalizedToken = tokenAddress.toLowerCase()
+  if (normalizedToken === MAINNET_WETH_ADDRESS.toLowerCase()) {
+    return await getEthPriceUsdCached()
+  }
+  if (normalizedToken === MAINNET_USDC_ADDRESS.toLowerCase()) {
+    return 1
+  }
+
+  try {
+    const tokenInEth = await getTokenPriceFromUniswapV2Pair(
+      tokenAddress,
+      tokenDecimals,
+      MAINNET_WETH_ADDRESS,
+      18,
+    )
+    if (tokenInEth) {
+      const ethUsd = await getEthPriceUsdCached()
+      if (ethUsd) return tokenInEth * ethUsd
+    }
+
+    const tokenInUsdc = await getTokenPriceFromUniswapV2Pair(
+      tokenAddress,
+      tokenDecimals,
+      MAINNET_USDC_ADDRESS,
+      MAINNET_USDC_DECIMALS,
+    )
+    return tokenInUsdc || 0
+  } catch (error) {
+    console.warn('Failed to read Uniswap V2 price:', error)
+    return 0
+  }
 }
 
 /**

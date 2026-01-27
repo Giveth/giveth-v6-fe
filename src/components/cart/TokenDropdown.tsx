@@ -5,8 +5,10 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { TokenIcon } from '@/components/TokenIcon'
+import { useCart } from '@/context/CartContext'
 import {
   formatNumber,
+  getPriceFromUniswapV2,
   getTokenPriceInUSDByCoingeckoId,
   useWalletTokens,
 } from '@/lib/helpers/cartHelper'
@@ -23,11 +25,15 @@ export interface Token {
 export const TokenDropdown = ({
   selectedChainId,
   setRoundSelectedToken,
+  roundId,
 }: {
   selectedChainId: number
   setRoundSelectedToken: (token: WalletTokenWithBalance) => void
+  roundId: number
 }) => {
   const [hide0BalanceTokens, setHide0BalanceTokens] = useState(false)
+
+  const { updateSelectedToken } = useCart()
 
   const account = useActiveAccount()
   const accountAddress = account?.address
@@ -44,11 +50,31 @@ export const TokenDropdown = ({
   // Select choosed token when clicking on the dropdown item
   const handleSelectToken = async (token: WalletTokenWithBalance) => {
     // Set token price in USD
-    const priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
+    let priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
+
+    if (!priceInUSD || priceInUSD === 0) {
+      priceInUSD =
+        (await getPriceFromUniswapV2(
+          token.address as `0x${string}`,
+          token.decimals,
+          selectedChainId,
+        )) ?? 0
+    }
+
     token.priceInUSD = priceInUSD
 
     setSelectedToken(token)
     setRoundSelectedToken(token)
+
+    // Update to all projects in the round same token
+    updateSelectedToken(
+      roundId,
+      token,
+      token.symbol,
+      (token.address as `0x${string}`) ?? '',
+      token.decimals,
+      token.isGivbackEligible,
+    )
   }
 
   return (

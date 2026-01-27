@@ -9,12 +9,14 @@ interface AmountInputProps {
   roundId: number
   selectedToken: WalletTokenWithBalance | undefined
   cartItems: ProjectCartItem[]
+  setSelectedAmountVsDollars: (amount: number) => void
 }
 
 export const AmountInput = ({
   roundId: _roundId,
   selectedToken,
   cartItems,
+  setSelectedAmountVsDollars,
 }: AmountInputProps) => {
   const { updateProjectDonation, updateSelectedToken } = useCart()
 
@@ -88,9 +90,11 @@ export const AmountInput = ({
         />
         <ArrowLeftRight
           className="w-4 h-4 text-giv-gray-800 cursor-pointer"
-          onClick={() =>
-            setEnteringType(enteringType === 'amount' ? 'usd' : 'amount')
-          }
+          onClick={() => {
+            const newEnteringType = enteringType === 'amount' ? 'usd' : 'amount'
+            setEnteringType(newEnteringType)
+            setSelectedAmountVsDollars(newEnteringType === 'amount' ? 0 : 1)
+          }}
         />
         <span className="px-2 py-1 bg-giv-gray-300 rounded-lg text-xs text-giv-gray-700">
           {enteringType === 'amount' ? '$' : selectedToken?.symbol}{' '}
