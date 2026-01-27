@@ -40,24 +40,39 @@ export default function PendingPage() {
   )
 
   const roundsForCheckout: DonationRound[] = useMemo(() => {
-    return qfRoundGroups.map(group => {
-      const fallbackToken = group.projects.find(
-        p => p.selectedToken,
-      )?.selectedToken
+    return qfRoundGroups
+      .map(group => {
+        const projectsWithAmount = group.projects.filter(
+          project => Number(project.donationAmount) > 0,
+        )
+        if (projectsWithAmount.length === 0) return null
 
-      return {
-        roundId: group.roundId,
-        roundName: group.roundName,
-        selectedChainId: group.selectedChainId,
-        selectedToken: group.selectedToken ?? fallbackToken,
-        tokenSymbol: group.tokenSymbol,
-        tokenAddress: group.tokenAddress,
-        tokenDecimals: group.tokenDecimals,
-        projects: group.projects,
-        totalAmount: group.totalAmount,
-        totalUsdValue: group.totalUsdValue,
-      }
-    })
+        const fallbackToken = projectsWithAmount.find(
+          p => p.selectedToken,
+        )?.selectedToken
+
+        const totalAmount = projectsWithAmount.reduce((acc, project) => {
+          return acc + Number(project.donationAmount || 0)
+        }, 0)
+        const totalUsdValue = projectsWithAmount.reduce((acc, project) => {
+          const priceInUSD = project.selectedToken?.priceInUSD ?? 0
+          return acc + Number(project.donationAmount || 0) * priceInUSD
+        }, 0)
+
+        return {
+          roundId: group.roundId,
+          roundName: group.roundName,
+          selectedChainId: group.selectedChainId,
+          selectedToken: group.selectedToken ?? fallbackToken,
+          tokenSymbol: group.tokenSymbol,
+          tokenAddress: group.tokenAddress,
+          tokenDecimals: group.tokenDecimals,
+          projects: projectsWithAmount,
+          totalAmount: totalAmount.toString(),
+          totalUsdValue: totalUsdValue.toString(),
+        }
+      })
+      .filter((round): round is DonationRound => Boolean(round))
   }, [qfRoundGroups])
 
   // If user lands here with an empty cart, bounce back.

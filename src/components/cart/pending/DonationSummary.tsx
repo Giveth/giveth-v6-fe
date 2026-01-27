@@ -40,9 +40,21 @@ export function DonationSummary({
   overallError?: string
   givethPercentage: number
 }) {
-  const totalProjects =
+  const totalProjectsInCart =
     qfRoundGroups.reduce((acc, r) => acc + r.projects.length, 0) +
     nonQfProjects.length
+
+  // Count only projects that have donation amount
+  const totalQfProjects = qfRoundGroups.reduce(
+    (acc, r) =>
+      acc + r.projects.filter(p => Number(p.donationAmount) > 0).length,
+    0,
+  )
+  const totalNonQfProjects = nonQfProjects.filter(
+    p => Number(p.donationAmount) > 0,
+  ).length
+
+  const totalProjects = totalQfProjects + totalNonQfProjects
 
   const totalUsd =
     qfRoundGroups.reduce((acc, r) => acc + Number(r.totalUsdValue || 0), 0) +
@@ -134,6 +146,13 @@ export function DonationSummary({
         </div>
       )}
 
+      {/* If some project(s) don't have donation amount, show a warning */}
+      {totalQfProjects !== totalProjectsInCart && (
+        <div className="mb-4 p-3 rounded-xl border border-yellow-200 bg-yellow-50 text-yellow-700 text-sm">
+          Some projects don't have donation amount.
+        </div>
+      )}
+
       {/* Donation Rounds */}
       <div className="space-y-4">
         {qfRoundGroups.map(round => {
@@ -144,6 +163,13 @@ export function DonationSummary({
             givethPercentage > 0 && givethPercentage < 100
               ? (roundTotalAmount * givethPercentage) / (100 - givethPercentage)
               : 0
+
+          // COunt only projects that have donation amount
+          const projectsWithAmount = round.projects.filter(
+            p => Number(p.donationAmount) > 0,
+          )
+          const numberOfProjectsWithAmount = projectsWithAmount.length
+
           return (
             <div
               key={roundKey}
@@ -157,7 +183,7 @@ export function DonationSummary({
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
-                    {round.projects.length} projects
+                    {numberOfProjectsWithAmount} projects
                   </span>{' '}
                   in <span className="font-medium">{round.roundName}</span> on{' '}
                   <span className="font-medium">
@@ -221,7 +247,7 @@ export function DonationSummary({
                     ))}
                   </div>
                 )}
-                {givethPercentage > 0 && (
+                {givethPercentage > 0 && expandedRounds.has(roundKey) && (
                   <div className="text-giv-gray-700 text-sm font-normal mt-2">
                     <div
                       key={GIVETH_PROJECT_ID}
