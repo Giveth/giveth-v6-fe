@@ -11,7 +11,7 @@ import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 
 export default function CartPage() {
   const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
-  const { cartItems } = useCart()
+  const { cartItems, givethPercentage } = useCart()
 
   // Group cart items by round
   const { qfRoundGroups, nonQfProjects } = useMemo(
@@ -99,6 +99,7 @@ export default function CartPage() {
           <DonationSidebar
             qfRoundGroups={qfRoundGroups}
             nonQfProjects={nonQfProjects}
+            givethPercentage={givethPercentage}
           />
         </div>
       </main>

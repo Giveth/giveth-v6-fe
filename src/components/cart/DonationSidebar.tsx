@@ -21,9 +21,11 @@ import { InsufficientFund } from '../modals/InsufficientFund'
 export function DonationSidebar({
   qfRoundGroups,
   nonQfProjects,
+  givethPercentage,
 }: {
   qfRoundGroups: GroupedProjects[]
   nonQfProjects: ProjectCartItem[]
+  givethPercentage: number
 }) {
   const router = useRouter()
 
@@ -33,20 +35,14 @@ export function DonationSidebar({
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
 
-  const totalCartAmountUsd = useMemo(() => {
-    const totalGroupUsd = qfRoundGroups.reduce((acc, group) => {
-      return acc + Number(group.totalUsdValue)
-    }, 0)
-
-    const totalNonGroupUsd = nonQfProjects.reduce((acc, project) => {
-      return (
-        acc +
-        Number(project.donationAmount) *
-          Number(project.selectedToken?.priceInUSD ?? 0)
-      )
-    }, 0)
-
-    return totalGroupUsd + totalNonGroupUsd
+  const hasDonationAmount = useMemo(() => {
+    const hasGroupedAmount = qfRoundGroups.some(group =>
+      group.projects.some(project => Number(project.donationAmount) > 0),
+    )
+    const hasNonGroupedAmount = nonQfProjects.some(
+      project => Number(project.donationAmount) > 0,
+    )
+    return hasGroupedAmount || hasNonGroupedAmount
   }, [qfRoundGroups, nonQfProjects])
 
   const hasAnyItems = qfRoundGroups.length > 0 || nonQfProjects.length > 0
@@ -93,7 +89,7 @@ export function DonationSidebar({
     }
 
     // Checko is cart empty
-    if (totalCartAmountUsd === 0) {
+    if (!hasDonationAmount) {
       return
     }
 
@@ -152,30 +148,44 @@ export function DonationSidebar({
           Donation Summary
         </h3>
         <div className="pt-2 space-y-4">
-          {qfRoundGroups.map(group => (
-            <div
-              key={group.roundId}
-              className="p-3 rounded-lg border border-giv-gray-300"
-            >
-              <p className="text-base text-giv-gray-900 font-medium">
-                {formatNumber(Number(group.totalAmount), {
-                  minDecimals: 2,
-                  maxDecimals: 6,
-                })}{' '}
-                {group.tokenSymbol}{' '}
-                <span className="font-normal">
-                  (~${formatNumber(Number(group.totalUsdValue))}) to
-                </span>{' '}
-                {group.projects.length} project
-                {group.projects.length > 1 ? 's' : ''}{' '}
-                <span className="font-normal">in</span>
-              </p>
-              <p className="text-base text-giv-gray-900 font-medium mt-0.5">
-                {group.roundName} <span className="font-normal">on</span>{' '}
-                {getChainName(group.selectedChainId)}
-              </p>
-            </div>
-          ))}
+          {qfRoundGroups.map(group => {
+            // Show only number of the project that have amout
+            const projectsWithAmount = group.projects.filter(
+              project => Number(project.donationAmount) > 0,
+            )
+            const numberOfProjectsWithAmount = projectsWithAmount.length
+
+            // Reduce group amount by giveth percentage
+            const reducedGroupAmount =
+              Number(group.totalAmount) * (1 - givethPercentage / 100)
+            const reducedGroupAmountUsd =
+              Number(group.totalUsdValue) * (1 - givethPercentage / 100)
+
+            return (
+              <div
+                key={group.roundId}
+                className="p-3 rounded-lg border border-giv-gray-300"
+              >
+                <p className="text-base text-giv-gray-900 font-medium">
+                  {formatNumber(reducedGroupAmount, {
+                    minDecimals: 2,
+                    maxDecimals: 6,
+                  })}{' '}
+                  {group.tokenSymbol}{' '}
+                  <span className="font-normal">
+                    (~${formatNumber(reducedGroupAmountUsd)}) to
+                  </span>{' '}
+                  {numberOfProjectsWithAmount} project
+                  {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
+                  <span className="font-normal">in</span>
+                </p>
+                <p className="text-base text-giv-gray-900 font-medium mt-0.5">
+                  {group.roundName} <span className="font-normal">on</span>{' '}
+                  {getChainName(group.selectedChainId)}
+                </p>
+              </div>
+            )
+          })}
           {nonQfProjects.map(project => (
             <div
               key={project.id}
@@ -204,7 +214,7 @@ export function DonationSidebar({
         {/* Donate Button */}
         <button
           onClick={handleDonateButtonClick}
-          disabled={totalCartAmountUsd === 0}
+          disabled={!hasDonationAmount}
           className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center 
           justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >

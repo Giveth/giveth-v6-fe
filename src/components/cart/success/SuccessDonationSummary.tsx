@@ -75,13 +75,20 @@ export function SuccessDonationSummary() {
     return `${base}/tx/${hash}`
   }
 
+  // Count only projects that have donation amount
+  const totalQfProjects =
+    receipt?.qfRoundGroups.reduce(
+      (acc, r) =>
+        acc + r.projects.filter(p => Number(p.donationAmount) > 0).length,
+      0,
+    ) ?? 0
+  const totalNonQfProjects =
+    receipt?.nonQfProjects.filter(p => Number(p.donationAmount) > 0).length ?? 0
+
   const totalProjects = useMemo(() => {
     if (!receipt) return 0
-    return (
-      receipt.qfRoundGroups.reduce((acc, r) => acc + r.projects.length, 0) +
-      receipt.nonQfProjects.length
-    )
-  }, [receipt])
+    return totalQfProjects + totalNonQfProjects
+  }, [receipt, totalQfProjects, totalNonQfProjects])
 
   const totalUsd = useMemo(() => {
     if (!receipt) return 0
@@ -114,7 +121,7 @@ export function SuccessDonationSummary() {
           </span>{' '}
           to{' '}
           <span className="text-giv-primary-700">
-            {totalProjects} projects.
+            {totalProjects} project{totalProjects > 1 ? 's' : ''}.
           </span>
         </p>
       </div>
@@ -154,7 +161,7 @@ export function SuccessDonationSummary() {
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
-                    {round.projects.length} projects
+                    {totalProjects} project{totalProjects > 1 ? 's' : ''}.
                   </span>{' '}
                   in <span className="font-medium">{round.roundName}</span> on{' '}
                   <span className="font-medium">
@@ -243,21 +250,22 @@ export function SuccessDonationSummary() {
                     ))}
                   </div>
                 )}
-                {effectiveGivethPercentage > 0 && (
-                  <div className="text-giv-gray-700 text-sm font-normal mt-2">
-                    <div className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal">
-                      <span className="font-medium">
-                        {givethAmountForRound > 0
-                          ? `${givethAmountForRound} ${round.tokenSymbol}`
-                          : `${round.totalAmount} ${round.tokenSymbol}`}
-                      </span>
+                {effectiveGivethPercentage > 0 &&
+                  expandedRounds.has(roundKey) && (
+                    <div className="space-y-2 flex flex-col items-start gap-2 mt-2">
+                      <div className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal">
+                        <span className="font-medium">
+                          {givethAmountForRound > 0
+                            ? `${givethAmountForRound} ${round.tokenSymbol}`
+                            : `${round.totalAmount} ${round.tokenSymbol}`}
+                        </span>
+                        <span>to</span>
+                        <span className="font-medium">
+                          {givethProjectData?.data?.project?.title}
+                        </span>
+                      </div>
                     </div>
-                    <span>to</span>
-                    <span className="font-medium">
-                      {givethProjectData?.data?.project?.title}
-                    </span>
-                  </div>
-                )}
+                  )}
               </div>
             </div>
           )
