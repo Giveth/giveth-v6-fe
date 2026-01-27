@@ -1,6 +1,15 @@
+import { XCircle } from 'lucide-react'
 import { IconHeartHand } from '@/components/icons/IconHeartHand'
 
-export function PendingHero() {
+export function PendingHero({
+  overallError,
+  overallStatus,
+}: {
+  overallError?: string
+  overallStatus?: 'idle' | 'preparing' | 'in_progress' | 'completed' | 'failed'
+}) {
+  const shouldShowError = overallStatus === 'failed' && Boolean(overallError)
+
   return (
     <div className="text-center p-8 bg-white">
       {/* Heart Hands Icon */}
@@ -13,6 +22,13 @@ export function PendingHero() {
       <h1 className="text-3xl font-bold text-giv-gray-900 mb-2 [font-family:var(--font-inter)]">
         Donating
       </h1>
+
+      {shouldShowError && (
+        <div className="mb-4 px-3 py-2 mx-auto w-fit rounded-xl border border-giv-gray-400 bg-giv-gray-200 text-[#F96E5B] text-sm font-medium [font-family:var(--font-inter)] sflex items-center gap-2">
+          <XCircle className="w-4 h-4 text-[#F96E5B]" /> All of your donations
+          failed, please try again later.
+        </div>
+      )}
     </div>
   )
 }
