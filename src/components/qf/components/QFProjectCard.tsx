@@ -55,6 +55,7 @@ export function QFProjectCard({
     if (isInCart) {
       removeFromCart(roundId ?? 0, projectId)
     } else {
+      // Check if the project is already in the cart for this round
       addToCart({
         id: projectId,
         title: project.title,
