@@ -67,6 +67,7 @@ export const ProjectCartCard = ({
               address={project.selectedToken.address}
               height={20}
               width={20}
+              isGivbackEligible={project.selectedToken?.isGivbackEligible}
             />
           )}
 

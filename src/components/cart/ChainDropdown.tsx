@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
+import { useActiveWalletChain } from 'thirdweb/react'
 import { useCart } from '@/context/CartContext'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import { ChainIcon } from '../ChainIcon'
@@ -14,10 +15,25 @@ export const ChainDropdown = ({
   eligibleNetworks: number[]
   roundId: number
 }) => {
+  // Get user wallet current chain id
+  const chain = useActiveWalletChain()
+  const chainId = chain?.id ?? 0
+
   const { updateSelectedChainId } = useCart()
   const [selectedChainIdState, setSelectedChainIdState] = useState<number>(
-    selectedChainId ?? 0,
+    selectedChainId && selectedChainId > 0 ? selectedChainId : chainId,
   )
+
+  useEffect(() => {
+    if (selectedChainId && selectedChainId > 0) {
+      setSelectedChainIdState(selectedChainId)
+      return
+    }
+    if (chainId > 0) {
+      setSelectedChainIdState(chainId)
+      updateSelectedChainId(roundId, chainId)
+    }
+  }, [chainId, selectedChainId, roundId, updateSelectedChainId])
 
   return (
     <DropdownMenu.Root>
