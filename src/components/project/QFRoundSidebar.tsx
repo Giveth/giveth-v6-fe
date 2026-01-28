@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
+import { type Address } from 'thirdweb'
+import { EnsName } from '@/components/account/EnsName'
 import { ChainIcon } from '@/components/ChainIcon'
 import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
@@ -81,7 +83,11 @@ export function QFRoundSidebar({
               className="flex items-center justify-between gap-2 p-2 bg-giv-gray-200 rounded-lg"
             >
               <span className="text-xs text-giv-gray-700 truncate flex-1">
-                {item.address.slice(0, 10)}...{item.address.slice(-8)}
+                <EnsName
+                  address={item.address as Address as `0x${string}`}
+                  startLength={10}
+                  endLength={8}
+                />
               </span>
               <div className="flex items-center gap-2">
                 <button

@@ -84,18 +84,18 @@ export function DonationSummary({
   const getRoundBadgeText = (status?: RoundCheckoutStatus['status']) => {
     switch (status) {
       case 'preparing':
-        return 'Preparing transactions...'
+        return 'Ready to process'
       case 'awaiting_approval':
-        return 'Approve in wallet'
+        return 'Ready to process'
       case 'processing':
       case 'confirming':
-        return 'Your transactions are processing.'
+        return 'Your donation is processing'
       case 'success':
-        return 'Transactions completed.'
+        return 'Sonation completed'
       case 'error':
-        return 'Some transactions failed.'
+        return 'Donation failed'
       default:
-        return 'Ready to process transactions.'
+        return 'Your donation is processing'
     }
   }
 
@@ -140,12 +140,6 @@ export function DonationSummary({
         </p>
       </div>
 
-      {overallStatus === 'failed' && overallError && (
-        <div className="mb-4 p-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
-          {overallError}
-        </div>
-      )}
-
       {/* If some project(s) don't have donation amount, show a warning */}
       {totalQfProjects !== totalProjectsInCart && (
         <div className="mb-4 p-3 rounded-xl border border-yellow-200 bg-yellow-50 text-yellow-700 text-sm">
@@ -164,6 +158,8 @@ export function DonationSummary({
               ? (roundTotalAmount * givethPercentage) / (100 - givethPercentage)
               : 0
 
+          const totalAmountInRound = roundTotalAmount + givethAmountForRound
+
           // COunt only projects that have donation amount
           const projectsWithAmount = round.projects.filter(
             p => Number(p.donationAmount) > 0,
@@ -179,13 +175,20 @@ export function DonationSummary({
               <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
                 <p className="text-giv-gray-800 text-base font-normal">
                   <span className="font-medium">
-                    {round.totalAmount} {round.tokenSymbol}
+                    {totalAmountInRound} {round.tokenSymbol}
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
                     {numberOfProjectsWithAmount} projects
                   </span>{' '}
-                  in <span className="font-medium">{round.roundName}</span> on{' '}
+                  in <span className="font-medium">{round.roundName}</span>{' '}
+                  {givethPercentage > 0 && (
+                    <>
+                      and
+                      <span className="font-medium"> Giveth</span>{' '}
+                    </>
+                  )}
+                  on{' '}
                   <span className="font-medium">
                     {getChainName(round.selectedChainId)}
                   </span>
@@ -200,17 +203,30 @@ export function DonationSummary({
                     className={`flex items-center gap-2 px-3 py-1.5 ${
                       status?.status === 'success'
                         ? 'text-green-700 border-green-300'
-                        : status?.status === 'error'
+                        : status?.status === 'error' ||
+                            overallStatus === 'failed'
                           ? 'text-red-700 border-red-300'
                           : 'text-giv-gray-700 border-giv-gray-400'
                     } bg-giv-gray-200 rounded-md border`}
                   >
-                    <span className="flex items-center justify-center w-4 h-4">
-                      {getRoundStatusIcon(status?.status)}
-                    </span>
-                    <span className="text-sm">
-                      {getRoundBadgeText(status?.status)}
-                    </span>
+                    {overallStatus === 'failed' && overallError && (
+                      <>
+                        <span className="flex items-center justify-center w-4 h-4">
+                          <XCircle className="w-4 h-4 text-red-600" />
+                        </span>
+                        <span className="text-sm">Donation failed</span>
+                      </>
+                    )}
+                    {overallStatus !== 'failed' && (
+                      <>
+                        <span className="flex items-center justify-center w-4 h-4">
+                          {getRoundStatusIcon(status?.status)}
+                        </span>
+                        <span className="text-sm">
+                          {getRoundBadgeText(status?.status)}
+                        </span>
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={() => toggleRound(roundKey)}

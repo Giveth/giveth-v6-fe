@@ -10,6 +10,7 @@ import { InsufficientFund } from '@/components/modals/InsufficientFund'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
+import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import {
@@ -32,6 +33,7 @@ export function DonationSidebar({
 
   const { signIn, isAuthenticated, token, walletAddress } = useSiweAuth()
   const { setShowMissingAmountErrors } = useCart()
+  const { reset } = useMultiRoundCheckout()
   const account = useActiveAccount()
   const { connect } = useConnectModal()
 
@@ -139,6 +141,9 @@ export function DonationSidebar({
         : undefined
     const jwt = token ?? storedToken
     if (!jwt) return
+
+    // Reset overallStatus and overallError
+    reset()
 
     // Redirect to pending page
     router.push('/cart/pending')

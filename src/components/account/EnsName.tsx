@@ -9,9 +9,16 @@ import type { Address } from 'thirdweb'
 interface EnsNameProps {
   address?: Address
   className?: string
+  startLength?: number
+  endLength?: number
 }
 
-export function EnsName({ address, className }: EnsNameProps) {
+export function EnsName({
+  address,
+  className,
+  startLength = 6,
+  endLength = 5,
+}: EnsNameProps) {
   const [name, setName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -41,7 +48,12 @@ export function EnsName({ address, className }: EnsNameProps) {
 
   return (
     <span className={className}>
-      {name ?? shortenAddress(address as Address as `0x${string}`)}
+      {name ??
+        shortenAddress(
+          address as Address as `0x${string}`,
+          startLength,
+          endLength,
+        )}
     </span>
   )
 }
