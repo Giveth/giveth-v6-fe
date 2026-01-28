@@ -6,6 +6,7 @@ import {
   gnosis,
   mainnet,
   optimism,
+  optimismSepolia,
   polygon,
   type Chain,
 } from 'thirdweb/chains'
@@ -18,6 +19,7 @@ export const supportedChains: Chain[] = [
   gnosis,
   mainnet,
   optimism,
+  optimismSepolia,
   base,
   polygon,
   celoAlfajores,

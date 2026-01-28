@@ -11,7 +11,7 @@ import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 
 export default function CartPage() {
   const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
-  const { cartItems, givethPercentage } = useCart()
+  const { cartItems, givethPercentage, showMissingAmountErrors } = useCart()
 
   // Group cart items by round
   const { qfRoundGroups, nonQfProjects } = useMemo(
@@ -53,6 +53,7 @@ export default function CartPage() {
                     roundData={round}
                     cartRoundData={group}
                     projects={group.projects}
+                    showMissingAmountErrors={showMissingAmountErrors}
                   />
                 )
               })}
@@ -86,6 +87,7 @@ export default function CartPage() {
                   totalUsdValue: '0',
                 }}
                 projects={nonQfProjects}
+                showMissingAmountErrors={showMissingAmountErrors}
               />
             )}
             {cartItems.length === 0 && (
