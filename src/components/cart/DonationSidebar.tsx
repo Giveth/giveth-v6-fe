@@ -9,7 +9,7 @@ import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
 import { InsufficientFund } from '@/components/modals/InsufficientFund'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
-import { type ProjectCartItem } from '@/context/CartContext'
+import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import {
@@ -31,6 +31,7 @@ export function DonationSidebar({
   const router = useRouter()
 
   const { signIn, isAuthenticated, token, walletAddress } = useSiweAuth()
+  const { setShowMissingAmountErrors } = useCart()
   const account = useActiveAccount()
   const { connect } = useConnectModal()
 
@@ -93,6 +94,22 @@ export function DonationSidebar({
     if (!hasDonationAmount) {
       return
     }
+
+    // Check if some project inside the cart don't have amount
+    const projectsWithoutAmount = qfRoundGroups.flatMap(group =>
+      group.projects.filter(project => Number(project.donationAmount) === 0),
+    )
+    const nonQfProjectsWithoutAmount = nonQfProjects.filter(
+      project => Number(project.donationAmount) === 0,
+    )
+    if (
+      projectsWithoutAmount.length > 0 ||
+      nonQfProjectsWithoutAmount.length > 0
+    ) {
+      setShowMissingAmountErrors(true)
+      return
+    }
+    setShowMissingAmountErrors(false)
 
     // Require wallet connection and SIWE auth before proceeding
     if (!account?.address) {

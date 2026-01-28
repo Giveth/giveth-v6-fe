@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { TriangleAlert } from 'lucide-react'
 import { AmountInput } from '@/components/cart/AmountInput'
 import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
@@ -20,16 +21,22 @@ interface DonationRoundProps {
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
   cartRoundData: GroupedProjects
   projects: ProjectCartItem[]
+  showMissingAmountErrors: boolean
 }
 
 export function DonationRound({
   roundData,
   cartRoundData,
   projects,
+  showMissingAmountErrors,
 }: DonationRoundProps) {
   const [roundSelectedToken, setRoundSelectedToken] = useState<
     WalletTokenWithBalance | undefined
   >(undefined)
+  const hasMissingAmount = projects.some(
+    project => Number(project.donationAmount) <= 0,
+  )
+  const shouldShowMissingAmount = showMissingAmountErrors && hasMissingAmount
 
   // Value to show in the amount input (0 for amount, 1 for dollars)
   // If user clicks on the arrow button, the value will be toggled between entering amount or the selected token's price in USD
@@ -39,10 +46,14 @@ export function DonationRound({
   return (
     <div className="bg-white p-4 rounded-2xl border-4 border-giv-gray-500 overflow-hidden">
       {/* Round Header */}
-      <div className="bg-giv-gray-300 px-5 py-3 rounded-xl">
-        <span className="text-base font-medium text-giv-gray-800">
-          {roundData.name}
-        </span>
+      <div className="flex justify-between items-center bg-giv-gray-300 px-5 py-3 rounded-xl text-base font-medium">
+        <div className=" text-giv-gray-800">{roundData.name}</div>
+        {shouldShowMissingAmount && (
+          <div className="text-giv-error-400 mt-1 inline-flex items-center gap-2">
+            <TriangleAlert className="w-4 h-4" />
+            Please enter the amount for the missing field
+          </div>
+        )}
       </div>
 
       {/* Token Selection Row */}
@@ -80,6 +91,7 @@ export function DonationRound({
             roundData={roundData}
             project={project}
             selectedAmountVsDollars={selectedAmountVsDollars}
+            showMissingAmountErrors={showMissingAmountErrors}
           />
         ))}
       </div>

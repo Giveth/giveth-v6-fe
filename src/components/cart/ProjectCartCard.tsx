@@ -10,12 +10,16 @@ export const ProjectCartCard = ({
   roundData,
   project,
   selectedAmountVsDollars,
+  showMissingAmountErrors,
 }: {
   roundData: ActiveQfRoundsQuery['activeQfRounds'][0]
   project: ProjectCartItem
   selectedAmountVsDollars: number
+  showMissingAmountErrors: boolean
 }) => {
   const { updateProjectDonation, removeFromCart } = useCart()
+  const hasMissingAmount = Number(project.donationAmount) <= 0
+  const shouldShowMissingAmount = showMissingAmountErrors && hasMissingAmount
 
   const handleRemoveItem = (roundId: number, itemId: string) => {
     removeFromCart(roundId, itemId)
@@ -51,7 +55,11 @@ export const ProjectCartCard = ({
           <ProjectBadges project={project} roundData={roundData} />
         </div>
 
-        <div className="flex items-center text-base font-medium gap-2 border border-giv-gray-100 rounded-md pr-3 pl-2 py-2">
+        <div
+          className={`flex items-center text-base font-medium gap-2 border rounded-md pr-3 pl-2 py-2 ${
+            shouldShowMissingAmount ? 'border-red-400' : 'border-giv-gray-100'
+          }`}
+        >
           {project.selectedToken?.symbol && project.selectedToken?.address && (
             <TokenIcon
               tokenSymbol={project.selectedToken.symbol}

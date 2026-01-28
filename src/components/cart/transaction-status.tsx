@@ -7,6 +7,7 @@
 
 import { CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react'
 import type { DonationStatus } from '@/hooks/useDonation'
+import { getTransactionExplorerUrl } from '@/lib/constants/chain'
 
 interface TransactionStatusProps {
   status: DonationStatus
@@ -27,20 +28,6 @@ export function TransactionStatus({
   supportsEIP5792 = false,
   supportsEIP7702 = false,
 }: TransactionStatusProps) {
-  const getExplorerUrl = (hash: string) => {
-    // Map chain IDs to explorer URLs
-    const explorers: Record<number, string> = {
-      1: 'https://etherscan.io',
-      10: 'https://optimistic.etherscan.io',
-      137: 'https://polygonscan.com',
-      8453: 'https://basescan.org',
-      42161: 'https://arbiscan.io',
-    }
-
-    const explorerUrl = explorers[chainId] || 'https://polygonscan.com'
-    return `${explorerUrl}/tx/${hash}`
-  }
-
   const renderStatusIcon = () => {
     switch (status) {
       case 'success':
@@ -103,7 +90,7 @@ export function TransactionStatus({
         className={`rounded-xl border p-4 transition-all ${getStatusColor()}`}
       >
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 mt-0.5">{renderStatusIcon()}</div>
+          <div className="shrink-0 mt-0.5">{renderStatusIcon()}</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium mb-1">{getStatusText()}</p>
 
@@ -129,7 +116,7 @@ export function TransactionStatus({
             {/* Transaction Hash */}
             {transactionHash && (
               <a
-                href={getExplorerUrl(transactionHash)}
+                href={getTransactionExplorerUrl(chainId, transactionHash)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-medium hover:underline inline-flex items-center gap-1 mt-2"

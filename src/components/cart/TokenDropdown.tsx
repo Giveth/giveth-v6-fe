@@ -109,7 +109,7 @@ export const TokenDropdown = ({
           sideOffset={8}
           align="start"
           className="
-            z-50 min-w-[220px] rounded-xl border border-[#ebecf2] bg-white p-1
+            z-50 min-w-[220px] max-h-[500px] overflow-y-auto rounded-xl border border-[#ebecf2] bg-white p-1
             shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
           "
         >

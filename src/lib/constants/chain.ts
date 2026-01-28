@@ -421,3 +421,66 @@ export const CHAIN_ICONS: Record<
     textColor: 'text-white',
   },
 }
+
+export const EXPLORER_BY_CHAIN_ID: Record<number, string> = {
+  // Ethereum
+  1: 'https://eth.blockscout.com/',
+  11155111: 'https://eth-sepolia.blockscout.com/',
+
+  // Optimism
+  10: 'https://optimistic.blockscout.com/',
+  11155420: 'https://optimism-sepolia.blockscout.com/',
+
+  // Gnosis
+  100: 'https://gnosis.blockscout.com/',
+
+  // Polygon
+  137: 'https://polygon.blockscout.com/',
+
+  // Base
+  8453: 'https://base.blockscout.com/',
+  84532: 'https://base-sepolia.blockscout.com/',
+
+  // Arbitrum
+  42161: 'https://arbitrum.blockscout.com/',
+  421614: 'https://arbitrum-sepolia.blockscout.com/',
+
+  // Celo
+  42220: 'https://explorer.celo.org/mainnet/',
+  44787: 'https://explorer.celo.org/alfajores/',
+
+  // Polygon zkEVM
+  1101: 'https://zkevm.blockscout.com/',
+  2442: 'https://cardona-zkevm.blockscout.com/',
+
+  // Ethereum Classic
+  63: 'https://etc-mordor.blockscout.com/',
+
+  // Solana (no Blockscout)
+  101: 'https://explorer.solana.com/',
+  102: 'https://explorer.solana.com/',
+  103: 'https://explorer.solana.com/',
+
+  // Stellar (no Blockscout)
+  1500: 'https://stellar.expert/explorer/public/',
+
+  // Cardano (no Blockscout)
+  3000: 'https://cardanoscan.io/',
+  3001: 'https://preprod.cardanoscan.io/',
+
+  // Deprecated / legacy
+  3: 'https://ropsten.etherscan.io/',
+}
+
+/**
+ * Get the explorer URL for a given chain ID and transaction hash
+ * If the chain ID is not found, it will return the Polygon explorer URL
+ *
+ * @param chainId - The chain ID
+ * @param hash - The transaction hash
+ * @returns The explorer URL
+ */
+export const getTransactionExplorerUrl = (chainId: number, hash: string) => {
+  const base = EXPLORER_BY_CHAIN_ID[chainId] || 'https://polygonscan.com'
+  return `${base}/tx/${hash}`
+}

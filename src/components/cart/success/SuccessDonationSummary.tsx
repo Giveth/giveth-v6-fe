@@ -15,6 +15,7 @@ import { useCart } from '@/context/CartContext'
 import type { RoundCheckoutStatus } from '@/hooks/useMultiRoundCheckout'
 import { useProjectById } from '@/hooks/useProject'
 import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
+import { getTransactionExplorerUrl } from '@/lib/constants/chain'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import { loadCheckoutReceipt } from '@/lib/helpers/checkoutReceipt'
@@ -61,19 +62,6 @@ export function SuccessDonationSummary() {
     const entries = receipt?.roundStatuses ?? []
     return new Map<number, RoundCheckoutStatus>(entries)
   }, [receipt?.roundStatuses])
-
-  const getExplorerUrl = (chainId: number, hash: string) => {
-    const explorers: Record<number, string> = {
-      1: 'https://etherscan.io',
-      10: 'https://optimistic.etherscan.io',
-      100: 'https://gnosisscan.io',
-      137: 'https://polygonscan.com',
-      8453: 'https://basescan.org',
-      42161: 'https://arbiscan.io',
-    }
-    const base = explorers[chainId] || 'https://polygonscan.com'
-    return `${base}/tx/${hash}`
-  }
 
   // Count only projects that have donation amount
   const totalQfProjects =
@@ -206,7 +194,7 @@ export function SuccessDonationSummary() {
 
                     {status?.transactionHash && (
                       <a
-                        href={getExplorerUrl(
+                        href={getTransactionExplorerUrl(
                           round.selectedChainId,
                           status.transactionHash,
                         )}

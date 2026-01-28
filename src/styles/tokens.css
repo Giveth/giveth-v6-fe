@@ -41,6 +41,9 @@
 
     --giv-warning-600: #EA960D;
 
+    --giv-error-600: #E6492D;
+    --giv-error-400: #F96E5B;
+
     /* Semantic tokens */
     --color-surface: #fcfcff;
     --color-surface-alt: #ffffff;
@@ -141,6 +144,9 @@
     --color-giv-gray-100: var(--giv-gray-100);
 
     --color-giv-warning-600: var(--giv-warning-600);
+
+    --color-giv-error-400: var(--giv-error-400);
+    --color-giv-error-600: var(--giv-error-400);
 
     /* Typography */
     --font-sans: var(--font-sans);

@@ -48,6 +48,8 @@ interface CartContextType {
   setGivethPercentage: (percentage: number) => void
   isAnonymous: boolean
   setIsAnonymous: (isAnonymous: boolean) => void
+  showMissingAmountErrors: boolean
+  setShowMissingAmountErrors: (show: boolean) => void
   addToCart: (project: ProjectCartItem) => void
   updateSelectedChainId: (roundId: number, chainId: number) => void
   updateSelectedToken: (
@@ -81,6 +83,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [donationRounds, setDonationRounds] = useState<DonationRound[]>([])
   const [givethPercentage, setGivethPercentage] = useState<number>(0)
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false)
+  const [showMissingAmountErrors, setShowMissingAmountErrors] =
+    useState<boolean>(false)
 
   // Load from local storage on mount
   useEffect(() => {
@@ -293,6 +297,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setGivethPercentage,
         isAnonymous,
         setIsAnonymous,
+        showMissingAmountErrors,
+        setShowMissingAmountErrors,
         addToCart,
         updateSelectedChainId,
         updateSelectedToken,

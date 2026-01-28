@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { XCircle } from 'lucide-react'
 import { IconHeartHand } from '@/components/icons/IconHeartHand'
 
@@ -24,9 +25,15 @@ export function PendingHero({
       </h1>
 
       {shouldShowError && (
-        <div className="mb-4 px-3 py-2 mx-auto w-fit rounded-xl border border-giv-gray-400 bg-giv-gray-200 text-[#F96E5B] text-sm font-medium [font-family:var(--font-inter)] sflex items-center gap-2">
-          <XCircle className="w-4 h-4 text-[#F96E5B]" /> All of your donations
-          failed, please try again later.
+        <div
+          className={clsx(
+            'mb-4 px-3 py-2 mx-auto w-fit rounded-xl border border-giv-gray-400',
+            'bg-giv-gray-200 text-giv-error-400 text-sm font-medium [font-family:var(--font-inter)]',
+            'flex items-center gap-2',
+          )}
+        >
+          <XCircle className="w-4 h-4 text-giv-error-400" /> All of your
+          donations failed, please try again later.
         </div>
       )}
     </div>
