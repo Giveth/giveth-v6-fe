@@ -89,7 +89,7 @@ export function DonationSummary({
         return 'Ready to process'
       case 'processing':
       case 'confirming':
-        return 'Your donation are processing'
+        return 'Your donation is processing'
       case 'success':
         return 'Sonation completed'
       case 'error':
