@@ -16,12 +16,14 @@ export function PendingHero({
       {/* Heart Hands Icon */}
       <div className="flex justify-center mb-1">
         <div className="relative">
-          <IconHeartHand />
+          <IconHeartHand
+            fill={shouldShowError ? 'var(--giv-gray-500)' : '#FF96C6'}
+          />
         </div>
       </div>
 
       <h1 className="text-3xl font-bold text-giv-gray-900 mb-2 [font-family:var(--font-inter)]">
-        Donating
+        {shouldShowError ? 'Oh no!' : 'Donating'}
       </h1>
 
       {shouldShowError && (
@@ -32,8 +34,7 @@ export function PendingHero({
             'flex items-center gap-2',
           )}
         >
-          <XCircle className="w-4 h-4 text-giv-error-400" /> All of your
-          donations failed, please try again later.
+          <XCircle className="w-4 h-4 text-giv-error-400" /> Donation failed
         </div>
       )}
     </div>
