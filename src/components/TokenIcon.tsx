@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useState } from 'react'
 import { defineChain } from 'thirdweb/chains'
 import { TokenIcon as ThirdwebTokenIcon, TokenProvider } from 'thirdweb/react'
 import { thirdwebClient } from '@/lib/thirdweb/client'
+import { GivBacksEligible } from './icons/GivBacksEligible'
 
 const tokenIconCache = new Map<string, string | null>()
 const tokenImageExtensions = ['svg', 'png']
@@ -24,6 +25,7 @@ export const TokenIcon = memo(function TokenIcon({
   height = 20,
   width = 20,
   className,
+  isGivbackEligible,
 }: {
   tokenSymbol: string
   networkId?: number
@@ -32,6 +34,7 @@ export const TokenIcon = memo(function TokenIcon({
   height?: number
   width?: number
   className?: string
+  isGivbackEligible?: boolean
 }) {
   const [localIconUrl, setLocalIconUrl] = useState<string | null>(null)
   const tokenKey = tokenSymbol?.trim()
@@ -99,8 +102,17 @@ export const TokenIcon = memo(function TokenIcon({
   return (
     <div
       style={{ height: `${height}px`, width: `${width}px` }}
-      className={`h-[${height}px] w-[${width}px] rounded-full overflow-hidden bg-white inline-flex items-center justify-center ${className ?? ''}`}
+      className={`h-[${height}px] w-[${width}px] relative rounded-full overflow-hidden bg-white inline-flex items-center justify-center ${className ?? ''}`}
     >
+      {isGivbackEligible && (
+        <div className="absolute right-0 bottom-1 w-[9px] h-[10px] bg-white rounded-md">
+          <GivBacksEligible
+            width={9}
+            height={10}
+            fill="var(--giv-primary-500)"
+          />
+        </div>
+      )}
       {localIconUrl ? (
         <img
           src={localIconUrl}

@@ -89,6 +89,7 @@ export const TokenDropdown = ({
                 address={selectedToken.address}
                 height={20}
                 width={20}
+                isGivbackEligible={selectedToken.isGivbackEligible}
               />
               <span className="text-base font-medium text-giv-gray-900">
                 {selectedToken.symbol}
@@ -196,6 +197,7 @@ function TokenDropdownItems({
               address={t.address as `0x${string}`}
               height={20}
               width={20}
+              isGivbackEligible={t.isGivbackEligible}
             />
             <span className="font-medium">{t.symbol}</span>
             <span className="text-[#82899a] tabular-nums ml-auto">
