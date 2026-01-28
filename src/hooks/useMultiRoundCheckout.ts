@@ -477,10 +477,6 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               ? `${failed} of ${rounds.length} rounds failed`
               : undefined,
       }))
-
-      if (givethPercentage > 0) {
-        setGivethPercentage(0)
-      }
     },
     [
       account,

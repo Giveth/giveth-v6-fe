@@ -21,7 +21,7 @@ import { getChainName } from '@/lib/helpers/chainHelper'
 import { loadCheckoutReceipt } from '@/lib/helpers/checkoutReceipt'
 
 export function SuccessDonationSummary() {
-  const { clearCart, givethPercentage } = useCart()
+  const { clearCart, givethPercentage, setGivethPercentage } = useCart()
   const [receipt, setReceipt] =
     useState<ReturnType<typeof loadCheckoutReceipt>>(null)
   const [expandedRounds, setExpandedRounds] = useState<Set<string>>(
@@ -44,6 +44,10 @@ export function SuccessDonationSummary() {
     // Clear cart after a successful checkout so users don't see old items again.
     // We only do this if we have a receipt (i.e. we actually completed a checkout flow).
     if (r) clearCart()
+
+    if (r?.givethPercentage) {
+      setGivethPercentage(0)
+    }
   }, [])
 
   const toggleRound = (roundId: string) => {
