@@ -95,7 +95,11 @@ export function HeaderConnectWallet() {
           {/* Address and Network Info */}
           <div className="flex flex-col items-start">
             <span className="font-normal text-giv-gray-900 text-xs lg:text-sm">
-              {(user && getUserName(user)) || shortenAddress(account.address)}
+              {(user && getUserName(user)) || (
+                <EnsName
+                  address={account.address as Address as `0x${string}`}
+                />
+              )}
             </span>
             <span className="font-normal text-giv-gray-900 text-[10px]">
               Connected to {chain?.name || 'Network'}
