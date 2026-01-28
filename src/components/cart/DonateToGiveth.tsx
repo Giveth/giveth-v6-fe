@@ -8,7 +8,6 @@ export function DonateToGiveth() {
   const { givethPercentage, setGivethPercentage } = useCart()
 
   const handleToggleGiveth = () => {
-    console.log('handleToggleGiveth', givethPercentage)
     setGivethPercentage(givethPercentage === 0 ? 5 : 0)
   }
 
@@ -18,8 +17,6 @@ export function DonateToGiveth() {
     } else {
       setGivethPercentage(percentage)
     }
-
-    console.log('handleToggleGiveth', percentage)
   }
 
   return (
