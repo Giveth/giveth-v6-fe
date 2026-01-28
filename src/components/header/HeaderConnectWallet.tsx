@@ -22,7 +22,7 @@ import {
   reportBugLink,
   supportLink,
 } from '@/lib/constants/menu-links'
-import { getUserName, shortenAddress } from '@/lib/helpers/userHelper'
+import { getUserName } from '@/lib/helpers/userHelper'
 import { EnsName } from '../account/EnsName'
 
 export function HeaderConnectWallet() {
