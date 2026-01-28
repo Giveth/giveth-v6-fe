@@ -1,3 +1,5 @@
+'use client'
+
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { Share2 } from 'lucide-react'
@@ -5,16 +7,18 @@ import { type Route } from 'next'
 import { IconFacebook } from '@/components/icons/IconFacebook'
 import { IconLinkedIn } from '@/components/icons/IconLinkedIn'
 import { IconX } from '@/components/icons/IconX'
+import { useSiweAuth } from '@/context/AuthContext'
 import { env } from '@/lib/env'
 
 export function ShareSection() {
+  const { walletAddress } = useSiweAuth()
   // Share link for all is this website
   const shareLink = useMemo(() => {
-    return `${env.FRONTEND_URL}`
+    return `${env.FRONTEND_URL}/user/${walletAddress}`
   }, [])
 
   const shareTextX = useMemo(() => {
-    return `I just donated to projects on Giveth! Check it out: ${shareLink}`
+    return `I just donated on @Giveth! Check out the projects I supported 💜  ${shareLink}`
   }, [shareLink])
 
   const xHref = useMemo(() => {
@@ -22,7 +26,7 @@ export function ShareSection() {
   }, [shareTextX])
 
   const shareTextLinkedin = useMemo(() => {
-    return `I just donated to projects on Giveth! Check it out: ${shareLink}`
+    return `I just donated on @Giveth! Check out the projects I supported 💜  ${shareLink}`
   }, [shareLink])
 
   const linkedinHref = useMemo(() => {
@@ -30,7 +34,7 @@ export function ShareSection() {
   }, [shareLink, shareTextLinkedin])
 
   const shareTextFacebook = useMemo(() => {
-    return `I just donated to projects on Giveth! Check it out: ${shareLink}`
+    return `I just donated on @Giveth! Check out the projects I supported 💜  ${shareLink}`
   }, [shareLink])
 
   const facebookHref = useMemo(() => {
