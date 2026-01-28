@@ -256,13 +256,13 @@ export function DonationSidebar({
         </div>
 
         <div
-          className={`${walletAddress ? 'block' : 'opacity-50 cursor-not-allowed'}`}
+          className={`${walletAddress && isAuthenticated ? 'block' : 'opacity-50 cursor-not-allowed'}`}
         >
           <DonateToGiveth />
           {/* Donate Button */}
           <button
             onClick={handleDonateButtonClick}
-            disabled={!hasDonationAmount}
+            disabled={!hasDonationAmount || !walletAddress || !isAuthenticated}
             className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center 
           justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
