@@ -126,9 +126,9 @@ export default function PendingPage() {
             qfRoundGroups={qfRoundGroups}
             nonQfProjects={nonQfProjects}
             roundStatuses={state.roundStatuses}
+            givethPercentage={effectiveGivethPercentage}
             overallStatus={state.status}
             overallError={state.overallError}
-            givethPercentage={effectiveGivethPercentage}
           />
         </div>
       </main>

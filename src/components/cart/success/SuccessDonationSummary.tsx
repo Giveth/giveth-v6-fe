@@ -142,6 +142,8 @@ export function SuccessDonationSummary() {
             .filter(p => Number(p.donationAmount) > 0)
             .reduce((acc, p) => acc + Number(p.donationAmount), 0)
 
+          const totalAmountInRound = totalAmountForRound + givethAmountForRound
+
           return (
             <div
               key={roundKey}
@@ -151,21 +153,20 @@ export function SuccessDonationSummary() {
               <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
                 <p className="text-giv-gray-800 text-base font-normal">
                   <span className="font-medium">
-                    {totalAmountForRound > 0
-                      ? `${totalAmountForRound} ${round.tokenSymbol}`
-                      : `${round.totalAmount} ${round.tokenSymbol}`}
+                    {totalAmountInRound} ${round.tokenSymbol}
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
                     {totalProjects} project{totalProjects > 1 ? 's' : ''}
                   </span>{' '}
+                  in <span className="font-medium">{round.roundName}</span>{' '}
                   {effectiveGivethPercentage > 0 && (
                     <>
                       and
                       <span className="font-medium"> Giveth</span>{' '}
                     </>
                   )}
-                  in <span className="font-medium">{round.roundName}</span> on{' '}
+                  on{' '}
                   <span className="font-medium">
                     {getChainName(round.selectedChainId)}
                   </span>
