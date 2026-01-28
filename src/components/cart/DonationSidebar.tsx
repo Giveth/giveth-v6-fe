@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Wallet } from 'lucide-react'
 import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
@@ -173,8 +173,25 @@ export function DonationSidebar({
             <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
           </div>
         )}
+        {!isAuthenticated && walletAddress && (
+          <div className="flex flex-col justify-center items-center h-48">
+            <div className="text-base font-medium text-giv-gray-800 pb-2">
+              Please sign in to donate
+            </div>
+            <button
+              onClick={() => signIn()}
+              className="px-6 py-2.5 font-semibold rounded-md transition-all duration-200 shadow-sm cursor-pointer bg-giv-primary-300 text-white hover:opacity-85"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                Sign wallet
+              </span>
+            </button>
+          </div>
+        )}
         <div className="pt-2 space-y-4">
           {walletAddress &&
+            isAuthenticated &&
             qfRoundGroups.map(group => {
               // Show only number of the project that have amout
               const projectsWithAmount = group.projects.filter(
@@ -213,27 +230,29 @@ export function DonationSidebar({
                 </div>
               )
             })}
-          {nonQfProjects.map(project => (
-            <div
-              key={project.id}
-              className="p-3 rounded-lg border border-giv-gray-300"
-            >
-              <p className="text-base text-giv-gray-900 font-medium">
-                {project.title}
-              </p>
-              <p className="text-base text-giv-gray-900 font-medium mt-0.5">
-                {project.donationAmount} {project.tokenSymbol}{' '}
-                <span className="font-normal">
-                  (~$
-                  {formatNumber(
-                    Number(project.donationAmount) *
-                      (project.selectedToken?.priceInUSD ?? 0),
-                  )}
-                  )
-                </span>
-              </p>
-            </div>
-          ))}
+          {isAuthenticated &&
+            walletAddress &&
+            nonQfProjects.map(project => (
+              <div
+                key={project.id}
+                className="p-3 rounded-lg border border-giv-gray-300"
+              >
+                <p className="text-base text-giv-gray-900 font-medium">
+                  {project.title}
+                </p>
+                <p className="text-base text-giv-gray-900 font-medium mt-0.5">
+                  {project.donationAmount} {project.tokenSymbol}{' '}
+                  <span className="font-normal">
+                    (~$
+                    {formatNumber(
+                      Number(project.donationAmount) *
+                        (project.selectedToken?.priceInUSD ?? 0),
+                    )}
+                    )
+                  </span>
+                </p>
+              </div>
+            ))}
         </div>
 
         <div
