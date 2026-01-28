@@ -185,6 +185,12 @@ export function DonationSummary({
                   <span className="font-medium">
                     {numberOfProjectsWithAmount} projects
                   </span>{' '}
+                  {givethPercentage > 0 && (
+                    <>
+                      and
+                      <span className="font-medium"> Giveth</span>{' '}
+                    </>
+                  )}
                   in <span className="font-medium">{round.roundName}</span> on{' '}
                   <span className="font-medium">
                     {getChainName(round.selectedChainId)}

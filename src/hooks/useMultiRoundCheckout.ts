@@ -472,7 +472,9 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
         currentRoundIndex: rounds.length,
         overallError:
           failed === rounds.length
-            ? 'All rounds failed'
+            ? rounds.length > 1
+              ? 'All rounds transactions failed'
+              : 'Round transaction failed'
             : failed > 0
               ? `${failed} of ${rounds.length} rounds failed`
               : undefined,

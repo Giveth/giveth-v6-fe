@@ -157,8 +157,14 @@ export function SuccessDonationSummary() {
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
-                    {totalProjects} project{totalProjects > 1 ? 's' : ''}.
+                    {totalProjects} project{totalProjects > 1 ? 's' : ''}
                   </span>{' '}
+                  {effectiveGivethPercentage > 0 && (
+                    <>
+                      and
+                      <span className="font-medium"> Giveth</span>{' '}
+                    </>
+                  )}
                   in <span className="font-medium">{round.roundName}</span> on{' '}
                   <span className="font-medium">
                     {getChainName(round.selectedChainId)}
