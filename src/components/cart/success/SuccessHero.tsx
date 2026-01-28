@@ -21,8 +21,8 @@ export function SuccessHero() {
         You're a giver now!
       </h1>
       <div className="mb-4 px-3 py-2 mx-auto w-fit rounded-xl border border-giv-gray-400 bg-giv-gray-200 text-giv-jade-600 text-sm font-medium [font-family:var(--font-inter)] flex items-center gap-2">
-        <CheckCircle2 className="w-4 h-4 text-giv-jade-600" /> All donations are
-        received
+        <CheckCircle2 className="w-4 h-4 text-giv-jade-600" /> Donation
+        successful
       </div>
     </div>
   )
