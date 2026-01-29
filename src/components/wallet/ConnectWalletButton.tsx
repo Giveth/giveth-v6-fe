@@ -30,10 +30,14 @@ const ConnectWalletButton = ({
             Connect Wallet
           </span>
         ),
-        className: `px-6 py-2.5 font-semibold rounded-full transition-all duration-200 shadow-sm cursor-pointer ${className}`,
+        className: `rounded-full transition-all duration-200 shadow-sm cursor-pointer ${className}`,
         style: {
-          backgroundColor: backgroundColor || '#E1458D',
+          height: 'auto',
+          backgroundColor: backgroundColor || '#8668fc',
           color: textColor || 'white',
+          padding: '14px 20px',
+          fontSize: '14px',
+          fontWeight: '600',
         },
       }}
       wallets={supportedWallets}

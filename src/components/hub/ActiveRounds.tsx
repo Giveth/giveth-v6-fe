@@ -24,10 +24,8 @@ export function ActiveRounds() {
   }, [rounds, activeRoundsData])
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-bold font-adventor text-giv-deep-900">
-        Active Rounds
-      </h2>
+    <div className="[font-family:var(--font-inter)] space-y-8">
+      <h2 className="text-2xl font-bold text-giv-deep-900">Active Rounds</h2>
       {isLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-giv-primary-500" />
