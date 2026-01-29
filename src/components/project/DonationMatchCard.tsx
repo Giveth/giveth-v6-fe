@@ -56,7 +56,7 @@ export const DonationMatchCard = ({
     (fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ?? false)
       ? Number(fullRoundData?.qfRoundBySlug?.allocatedFundUSD ?? 0)
       : projectMatchingData.matchingPool,
-    amount,
+    fullRoundData?.qfRoundBySlug?.maximumReward ?? 0,
   )
 
   return (

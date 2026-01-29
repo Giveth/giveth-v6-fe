@@ -858,20 +858,32 @@ export type ProjectFiltersInput = {
   vouched?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+/** Provides all data needed for frontend to calculate estimated matching in real-time as users type donation amounts */
 export type ProjectMatchingContextEntity = {
   __typename?: 'ProjectMatchingContextEntity';
+  /** Sum of square roots across all projects (for calculating share of pool) */
   allProjectsSqrtSum: Scalars['Float']['output'];
+  /** Number of unique contributors to this project */
   contributorCount: Scalars['Int']['output'];
+  /** Current matching amount for this project (in USD) */
   currentMatching: Scalars['Float']['output'];
-  /** The matching calculation strategy (REGULAR or COCM) */
+  /** Matching calculation strategy: REGULAR (standard QF) or COCM (collusion-resistant) */
   estimationMethod: Scalars['String']['output'];
+  /** When this matching data was last calculated */
   lastUpdated: Scalars['DateTime']['output'];
+  /** Total matching pool available for this round (in USD) */
   matchingPool: Scalars['Float']['output'];
+  /** Project ID */
   projectId: Scalars['Int']['output'];
+  /** QF Round ID */
   qfRoundId: Scalars['Int']['output'];
+  /** QF round end date */
   roundEndDate: Scalars['DateTime']['output'];
+  /** QF round start date */
   roundStartDate: Scalars['DateTime']['output'];
+  /** Sum of square roots of all donations (for QF formula: Σ√di) - use this for precise QF estimation */
   sqrtSum: Scalars['Float']['output'];
+  /** Total USD value of all donations to this project in this round */
   totalDonationsUsd: Scalars['Float']['output'];
 };
 
@@ -886,7 +898,6 @@ export type ProjectQfRoundEntity = {
   __typename?: 'ProjectQfRoundEntity';
   countUniqueDonors: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
-  project?: Maybe<ProjectEntity>;
   projectId: Scalars['Int']['output'];
   qfRound?: Maybe<QfRoundEntity>;
   qfRoundId: Scalars['Int']['output'];
@@ -1549,7 +1560,7 @@ export type UserEntity = {
   passportScore?: Maybe<Scalars['Float']['output']>;
   passportStamps?: Maybe<Scalars['Int']['output']>;
   primaryEns?: Maybe<Scalars['String']['output']>;
-  role: Scalars['String']['output'];
+  role: UserRole;
   telegramName?: Maybe<Scalars['String']['output']>;
   totalDonated: Scalars['Float']['output'];
   totalReceived: Scalars['Float']['output'];
@@ -1558,6 +1569,14 @@ export type UserEntity = {
   url?: Maybe<Scalars['String']['output']>;
   wallets: Array<UserWalletEntity>;
 };
+
+export enum UserRole {
+  Admin = 'ADMIN',
+  Operator = 'OPERATOR',
+  Qfmanager = 'QFMANAGER',
+  Restricted = 'RESTRICTED',
+  Reviewer = 'REVIEWER'
+}
 
 export type UserStatsEntity = {
   __typename?: 'UserStatsEntity';
@@ -1577,7 +1596,7 @@ export type UserStatsEntity = {
   primaryEns?: Maybe<Scalars['String']['output']>;
   projectsCount: Scalars['Int']['output'];
   projectsWithDonationsCount: Scalars['Int']['output'];
-  role: Scalars['String']['output'];
+  role: UserRole;
   telegramName?: Maybe<Scalars['String']['output']>;
   totalDonated: Scalars['Float']['output'];
   totalReceived: Scalars['Float']['output'];
@@ -1681,7 +1700,7 @@ export type QfRoundBySlugQueryVariables = Exact<{
 }>;
 
 
-export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedTokenSymbol?: string | null } };
+export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedTokenSymbol?: string | null, maximumReward: number } };
 
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2087,6 +2106,7 @@ export const QfRoundBySlugDocument = new TypedDocumentString(`
     allocatedFundUSD
     allocatedFundUSDPreferred
     allocatedTokenSymbol
+    maximumReward
   }
 }
     `) as unknown as TypedDocumentString<QfRoundBySlugQuery, QfRoundBySlugQueryVariables>;

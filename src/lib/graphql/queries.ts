@@ -133,6 +133,7 @@ export const qfRoundBySlugQuery = graphql(`
       allocatedFundUSD
       allocatedFundUSDPreferred
       allocatedTokenSymbol
+      maximumReward
     }
   }
 `)
