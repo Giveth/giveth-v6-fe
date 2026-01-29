@@ -36,3 +36,17 @@ export function normalizeDecimalInput(raw: string): string {
 
   return s
 }
+
+/**
+ * Round the amount to the nearest 10
+ *
+ * @param value - The value to round
+ * @returns The rounded value
+ */
+export function roundAmount(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) return 0
+
+  const rounded = value < 10 ? Math.round(value) : Math.round(value / 10) * 10
+
+  return rounded === 0 ? 1 : rounded
+}
