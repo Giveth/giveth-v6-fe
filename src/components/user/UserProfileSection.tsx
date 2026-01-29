@@ -61,7 +61,7 @@ export function UserProfileSection({
 
   return (
     <>
-      <div className="bg-white rounded-xl p-6 [font-family:var(--font-inter)]">
+      <div className="bg-white rounded-xl p-6 font-inter">
         <div className="flex items-start justify-between">
           <div className="flex gap-4">
             {/* Avatar */}

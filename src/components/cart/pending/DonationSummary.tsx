@@ -91,7 +91,7 @@ export function DonationSummary({
       case 'confirming':
         return 'Your donation is processing'
       case 'success':
-        return 'Sonation completed'
+        return 'Donation completed'
       case 'error':
         return 'Donation failed'
       default:
@@ -124,11 +124,11 @@ export function DonationSummary({
       <div className="mb-6 mt-2">
         <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
           <IconPraiseHand />
-          <h2 className="text-2xl font-bold text-giv-gray-900 [font-family:var(--font-inter)]">
+          <h2 className="text-2xl font-bold text-giv-gray-900 font-inter">
             Your donation summary
           </h2>
         </div>
-        <p className="text-giv-gray-700 text-lg font-medium [font-family:var(--font-inter)]">
+        <p className="text-giv-gray-700 text-lg font-medium font-inter">
           You are donating{' '}
           <span className="text-giv-primary-700">
             ~${formatNumber(totalUsd)}
@@ -200,7 +200,7 @@ export function DonationSummary({
               </div>
 
               {/* Toggle */}
-              <div className="py-3 [font-family:var(--font-inter)]">
+              <div className="py-3 font-inter">
                 {/* Processing Status */}
                 <div className="flex items-center justify-between mb-3">
                   <div
@@ -297,7 +297,7 @@ export function DonationSummary({
                 <span className="font-medium">Direct donations</span>
               </p>
             </div>
-            <div className="py-3 [font-family:var(--font-inter)]">
+            <div className="py-3 font-inter">
               <div className="space-y-2 flex flex-col items-start gap-2">
                 {nonQfProjects.map(project => (
                   <div

@@ -57,35 +57,31 @@ export function QFProjectFilters({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-bold transition-colors cursor-pointer ${
-          activeCount > 0
-            ? 'bg-giv-primary-050 border-giv-primary-500 text-giv-primary-500'
-            : 'bg-white border-giv-gray-300 text-giv-gray-900 hover:border-giv-primary-500'
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-sm text-base font-medium bg-white transition-colors cursor-pointer`}
       >
         Filters
-        <SlidersHorizontal className="w-4 h-4" />
         {activeCount > 0 && (
-          <span className="bg-giv-primary-500 text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+          <span className="bg-giv-primary-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[18px] text-center">
             {activeCount}
           </span>
         )}
+        <SlidersHorizontal className="w-4 h-4 ml-8" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-[320px] bg-white border border-giv-gray-300 rounded-xl shadow-xl z-30 p-6">
+        <div className="absolute top-full right-0 mt-2 w-[320px] bg-white rounded-md z-30 p-6">
           {/* Project features */}
-          <div className="mb-6">
-            <h4 className="text-giv-gray-900 font-bold text-sm mb-3">
+          <div className="mb-3">
+            <h4 className="text-giv-gray-900 font-medium text-sm mb-5">
               Project features
             </h4>
-            <div className="space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer group">
+            <div className="space-y-3 border-b border-giv-gray-200 pb-5">
+              <label className="flex items-center gap-3 cursor-pointer group mb-5">
                 <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.isGivbacksEligible ? 'bg-giv-primary-500 border-giv-primary-500' : 'border-giv-gray-300 bg-white group-hover:border-giv-primary-500'}`}
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.isGivbacksEligible ? 'bg-giv-primary-50 border-[#7F56D9]' : 'border-giv-gray-400 bg-white group-hover:border-giv-primary-500'}`}
                 >
                   {currentFilters.isGivbacksEligible && (
-                    <Check className="w-3.5 h-3.5 text-white" />
+                    <Check className="w-3.5 h-3.5 text-[#7F56D9]" />
                   )}
                 </div>
                 <input
@@ -96,17 +92,17 @@ export function QFProjectFilters({
                     handleCheckboxChange('isGivbacksEligible', e.target.checked)
                   }
                 />
-                <span className="text-giv-gray-700 text-sm">
+                <span className="text-giv-gray-800 text-sm font-medium">
                   GIVbacks Eligible
                 </span>
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.eligibleForMatching ? 'bg-giv-primary-500 border-giv-primary-500' : 'border-giv-gray-300 bg-white group-hover:border-giv-primary-500'}`}
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.eligibleForMatching ? 'bg-giv-primary-50 border-[#7F56D9]' : 'border-giv-gray-400 bg-white group-hover:border-giv-primary-500'}`}
                 >
                   {currentFilters.eligibleForMatching && (
-                    <Check className="w-3.5 h-3.5 text-white" />
+                    <Check className="w-3.5 h-3.5 text-[#7F56D9]" />
                   )}
                 </div>
                 <input
@@ -120,7 +116,7 @@ export function QFProjectFilters({
                     )
                   }
                 />
-                <span className="text-giv-gray-700 text-sm">
+                <span className="text-giv-gray-800 text-sm font-medium">
                   Eligible for Matching
                 </span>
               </label>
@@ -129,20 +125,20 @@ export function QFProjectFilters({
 
           {/* Accepts funds on */}
           <div>
-            <h4 className="text-giv-gray-900 font-bold text-sm mb-3">
+            <h4 className="text-giv-gray-900 font-medium text-sm mb-5">
               Accepts funds on
             </h4>
             <div className="space-y-3 overflow-y-auto custom-scrollbar">
               {NETWROKS_FILTERS.map(network => (
                 <label
                   key={network}
-                  className="flex items-center gap-3 cursor-pointer group"
+                  className="flex items-center gap-3 cursor-pointer group mb-5 last:mb-0"
                 >
                   <div
-                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.networks.includes(network) ? 'bg-giv-primary-500 border-giv-primary-500' : 'border-giv-gray-300 bg-white group-hover:border-giv-primary-500'}`}
+                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.networks.includes(network) ? 'bg-giv-primary-50 border-[#7F56D9]' : 'border-giv-gray-400 bg-white group-hover:border-giv-primary-500'}`}
                   >
                     {currentFilters.networks.includes(network) && (
-                      <Check className="w-3.5 h-3.5 text-white" />
+                      <Check className="w-3.5 h-3.5 text-[#7F56D9]" />
                     )}
                   </div>
                   <input
@@ -151,7 +147,9 @@ export function QFProjectFilters({
                     checked={currentFilters.networks.includes(network)}
                     onChange={() => handleCheckboxChange('networks', network)}
                   />
-                  <span className="text-giv-gray-700 text-sm">{network}</span>
+                  <span className="text-giv-gray-800 text-sm font-medium">
+                    {network}
+                  </span>
                 </label>
               ))}
             </div>

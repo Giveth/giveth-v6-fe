@@ -1,16 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronDown,
-  DollarSign,
-  RefreshCw,
-  Rocket,
-  Sparkles,
-  TrendingUp,
-} from 'lucide-react'
+import clsx from 'clsx'
+import { ArrowDown, ArrowUp, ChevronDown, Sparkles } from 'lucide-react'
+import { IconAmountRaisedAllTime } from '@/components/icons/IconAmountRaisedAllTime'
+import { IconAmountRaisedQF } from '@/components/icons/IconAmountRaisedQF'
+import { IconGIVPower } from '@/components/icons/IconGIVPower'
+import { IconRecentlyUpdated } from '@/components/icons/IconRecentlyUpdated'
 import { ProjectSortField } from '@/lib/graphql/generated/graphql'
 
 export interface SortOption {
@@ -31,7 +27,7 @@ const SORT_OPTIONS: SortOption[] = [
     label: 'Highest GIVpower',
     field: ProjectSortField.QualityScore,
     direction: 'DESC',
-    icon: <Rocket className="w-4 h-4" />,
+    icon: <IconGIVPower className="w-4 h-4" />,
   },
   {
     label: 'Newest first',
@@ -49,19 +45,19 @@ const SORT_OPTIONS: SortOption[] = [
     label: 'Amount raised all time',
     field: ProjectSortField.TotalDonations,
     direction: 'DESC',
-    icon: <DollarSign className="w-4 h-4" />,
+    icon: <IconAmountRaisedAllTime className="w-4 h-4" />,
   },
   {
     label: 'Amount raised in QF',
     field: ProjectSortField.QfDonations,
     direction: 'DESC',
-    icon: <TrendingUp className="w-4 h-4" />,
+    icon: <IconAmountRaisedQF className="w-4 h-4" />,
   },
   {
     label: 'Recently updated',
     field: ProjectSortField.UpdatedAt,
     direction: 'DESC',
-    icon: <RefreshCw className="w-4 h-4" />,
+    icon: <IconRecentlyUpdated className="w-4 h-4" />,
   },
 ]
 
@@ -104,19 +100,23 @@ export function QFSorting({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-giv-gray-300 rounded-lg text-sm font-bold text-giv-gray-900 hover:border-giv-primary-500 min-w-[200px] justify-between transition-colors cursor-pointer"
+        className={clsx(
+          'flex items-center gap-2 px-4 py-2 bg-white',
+          'rounded-sm text-base font-medium text-giv-gray-900 min-w-[200px]',
+          'justify-between transition-colors cursor-pointer',
+        )}
       >
         <div className="flex items-center gap-2">
-          <span className="text-giv-primary-500">{selectedOption.icon}</span>
+          <span className="text-giv-primary-900">{selectedOption.icon}</span>
           <span>{selectedOption.label}</span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-giv-gray-700 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 ml-6 text-giv-gray-900 transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full min-w-[240px] bg-white border border-giv-gray-300 rounded-xl shadow-xl z-30 py-2">
+        <div className="absolute top-full left-0 mt-2 w-full min-w-[240px] bg-white rounded-md shadow-xl z-30 py-2">
           {visibleOptions.map((option, idx) => (
             <button
               key={idx}
@@ -124,21 +124,13 @@ export function QFSorting({
                 onSortChange(option.field, option.direction)
                 setIsOpen(false)
               }}
-              className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-giv-gray-200 transition-colors cursor-pointer ${
+              className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm hover:bg-giv-gray-200 transition-colors cursor-pointer ${
                 option.label === selectedOption.label
                   ? 'bg-giv-primary-050 text-giv-primary-500 font-semibold'
                   : 'text-giv-gray-900'
               }`}
             >
-              <span
-                className={
-                  option.label === selectedOption.label
-                    ? 'text-giv-primary-500'
-                    : 'text-giv-gray-700'
-                }
-              >
-                {option.icon}
-              </span>
+              {option.icon}
               {option.label}
             </button>
           ))}

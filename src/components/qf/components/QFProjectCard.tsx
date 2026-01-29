@@ -6,7 +6,6 @@ import { Plus, X } from 'lucide-react'
 import { type Route } from 'next'
 import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { IconVerified } from '@/components/icons/IconVerified'
-import { MatchingEligible } from '@/components/icons/MatchingEligible'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
@@ -103,7 +102,7 @@ export function QFProjectCard({
       >
         {/* Header Section */}
         <div className="mb-2">
-          <h3 className="font-bold text-lg text-giv-gray-900 font-adventor mb-1 line-clamp-1">
+          <h3 className="font-semibold text-lg text-giv-gray-900 mb-1 line-clamp-1">
             <Link
               href={projectLink as unknown as Route}
               className="hover:text-giv-primary-500 transition-colors"
@@ -115,7 +114,7 @@ export function QFProjectCard({
             href={
               `/user/${project.adminUser?.wallets?.[0]?.address}` as unknown as Route
             }
-            className="text-base text-giv-pinky-500! hover:text-giv-primary-500! transition-colors"
+            className="text-base font-medium text-giv-pinky-500! hover:text-giv-primary-500! transition-colors"
           >
             {project.adminUser?.name || 'Unknown Creator'}
           </Link>
@@ -143,7 +142,7 @@ export function QFProjectCard({
           </div>
 
           {/* Right: Total Stats (Box) */}
-          <div className="bg-giv-gray-200 rounded-xl p-2 text-center min-w-[80px]">
+          <div className="p-2 text-center min-w-[80px]">
             <div className="text-2xl font-adventor font-bold text-giv-gray-700 leading-tight">
               {formatCurrency(totalRaised)}
             </div>
@@ -160,7 +159,7 @@ export function QFProjectCard({
             </span>
           )}
           {project.isGivbacksEligible && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-giv-primary-500 px-1.5 py-0.5">
+            <span className="inline-flex items-center gap-1 text-xs text-giv-primary-500 px-1.5 py-0.5">
               <GivBacksEligible
                 width={16}
                 height={16}
@@ -170,7 +169,6 @@ export function QFProjectCard({
             </span>
           )}
           <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white bg-giv-cyan-600 px-1.5 py-0.5 rounded-xl">
-            <MatchingEligible width={12} height={12} fill="white" />
             QF PROJECT
           </span>
         </div>
@@ -179,20 +177,20 @@ export function QFProjectCard({
         <div className="mt-auto h-[52px]">
           <button
             onClick={toggleCart}
-            className={`w-full h-[48px] rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            className={`w-full h-[48px] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isInCart
-                ? 'border-2 border-giv-pinky-400 text-giv-pinky-400 hover:bg-giv-pinky-400 hover:text-white'
-                : 'border-2 border-giv-pinky-500 text-white bg-giv-pinky-500 hover:bg-white hover:text-giv-pinky-500'
+                ? 'border border-giv-primary-100 bg-giv-primary-50 text-giv-primary-700 hover:bg-giv-primary-100 hover:text-giv-primary-700'
+                : 'bg-giv-primary-300 text-white hover:bg-giv-primary-400 hover:text-white'
             }`}
           >
             {isInCart ? (
               <>
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6 text-giv-primary-700" />
                 Remove From Cart
               </>
             ) : (
               <>
-                <Plus className="w-4 h-4" />
+                <Plus className="w-6 h-6 text-white" />
                 Add To Cart
               </>
             )}

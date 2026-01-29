@@ -81,7 +81,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<ProjectCartItem[]>([])
   const [donationRounds, setDonationRounds] = useState<DonationRound[]>([])
-  const [givethPercentage, setGivethPercentage] = useState<number>(0)
+  const [givethPercentage, setGivethPercentage] = useState<number>(10)
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false)
   const [showMissingAmountErrors, setShowMissingAmountErrors] =
     useState<boolean>(false)
