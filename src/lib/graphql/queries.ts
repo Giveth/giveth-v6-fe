@@ -161,6 +161,40 @@ export const activeQfRoundsQuery = graphql(`
   }
 `)
 
+export const qfRoundsQuery = graphql(`
+  query QfRounds(
+    $skip: Int = 0
+    $take: Int = 50
+    $filters: QfRoundsFiltersInput
+  ) {
+    qfRounds(skip: $skip, take: $take, filters: $filters) {
+      total
+      rounds {
+        id
+        name
+        slug
+        eligibleNetworks
+        applicationTypeformUrl
+      }
+    }
+  }
+`)
+
+export const projectAddressesBySlugQuery = graphql(`
+  query ProjectAddressesBySlug($slug: String!) {
+    projectAddressesBySlug(slug: $slug) {
+      id
+      title
+      slug
+      addresses {
+        address
+        networkId
+        isRecipient
+      }
+    }
+  }
+`)
+
 export const donationsByProjectQuery = graphql(`
   query DonationsByProject(
     $projectId: Int!

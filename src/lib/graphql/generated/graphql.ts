@@ -174,6 +174,7 @@ export type CreateQfRoundInput = {
   allocatedFundUSDPreferred?: InputMaybe<Scalars['Boolean']['input']>;
   allocatedTokenChainId?: InputMaybe<Scalars['Int']['input']>;
   allocatedTokenSymbol?: InputMaybe<Scalars['String']['input']>;
+  applicationTypeformUrl?: InputMaybe<Scalars['String']['input']>;
   bannerBgImage?: InputMaybe<Scalars['String']['input']>;
   bannerFull?: InputMaybe<Scalars['String']['input']>;
   bannerMobile?: InputMaybe<Scalars['String']['input']>;
@@ -796,6 +797,14 @@ export type ProjectAddressInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type ProjectAddressesBySlugEntity = {
+  __typename?: 'ProjectAddressesBySlugEntity';
+  addresses?: Maybe<Array<ProjectAddressEntity>>;
+  id: Scalars['ID']['output'];
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+};
+
 export type ProjectContactsEntity = {
   __typename?: 'ProjectContactsEntity';
   name?: Maybe<Scalars['String']['output']>;
@@ -990,6 +999,7 @@ export type QfRoundEntity = {
   allocatedFundUSDPreferred?: Maybe<Scalars['Boolean']['output']>;
   allocatedTokenChainId?: Maybe<Scalars['Int']['output']>;
   allocatedTokenSymbol?: Maybe<Scalars['String']['output']>;
+  applicationTypeformUrl?: Maybe<Scalars['String']['output']>;
   bannerBgImage?: Maybe<Scalars['String']['output']>;
   bannerFull?: Maybe<Scalars['String']['output']>;
   bannerMobile?: Maybe<Scalars['String']['output']>;
@@ -1050,6 +1060,17 @@ export type QfRoundStatsEntity = {
   uniqueDonors: Scalars['Int']['output'];
 };
 
+export enum QfRoundStatusFilter {
+  Active = 'ACTIVE',
+  All = 'ALL',
+  Archived = 'ARCHIVED',
+  Upcoming = 'UPCOMING'
+}
+
+export type QfRoundsFiltersInput = {
+  status?: InputMaybe<QfRoundStatusFilter>;
+};
+
 export enum QfStrategy {
   Cocm = 'COCM',
   Regular = 'REGULAR'
@@ -1094,6 +1115,7 @@ export type Query = {
   myDonations: PaginatedDonationsEntity;
   myProjects: PaginatedProjectsEntity;
   project: ProjectEntity;
+  projectAddressesBySlug: ProjectAddressesBySlugEntity;
   projectBySlug: ProjectEntity;
   projectDonationStats: DonationStatsEntity;
   projectMatchingContext?: Maybe<ProjectMatchingContextEntity>;
@@ -1298,6 +1320,11 @@ export type QueryProjectArgs = {
 };
 
 
+export type QueryProjectAddressesBySlugArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
 export type QueryProjectBySlugArgs = {
   slug: Scalars['String']['input'];
 };
@@ -1345,6 +1372,7 @@ export type QueryQfRoundStatsArgs = {
 
 
 export type QueryQfRoundsArgs = {
+  filters?: InputMaybe<QfRoundsFiltersInput>;
   skip?: Scalars['Int']['input'];
   take?: Scalars['Int']['input'];
 };
@@ -1524,6 +1552,7 @@ export type UpdateQfRoundInput = {
   allocatedFundUSDPreferred?: InputMaybe<Scalars['Boolean']['input']>;
   allocatedTokenChainId?: InputMaybe<Scalars['Int']['input']>;
   allocatedTokenSymbol?: InputMaybe<Scalars['String']['input']>;
+  applicationTypeformUrl?: InputMaybe<Scalars['String']['input']>;
   bannerBgImage?: InputMaybe<Scalars['String']['input']>;
   bannerFull?: InputMaybe<Scalars['String']['input']>;
   bannerMobile?: InputMaybe<Scalars['String']['input']>;
@@ -1706,6 +1735,22 @@ export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ActiveQfRoundsQuery = { __typename?: 'Query', activeQfRounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, description?: string | null, slug: string, isActive: boolean, beginDate: any, endDate: any, eligibleNetworks: Array<number>, hubCardImage?: string | null, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedFund: number, allocatedTokenSymbol?: string | null, minimumValidUsdValue: number, displaySize?: DisplaySize | null, maximumReward: number }> };
+
+export type QfRoundsQueryVariables = Exact<{
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+  filters?: InputMaybe<QfRoundsFiltersInput>;
+}>;
+
+
+export type QfRoundsQuery = { __typename?: 'Query', qfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, eligibleNetworks: Array<number>, applicationTypeformUrl?: string | null }> } };
+
+export type ProjectAddressesBySlugQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type ProjectAddressesBySlugQuery = { __typename?: 'Query', projectAddressesBySlug: { __typename?: 'ProjectAddressesBySlugEntity', id: string, title: string, slug: string, addresses?: Array<{ __typename?: 'ProjectAddressEntity', address: string, networkId: number, isRecipient: boolean }> | null } };
 
 export type DonationsByProjectQueryVariables = Exact<{
   projectId: Scalars['Int']['input'];
@@ -2132,6 +2177,34 @@ export const ActiveQfRoundsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<ActiveQfRoundsQuery, ActiveQfRoundsQueryVariables>;
+export const QfRoundsDocument = new TypedDocumentString(`
+    query QfRounds($skip: Int = 0, $take: Int = 50, $filters: QfRoundsFiltersInput) {
+  qfRounds(skip: $skip, take: $take, filters: $filters) {
+    total
+    rounds {
+      id
+      name
+      slug
+      eligibleNetworks
+      applicationTypeformUrl
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<QfRoundsQuery, QfRoundsQueryVariables>;
+export const ProjectAddressesBySlugDocument = new TypedDocumentString(`
+    query ProjectAddressesBySlug($slug: String!) {
+  projectAddressesBySlug(slug: $slug) {
+    id
+    title
+    slug
+    addresses {
+      address
+      networkId
+      isRecipient
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ProjectAddressesBySlugQuery, ProjectAddressesBySlugQueryVariables>;
 export const DonationsByProjectDocument = new TypedDocumentString(`
     query DonationsByProject($projectId: Int!, $skip: Int, $take: Int, $orderBy: DonationSortField!, $orderDirection: SortDirection!, $qfRoundId: Int) {
   donationsByProject(
