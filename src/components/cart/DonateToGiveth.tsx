@@ -8,7 +8,7 @@ export function DonateToGiveth() {
   const { givethPercentage, setGivethPercentage } = useCart()
 
   const handleToggleGiveth = () => {
-    setGivethPercentage(givethPercentage === 0 ? 5 : 0)
+    setGivethPercentage(givethPercentage === 0 ? 10 : 0)
   }
 
   const handleSetGivethPercentage = (percentage: number) => {
@@ -51,7 +51,7 @@ export function DonateToGiveth() {
 
       {/* Percentage buttons */}
       <div className="flex flex-wrap items-center gap-3">
-        {['5%', '10%', '15%', '20%'].map(value => (
+        {['10%', '15%', '20%', '25%'].map(value => (
           <button
             key={value}
             onClick={() =>

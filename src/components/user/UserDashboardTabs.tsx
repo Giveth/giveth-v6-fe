@@ -51,7 +51,7 @@ export const UserDashboardTabs = ({
   }
 
   return (
-    <div className="mt-8 [font-family:var(--font-inter)]">
+    <div className="mt-8 font-inter">
       {/* Tabs */}
       <div className="relative flex flex-wrap items-end gap-4">
         {tabs.map((tab, index) => (

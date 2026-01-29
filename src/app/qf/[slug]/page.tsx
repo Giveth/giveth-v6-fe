@@ -119,7 +119,7 @@ export default function QFRoundPage() {
   }
 
   return (
-    <div className="min-h-screen bg-giv-gray-200">
+    <div className="font-inter min-h-screen bg-giv-gray-200">
       {/* Passport Banner */}
       <PassportBanner />
 

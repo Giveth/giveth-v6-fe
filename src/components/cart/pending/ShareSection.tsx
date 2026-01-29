@@ -42,7 +42,7 @@ export function ShareSection() {
   }, [shareLink, shareTextFacebook])
 
   return (
-    <div className="bg-white rounded-2xl p-6 [font-family:var(--font-inter)]">
+    <div className="bg-white rounded-2xl p-6 font-inter">
       <div className="flex items-center gap-2 mb-4">
         <Share2 className="w-5 h-5 text-giv-gray-900" />
         <h2 className="text-2xl font-bold text-giv-gray-900">

@@ -159,13 +159,13 @@ export function EligibilityBanner() {
               width={20}
               height={20}
             />
-            <h4 className="text-lg font-medium text-giv-warning-600 [font-family:var(--font-inter)]">
+            <h4 className="text-lg font-medium text-giv-warning-600 font-inter">
               QF Donor Eligibility
             </h4>
           </div>
 
           <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-gray-900 [font-family:var(--font-inter)]">
+            <p className="text-lg font-medium text-giv-gray-900 font-inter">
               Verify your donor uniqueness with a quick check of your on-chain
               activity.
             </p>
@@ -196,13 +196,13 @@ export function EligibilityBanner() {
               width={20}
               height={20}
             />
-            <h4 className="text-lg font-medium [font-family:var(--font-inter)] text-giv-jade-600">
+            <h4 className="text-lg font-medium font-inter text-giv-jade-600">
               You're QF-eligible!
             </h4>
           </div>
 
           <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-gray-900 [font-family:var(--font-inter)]">
+            <p className="text-lg font-medium text-giv-gray-900 font-inter">
               As long as your donations are above the minimum amount for each
               round, they are eligibile to be matched.
             </p>
@@ -218,13 +218,13 @@ export function EligibilityBanner() {
               width={20}
               height={20}
             />
-            <h4 className="text-lg font-medium text-giv-primary-500 [font-family:var(--font-inter)]">
+            <h4 className="text-lg font-medium text-giv-primary-500 font-inter">
               QF Donor Eligibility
             </h4>
           </div>
 
           <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-gray-900 [font-family:var(--font-inter)]">
+            <p className="text-lg font-medium text-giv-gray-900 font-inter">
               Please go to Passport to increase your score to{' '}
               <span className="font-bold">
                 over {globalSettingScore.globalMinimumPassportScore.toString()}
@@ -235,7 +235,7 @@ export function EligibilityBanner() {
 
           <div className="flex justify-between items-center gap-3 mt-4 border-t border-giv-gray-300 pt-4">
             <div className="flex gap-4">
-              <p className="text-lg font-medium text-giv-gray-900 [font-family:var(--font-inter)] rounded-lg py-3 px-4 bg-giv-gray-200">
+              <p className="text-lg font-medium text-giv-gray-900 font-inter rounded-lg py-3 px-4 bg-giv-gray-200">
                 <span>Your Passport score</span>
                 <span className="font-bold ml-12">
                   {userPassportData?.passportScore?.toString() ?? 0}
@@ -245,7 +245,7 @@ export function EligibilityBanner() {
                 href={PassportLink.href as unknown as Route}
                 target="_blank"
                 className={clsx(
-                  'text-xs font-bold text-giv-pinky-400! [font-family:var(--font-inter)]',
+                  'text-xs font-bold text-giv-pinky-400! font-inter',
                   'cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3',
                 )}
               >

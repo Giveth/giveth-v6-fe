@@ -102,11 +102,11 @@ export function SuccessDonationSummary() {
       <div className="mb-6 mt-2">
         <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
           <IconPraiseHand />
-          <h2 className="text-2xl font-bold text-giv-gray-900 [font-family:var(--font-inter)]">
+          <h2 className="text-2xl font-bold text-giv-gray-900 font-inter">
             Your donation summary
           </h2>
         </div>
-        <p className="text-giv-gray-700 text-lg font-medium [font-family:var(--font-inter)]">
+        <p className="text-giv-gray-700 text-lg font-medium font-inter">
           You’ve donated{' '}
           <span className="text-giv-primary-700">
             ~${formatNumber(totalUsd)}
@@ -178,7 +178,7 @@ export function SuccessDonationSummary() {
               </div>
 
               {/* Toggle */}
-              <div className="py-3 mt-2 [font-family:var(--font-inter)]">
+              <div className="py-3 mt-2 font-inter">
                 <div className="flex justify-between mb-3">
                   <div className="flex flex-col items-start gap-2">
                     {isSuccess ? (

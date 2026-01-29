@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef, useState } from 'react'
+import clsx from 'clsx'
 import { Search, X } from 'lucide-react'
 import {
   type ProjectEntity,
@@ -48,6 +50,8 @@ export function QFProjectsGrid({
   onFilterChange,
   totalProjects = 0,
 }: QFProjectsGridProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const trimmedSearch = searchTerm.trim()
   const isSearchActive = trimmedSearch.length >= 2
   const showSearchingState = !!isFetching && isSearchActive
@@ -64,7 +68,7 @@ export function QFProjectsGrid({
     <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl self-start font-adventor font-bold md:self-center">
+        <h2 className="text-2xl self-start font-bold md:self-center">
           <span className="text-giv-gray-900">
             {showLoading ? '' : 'Explore'}
           </span>{' '}
@@ -73,20 +77,45 @@ export function QFProjectsGrid({
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Search */}
-          <div className="relative w-full md:w-[320px]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-giv-gray-700" />
+          <div
+            className={clsx(
+              'relative overflow-hidden transition-[width] duration-200 ease-out bg-white rounded-sm',
+              isSearchOpen ? 'w-full md:w-[320px]' : 'w-12 md:w-12',
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchOpen(true)
+                requestAnimationFrame(() => searchInputRef.current?.focus())
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+              aria-label="Open search"
+            >
+              <Search className="w-4 h-4 text-giv-gray-900" />
+            </button>
             <input
+              ref={searchInputRef}
               value={searchTerm}
               onChange={e => onSearchTermChange(e.target.value)}
-              placeholder="Search projects"
-              className="w-full h-10 pl-11 pr-10 bg-white border border-[#ebecf2] rounded-lg text-sm font-medium text-[#1f2333] placeholder:text-giv-gray-700 focus:outline-none focus:ring-2 focus:ring-giv-primary-500/20 focus:border-giv-primary-500 transition-colors"
-              aria-label="Search projects"
+              onFocus={() => setIsSearchOpen(true)}
+              onBlur={() => {
+                if (searchTerm.trim().length === 0) setIsSearchOpen(false)
+              }}
+              placeholder="Search"
+              className={clsx(
+                'w-full h-10 pl-11 pr-10 bg-white border border-[#ebecf2]',
+                'rounded-sm text-base font-medium text-giv-gray-900 placeholder:text-giv-gray-700',
+                'focus:outline-none transition-colors',
+                !isSearchOpen && 'opacity-0 pointer-events-none',
+              )}
+              aria-label="Search"
             />
             {searchTerm.trim().length > 0 && (
               <button
                 type="button"
                 onClick={() => onSearchTermChange('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-giv-gray-200 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-giv-gray-200 transition-colors cursor-pointer"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4 text-giv-gray-700" />

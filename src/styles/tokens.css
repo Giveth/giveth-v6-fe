@@ -152,6 +152,7 @@
     --font-sans: var(--font-sans);
     --font-adventor: var(--font-adventor);
     --font-mono: var(--font-mono);
+    --font-inter: var(--font-inter);
 
     /* Radii */
     --radius-sm: var(--radius-sm);
