@@ -9,11 +9,13 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { type Address } from 'thirdweb'
+import { EnsName } from '@/components/account/EnsName'
 import { ChainIcon } from '@/components/ChainIcon'
 import {
   DonationTableDropdown,
   type FilterType,
 } from '@/components/project/DonationTableDropdown'
+import { ProjectImage } from '@/components/project/ProjectImage'
 import { useProjectDonations } from '@/hooks/useProject'
 import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import {
@@ -21,10 +23,9 @@ import {
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
 import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { shortenAddress } from '@/lib/helpers/userHelper'
-import { ProjectImage } from './ProjectImage'
-import { EnsName } from '../account/EnsName'
 
 interface ProjectDonationsTableProps {
   projectId: number
@@ -359,7 +360,10 @@ export function ProjectDonationsTable({
                         <td className="px-1 py-4">
                           <div className="flex items-center gap-1">
                             <span className="font-medium">
-                              {donation.amount}
+                              {formatNumber(Number(donation.amount), {
+                                minDecimals: 2,
+                                maxDecimals: 2,
+                              })}{' '}
                             </span>
                             <span className="text-giv-gray-800">
                               {donation.token}

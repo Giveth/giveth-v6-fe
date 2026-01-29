@@ -9,14 +9,15 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
+import { ChainIcon } from '@/components/ChainIcon'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useMyDonations } from '@/hooks/useAccount'
 import {
   DonationSortField,
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getTransactionUrl } from '@/lib/helpers/chainHelper'
-import { ChainIcon } from '../ChainIcon'
 
 const PAGE_SIZE = 15
 
@@ -250,7 +251,11 @@ export const DonationTableOneTime = ({
                             width={24}
                           />
                           <span className="text-sm font-medium text-[#1f2333]">
-                            {donation.amount} {donation.currency}
+                            {formatNumber(donation.amount, {
+                              minDecimals: 2,
+                              maxDecimals: 2,
+                            })}{' '}
+                            {donation.currency}
                           </span>
                           {txUrl && (
                             <a

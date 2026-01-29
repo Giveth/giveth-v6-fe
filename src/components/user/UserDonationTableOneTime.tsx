@@ -14,6 +14,7 @@ import {
   DonationSortField,
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { ChainIcon } from '../ChainIcon'
 
@@ -250,7 +251,11 @@ export const UserDonationTableOneTime = ({
                             width={24}
                           />
                           <span className="text-sm font-medium text-[#1f2333]">
-                            {donation.amount} {donation.currency}
+                            {formatNumber(donation.amount, {
+                              minDecimals: 2,
+                              maxDecimals: 6,
+                            })}{' '}
+                            {donation.currency}
                           </span>
                           {txUrl && (
                             <a

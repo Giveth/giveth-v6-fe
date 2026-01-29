@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
 import { ProjectImage } from '@/components/project/ProjectImage'
@@ -5,6 +6,7 @@ import { TokenIcon } from '@/components/TokenIcon'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
+import { normalizeDecimalInput } from '@/lib/helpers/numbersHelper'
 
 export const ProjectCartCard = ({
   roundData,
@@ -20,6 +22,27 @@ export const ProjectCartCard = ({
   const { updateProjectDonation, removeFromCart } = useCart()
   const hasMissingAmount = Number(project.donationAmount) <= 0
   const shouldShowMissingAmount = showMissingAmountErrors && hasMissingAmount
+  const [usdInputValue, setUsdInputValue] = useState('')
+  const normalizeAmount = (value: number, decimals = 18) => {
+    if (!Number.isFinite(value)) return '0'
+    return value.toFixed(decimals).replace(/\.?0+$/, '')
+  }
+  const conversionDecimals = Math.min(project.selectedToken?.decimals ?? 18, 6)
+  const formatUsdInputValue = () => {
+    const normalizedAmount = Number(project.donationAmount ?? 0)
+    const priceInUSD = project.selectedToken?.priceInUSD ?? 0
+    if (!Number.isFinite(normalizedAmount) || !priceInUSD) return '0'
+    return normalizeAmount(normalizedAmount * priceInUSD, 6)
+  }
+
+  useEffect(() => {
+    if (selectedAmountVsDollars !== 1) return
+    setUsdInputValue(formatUsdInputValue())
+  }, [
+    selectedAmountVsDollars,
+    project.donationAmount,
+    project.selectedToken?.priceInUSD,
+  ])
 
   const handleRemoveItem = (roundId: number, itemId: string) => {
     removeFromCart(roundId, itemId)
@@ -101,18 +124,18 @@ export const ProjectCartCard = ({
               $
               <input
                 type="text"
-                value={formatNumber(
-                  Number(project.donationAmount ?? 0) *
-                    (project.selectedToken?.priceInUSD ?? 0),
-                )}
+                value={usdInputValue}
                 onChange={e => {
+                  const normalized = normalizeDecimalInput(e.target.value)
+                  setUsdInputValue(normalized)
+                  const parsed = Number(normalized)
+                  if (!Number.isFinite(parsed)) return
+                  const priceInUSD = project.selectedToken?.priceInUSD ?? 0
+                  if (!priceInUSD) return
                   updateProjectDonation(
                     Number(roundData?.id ?? 0),
                     project.id,
-                    String(
-                      Number(e.target.value) /
-                        (project.selectedToken?.priceInUSD ?? 0),
-                    ),
+                    normalizeAmount(parsed / priceInUSD, conversionDecimals),
                     project.selectedToken?.symbol ?? '',
                     project.selectedToken?.address ?? '',
                     project.selectedToken?.chainId ?? 0,
