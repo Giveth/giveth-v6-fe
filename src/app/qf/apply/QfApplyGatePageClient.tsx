@@ -10,10 +10,7 @@ import { CHAINS } from '@/lib/constants/chain'
 import { env } from '@/lib/env'
 import { graphQLClient } from '@/lib/graphql/client'
 import { projectAddressesBySlugQuery } from '@/lib/graphql/queries'
-import {
-  isValidRecipientAddressForNetwork,
-  parseGivethProjectRef,
-} from '@/lib/helpers/qfApplicationGate'
+import { parseGivethProjectRef } from '@/lib/helpers/qfApplicationGate'
 
 type Props = {
   initialProject?: string
@@ -150,7 +147,7 @@ export default function QfApplyGatePageClient({
           const addr = addresses.find(
             a => a.networkId === networkId && a.isRecipient,
           )?.address
-          return !addr || !isValidRecipientAddressForNetwork(networkId, addr)
+          return !addr || !addr.trim()
         })
         .map(networkId => ({
           networkId,
