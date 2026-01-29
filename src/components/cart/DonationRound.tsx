@@ -14,6 +14,7 @@ import {
   calculateTotalDonationValueForRoundInUSD,
   formatNumber,
 } from '@/lib/helpers/cartHelper'
+import { roundAmount } from '@/lib/helpers/numbersHelper'
 import type { GroupedProjects } from '@/lib/types/cart'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
@@ -112,9 +113,11 @@ export function DonationRound({
             <span className="text-giv-jade-500 text-base font-medium">
               $
               {formatNumber(
-                calculateRoundTotalMatchingValue(
-                  cartRoundData.roundId,
-                  cartRoundData.projects,
+                roundAmount(
+                  calculateRoundTotalMatchingValue(
+                    cartRoundData.roundId,
+                    cartRoundData.projects,
+                  ),
                 ),
               )}
             </span>

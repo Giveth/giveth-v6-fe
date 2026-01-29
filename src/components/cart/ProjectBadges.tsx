@@ -6,6 +6,7 @@ import { useProjectEstimatedMatching } from '@/hooks/projectHooks'
 import { GIVBACKS_DONATION_QUALIFICATION_VALUE_USD } from '@/lib/constants/app-main'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
+import { roundAmount } from '@/lib/helpers/numbersHelper'
 import { calculateEstimatedMatchingWithDonationAmount } from '@/lib/helpers/projectHelper'
 
 export const ProjectBadges = ({
@@ -139,7 +140,7 @@ export const ProjectBadges = ({
           amountPrefix={
             isDonationMatched
               ? (roundData?.allocatedFundUSDPreferred ? '$' : '') +
-                formatNumber(esMatching ?? 0) +
+                formatNumber(roundAmount(esMatching ?? 0)) +
                 ' ' +
                 (roundData?.allocatedTokenSymbol &&
                 !roundData?.allocatedFundUSDPreferred

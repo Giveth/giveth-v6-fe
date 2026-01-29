@@ -6,6 +6,7 @@ import { useQfRoundBySlug } from '@/hooks/useQfRoundBySlug'
 import { useQfRoundStats } from '@/hooks/useQfRoundStats'
 import type { QfRoundEntity } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
+import { roundAmount } from '@/lib/helpers/numbersHelper'
 import { calculateEstimatedMatchingWithDonationAmount } from '@/lib/helpers/projectHelper'
 
 export const DonationMatchCard = ({
@@ -76,7 +77,7 @@ export const DonationMatchCard = ({
       {qfRoundStats && qfRoundStats.qfRoundStats.uniqueDonors >= 10 && (
         <span className="text-giv-jade-500 text-right font-medium">
           {fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ? '$' : ''}
-          {formatNumber(esMatching)}{' '}
+          {formatNumber(roundAmount(esMatching))}{' '}
           {fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol &&
           !fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred
             ? fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol
