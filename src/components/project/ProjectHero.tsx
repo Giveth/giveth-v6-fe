@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Route } from 'next'
 
 interface ProjectHeroProps {
   project: {
@@ -42,12 +43,16 @@ export function ProjectHero({ project }: ProjectHeroProps) {
         <h1 className="text-[41px] font-bold font-adventor text-white mb-2">
           {project.title}
         </h1>
-        <Link
-          href={`/user/${adminAddress}`}
-          className="text-xl text-giv-gray-100! hover:opacity-80 transition-opacity duration-300"
-        >
-          {adminName}
-        </Link>
+        {adminAddress ? (
+          <Link
+            href={`/user/${adminAddress}` as Route}
+            className="text-xl text-giv-gray-100! hover:opacity-80 transition-opacity duration-300"
+          >
+            {adminName}
+          </Link>
+        ) : (
+          <span className="text-xl text-giv-gray-100!">{adminName}</span>
+        )}
       </div>
     </div>
   )
