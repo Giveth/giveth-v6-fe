@@ -70,10 +70,10 @@ export const DonationMatchCard = ({
         <ArrowRight className="w-4 h-4" />
       </span>
 
-      {qfRoundStats && qfRoundStats.qfRoundStats.donationsCount < 10 && (
+      {qfRoundStats && qfRoundStats.qfRoundStats.uniqueDonors < 10 && (
         <span className="text-giv-jade-500 text-right font-medium">TBD</span>
       )}
-      {qfRoundStats && qfRoundStats.qfRoundStats.donationsCount >= 10 && (
+      {qfRoundStats && qfRoundStats.qfRoundStats.uniqueDonors >= 10 && (
         <span className="text-giv-jade-500 text-right font-medium">
           {fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ? '$' : ''}
           {formatNumber(esMatching)}{' '}
