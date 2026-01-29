@@ -97,6 +97,18 @@ export function DonationSidebar({
       return
     }
 
+    // Check if round doesn't have any selected token
+    const roundsWithoutToken = qfRoundGroups.filter(
+      group => !group.selectedToken,
+    )
+    if (roundsWithoutToken.length > 0) {
+      console.error(
+        'No token selected for the following rounds:',
+        roundsWithoutToken.map(group => group.roundName),
+      )
+      return
+    }
+
     // Check if some project inside the cart don't have amount
     const projectsWithoutAmount = qfRoundGroups.flatMap(group =>
       group.projects.filter(project => Number(project.donationAmount) === 0),
@@ -128,6 +140,8 @@ export function DonationSidebar({
       }
       if (!account?.address) return
     }
+
+    // Sign in if user is not authenticated
     if (!isAuthenticated) {
       try {
         await signIn()
@@ -135,6 +149,8 @@ export function DonationSidebar({
         return
       }
     }
+
+    // Check if user have jwt token
     const storedToken =
       typeof window !== 'undefined'
         ? (window.localStorage.getItem('giveth_token') ?? undefined)
@@ -204,11 +220,8 @@ export function DonationSidebar({
               )
               const numberOfProjectsWithAmount = projectsWithAmount.length
 
-              // Reduce group amount by giveth percentage
-              const reducedGroupAmount =
-                Number(group.totalAmount) * (1 - givethPercentage / 100)
-              const reducedGroupAmountUsd =
-                Number(group.totalUsdValue) * (1 - givethPercentage / 100)
+              const totalGroupAmount = Number(group.totalAmount)
+              const totalGroupAmountUsd = Number(group.totalUsdValue)
 
               return (
                 <div
@@ -216,20 +229,27 @@ export function DonationSidebar({
                   className="p-3 rounded-lg border border-giv-gray-300"
                 >
                   <p className="text-base text-giv-gray-900 font-medium">
-                    {formatNumber(reducedGroupAmount, {
+                    {formatNumber(totalGroupAmount, {
                       minDecimals: 2,
-                      maxDecimals: 6,
+                      maxDecimals: 2,
                     })}{' '}
                     {group.tokenSymbol}{' '}
                     <span className="font-normal">
-                      (~${formatNumber(reducedGroupAmountUsd)}) to
+                      (~${formatNumber(totalGroupAmountUsd)}) to
                     </span>{' '}
                     {numberOfProjectsWithAmount} project
                     {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
                     <span className="font-normal">in</span>
                   </p>
                   <p className="text-base text-giv-gray-900 font-medium mt-0.5">
-                    {group.roundName} <span className="font-normal">on</span>{' '}
+                    {group.roundName}
+                    {givethPercentage > 0 && (
+                      <>
+                        <span className="font-normal"> and </span>
+                        <span className="font-medium"> Giveth</span>{' '}
+                      </>
+                    )}{' '}
+                    <span className="font-normal">on</span>{' '}
                     {getChainName(group.selectedChainId)}
                   </p>
                 </div>

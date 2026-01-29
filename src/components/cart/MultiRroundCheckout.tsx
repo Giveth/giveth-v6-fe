@@ -11,6 +11,7 @@ import { AlertCircle, Check, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DonationRound } from '@/context/CartContext'
 import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
+import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 
 interface MultiRoundCheckoutProps {
@@ -154,15 +155,23 @@ export function MultiRoundCheckout({
                       <p className="text-sm text-[#82899a] mt-1">
                         {round.projects.length} project
                         {round.projects.length > 1 ? 's' : ''} •{' '}
-                        {round.totalAmount} {round.tokenSymbol} •{' '}
+                        {formatNumber(Number(round.totalAmount), {
+                          minDecimals: 2,
+                          maxDecimals: 2,
+                        })}{' '}
+                        {round.tokenSymbol} •{' '}
                         {getChainName(round.selectedChainId)}
                       </p>
                     </div>
 
                     {/* Amount Badge */}
-                    <div className="flex-shrink-0 px-3 py-1 bg-[#f7f7f9] rounded-lg">
+                    <div className="shrink-0 px-3 py-1 bg-[#f7f7f9] rounded-lg">
                       <p className="text-sm font-medium text-[#1f2333]">
-                        {round.totalAmount} {round.tokenSymbol}
+                        {formatNumber(round.totalAmount, {
+                          minDecimals: 2,
+                          maxDecimals: 6,
+                        })}{' '}
+                        {round.tokenSymbol}
                       </p>
                     </div>
                   </div>

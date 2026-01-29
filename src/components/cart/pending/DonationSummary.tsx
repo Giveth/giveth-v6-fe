@@ -175,7 +175,11 @@ export function DonationSummary({
               <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
                 <p className="text-giv-gray-800 text-base font-normal">
                   <span className="font-medium">
-                    {totalAmountInRound} {round.tokenSymbol}
+                    {formatNumber(totalAmountInRound, {
+                      minDecimals: 2,
+                      maxDecimals: 6,
+                    })}{' '}
+                    {round.tokenSymbol}
                   </span>{' '}
                   (~${formatNumber(Number(round.totalUsdValue || 0))}) to{' '}
                   <span className="font-medium">
