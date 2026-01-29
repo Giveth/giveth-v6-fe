@@ -46,7 +46,12 @@ export function ClosedRounds() {
       {rounds.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {rounds.slice(0, 3).map(round => (
-            <RoundCard key={round.id} round={round} layout="vertical" />
+            <RoundCard
+              key={round.id}
+              round={round}
+              layout="vertical"
+              isClosed={true}
+            />
           ))}
         </div>
       )}

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Copy, LogOut } from 'lucide-react'
+import clsx from 'clsx'
+import { Check, ChevronDown, Copy, LogOut } from 'lucide-react'
 import { type Route } from 'next'
 import { type Address } from 'thirdweb'
 import {
@@ -11,6 +12,8 @@ import {
   useActiveWallet,
   useActiveWalletChain,
 } from 'thirdweb/react'
+import { EnsName } from '@/components/account/EnsName'
+import { ChainIcon } from '@/components/ChainIcon'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
@@ -23,7 +26,6 @@ import {
   supportLink,
 } from '@/lib/constants/menu-links'
 import { getUserName } from '@/lib/helpers/userHelper'
-import { EnsName } from '../account/EnsName'
 
 export function HeaderConnectWallet() {
   const account = useActiveAccount()
@@ -77,34 +79,24 @@ export function HeaderConnectWallet() {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-3 px-4 py-1 bg-white rounded-full font-normal shadow-[0px_3px_20px_rgba(212,218,238,0.4)] hover:opacity-85 transition-all duration-200 border border-gray-100 cursor-pointer"
+          className={clsx(
+            'flex items-center gap-3 px-4 py-[10px] lg:py-3 bg-white rounded-md',
+            'hover:opacity-85 transition-all duration-200',
+            'border border-giv-primary-100 cursor-pointer',
+            'text-xs lg:text-sm text-giv-primary-600! font-bold',
+          )}
         >
-          {/* Avatar */}
-          <div
-            className={`w-4 h-4 lg:w-6 lg:h-6 rounded-full flex items-center justify-center`}
-          >
-            <Image
-              src={user?.avatar || '/images/user/default-avatar.png'}
-              alt="Avatar"
-              width={24}
-              height={24}
-              className="w-4 h-4 lg:w-6 lg:h-6 object-cover rounded-full"
-            />
-          </div>
+          {/* Cain Icon */}
+          <ChainIcon networkId={chain?.id || 0} />
 
           {/* Address and Network Info */}
           <div className="flex flex-col items-start">
-            <span className="font-normal text-giv-gray-900 text-xs lg:text-sm">
-              {(user && getUserName(user)) || (
-                <EnsName
-                  address={account.address as Address as `0x${string}`}
-                />
-              )}
-            </span>
-            <span className="font-normal text-giv-gray-900 text-[10px]">
-              Connected to {chain?.name || 'Network'}
-            </span>
+            {(user && getUserName(user)) || (
+              <EnsName address={account.address as Address as `0x${string}`} />
+            )}
           </div>
+
+          <ChevronDown className="w-5 h-5 text-giv-primary-600" />
         </button>
 
         {/* Dropdown Menu */}
