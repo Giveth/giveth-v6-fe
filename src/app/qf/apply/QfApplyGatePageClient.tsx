@@ -207,13 +207,13 @@ export default function QfApplyGatePageClient({
     !isRoundsLoading && !roundsError && (roundOptions?.length || 0) === 0
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-neutral-200">
       <main className="max-w-3xl mx-auto px-4 py-12">
         <div className="rounded-2xl bg-white shadow-sm border border-gray-100 p-6 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-bold font-adventor text-giv-deep-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-giv-deep-blue-900">
             Apply to a QF Round
           </h1>
-          <p className="mt-2 text-giv-gray-700">
+          <p className="mt-2 text-giv-neutral-700">
             To continue, your project must have a valid recipient address set
             for <span className="font-medium">every</span> eligible network in
             the selected round.
@@ -221,7 +221,7 @@ export default function QfApplyGatePageClient({
 
           <div className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-giv-gray-800">
+              <label className="block text-sm font-medium text-giv-neutral-800">
                 Giveth project link or slug
               </label>
               <div className="mt-2">
@@ -235,7 +235,7 @@ export default function QfApplyGatePageClient({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-giv-gray-800">
+              <label className="block text-sm font-medium text-giv-neutral-800">
                 QF round
               </label>
               <div className="mt-2">
@@ -269,7 +269,7 @@ export default function QfApplyGatePageClient({
                 </p>
               )}
               {noUpcomingRounds && (
-                <p className="mt-2 text-sm text-giv-gray-700">
+                <p className="mt-2 text-sm text-giv-neutral-700">
                   There are currently no QF rounds accepting applications.
                 </p>
               )}

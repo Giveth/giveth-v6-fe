@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import clsx from 'clsx'
 import { type Route } from 'next'
 import { UserDonationTabs } from '@/components/user/UserDonationTabs'
 import { myRecurringDonationsLink } from '@/lib/constants/menu-links'
@@ -22,7 +23,12 @@ export function UserDonationsTable({ userId }: { userId?: number }) {
       <UserDonationTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="relative">
         {isLoading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[1px] text-[#82899a]">
+          <div
+            className={clsx(
+              'absolute inset-0 z-10 flex items-center justify-center',
+              'bg-white/70 backdrop-blur-[1px] text-giv-neutral-700',
+            )}
+          >
             Loading donations...
           </div>
         )}

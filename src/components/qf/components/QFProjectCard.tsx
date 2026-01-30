@@ -102,10 +102,10 @@ export function QFProjectCard({
       >
         {/* Header Section */}
         <div className="mb-2">
-          <h3 className="font-semibold text-lg text-giv-gray-900 mb-1 line-clamp-1">
+          <h3 className="font-semibold text-lg text-giv-neutral-900 mb-1 line-clamp-1">
             <Link
               href={projectLink as unknown as Route}
-              className="hover:text-giv-primary-500 transition-colors"
+              className="hover:text-giv-brand-500 transition-colors"
             >
               {project.title}
             </Link>
@@ -114,14 +114,14 @@ export function QFProjectCard({
             href={
               `/user/${project.adminUser?.wallets?.[0]?.address}` as unknown as Route
             }
-            className="text-base font-medium text-giv-pinky-500! hover:text-giv-primary-500! transition-colors"
+            className="text-base font-medium text-giv-pink-500! hover:text-giv-brand-500! transition-colors"
           >
             {project.adminUser?.name || 'Unknown Creator'}
           </Link>
         </div>
 
         {/* Description */}
-        <p className="text-base text-giv-gray-700 line-clamp-3 mb-4 grow">
+        <p className="text-base text-giv-neutral-700 line-clamp-3 mb-4 grow">
           {project.descriptionSummary}
         </p>
 
@@ -129,12 +129,12 @@ export function QFProjectCard({
         <div className="flex items-end justify-between border-t border-gray-100 pt-4 mb-4">
           {/* Left: Round Stats */}
           <div>
-            <div className="text-2xl font-bold text-giv-gray-900 leading-tight mb-1">
+            <div className="text-2xl font-bold text-giv-neutral-900 leading-tight mb-1">
               {formatCurrency(roundRaised)}
             </div>
-            <div className="text-xs text-giv-gray-700">
+            <div className="text-xs text-giv-neutral-700">
               Raised from{' '}
-              <span className="text-giv-gray-900 font-medium">
+              <span className="text-giv-neutral-900 font-medium">
                 {roundContributors}
               </span>{' '}
               contributors
@@ -143,27 +143,33 @@ export function QFProjectCard({
 
           {/* Right: Total Stats (Box) */}
           <div className="p-2 text-center min-w-[80px]">
-            <div className="text-2xl font-adventor font-bold text-giv-gray-700 leading-tight">
+            <div className="text-2xl font-bold text-giv-neutral-700 leading-tight">
               {formatCurrency(totalRaised)}
             </div>
-            <div className="text-xs text-giv-gray-800 mt-0.5">Total Raised</div>
+            <div className="text-xs text-giv-neutral-800 mt-0.5">
+              Total Raised
+            </div>
           </div>
         </div>
 
         {/* Badges/Tags */}
         <div className="flex items-center gap-2 mb-4">
           {project.vouched && (
-            <span className="inline-flex items-center gap-1 text-xs text-giv-jade-500">
-              <IconVerified width={16} height={16} fill="var(--giv-jade-500)" />
+            <span className="inline-flex items-center gap-1 text-xs text-giv-success-500">
+              <IconVerified
+                width={16}
+                height={16}
+                fill="var(--giv-success-500)"
+              />
               VERIFIED
             </span>
           )}
           {project.isGivbacksEligible && (
-            <span className="inline-flex items-center gap-1 text-xs text-giv-primary-500 px-1.5 py-0.5">
+            <span className="inline-flex items-center gap-1 text-xs text-giv-brand-500 px-1.5 py-0.5">
               <GivBacksEligible
                 width={16}
                 height={16}
-                fill="var(--giv-primary-500)"
+                fill="var(--giv-brand-500)"
               />
               GIVBACKS
             </span>
@@ -179,13 +185,13 @@ export function QFProjectCard({
             onClick={toggleCart}
             className={`w-full h-[48px] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isInCart
-                ? 'border border-giv-primary-100 bg-giv-primary-50 text-giv-primary-700 hover:bg-giv-primary-100 hover:text-giv-primary-700'
-                : 'bg-giv-primary-300 text-white hover:bg-giv-primary-400 hover:text-white'
+                ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
+                : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
             }`}
           >
             {isInCart ? (
               <>
-                <X className="w-6 h-6 text-giv-primary-700" />
+                <X className="w-6 h-6 text-giv-brand-700" />
                 Remove From Cart
               </>
             ) : (

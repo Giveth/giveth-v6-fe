@@ -110,21 +110,21 @@ export const DonationTableOneTime = ({
     <>
       <div className="overflow-x-auto">
         {(isLoading || isFetching) && (
-          <div className="text-sm text-giv-gray-600 mb-2">Loading…</div>
+          <div className="text-sm text-giv-neutral-600 mb-2">Loading…</div>
         )}
         {/* Table */}
         {!isLoading && (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-giv-gray-400">
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+              <tr className="border-b border-giv-neutral-400">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                   <button
                     type="button"
                     onClick={() => handleSort(DonationSortField.CreatedAt)}
-                    className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                    className={`flex items-center gap-2 hover:text-giv-brand-500 cursor-pointer ${
                       orderBy === DonationSortField.CreatedAt
-                        ? 'text-giv-primary-500'
-                        : 'text-giv-gray-900 hover:text-giv-primary-500'
+                        ? 'text-giv-brand-500'
+                        : 'text-giv-neutral-900 hover:text-giv-brand-500'
                     }`}
                   >
                     Donated at
@@ -141,20 +141,20 @@ export const DonationTableOneTime = ({
                     )}
                   </button>
                 </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                   Project
                 </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                   Status
                 </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                   <button
                     type="button"
                     onClick={() => handleSort(DonationSortField.Amount)}
-                    className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                    className={`flex items-center gap-2 hover:text-giv-brand-500 cursor-pointer ${
                       orderBy === DonationSortField.Amount
-                        ? 'text-giv-primary-500'
-                        : 'text-giv-gray-900 hover:text-giv-primary-500'
+                        ? 'text-giv-brand-500'
+                        : 'text-giv-neutral-900 hover:text-giv-brand-500'
                     }`}
                   >
                     Amount
@@ -171,14 +171,14 @@ export const DonationTableOneTime = ({
                     )}
                   </button>
                 </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                   <button
                     type="button"
                     onClick={() => handleSort(DonationSortField.ValueUsd)}
-                    className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                    className={`flex items-center gap-2 hover:text-giv-brand-500 cursor-pointer ${
                       orderBy === DonationSortField.ValueUsd
-                        ? 'text-giv-primary-500'
-                        : 'text-giv-gray-900 hover:text-giv-primary-500'
+                        ? 'text-giv-brand-500'
+                        : 'text-giv-neutral-900 hover:text-giv-brand-500'
                     }`}
                   >
                     USD value
@@ -195,7 +195,7 @@ export const DonationTableOneTime = ({
                     )}
                   </button>
                 </th>
-                <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                   QF round
                 </th>
               </tr>
@@ -205,7 +205,7 @@ export const DonationTableOneTime = ({
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-1 py-3 text-center text-giv-gray-900"
+                    className="px-1 py-3 text-center text-giv-neutral-900"
                   >
                     No donations found
                   </td>
@@ -220,7 +220,7 @@ export const DonationTableOneTime = ({
                   return (
                     <tr
                       key={donation.id}
-                      className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
+                      className="text-base border-b border-giv-neutral-300 hover:bg-giv-brand-000 transition-colors"
                     >
                       <td className="px-1 py-4">
                         {format(new Date(donation.createdAt), 'MMM d, yyyy')}
@@ -230,7 +230,7 @@ export const DonationTableOneTime = ({
                         {donation.project?.slug ? (
                           <Link
                             href={`/project/${donation.project.slug}`}
-                            className="hover:text-[#5326ec] hover:underline"
+                            className="hover:text-giv-brand-500 hover:underline"
                           >
                             {donation.project.title || 'Unknown Project'}
                           </Link>
@@ -239,7 +239,7 @@ export const DonationTableOneTime = ({
                         )}
                       </td>
                       <td className="px-1 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#d2fffb] text-[#1b8c82]">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-giv-success-200 text-giv-success-700">
                           {donation.status}
                         </span>
                       </td>
@@ -250,7 +250,7 @@ export const DonationTableOneTime = ({
                             height={24}
                             width={24}
                           />
-                          <span className="text-sm font-medium text-[#1f2333]">
+                          <span className="text-sm font-medium text-giv-deep-blue-800">
                             {formatNumber(donation.amount, {
                               minDecimals: 2,
                               maxDecimals: 2,
@@ -263,17 +263,17 @@ export const DonationTableOneTime = ({
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <ExternalLink className="w-3.5 h-3.5 text-giv-gray-700" />
+                              <ExternalLink className="w-3.5 h-3.5 text-giv-neutral-700" />
                             </a>
                           )}
                         </div>
                       </td>
-                      <td className="px-1 py-4 text-sm text-[#1f2333]">
+                      <td className="px-1 py-4 text-sm text-giv-deep-blue-800">
                         ${donation.valueUsd?.toFixed(2) ?? '0.00'}
                       </td>
                       <td className="px-1 py-4">
                         {donation.qfRoundName && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-giv-primary-500 border-2 border-giv-primary-500">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-giv-brand-500 border-2 border-giv-brand-500">
                             {donation.qfRoundName}
                           </span>
                         )}
@@ -294,7 +294,7 @@ export const DonationTableOneTime = ({
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-900 hover:text-giv-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-blue-900 hover:text-giv-brand-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-3 h-3" />
             Prev
@@ -304,7 +304,7 @@ export const DonationTableOneTime = ({
             page === '...' ? (
               <span
                 key={`ellipsis-${index}`}
-                className="px-1 text-sm text-giv-gray-600"
+                className="px-1 text-sm text-giv-neutral-600"
               >
                 ...
               </span>
@@ -314,8 +314,8 @@ export const DonationTableOneTime = ({
                 onClick={() => handlePageChange(page as number)}
                 className={`w-8 h-7 text-sm rounded cursor-pointer ${
                   currentPage === page
-                    ? 'font-medium text-giv-primary-500'
-                    : 'text-giv-gray-600 hover:text-giv-primary-500'
+                    ? 'font-medium text-giv-brand-500'
+                    : 'text-giv-neutral-600 hover:text-giv-brand-500'
                 }`}
               >
                 {page}
@@ -326,7 +326,7 @@ export const DonationTableOneTime = ({
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-900 hover:text-giv-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-blue-900 hover:text-giv-brand-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             Next
             <ChevronRight className="w-3 h-3" />

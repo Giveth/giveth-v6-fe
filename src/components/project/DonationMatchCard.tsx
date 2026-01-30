@@ -65,17 +65,17 @@ export const DonationMatchCard = ({
       key={amount}
       className="grid grid-cols-[1fr_auto_1fr] mb-1 items-center text-xs font-medium"
     >
-      <span className="text-giv-gray-800">{amount} USDC</span>
+      <span className="text-giv-neutral-800">{amount} USDC</span>
 
-      <span className="text-giv-jade-500 text-lg">
+      <span className="text-giv-success-500 text-lg">
         <ArrowRight className="w-4 h-4" />
       </span>
 
       {qfRoundStats && qfRoundStats.qfRoundStats.uniqueDonors < 10 && (
-        <span className="text-giv-jade-500 text-right font-medium">TBD</span>
+        <span className="text-giv-success-500 text-right font-medium">TBD</span>
       )}
       {qfRoundStats && qfRoundStats.qfRoundStats.uniqueDonors >= 10 && (
-        <span className="text-giv-jade-500 text-right font-medium">
+        <span className="text-giv-success-500 text-right font-medium">
           {fullRoundData?.qfRoundBySlug?.allocatedFundUSDPreferred ? '$' : ''}
           {formatNumber(roundAmount(esMatching))}{' '}
           {fullRoundData?.qfRoundBySlug?.allocatedTokenSymbol &&

@@ -35,7 +35,7 @@ import {
 
 export function Footer() {
   return (
-    <footer className="bg-giv-gray-200 pt-16 pb-8">
+    <footer className="bg-giv-neutral-200 pt-16 pb-8">
       <div className="px-4 md:px-16">
         <div
           className="
@@ -286,7 +286,7 @@ export function Footer() {
                 href="https://staging.giveth.io/donate/giveth-2021:-retreat-to-the-future"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-bold text-giv-pinky-500! hover:text-giv-pinky-200!"
+                className="text-sm font-bold text-giv-pink-500! hover:text-giv-pink-200!"
               >
                 with your donation
               </Link>

@@ -138,7 +138,7 @@ export function DonationCard({ project }: DonationCardProps) {
     <div className="h-full bg-white rounded-xl p-4">
       {/* If there is only one round, show the round name */}
       {availableRounds.length === 1 && (
-        <div className="w-full flex items-center justify-between px-4 py-3 border border-giv-gray-100 rounded-xl mb-4 transition-colors">
+        <div className="w-full flex items-center justify-between px-4 py-3 border border-giv-neutral-100 rounded-xl mb-4 transition-colors">
           {selectedRound?.qfRound?.name ?? ''}
         </div>
       )}
@@ -150,15 +150,15 @@ export function DonationCard({ project }: DonationCardProps) {
             <button
               className={clsx(
                 'w-full flex items-center justify-center px-4 py-2',
-                'border border-giv-gray-300 rounded-xl mb-4',
-                'hover:border-giv-primary-500 transition-colors cursor-pointer',
+                'border border-giv-neutral-300 rounded-xl mb-4',
+                'hover:border-giv-brand-500 transition-colors cursor-pointer',
               )}
               disabled={availableRounds.length === 0}
             >
-              <span className="text-sm font-semibold text-[#414651]">
+              <span className="text-sm font-semibold text-giv-neutral-900">
                 {selectedRound?.qfRound?.name ?? 'Select a round'}
               </span>
-              <ChevronDown className="w-5 h-5 ml-3 text-[#414651]" />
+              <ChevronDown className="w-5 h-5 ml-3 text-giv-neutral-900" />
             </button>
           </DropdownMenu.Trigger>
 
@@ -167,14 +167,14 @@ export function DonationCard({ project }: DonationCardProps) {
               sideOffset={8}
               align="start"
               className="
-              z-50 min-w-[220px] rounded-xl border border-giv-gray-100 bg-white p-1
+              z-50 min-w-[220px] rounded-xl border border-giv-neutral-100 bg-white p-1
               shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
             "
             >
               {availableRounds.length === 0 && (
                 <DropdownMenu.Item
                   disabled
-                  className="cursor-not-allowed rounded-lg px-3 py-2 text-sm text-giv-gray-900 outline-none"
+                  className="cursor-not-allowed rounded-lg px-3 py-2 text-sm text-giv-neutral-900 outline-none"
                 >
                   No rounds available
                 </DropdownMenu.Item>
@@ -186,15 +186,15 @@ export function DonationCard({ project }: DonationCardProps) {
                   onSelect={() => changeRound(r.qfRound?.id ?? undefined)}
                   className="
                     cursor-pointer rounded-xl px-3 py-2 text-sm
-                    text-giv-gray-900 outline-none
-                    hover:bg-giv-gray-200
-                    focus:bg-giv-gray-200
+                    text-giv-neutral-900 outline-none
+                    hover:bg-giv-neutral-200
+                    focus:bg-giv-neutral-200
                   "
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="truncate">{r.qfRound?.name}</span>
                     {r.qfRound?.id === selectedRoundId && (
-                      <Check className="w-4 h-4 text-giv-primary-500" />
+                      <Check className="w-4 h-4 text-giv-brand-500" />
                     )}
                   </div>
                 </DropdownMenu.Item>
@@ -206,14 +206,16 @@ export function DonationCard({ project }: DonationCardProps) {
 
       {/* Amount and Contributors */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-3xl font-bold text-giv-gray-900">
+        <span className="text-3xl font-bold text-giv-neutral-900">
           ${selectedRound?.sumDonationValueUsd.toFixed(2) || 0}
         </span>
         <div className="text-right">
-          <span className="text-xs font-bold text-giv-gray-900">
+          <span className="text-xs font-bold text-giv-neutral-900">
             {selectedRound?.countUniqueDonors || 0}
           </span>
-          <p className="text-xs font-normal text-giv-gray-700">Contributors</p>
+          <p className="text-xs font-normal text-giv-neutral-700">
+            Contributors
+          </p>
         </div>
       </div>
 
@@ -223,13 +225,13 @@ export function DonationCard({ project }: DonationCardProps) {
         onClick={handleCartAction}
         className={`w-full h-[48px] rounded-md text-sm font-bold mb-2 flex items-center justify-center gap-2 transition-all cursor-pointer ${
           isProjectInCart
-            ? 'border border-giv-primary-100 bg-giv-primary-50 text-giv-primary-700 hover:bg-giv-primary-100 hover:text-giv-primary-700'
-            : 'bg-giv-primary-300 text-white hover:bg-giv-primary-400 hover:text-white'
+            ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
+            : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
         }`}
       >
         {isProjectInCart ? (
           <>
-            <X className="w-6 h-6 text-giv-primary-700" />
+            <X className="w-6 h-6 text-giv-brand-700" />
             Remove From Cart
           </>
         ) : (
@@ -245,8 +247,8 @@ export function DonationCard({ project }: DonationCardProps) {
         onClick={() => setShowShareModal(true)}
         className={clsx(
           'w-full h-[48px] mb-6 py-2 rounded-md flex items-center justify-center gap-2',
-          'border border-giv-primary-100',
-          'text-sm text-[#754DFF] hover:text-[#5326ec] font-bold',
+          'border border-giv-brand-100',
+          'text-sm text-giv-brand-400 hover:text-giv-brand-500 font-bold',
           'cursor-pointer shadow-[0px_3px_20px_rgba(212,218,238,0.4)]',
         )}
       >
@@ -258,15 +260,15 @@ export function DonationCard({ project }: DonationCardProps) {
       {selectedRound && (
         <div className="w-full space-y-3">
           {/* Header */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-2 pb-1 text-xs font-medium border-b border-giv-gray-200">
-            <span className="text-giv-gray-800">Contribution</span>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-2 pb-1 text-xs font-medium border-b border-giv-neutral-200">
+            <span className="text-giv-neutral-800">Contribution</span>
             <span></span>
-            <span className="text-giv-jade-500 text-right">Matching</span>
+            <span className="text-giv-success-500 text-right">Matching</span>
           </div>
 
           {/* Contribution Matching Table */}
           {selectedRound?.qfRound && (
-            <div className="space-y-0 border-b border-giv-gray-200 pb-1">
+            <div className="space-y-0 border-b border-giv-neutral-200 pb-1">
               <DonationMatchCard
                 amount={1}
                 project={project}
@@ -293,10 +295,10 @@ export function DonationCard({ project }: DonationCardProps) {
         rel={
           HowItWorksLink.target === '_blank' ? 'noopener noreferrer' : undefined
         }
-        className="flex items-center gap-1 text-xs text-giv-primary-500! hover:text-giv-primary-600! font-medium transition-colors mt-3 cursor-pointer"
+        className="flex items-center gap-1 text-xs text-giv-brand-500! hover:text-giv-brand-600! font-medium transition-colors mt-3 cursor-pointer"
       >
         {HowItWorksLink.label}
-        <ChevronRight className="w-4 h-4 text-giv-primary-500 font-normal" />
+        <ChevronRight className="w-4 h-4 text-giv-brand-500 font-normal" />
       </Link>
 
       <ShareProjectModal

@@ -17,12 +17,10 @@ export function ClosedRounds() {
   return (
     <div className="mt-12 space-y-6">
       <div className="flex items-center justify-between mb-10">
-        <h2 className="text-2xl font-bold font-adventor text-giv-deep-900">
-          Closed Rounds
-        </h2>
+        <h2 className="text-2xl font-bold text-giv-deep-900">Closed Rounds</h2>
         <Link
           href="https://giveth.io/qf-archive"
-          className="inline-flex items-center gap-2 text-base font-bold text-giv-primary-500! hover:text-giv-primary-700! transition-colors"
+          className="inline-flex items-center gap-2 text-base font-bold text-giv-brand-500! hover:text-giv-brand-700! transition-colors"
         >
           Archived Rounds
           <ArrowRight className="w-4 h-4" />
@@ -30,16 +28,16 @@ export function ClosedRounds() {
       </div>
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-giv-primary-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-giv-brand-500" />
         </div>
       )}
       {error && (
-        <div className="text-center py-12 text-giv-gray-700">
+        <div className="text-center py-12 text-giv-neutral-700">
           Failed to load closed rounds. Please try again later.
         </div>
       )}
       {rounds.length === 0 && (
-        <div className="text-center py-12 text-giv-gray-700">
+        <div className="text-center py-12 text-giv-neutral-700">
           No closed rounds available.
         </div>
       )}

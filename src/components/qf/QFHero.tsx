@@ -53,7 +53,7 @@ export function QFHero({
             className={
               hasBanner
                 ? 'absolute inset-0 bg-center bg-cover'
-                : 'absolute inset-0 bg-linear-to-r from-giv-primary-100 via-[#f0ebff] to-giv-primary-100'
+                : 'absolute inset-0 bg-linear-to-r from-giv-brand-100 via-giv-brand-050 to-giv-brand-100'
             }
             style={
               hasBanner ? { backgroundImage: resolvedBannerUrl } : undefined
@@ -117,7 +117,7 @@ export function QFHero({
 
           <div
             className={`absolute bottom-4 left-4 rounded-2xl p-8 text-white ${
-              hasBanner ? 'bg-transparent' : 'bg-giv-primary-500'
+              hasBanner ? 'bg-transparent' : 'bg-giv-brand-500'
             }`}
           >
             {!hasBanner && (
@@ -148,7 +148,7 @@ export function QFHero({
 
             <div>
               <h1 className="text-3xl font-bold mb-4">{title}</h1>
-              <div className="inline-flex flex-col items-start gap-1 px-8 py-4 bg-giv-primary-500 rounded-full text-md font-bold border-2 border-white">
+              <div className="inline-flex flex-col items-start gap-1 px-8 py-4 bg-giv-brand-500 rounded-full text-md font-bold border-2 border-white">
                 Round ends in {days} d {hours} h {minutes} min
               </div>
             </div>

@@ -33,7 +33,7 @@ export default function AccountPageClient() {
   const user = userData?.userByAddress
 
   return (
-    <div className="min-h-screen bg-giv-gray-200">
+    <div className="min-h-screen bg-giv-neutral-200">
       <main className="max-w-7xl mx-auto px-4 py-8">
         {user && (
           <UserProfileSection user={user} isUserLoading={isUserLoading} />

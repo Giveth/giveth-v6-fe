@@ -17,10 +17,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#fcfcff] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-brand-000 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-[#5326ec] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[#82899a]">Checking authentication...</p>
+          <div className="w-12 h-12 border-4 border-giv-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-giv-neutral-700">Checking authentication...</p>
         </div>
       </div>
     )
@@ -29,11 +29,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // Step 1: User needs to connect wallet
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-[#fcfcff] flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-[#ebecf2] p-8 max-w-md w-full mx-4 text-center space-y-6">
-          <div className="w-16 h-16 bg-[#f6f3ff] rounded-full flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-giv-brand-000 flex items-center justify-center">
+        <div className="bg-white rounded-2xl border border-giv-neutral-300 p-8 max-w-md w-full mx-4 text-center space-y-6">
+          <div className="w-16 h-16 bg-giv-brand-050 rounded-full flex items-center justify-center mx-auto">
             <svg
-              className="w-8 h-8 text-[#5326ec]"
+              className="w-8 h-8 text-giv-brand-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -47,10 +47,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#1f2333] mb-2">
+            <h1 className="text-2xl font-bold text-giv-deep-blue-800 mb-2">
               Connect Your Wallet
             </h1>
-            <p className="text-[#82899a]">
+            <p className="text-giv-neutral-700">
               Connect your wallet to access your account dashboard
             </p>
           </div>
@@ -63,11 +63,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   // Step 2: User needs to sign in with SIWE
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#fcfcff] flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-[#ebecf2] p-8 max-w-md w-full mx-4 text-center space-y-6">
-          <div className="w-16 h-16 bg-[#f6f3ff] rounded-full flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-giv-brand-000 flex items-center justify-center">
+        <div className="bg-white rounded-2xl border border-giv-neutral-300 p-8 max-w-md w-full mx-4 text-center space-y-6">
+          <div className="w-16 h-16 bg-giv-brand-050 rounded-full flex items-center justify-center mx-auto">
             <svg
-              className="w-8 h-8 text-[#5326ec]"
+              className="w-8 h-8 text-giv-brand-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -81,10 +81,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#1f2333] mb-2">
+            <h1 className="text-2xl font-bold text-giv-deep-blue-800 mb-2">
               Sign In Required
             </h1>
-            <p className="text-[#82899a]">
+            <p className="text-giv-neutral-700">
               Please sign a message with your wallet to verify ownership and
               access your account
             </p>
@@ -96,11 +96,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
           )}
           <Button
             onClick={signIn}
-            className="w-full bg-[#5326ec] hover:bg-[#4520c9] text-white py-3"
+            className="w-full bg-giv-brand-500 hover:bg-giv-brand-400 text-white py-3"
           >
             Sign Message
           </Button>
-          <p className="text-xs text-[#82899a]">
+          <p className="text-xs text-giv-neutral-700">
             This signature is free and does not trigger a blockchain transaction
           </p>
         </div>
@@ -130,7 +130,7 @@ export default function AccountPageClient() {
 
   return (
     <AuthGate>
-      <div className="min-h-screen bg-giv-gray-200">
+      <div className="min-h-screen bg-giv-neutral-200">
         <main className="max-w-7xl mx-auto px-4 py-8">
           <ProfileSection />
           <DashboardTabs activeTab={activeTab} />

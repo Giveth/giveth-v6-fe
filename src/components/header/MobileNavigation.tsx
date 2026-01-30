@@ -20,7 +20,7 @@ export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
       {/* Open button */}
       <button
         onClick={() => setIsMenuOpen(true)}
-        className="md:hidden flex items-center gap-2 p-3 rounded-lg text-base font-medium text-giv-gray-900 hover:bg-giv-primary-50 transition"
+        className="md:hidden flex items-center gap-2 p-3 rounded-lg text-base font-medium text-giv-neutral-900 hover:bg-giv-brand-50 transition"
       >
         <MenuIcon className="h-6 w-6" />
         Menu

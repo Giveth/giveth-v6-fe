@@ -47,7 +47,7 @@ export function InsufficientFund({
 
           <Flex justify="center" mt="4">
             <Dialog.Close>
-              <button className="w-32 py-3 bg-giv-primary-500 text-white! rounded-3xl text-md font-bold flex items-center justify-center gap-2 hover:bg-giv-primary-400 transition-colors cursor-pointer">
+              <button className="w-32 py-3 bg-giv-brand-500 text-white! rounded-3xl text-md font-bold flex items-center justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer">
                 OK
               </button>
             </Dialog.Close>

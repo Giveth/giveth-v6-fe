@@ -10,7 +10,7 @@ export function CreateProjectButton() {
       href={createProjectLink?.href as Route}
       className={clsx(
         'flex items-center gap-2 text-xs font-bold',
-        'text-giv-primary-600! hover:text-giv-primary-500!',
+        'text-giv-brand-600! hover:text-giv-brand-500!',
         'transition-colors cursor-pointer',
       )}
     >

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
+import clsx from 'clsx'
 import { Share2 } from 'lucide-react'
 import { type Route } from 'next'
 import { IconFacebook } from '@/components/icons/IconFacebook'
@@ -42,17 +43,17 @@ export function ShareSection() {
   }, [shareLink, shareTextFacebook])
 
   return (
-    <div className="bg-white rounded-2xl p-6 font-inter">
+    <div className="bg-white rounded-2xl p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Share2 className="w-5 h-5 text-giv-gray-900" />
-        <h2 className="text-2xl font-bold text-giv-gray-900">
+        <Share2 className="w-5 h-5 text-giv-neutral-900" />
+        <h2 className="text-2xl font-bold text-giv-neutral-900">
           Spread the Impact!
         </h2>
       </div>
 
       {/* Share Message Box */}
-      <div className="bg-giv-gray-200 border border-dashed border-giv-gray-500 rounded-xl p-6 mb-4">
-        <p className="text-lg text-center text-giv-gray-900">
+      <div className="bg-giv-neutral-200 border border-dashed border-giv-neutral-500 rounded-xl p-6 mb-4">
+        <p className="text-lg text-center text-giv-neutral-900">
           Share your cart on socials to help projects attract even more
           donations!
         </p>
@@ -63,7 +64,10 @@ export function ShareSection() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Share on X"
-            className="w-16 h-12 rounded-md bg-giv-primary-50 border border-giv-primary-100 flex items-center justify-center hover:opacity-85 transition-colors cursor-pointer"
+            className={clsx(
+              'w-16 h-12 rounded-md bg-giv-brand-50 border border-giv-brand-100',
+              'flex items-center justify-center hover:opacity-85 transition-colors cursor-pointer',
+            )}
           >
             <IconX height={24} width={24} />
           </Link>
@@ -72,7 +76,10 @@ export function ShareSection() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Share on LinkedIn"
-            className="w-16 h-12 rounded-md bg-giv-primary-50 border border-giv-primary-100 flex items-center justify-center hover:opacity-85 transition-colors cursor-pointer"
+            className={clsx(
+              'w-16 h-12 rounded-md bg-giv-brand-50 border border-giv-brand-100',
+              'flex items-center justify-center hover:opacity-85 transition-colors cursor-pointer',
+            )}
           >
             <IconLinkedIn height={24} width={24} />
           </Link>
@@ -81,7 +88,10 @@ export function ShareSection() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Share on Facebook"
-            className="w-16 h-12 rounded-md bg-giv-primary-50 border border-giv-primary-100 flex items-center justify-center hover:opacity-85 transition-colors cursor-pointer"
+            className={clsx(
+              'w-16 h-12 rounded-md bg-giv-brand-50 border border-giv-brand-100',
+              'flex items-center justify-center hover:opacity-85 transition-colors cursor-pointer',
+            )}
           >
             <IconFacebook height={24} width={24} />
           </Link>

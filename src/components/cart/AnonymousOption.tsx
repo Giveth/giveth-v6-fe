@@ -10,13 +10,13 @@ export function AnonymousOption() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-[#ebecf2] p-5 mt-5">
+    <div className="bg-white rounded-xl border border-giv-neutral-300 p-5 mt-5">
       <div className="flex items-center gap-3">
         <Switch.Root
           className="
             relative h-5 w-8 shrink-0 cursor-pointer rounded-full
-            bg-[#e6e8f0] transition-colors
-            data-[state=checked]:bg-[#5326ec]
+            bg-giv-neutral-300 transition-colors
+            data-[state=checked]:bg-giv-brand-500
           "
           checked={isAnonymous}
           onCheckedChange={handleToggleAnonymous}
@@ -31,7 +31,7 @@ export function AnonymousOption() {
         </Switch.Root>
 
         <div className="flex items-center gap-2">
-          <span className="text-base font-medium text-giv-gray-900">
+          <span className="text-base font-medium text-giv-neutral-900">
             Make my donation anonymous
           </span>
           <HelpTooltip text="By checking this, we won't consider your profile information as a donor for this donation and won't show it on public pages." />

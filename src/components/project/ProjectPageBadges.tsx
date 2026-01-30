@@ -10,17 +10,17 @@ export const ProjectPageBadges = ({ project }: { project: ProjectEntity }) => {
   return (
     <div className="flex items-center gap-3 mb-4">
       {project.vouched && (
-        <span className="inline-flex items-center gap-1 text-xs font-bold text-giv-jade-500">
-          <IconVerified width={16} height={16} fill="var(--giv-jade-500)" />
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-giv-success-500">
+          <IconVerified width={16} height={16} fill="var(--giv-success-500)" />
           <span>VERIFIED</span>
         </span>
       )}
       {project.isGivbacksEligible && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-giv-primary-500">
+        <span className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-giv-brand-500">
           <GivBacksEligible
             width={16}
             height={16}
-            fill="var(--giv-primary-500)"
+            fill="var(--giv-brand-500)"
           />
           <span>GIVBACKS</span>
         </span>

@@ -69,10 +69,10 @@ export function QFProjectsGrid({
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <h2 className="text-2xl self-start font-bold md:self-center">
-          <span className="text-giv-gray-900">
+          <span className="text-giv-neutral-900">
             {showLoading ? '' : 'Explore'}
           </span>{' '}
-          <span className="text-giv-gray-700">{headerRightText}</span>
+          <span className="text-giv-neutral-700">{headerRightText}</span>
         </h2>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -92,7 +92,7 @@ export function QFProjectsGrid({
               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
               aria-label="Open search"
             >
-              <Search className="w-4 h-4 text-giv-gray-900" />
+              <Search className="w-4 h-4 text-giv-neutral-900" />
             </button>
             <input
               ref={searchInputRef}
@@ -104,8 +104,8 @@ export function QFProjectsGrid({
               }}
               placeholder="Search"
               className={clsx(
-                'w-full h-10 pl-11 pr-10 bg-white border border-[#ebecf2]',
-                'rounded-sm text-base font-medium text-giv-gray-900 placeholder:text-giv-gray-700',
+                'w-full h-10 pl-11 pr-10 bg-white border border-giv-neutral-300',
+                'rounded-sm text-base font-medium text-giv-neutral-900 placeholder:text-giv-neutral-700',
                 'focus:outline-none transition-colors',
                 !isSearchOpen && 'opacity-0 pointer-events-none',
               )}
@@ -115,10 +115,10 @@ export function QFProjectsGrid({
               <button
                 type="button"
                 onClick={() => onSearchTermChange('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-giv-gray-200 transition-colors cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-giv-neutral-200 transition-colors cursor-pointer"
                 aria-label="Clear search"
               >
-                <X className="w-4 h-4 text-giv-gray-700" />
+                <X className="w-4 h-4 text-giv-neutral-700" />
               </button>
             )}
           </div>
@@ -141,7 +141,7 @@ export function QFProjectsGrid({
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div
               key={i}
-              className="bg-white rounded-xl border border-giv-gray-300 h-[450px] animate-pulse"
+              className="bg-white rounded-xl border border-giv-neutral-300 h-[450px] animate-pulse"
             />
           ))}
         </div>
@@ -163,7 +163,12 @@ export function QFProjectsGrid({
           <div className="flex justify-center">
             {/* Only show load more if we have more projects? For now static as per previous code */}
             {projects.length > 0 && projects.length < totalProjects && (
-              <button className="px-8 py-3 border-2 border-giv-pinky-500 text-giv-pinky-500 rounded-full text-sm font-medium hover:bg-giv-pinky-200 transition-colors">
+              <button
+                className={clsx(
+                  'px-8 py-3 border-2 border-giv-pink-500 text-giv-pink-500',
+                  'rounded-full text-sm font-medium hover:bg-giv-pink-200 transition-colors',
+                )}
+              >
                 Load More
               </button>
             )}

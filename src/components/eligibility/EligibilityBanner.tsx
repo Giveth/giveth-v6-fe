@@ -159,13 +159,13 @@ export function EligibilityBanner() {
               width={20}
               height={20}
             />
-            <h4 className="text-lg font-medium text-giv-warning-600 font-inter">
+            <h4 className="text-lg font-medium text-giv-warning-600">
               QF Donor Eligibility
             </h4>
           </div>
 
           <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-gray-900 font-inter">
+            <p className="text-lg font-medium text-giv-neutral-900">
               Verify your donor uniqueness with a quick check of your on-chain
               activity.
             </p>
@@ -173,15 +173,11 @@ export function EligibilityBanner() {
               type="button"
               onClick={checkEligibility}
               disabled={isAuthLoading}
-              className="text-xs font-bold text-giv-pinky-400 font-sans cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3"
+              className="text-xs font-bold text-giv-pink-400 cursor-pointer hover:opacity-85 border-2 border-giv-pink-400 rounded-3xl px-6 py-3"
             >
               <span className="flex items-center gap-2">
                 {isChecking ? 'Checking Eligibility...' : 'Check Eligibility'}
-                <IconRotate
-                  width={20}
-                  height={20}
-                  fill="var(--giv-pinky-400)"
-                />
+                <IconRotate width={20} height={20} fill="var(--giv-pink-400)" />
               </span>
             </button>
           </div>
@@ -189,20 +185,24 @@ export function EligibilityBanner() {
       )}
       {/* Wallet Connected And Has Eligibility Data */}
       {account && data && isUserEligible && !showLoading && !isTooOld && (
-        <div className="p-4 space-y-2 border border-giv-jade-600 rounded-2xl">
+        <div
+          className={clsx(
+            'p-4 space-y-2 border border-giv-success-600 rounded-2xl',
+          )}
+        >
           <div className="flex items-center gap-2">
             <MatchingEligible
-              fill="var(--giv-jade-600)"
+              fill="var(--giv-success-600)"
               width={20}
               height={20}
             />
-            <h4 className="text-lg font-medium font-inter text-giv-jade-600">
+            <h4 className="text-lg font-medium text-giv-success-600">
               You're QF-eligible!
             </h4>
           </div>
 
           <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-gray-900 font-inter">
+            <p className="text-lg font-medium text-giv-neutral-900">
               As long as your donations are above the minimum amount for each
               round, they are eligibile to be matched.
             </p>
@@ -211,20 +211,20 @@ export function EligibilityBanner() {
       )}
       {/* Wallet Connected And Has No Eligibility Data */}
       {account && data && !isUserEligible && !isTooOld && (
-        <div className="p-4 space-y-2 border border-giv-primary-500 rounded-2xl">
+        <div className="p-4 space-y-2 border border-giv-brand-500 rounded-2xl">
           <div className="flex items-center gap-2">
             <MatchingEligible
-              fill="var(--giv-primary-500)"
+              fill="var(--giv-brand-500)"
               width={20}
               height={20}
             />
-            <h4 className="text-lg font-medium text-giv-primary-500 font-inter">
+            <h4 className="text-lg font-medium text-giv-brand-500">
               QF Donor Eligibility
             </h4>
           </div>
 
           <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-gray-900 font-inter">
+            <p className="text-lg font-medium text-giv-neutral-900">
               Please go to Passport to increase your score to{' '}
               <span className="font-bold">
                 over {globalSettingScore.globalMinimumPassportScore.toString()}
@@ -233,9 +233,9 @@ export function EligibilityBanner() {
             </p>
           </div>
 
-          <div className="flex justify-between items-center gap-3 mt-4 border-t border-giv-gray-300 pt-4">
+          <div className="flex justify-between items-center gap-3 mt-4 border-t border-giv-neutral-300 pt-4">
             <div className="flex gap-4">
-              <p className="text-lg font-medium text-giv-gray-900 font-inter rounded-lg py-3 px-4 bg-giv-gray-200">
+              <p className="text-lg font-medium text-giv-neutral-900 rounded-lg py-3 px-4 bg-giv-neutral-200">
                 <span>Your Passport score</span>
                 <span className="font-bold ml-12">
                   {userPassportData?.passportScore?.toString() ?? 0}
@@ -245,8 +245,8 @@ export function EligibilityBanner() {
                 href={PassportLink.href as unknown as Route}
                 target="_blank"
                 className={clsx(
-                  'text-xs font-bold text-giv-pinky-400! font-inter',
-                  'cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3',
+                  'text-xs font-bold text-giv-pink-400!',
+                  'cursor-pointer hover:opacity-85 border-2 border-giv-pink-400 rounded-3xl px-6 py-3',
                 )}
               >
                 <span className="flex items-center gap-2">
@@ -258,15 +258,11 @@ export function EligibilityBanner() {
             <button
               onClick={checkEligibility}
               disabled={isAuthLoading}
-              className="text-xs font-bold text-giv-pinky-400 cursor-pointer hover:opacity-85 border-2 border-giv-pinky-400 rounded-3xl px-6 py-3"
+              className="text-xs font-bold text-giv-pink-400 cursor-pointer hover:opacity-85 border-2 border-giv-pink-400 rounded-3xl px-6 py-3"
             >
               <span className="flex items-center gap-2">
                 {isChecking ? 'Refreshing Score...' : 'Refresh Score'}
-                <IconRotate
-                  width={20}
-                  height={20}
-                  fill="var(--giv-pinky-400)"
-                />
+                <IconRotate width={20} height={20} fill="var(--giv-pink-400)" />
               </span>
             </button>
           </div>

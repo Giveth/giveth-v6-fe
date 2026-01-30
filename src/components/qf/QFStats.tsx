@@ -30,7 +30,7 @@ export function QFStats({
   return (
     <div className="max-w-7xl mx-auto px-6 mt-4 mb-8">
       <div className="bg-white rounded-xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_2fr] gap-6 font-medium text-giv-gray-900">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_2fr] gap-6 font-medium text-giv-neutral-900">
           <div>
             <p className="text-lg mb-1">Matching Pool</p>
             <p className="text-xl font-bold">{formatCurrency(matchingPool)}</p>

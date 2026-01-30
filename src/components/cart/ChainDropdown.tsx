@@ -39,21 +39,21 @@ export const ChainDropdown = ({
     <DropdownMenu.Root>
       {/* Trigger */}
       <DropdownMenu.Trigger asChild>
-        <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2 transition-colors hover:bg-giv-gray-200 cursor-pointer">
+        <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-neutral-100 px-3 py-2 transition-colors hover:bg-giv-neutral-200 cursor-pointer">
           {selectedChainIdState > 0 && (
             <>
               <ChainIcon networkId={selectedChainIdState} />
-              <span className="text-base font-medium text-giv-gray-900">
+              <span className="text-base font-medium text-giv-neutral-900">
                 {getChainName(selectedChainIdState)}
               </span>
             </>
           )}
           {!selectedChainIdState && (
-            <span className="text-base font-medium text-giv-gray-900">
+            <span className="text-base font-medium text-giv-neutral-900">
               Select a chain
             </span>
           )}
-          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-gray-900 max-[480px]:ml-auto" />
+          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-neutral-900 max-[480px]:ml-auto" />
         </button>
       </DropdownMenu.Trigger>
 
@@ -64,7 +64,7 @@ export const ChainDropdown = ({
           align="start"
           className="
             max-[480px]:w-full md:w-auto 
-            z-50 min-w-[180px] rounded-xl border border-giv-gray-300 bg-white p-1
+            z-50 min-w-[180px] rounded-xl border border-giv-neutral-300 bg-white p-1
             shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
           "
         >
@@ -77,9 +77,9 @@ export const ChainDropdown = ({
               }}
               className="
                 cursor-pointer rounded-lg px-3 py-2 text-sm
-                text-[#1f2333] outline-none
-                hover:bg-[#f7f7f9]
-                focus:bg-[#f7f7f9]
+                text-giv-deep-blue-800 outline-none
+                hover:bg-giv-neutral-200
+                focus:bg-giv-neutral-200
               "
             >
               <div className="flex items-center gap-2">

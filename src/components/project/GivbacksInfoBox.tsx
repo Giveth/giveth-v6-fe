@@ -12,10 +12,14 @@ export function GivbacksInfoBox() {
     <div className="bg-white rounded-2xl p-6">
       <div className="flex items-start gap-3">
         <div className="flex items-baseline justify-center">
-          <GivBacksEligible width={18} height={18} fill="var(--giv-gray-900)" />
+          <GivBacksEligible
+            width={18}
+            height={18}
+            fill="var(--giv-neutral-900)"
+          />
         </div>
         <div>
-          <p className="text-base text-giv-gray-900">
+          <p className="text-base text-giv-neutral-900">
             Donations of ${GIVBACKS_DONATION_QUALIFICATION_VALUE_USD} or more
             are eligible for GIVbacks. Boost this project to increase its
             rewards percentage and visibility on the projects page!
@@ -23,7 +27,7 @@ export function GivbacksInfoBox() {
           <Link
             href={givpowerDocLink.href as Route}
             target="_blank"
-            className="flex items-center gap-1 text-sm text-giv-primary-500! hover:underline mt-1"
+            className="flex items-center gap-1 text-sm text-giv-brand-500! hover:underline mt-1"
           >
             Learn more
             <ChevronRight className="w-5 h-5 mt-0.5" />

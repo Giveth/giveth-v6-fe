@@ -82,8 +82,8 @@ export function HeaderConnectWallet() {
           className={clsx(
             'flex items-center gap-3 px-4 py-[10px] lg:py-3 bg-white rounded-md',
             'hover:opacity-85 transition-all duration-200',
-            'border border-giv-primary-100 cursor-pointer',
-            'text-xs lg:text-sm text-giv-primary-600! font-bold',
+            'border border-giv-brand-100 cursor-pointer',
+            'text-xs lg:text-sm text-giv-brand-600! font-bold',
           )}
         >
           {/* Cain Icon */}
@@ -96,7 +96,7 @@ export function HeaderConnectWallet() {
             )}
           </div>
 
-          <ChevronDown className="w-5 h-5 text-giv-primary-600" />
+          <ChevronDown className="w-5 h-5 text-giv-brand-600" />
         </button>
 
         {/* Dropdown Menu */}

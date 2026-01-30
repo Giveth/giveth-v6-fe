@@ -49,23 +49,23 @@ export function QFRoundSidebar({
     (selectedRound?.countUniqueDonors ?? project.countUniqueDonors) || 0
   return (
     <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
-      <h3 className="text-base font-medium text-giv-gray-900 border-b border-giv-gray-300 pb-2 mb-4">
+      <h3 className="text-base font-medium text-giv-neutral-900 border-b border-giv-neutral-300 pb-2 mb-4">
         {selectedRound?.qfRound?.name
           ? `${selectedRound.qfRound.name} donations`
           : 'All donations'}
       </h3>
 
       <div className="mb-4">
-        <span className="text-[52px] font-adventor font-bold text-giv-gray-900">
+        <span className="text-[52px] font-bold text-giv-neutral-900">
           $
           {formatNumber(totalDonations, {
             minDecimals: 2,
             maxDecimals: 2,
           })}
         </span>
-        <p className="text-base text-giv-gray-700">
+        <p className="text-base text-giv-neutral-700">
           Raised from{' '}
-          <span className="text-giv-gray-900 font-medium">
+          <span className="text-giv-neutral-900 font-medium">
             {countUniqueDonors || 0}
           </span>{' '}
           contributors
@@ -73,16 +73,16 @@ export function QFRoundSidebar({
       </div>
 
       <div className="pt-4">
-        <p className="text-base text-giv-gray-700 mb-3">
+        <p className="text-base text-giv-neutral-700 mb-3">
           Project recipient address
         </p>
         <div className="space-y-2">
           {recipientAddresses.map((item, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between gap-2 p-2 bg-giv-gray-200 rounded-lg"
+              className="flex items-center justify-between gap-2 p-2 bg-giv-neutral-200 rounded-lg"
             >
-              <span className="text-xs text-giv-gray-700 truncate flex-1">
+              <span className="text-xs text-giv-neutral-700 truncate flex-1">
                 <EnsName
                   address={item.address as Address as `0x${string}`}
                   startLength={10}
@@ -94,8 +94,8 @@ export function QFRoundSidebar({
                   onClick={() => handleCopyAddress(item.address)}
                   className={`transition-colors cursor-pointer ${
                     copiedAddress === item.address
-                      ? 'text-giv-jade-500'
-                      : 'text-giv-gray-800 hover:text-giv-primary-500'
+                      ? 'text-giv-success-500'
+                      : 'text-giv-neutral-800 hover:text-giv-brand-500'
                   }`}
                   title={
                     copiedAddress === item.address ? 'Copied!' : 'Copy address'

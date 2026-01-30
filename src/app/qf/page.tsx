@@ -5,7 +5,7 @@ import { PassportBanner } from '@/components/PassportBanner'
 
 export default function HubPage() {
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-neutral-200">
       {/* Matching Banner */}
       <PassportBanner />
 

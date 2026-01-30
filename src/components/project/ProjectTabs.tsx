@@ -38,8 +38,8 @@ export function ProjectTabs({
               onClick={() => onTabChange(tab.id)}
               className={`flex items-center gap-2 text-sm transition-colors cursor-pointer rounded-md px-4 py-3 ${
                 activeTab === tab.id
-                  ? 'text-giv-primary-500 bg-giv-gray-200 font-semibold'
-                  : 'text-giv-gray-800 hover:text-giv-primary-500 font-medium '
+                  ? 'text-giv-brand-500 bg-giv-neutral-200 font-semibold'
+                  : 'text-giv-neutral-800 hover:text-giv-brand-500 font-medium '
               }`}
             >
               {tab.label}
@@ -47,8 +47,8 @@ export function ProjectTabs({
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs ${
                     activeTab === tab.id
-                      ? 'bg-giv-primary-500 text-white'
-                      : 'bg-giv-gray-800 text-white'
+                      ? 'bg-giv-brand-500 text-white'
+                      : 'bg-giv-neutral-800 text-white'
                   }`}
                 >
                   {tab.count}

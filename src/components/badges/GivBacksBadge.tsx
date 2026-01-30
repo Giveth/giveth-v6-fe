@@ -16,15 +16,19 @@ export const GivBacksBadge = ({
 }: GivBacksBadgeProps) => {
   const Icon = type === 'eligible' ? GivBacksEligible : MatchingEligible
   const textColor =
-    color === 'green' ? 'text-giv-jade-500' : 'text-giv-gray-700'
+    color === 'green' ? 'text-giv-success-500' : 'text-giv-neutral-700'
   const amountPrefixTextColor =
-    color === 'green' ? 'text-giv-jade-500' : 'text-giv-gray-900'
+    color === 'green' ? 'text-giv-success-500' : 'text-giv-neutral-900'
   return (
-    <div className="inline-flex items-center gap-1.5 bg-giv-gray-200 border border-giv-gray-400 rounded-lg px-2 py-1">
+    <div className="inline-flex items-center gap-1.5 bg-giv-neutral-200 border border-giv-neutral-400 rounded-lg px-2 py-1">
       <Icon
         width={type === 'eligible' ? 15 : 20}
         height={type === 'eligible' ? 16 : 20}
-        fill={color === 'green' ? 'var(--giv-jade-500)' : 'var(--giv-gray-700)'}
+        fill={
+          color === 'green'
+            ? 'var(--giv-success-500)'
+            : 'var(--giv-neutral-700)'
+        }
       />
       {amountPrefix && (
         <span className={`${amountPrefixTextColor} text-xs font-medium`}>

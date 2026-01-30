@@ -9,12 +9,12 @@ interface AllTimeDonationsProps {
 
 export function AllTimeDonations({ project }: AllTimeDonationsProps) {
   return (
-    <div className="h-full flex flex-col justify-between bg-giv-gray-200 rounded-xl border-4 border-white p-4">
-      <h3 className="text-base font-semibold text-giv-gray-800 mb-4">
+    <div className="h-full flex flex-col justify-between bg-giv-neutral-200 rounded-xl border-4 border-white p-4">
+      <h3 className="text-base font-semibold text-giv-neutral-800 mb-4">
         All Time Donations
       </h3>
       <div className="flex items-center justify-between">
-        <span className="text-base font-semibold text-giv-gray-800 ml-2">
+        <span className="text-base font-semibold text-giv-neutral-800 ml-2">
           $
           {formatNumber(project.totalDonations, {
             minDecimals: 2,
@@ -22,10 +22,10 @@ export function AllTimeDonations({ project }: AllTimeDonationsProps) {
           })}
         </span>
         <div className="text-right">
-          <span className="text-xs font-bold text-giv-gray-900">
+          <span className="text-xs font-bold text-giv-neutral-900">
             {project.countUniqueDonors || 0}
           </span>
-          <p className="text-sm font-medium text-giv-gray-700">
+          <p className="text-sm font-medium text-giv-neutral-700">
             All contributors
           </p>
         </div>

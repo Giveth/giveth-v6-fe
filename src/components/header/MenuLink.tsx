@@ -31,9 +31,9 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
           href={{ pathname: href }}
           className={clsx(
             'flex justify-between md:justify-start items-center gap-1',
-            'text-sm font-semibold text-giv-gray-900 hover:text-giv-primary-500',
-            'p-3 hover:bg-giv-primary-50 rounded-md transition-colors',
-            menuOpen && 'bg-giv-primary-50',
+            'text-sm font-semibold text-giv-neutral-900 hover:text-giv-brand-500',
+            'p-3 hover:bg-giv-brand-50 rounded-md transition-colors',
+            menuOpen && 'bg-giv-brand-50',
           )}
         >
           {label}
@@ -48,7 +48,7 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
           <div
             className={clsx(
               'md:absolute top-full left-0 w-48 bg-white md:rounded-lg md:shadow-lg p-4 z-50 animate-slide-in',
-              menuOpen && 'bg-giv-primary-50',
+              menuOpen && 'bg-giv-brand-50',
             )}
           >
             {submenu.map(item => (
@@ -57,8 +57,8 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
                 href={{ pathname: item.href }}
                 className={clsx(
                   'flex items-center gap-1',
-                  'text-sm font-medium text-giv-gray-900 hover:text-giv-primary-500',
-                  'px-4 py-3 mb-2 hover:bg-giv-primary-50 rounded-md transition-colors',
+                  'text-sm font-medium text-giv-neutral-900 hover:text-giv-brand-500',
+                  'px-4 py-3 mb-2 hover:bg-giv-brand-50 rounded-md transition-colors',
                 )}
               >
                 {item.label}
@@ -74,8 +74,8 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
         href={{ pathname: href }}
         className={clsx(
           'flex items-center gap-1',
-          'text-sm font-semibold text-giv-gray-900 hover:text-giv-primary-500',
-          'p-3 hover:bg-giv-primary-50 rounded-md transition-colors',
+          'text-sm font-semibold text-giv-neutral-900 hover:text-giv-brand-500',
+          'p-3 hover:bg-giv-brand-50 rounded-md transition-colors',
         )}
       >
         {label}

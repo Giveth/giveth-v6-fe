@@ -45,10 +45,10 @@ export function DonationRound({
     useState<number>(0)
 
   return (
-    <div className="bg-white p-4 rounded-2xl border-4 border-giv-gray-500 overflow-hidden">
+    <div className="bg-white p-4 rounded-2xl border-4 border-giv-neutral-500 overflow-hidden">
       {/* Round Header */}
-      <div className="flex justify-between items-center bg-giv-gray-300 px-5 py-3 rounded-xl text-base font-medium">
-        <div className=" text-giv-gray-800">{roundData.name}</div>
+      <div className="flex justify-between items-center bg-giv-neutral-300 px-5 py-3 rounded-xl text-base font-medium">
+        <div className=" text-giv-neutral-800">{roundData.name}</div>
         {shouldShowMissingAmount && (
           <div className="text-giv-error-400 mt-1 inline-flex items-center gap-2">
             <TriangleAlert className="w-4 h-4" />
@@ -98,19 +98,19 @@ export function DonationRound({
       </div>
 
       {/* Round Footer */}
-      <div className="max-[480px]:flex-wrap flex justify-between bg-giv-gray-200 px-5 py-3 rounded-xl">
-        <span className="text-base font-medium text-giv-gray-700">
+      <div className="max-[480px]:flex-wrap flex justify-between bg-giv-neutral-200 px-5 py-3 rounded-xl">
+        <span className="text-base font-medium text-giv-neutral-700">
           {projects.length} projects
         </span>
         <div className="flex justify-between items-center md:ml-auto gap-2 text-sm">
-          <span className="flex items-center gap-1.5 text-base font-medium text-giv-gray-800">
+          <span className="flex items-center gap-1.5 text-base font-medium text-giv-neutral-800">
             Total match
             <MatchingEligible
               width={20}
               height={20}
-              fill="var(--giv-jade-500)"
+              fill="var(--giv-success-500)"
             />
-            <span className="text-giv-jade-500 text-base font-medium">
+            <span className="text-giv-success-500 text-base font-medium">
               $
               {formatNumber(
                 roundAmount(
@@ -122,8 +122,8 @@ export function DonationRound({
               )}
             </span>
           </span>
-          <span className="text-giv-gray-500 text-lg font-normal">|</span>
-          <span className="text-giv-gray-800 text-base font-medium">
+          <span className="text-giv-neutral-500 text-lg font-normal">|</span>
+          <span className="text-giv-neutral-800 text-base font-medium">
             Total donation{' '}
             <span>
               ${' '}

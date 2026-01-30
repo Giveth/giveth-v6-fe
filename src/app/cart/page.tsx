@@ -20,14 +20,14 @@ export default function CartPage() {
   )
 
   return (
-    <div className="min-h-screen bg-giv-gray-200">
+    <div className="min-h-screen bg-giv-neutral-200">
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-giv-primary-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-giv-brand-500" />
         </div>
       )}
       {error && (
-        <div className="text-center py-12 text-giv-gray-700">
+        <div className="text-center py-12 text-giv-neutral-700">
           Failed to load active rounds. Please try again later. {error.message}
         </div>
       )}
@@ -91,7 +91,7 @@ export default function CartPage() {
               />
             )}
             {cartItems.length === 0 && (
-              <div className="text-center py-12 text-giv-gray-700">
+              <div className="text-center py-12 text-giv-neutral-700">
                 Your cart is empty. Add projects to your cart to get started.
               </div>
             )}

@@ -20,14 +20,14 @@ export function DonateToGiveth() {
   }
 
   return (
-    <div className="p-3 rounded-lg border border-giv-gray-300 mt-5">
+    <div className="p-3 rounded-lg border border-giv-neutral-300 mt-5">
       {/* Header */}
       <div className="mb-4 flex items-center gap-3">
         <Switch.Root
           className="
             relative h-5 w-8 shrink-0 cursor-pointer rounded-full
-            bg-[#e6e8f0] transition-colors
-            data-[state=checked]:bg-[#5326ec]
+            bg-giv-neutral-300 transition-colors
+            data-[state=checked]:bg-giv-brand-500
           "
           checked={givethPercentage > 0}
           onCheckedChange={handleToggleGiveth}
@@ -42,7 +42,7 @@ export function DonateToGiveth() {
         </Switch.Root>
 
         <div className="flex items-center gap-2">
-          <span className="text-base font-medium text-giv-gray-900">
+          <span className="text-base font-medium text-giv-neutral-900">
             Donate to Giveth
           </span>
           <HelpTooltip text="This donation supports Giveth platform sustainability." />
@@ -59,8 +59,8 @@ export function DonateToGiveth() {
             }
             className="
               rounded-full px-3 py-2 text-xs font-medium
-              bg-giv-primary-50 text-giv-primary-500
-              hover:bg-giv-primary-100
+              bg-giv-brand-50 text-giv-brand-500
+              hover:bg-giv-brand-100
               transition-colors cursor-pointer
             "
           >
@@ -71,15 +71,15 @@ export function DonateToGiveth() {
         {/* Custom / 0% */}
         <div
           className="flex items-center gap-1 rounded-full px-2 py-2 text-sm font-medium ml-auto
-              border border-giv-gray-300 
-              hover:bg-giv-gray-200"
+              border border-giv-neutral-300 
+              hover:bg-giv-neutral-200"
         >
           <input
             type="text"
             className="
               w-8
               text-xs
-              text-giv-gray-900
+              text-giv-neutral-900
               focus:outline-none transition-colors
               text-center
               "
@@ -91,7 +91,7 @@ export function DonateToGiveth() {
               }
             }}
           />
-          <span className="text-xs text-giv-gray-900">%</span>
+          <span className="text-xs text-giv-neutral-900">%</span>
         </div>
       </div>
     </div>

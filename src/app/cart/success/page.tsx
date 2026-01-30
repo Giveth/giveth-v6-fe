@@ -4,7 +4,7 @@ import { SuccessHero } from '@/components/cart/success/SuccessHero'
 
 export default function SuccessPage() {
   return (
-    <div className="bg-giv-gray-200 flex flex-col">
+    <div className="bg-giv-neutral-200 flex flex-col">
       <main className="flex-1 pb-8">
         <SuccessHero />
         <div className="max-w-7xl mx-auto px-4 space-y-6 mt-6">
