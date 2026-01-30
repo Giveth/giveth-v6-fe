@@ -24,7 +24,7 @@ export function ProjectHero({ project }: ProjectHeroProps) {
   const adminAddress = project.adminUser?.wallets?.[0]?.address
 
   return (
-    <div className="relative rounded-2xl overflow-hidden h-[380px] lg:h-full">
+    <div className="relative rounded-2xl overflow-hidden h-[400px] lg:h-full">
       {/* Background Image with Gradient Overlay */}
       <div
         className="absolute bg-cover bg-center inset-0 bg-linear-to-br from-giv-primary-800 via-[#2d1f5e] to-giv-primary-800"
@@ -40,18 +40,16 @@ export function ProjectHero({ project }: ProjectHeroProps) {
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-8">
-        <h1 className="text-[41px] font-bold font-adventor text-white mb-2">
-          {project.title}
-        </h1>
+        <h1 className="text-4xl font-bold text-white mb-2">{project.title}</h1>
         {adminAddress ? (
           <Link
             href={`/user/${adminAddress}` as Route}
-            className="text-xl text-giv-gray-100! hover:opacity-80 transition-opacity duration-300"
+            className="text-xl text-giv-gray-300! hover:opacity-80 transition-opacity duration-300"
           >
             {adminName}
           </Link>
         ) : (
-          <span className="text-xl text-giv-gray-100!">{adminName}</span>
+          <span className="text-xl text-giv-gray-300!">{adminName}</span>
         )}
       </div>
     </div>

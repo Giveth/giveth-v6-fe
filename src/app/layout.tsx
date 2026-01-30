@@ -1,4 +1,4 @@
-import { Inter, Red_Hat_Text } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { Providers } from '@/app/providers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -7,11 +7,6 @@ import '@radix-ui/themes/styles.css'
 import type { Metadata } from 'next'
 
 import './globals.css'
-
-const redHatText = Red_Hat_Text({
-  subsets: ['latin'],
-  variable: '--font-red-hat-text',
-})
 
 const inter = Inter({
   subsets: ['latin'],
@@ -33,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${redHatText.className} ${inter.variable}`}>
+      <body className={`${inter.variable}`}>
         <Providers>
           <CartProvider>
             <Header />
