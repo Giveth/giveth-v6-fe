@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import clsx from 'clsx'
 import { Check, ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
 import { type Route } from 'next'
 import { ShareProjectModal } from '@/components/modals/ShareProjectModal'
@@ -147,13 +148,17 @@ export function DonationCard({ project }: DonationCardProps) {
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="w-full flex items-center justify-between px-4 py-3 border border-giv-gray-100 rounded-xl mb-4 hover:border-giv-primary-500 transition-colors cursor-pointer"
+              className={clsx(
+                'w-full flex items-center justify-center px-4 py-2',
+                'border border-giv-gray-300 rounded-xl mb-4',
+                'hover:border-giv-primary-500 transition-colors cursor-pointer',
+              )}
               disabled={availableRounds.length === 0}
             >
-              <span className="text-base font-medium text-giv-gray-900">
+              <span className="text-sm font-semibold text-[#414651]">
                 {selectedRound?.qfRound?.name ?? 'Select a round'}
               </span>
-              <ChevronDown className="w-4 h-4 text-giv-gray-900" />
+              <ChevronDown className="w-5 h-5 ml-3 text-[#414651]" />
             </button>
           </DropdownMenu.Trigger>
 
@@ -201,14 +206,14 @@ export function DonationCard({ project }: DonationCardProps) {
 
       {/* Amount and Contributors */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[32px] font-bold font-adventor text-giv-gray-900">
+        <span className="text-3xl font-bold text-giv-gray-900">
           ${selectedRound?.sumDonationValueUsd.toFixed(2) || 0}
         </span>
-        <div className="text-left">
-          <span className="text-sm font-medium text-giv-gray-900">
+        <div className="text-right">
+          <span className="text-xs font-bold text-giv-gray-900">
             {selectedRound?.countUniqueDonors || 0}
           </span>
-          <p className="text-sm font-normal text-giv-gray-700">contributors</p>
+          <p className="text-xs font-normal text-giv-gray-700">Contributors</p>
         </div>
       </div>
 
@@ -216,16 +221,20 @@ export function DonationCard({ project }: DonationCardProps) {
       <button
         type="button"
         onClick={handleCartAction}
-        className={`w-full h-[48px] mb-2 rounded-full text-sm font-bold flex items-center justify-center gap-2 transition-all border-2 border-giv-pinky-500 text-white hover:text-giv-pinky-500 bg-giv-pinky-500 hover:bg-white cursor-pointer`}
+        className={`w-full h-[48px] rounded-md text-sm font-bold mb-2 flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          isProjectInCart
+            ? 'border border-giv-primary-100 bg-giv-primary-50 text-giv-primary-700 hover:bg-giv-primary-100 hover:text-giv-primary-700'
+            : 'bg-giv-primary-300 text-white hover:bg-giv-primary-400 hover:text-white'
+        }`}
       >
         {isProjectInCart ? (
           <>
-            <X className="w-4 h-4" />
+            <X className="w-6 h-6 text-giv-primary-700" />
             Remove From Cart
           </>
         ) : (
           <>
-            <Plus className="w-4 h-4" />
+            <Plus className="w-6 h-6 text-white" />
             Add To Cart
           </>
         )}
@@ -234,9 +243,14 @@ export function DonationCard({ project }: DonationCardProps) {
       {/* Share Button */}
       <button
         onClick={() => setShowShareModal(true)}
-        className="w-full h-[48px] mb-6 rounded-full flex items-center justify-center gap-2 text-sm text-giv-gray-700 font-bold hover:text-[#5326ec] py-2 cursor-pointer shadow-[0px_3px_20px_rgba(212,218,238,0.4)]"
+        className={clsx(
+          'w-full h-[48px] mb-6 py-2 rounded-md flex items-center justify-center gap-2',
+          'border border-giv-primary-100',
+          'text-sm text-[#754DFF] hover:text-[#5326ec] font-bold',
+          'cursor-pointer shadow-[0px_3px_20px_rgba(212,218,238,0.4)]',
+        )}
       >
-        <Share2 className="w-3 h-3" />
+        <Share2 className="w-6 h-6" />
         Share
       </button>
 
@@ -244,19 +258,15 @@ export function DonationCard({ project }: DonationCardProps) {
       {selectedRound && (
         <div className="w-full space-y-3">
           {/* Header */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center text-sm font-medium border-b border-giv-gray-300">
-            <span className="text-sm font-medium text-giv-gray-800">
-              Contribution
-            </span>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-2 pb-1 text-xs font-medium border-b border-giv-gray-200">
+            <span className="text-giv-gray-800">Contribution</span>
             <span></span>
-            <span className="text-sm text-giv-jade-500 text-right">
-              Matching
-            </span>
+            <span className="text-giv-jade-500 text-right">Matching</span>
           </div>
 
           {/* Contribution Matching Table */}
           {selectedRound?.qfRound && (
-            <div className="space-y-0">
+            <div className="space-y-0 border-b border-giv-gray-200 pb-1">
               <DonationMatchCard
                 amount={1}
                 project={project}
@@ -283,10 +293,10 @@ export function DonationCard({ project }: DonationCardProps) {
         rel={
           HowItWorksLink.target === '_blank' ? 'noopener noreferrer' : undefined
         }
-        className="flex items-center gap-1 text-sm text-giv-pinky-500! hover:text-giv-pinky-600! transition-colors mt-3 cursor-pointer"
+        className="flex items-center gap-1 text-xs text-giv-primary-500! hover:text-giv-primary-600! font-medium transition-colors mt-3 cursor-pointer"
       >
         {HowItWorksLink.label}
-        <ChevronRight className="w-3 h-3" />
+        <ChevronRight className="w-4 h-4 text-giv-primary-500 font-normal" />
       </Link>
 
       <ShareProjectModal

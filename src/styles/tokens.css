@@ -31,7 +31,7 @@
 
     --giv-gray-900: #1d1e1f;
     --giv-gray-800: #4F576A;
-    --giv-gray-700: #82899a;
+    --giv-gray-700: #82899A;
     --giv-gray-600: #A5ADBF;
     --giv-gray-500: #bbc3d4;
     --giv-gray-400: #D7DDEA;
@@ -60,9 +60,6 @@
     --color-danger: #e6492d;
 
     /* Typography */
-    --font-sans: var(--font-red-hat-text, "Red Hat Text", sans-serif);
-    --font-display: var(--font-red-hat-text, "Red Hat Text", sans-serif);
-    --font-adventor: "TeX Gyre Adventor", sans-serif;
     --font-mono: var(--font-geist-mono, "JetBrains Mono", monospace);
     --font-inter: "Inter", sans-serif;
 

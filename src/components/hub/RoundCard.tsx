@@ -76,7 +76,7 @@ export function RoundCard({
           </div>
         )}
 
-        <div className="flex items-center gap-3 justify-center border-giv-gray-300 border-[1.85px] mt-6 py-1 px-2.5 rounded-2xl text-giv-gray-900">
+        <div className="flex items-center gap-3 justify-center border-giv-gray-300 border-[1.85px] mt-3 py-1 px-2.5 rounded-2xl text-giv-gray-900">
           <span className="text-lg font-bold">
             {formatMatchingPool(
               round.allocatedFundUSD,
@@ -89,7 +89,7 @@ export function RoundCard({
         </div>
 
         {layoutOption === 'vertical' && (
-          <div className="mt-8">
+          <div className="mt-2">
             <ExploreButton
               href={`/qf/${round.slug}` as Route}
               layoutOption={layoutOption}

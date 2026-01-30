@@ -23,7 +23,7 @@ export function GivbacksInfoBox() {
           <Link
             href={givpowerDocLink.href as Route}
             target="_blank"
-            className="flex items-center gap-1 text-sm text-giv-pinky-500! hover:underline mt-1"
+            className="flex items-center gap-1 text-sm text-giv-primary-500! hover:underline mt-1"
           >
             Learn more
             <ChevronRight className="w-5 h-5 mt-0.5" />

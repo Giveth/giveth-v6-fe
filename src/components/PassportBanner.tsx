@@ -140,20 +140,20 @@ export function PassportBanner() {
   return (
     <>
       {showLoading && (
-        <div className="[font-family:var(--font-inter)] bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className=" bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           Checking Eligibility...
         </div>
       )}
       {/* Wallet Not Connected */}
       {!account && !showLoading && !isError && (
-        <div className="[font-family:var(--font-inter)]bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           Connect your wallet to verify your eligibility for donation matching.
         </div>
       )}
       {/* Wallet Connected but no eligibility data yet and user is not signed in */}
       {account && !data && !showLoading && !isError && !isAuthenticated && (
-        <div className="[font-family:var(--font-inter)] bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className=" bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>
             Get your donations matched! Verify your uniqueness with one click.
@@ -169,7 +169,7 @@ export function PassportBanner() {
       )}
       {/* If the user's MBD score is below the threshold for MBD and their passport score is below the threshold for Passport */}
       {account && data && !isUserEligible && (
-        <div className="[font-family:var(--font-inter)] bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className=" bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <IconWarning width={24} height={24} />
           <Link
             href={PassportLink.href as unknown as Route}
@@ -200,7 +200,7 @@ export function PassportBanner() {
       )}
       {/* Wallet Connected And Has Eligibility Data */}
       {account && data && isUserEligible && !showLoading && (
-        <div className="[font-family:var(--font-inter)]bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className="font-inter bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
           <p>You donations are eligible to be matched!</p>
         </div>
