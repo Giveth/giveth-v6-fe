@@ -161,6 +161,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         project.selectedToken = round.projects[0]?.selectedToken
       }
 
+      if (project.roundId === undefined || project.roundId === null) {
+        project.roundId = 0
+      }
+
       return [...prev, project]
     })
   }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import clsx from 'clsx'
+import { MoveLeft, MoveRight } from 'lucide-react'
 import { QFProjectCard } from '@/components/qf/components/QFProjectCard'
 import { useSimilarProjectsBySlug } from '@/hooks/useProject'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
@@ -60,18 +61,22 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
           <button
             onClick={handlePrevious}
             disabled={currentPage === 0}
-            className="w-8 h-8 rounded-full border border-[#ebecf2] flex items-center justify-center text-[#82899a] hover:border-[#5326ec] hover:text-[#5326ec] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={clsx(
+              'w-10 h-10 rounded-xl flex items-center justify-center bg-white',
+              'text-giv-gray-600 hover:text-giv-gray-900',
+              'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
+            )}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <MoveLeft className="w-6 h-6" />
           </button>
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index}
               onClick={() => handlePageClick(index)}
-              className={`text-sm px-2 py-1 rounded ${
+              className={`text-2xl px-2 py-1 cursor-pointer ${
                 currentPage === index
-                  ? 'font-medium text-[#1f2333] bg-[#5326ec] text-white'
-                  : 'text-[#82899a] hover:text-[#5326ec]'
+                  ? 'font-bold text-giv-gray-900'
+                  : 'text-giv-gray-700 hover:text-giv-gray-900'
               }`}
             >
               {index + 1}
@@ -80,9 +85,13 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
           <button
             onClick={handleNext}
             disabled={currentPage === totalPages - 1}
-            className="w-8 h-8 rounded-full border border-[#ebecf2] flex items-center justify-center text-[#82899a] hover:border-[#5326ec] hover:text-[#5326ec] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={clsx(
+              'w-10 h-10 rounded-xl flex items-center justify-center bg-white',
+              'text-giv-gray-600 hover:text-giv-gray-900',
+              'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
+            )}
           >
-            <ChevronRight className="w-4 h-4" />
+            <MoveRight className="w-6 h-6" />
           </button>
         </div>
       </div>
