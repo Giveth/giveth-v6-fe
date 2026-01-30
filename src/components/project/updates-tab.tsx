@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import clsx from 'clsx'
 import { format } from 'date-fns'
 import { useProjectUpdates } from '@/hooks/useProjectUpdates'
 
@@ -77,21 +78,21 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
   return (
     <div className="max-w-4xl">
       {isLoading && (
-        <div className="flex items-center justify-center py-12 text-[#82899a]">
+        <div className="flex items-center justify-center py-12 text-giv-neutral-700">
           Loading updates...
         </div>
       )}
 
       {error && (
-        <div className="flex items-center justify-center py-12 text-[#82899a]">
+        <div className="flex items-center justify-center py-12 text-giv-neutral-700">
           Failed to load updates.
         </div>
       )}
 
       {emptyState && (
         <div className="text-center py-12">
-          <div className="text-[#82899a] text-lg">No updates yet.</div>
-          <div className="text-[#82899a] text-sm mt-2">
+          <div className="text-giv-neutral-700 text-lg">No updates yet.</div>
+          <div className="text-giv-neutral-700 text-sm mt-2">
             When the project posts updates, they’ll show up here.
           </div>
         </div>
@@ -101,7 +102,7 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
         <div className="space-y-0 relative">
           {/* One continuous timeline line (prevents gaps between rows) */}
           <div
-            className="absolute left-[28px] top-0 bottom-0 w-px bg-[#ebecf2]"
+            className="absolute left-[28px] top-0 bottom-0 w-px bg-giv-neutral-300"
             aria-hidden="true"
           />
           {timelineUpdates.map((u, idx) => {
@@ -132,15 +133,15 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
                 {/* Date + timeline */}
                 <div className="relative">
                   <div className="leading-none">
-                    <div className="text-[14px] font-medium text-[#b2b7c6]">
+                    <div className="text-[14px] font-medium text-giv-neutral-700">
                       <span className={showDate ? '' : 'invisible'}>{day}</span>
                     </div>
-                    <div className="mt-2 text-[20px] font-semibold tracking-wide text-[#1f2333]">
+                    <div className="mt-2 text-[20px] font-semibold tracking-wide text-giv-deep-blue-800">
                       <span className={showDate ? '' : 'invisible'}>
                         {month}
                       </span>
                     </div>
-                    <div className="mt-2 text-[14px] font-medium text-[#b2b7c6]">
+                    <div className="mt-2 text-[14px] font-medium text-giv-neutral-700">
                       <span className={showDate ? '' : 'invisible'}>
                         {year}
                       </span>
@@ -150,7 +151,7 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
 
                 {/* Content */}
                 <div>
-                  <div className="text-[52px] leading-[1.05] font-semibold text-[#b2b7c6]">
+                  <div className="text-[52px] leading-[1.05] font-semibold text-giv-neutral-700">
                     {u.title}
                   </div>
 
@@ -162,7 +163,19 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
                         theme="snow"
                         modules={modules}
                         formats={formats}
-                        className="ql-readonly [&_.ql-container]:!border-none [&_.ql-toolbar]:hidden [&_.ql-editor]:text-[#1f2333] [&_.ql-editor]:leading-7 [&_.ql-editor]:p-0 [&_.ql-editor_h1]:text-[#1f2333] [&_.ql-editor_h1]:font-semibold [&_.ql-editor_h1]:tracking-tight [&_.ql-editor_h2]:text-[#1f2333] [&_.ql-editor_h2]:font-semibold [&_.ql-editor_h2]:tracking-tight [&_.ql-editor_.ql-video-wrapper]:mb-4 [&_.ql-editor_.ql-video-wrapper]:relative [&_.ql-editor_.ql-video-wrapper]:pb-[56.25%] [&_.ql-editor_.ql-video-wrapper]:h-0 [&_.ql-editor_.ql-video-wrapper]:overflow-hidden [&_.ql-editor_.ql-video-wrapper_iframe]:absolute [&_.ql-editor_.ql-video-wrapper_iframe]:top-0 [&_.ql-editor_.ql-video-wrapper_iframe]:left-0 [&_.ql-editor_.ql-video-wrapper_iframe]:w-full [&_.ql-editor_.ql-video-wrapper_iframe]:h-full [&_.ql-editor_img]:max-w-full [&_.ql-editor_img]:h-auto [&_.ql-editor_img]:rounded-lg"
+                        className={clsx(
+                          'ql-readonly',
+                          '[&_.ql-container]:border-none!',
+                          '[&_.ql-toolbar]:hidden',
+                          '[&_.ql-editor]:text-giv-deep-blue-800',
+                          '[&_.ql-editor]:leading-7',
+                          '[&_.ql-editor]:p-0',
+                          '[&_.ql-editor_h1]:text-giv-deep-blue-800',
+                          '[&_.ql-editor_h1]:font-semibold',
+                          '[&_.ql-editor_h1]:tracking-tight',
+                          '[&_.ql-editor_h2]:text-giv-deep-blue-800',
+                          '[&_.ql-editor_h2]:font-semibold',
+                        )}
                       />
                     </div>
                   )}

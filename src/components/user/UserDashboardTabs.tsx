@@ -51,7 +51,7 @@ export const UserDashboardTabs = ({
   }
 
   return (
-    <div className="mt-8 font-inter">
+    <div className="mt-8">
       {/* Tabs */}
       <div className="relative flex flex-wrap items-end gap-4">
         {tabs.map((tab, index) => (
@@ -72,8 +72,8 @@ export const UserDashboardTabs = ({
             }
             className={`relative flex items-center gap-2 cursor-pointer ${activeTab && index === 0 ? 'px-6 pr-8' : 'px-6'} py-4 text-lg font-semibold transition-colors ${
               activeTab === tab.id
-                ? 'z-10 bg-white text-giv-gray-900'
-                : 'text-giv-gray-800'
+                ? 'z-10 bg-white text-giv-neutral-900'
+                : 'text-giv-neutral-800'
             }`}
           >
             {tab.label}

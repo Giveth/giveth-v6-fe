@@ -171,24 +171,24 @@ export function DonationSidebar({
     <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
       {/* Credit Card Option */}
       {/* <div className="bg-white p-5 rounded-2xl">
-        <p className="text-base font-medium text-giv-gray-900 mb-3">
+        <p className="text-base font-medium text-giv-neutral-900 mb-3">
           New to crypto? REMOVE THIS PART
         </p>
-        <button className="w-full px-4 py-3 rounded-lg border border-giv-primary-500 hover:border-giv-primary-900 text-giv-gray-800 text-sm font-medium hover:bg-giv-primary-05 transition-colors flex items-center justify-center gap-1 cursor-pointer">
+        <button className="w-full px-4 py-3 rounded-lg border border-giv-brand-500 hover:border-giv-brand-900 text-giv-neutral-800 text-sm font-medium hover:bg-giv-brand-05 transition-colors flex items-center justify-center gap-1 cursor-pointer">
           Donate with your credit card
-          <span className="text-giv-primary-400">New*</span>
+          <span className="text-giv-brand-400">New*</span>
         </button>
       </div> */}
 
       {/* Donation Summary */}
 
       <div className="bg-white p-5 rounded-2xl">
-        <h3 className="text-base font-medium text-giv-gray-900 mb-2 pb-2 border-b border-giv-gray-300">
+        <h3 className="text-base font-medium text-giv-neutral-900 mb-2 pb-2 border-b border-giv-neutral-300">
           Donation Summary
         </h3>
         {!walletAddress && (
           <div className="flex flex-col justify-center items-center h-48">
-            <div className="text-base font-medium text-giv-gray-800 pb-2">
+            <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Connect your wallet to begin
             </div>
             <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
@@ -196,12 +196,12 @@ export function DonationSidebar({
         )}
         {!isAuthenticated && walletAddress && (
           <div className="flex flex-col justify-center items-center h-48">
-            <div className="text-base font-medium text-giv-gray-800 pb-2">
+            <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Please sign in to donate
             </div>
             <button
               onClick={() => signIn()}
-              className="px-6 py-2.5 font-semibold rounded-md transition-all duration-200 shadow-sm cursor-pointer bg-giv-primary-300 text-white hover:opacity-85"
+              className="px-6 py-2.5 font-semibold rounded-md transition-all duration-200 shadow-sm cursor-pointer bg-giv-brand-300 text-white hover:opacity-85"
             >
               <span className="inline-flex items-center gap-2">
                 <Wallet className="h-4 w-4" />
@@ -226,9 +226,9 @@ export function DonationSidebar({
               return (
                 <div
                   key={group.roundId}
-                  className="p-3 rounded-lg border border-giv-gray-300"
+                  className="p-3 rounded-lg border border-giv-neutral-300"
                 >
-                  <p className="text-base text-giv-gray-900 font-medium">
+                  <p className="text-base text-giv-neutral-900 font-medium">
                     {formatNumber(totalGroupAmount, {
                       minDecimals: 2,
                       maxDecimals: 2,
@@ -241,7 +241,7 @@ export function DonationSidebar({
                     {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
                     <span className="font-normal">in</span>
                   </p>
-                  <p className="text-base text-giv-gray-900 font-medium mt-0.5">
+                  <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
                     {group.roundName}
                     {givethPercentage > 0 && (
                       <>
@@ -260,12 +260,12 @@ export function DonationSidebar({
             nonQfProjects.map(project => (
               <div
                 key={project.id}
-                className="p-3 rounded-lg border border-giv-gray-300"
+                className="p-3 rounded-lg border border-giv-neutral-300"
               >
-                <p className="text-base text-giv-gray-900 font-medium">
+                <p className="text-base text-giv-neutral-900 font-medium">
                   {project.title}
                 </p>
-                <p className="text-base text-giv-gray-900 font-medium mt-0.5">
+                <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
                   {project.donationAmount} {project.tokenSymbol}{' '}
                   <span className="font-normal">
                     (~$
@@ -288,8 +288,8 @@ export function DonationSidebar({
           <button
             onClick={handleDonateButtonClick}
             disabled={!hasDonationAmount || !walletAddress || !isAuthenticated}
-            className="w-full py-3 mt-5 bg-giv-pinky-500 text-white! rounded-3xl text-xs font-bold flex items-center 
-          justify-center gap-2 hover:bg-giv-pinky-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 mt-5 bg-giv-pink-500 text-white! rounded-3xl text-xs font-bold flex items-center 
+          justify-center gap-2 hover:bg-giv-pink-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Donate now
             <ArrowRight className="w-5 h-5" />

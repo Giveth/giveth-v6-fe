@@ -52,7 +52,7 @@ export default function ProjectPage() {
       </div>
     )
   return (
-    <div className="min-h-screen bg-giv-gray-200">
+    <div className="min-h-screen bg-giv-neutral-200">
       {/* Passport Banner */}
       <PassportBanner />
 
@@ -124,10 +124,10 @@ export default function ProjectPage() {
           {activeTab === 'givpower' && (
             <div className="max-w-4xl">
               <div className="text-center py-12">
-                <div className="text-[#82899a] text-lg">
+                <div className="text-giv-neutral-700 text-lg">
                   GIVpower information will be displayed here.
                 </div>
-                <div className="text-[#82899a] text-sm mt-2">
+                <div className="text-giv-neutral-700 text-sm mt-2">
                   This feature is coming soon.
                 </div>
               </div>

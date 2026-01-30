@@ -36,13 +36,13 @@ export function ProfileSection() {
 
   if (isProfileLoading && !user) {
     return (
-      <div className="p-6 bg-white rounded-xl border border-giv-gray-300">
+      <div className="p-6 bg-white rounded-xl border border-giv-neutral-300">
         Loading Profile...
       </div>
     )
   } else if (!user) {
     return (
-      <div className="p-6 bg-white rounded-xl border border-giv-gray-300">
+      <div className="p-6 bg-white rounded-xl border border-giv-neutral-300">
         User not found
       </div>
     )
@@ -72,7 +72,7 @@ export function ProfileSection() {
 
   return (
     <>
-      <div className="bg-white rounded-xl p-6 font-inter">
+      <div className="bg-white rounded-xl p-6">
         <div className="flex items-start justify-between">
           <div className="flex gap-4">
             {/* Avatar */}
@@ -94,12 +94,12 @@ export function ProfileSection() {
 
             {/* Info */}
             <div className="space-y-2 pt-2">
-              <h1 className="text-lg font-bold text-giv-gray-900 mb-1">
+              <h1 className="text-lg font-bold text-giv-neutral-900 mb-1">
                 {displayName}
               </h1>
-              <p className="text-base text-giv-gray-900">{displayEmail}</p>
+              <p className="text-base text-giv-neutral-900">{displayEmail}</p>
               <div className="flex items-center gap-2 text-base">
-                <span className="text-giv-gray-900">
+                <span className="text-giv-neutral-900">
                   <EnsName
                     address={
                       user?.wallets?.[0]?.address as Address as `0x${string}`
@@ -107,13 +107,13 @@ export function ProfileSection() {
                   />
                 </span>
                 <button
-                  className="text text-giv-gray-900 hover:text-giv-primary-500 cursor-pointer"
+                  className="text text-giv-neutral-900 hover:text-giv-brand-500 cursor-pointer"
                   onClick={handleCopyAddress}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
                 {copied && (
-                  <span className="text-xs text-giv-primary-500">Copied!</span>
+                  <span className="text-xs text-giv-brand-500">Copied!</span>
                 )}
               </div>
             </div>
@@ -121,7 +121,7 @@ export function ProfileSection() {
 
           {/* <Button
             variant="outline"
-            className="border-[#5326ec] text-[#5326ec] hover:bg-[#f6f3ff] bg-transparent"
+            className="border-giv-brand-500 text-giv-brand-500 hover:bg-giv-brand-050 bg-transparent"
             onClick={() => setIsEditProfileOpen(true)}
           >
             Edit Profile
@@ -134,7 +134,7 @@ export function ProfileSection() {
             I will leave stats hardcoded but commented that they need wiring, or try to wire if I find the type.
         */}
         {userStats && !isUserStatsLoading && (
-          <div className="flex flex-wrap items-center gap-6 mt-6 pt-6 border-t border-giv-gray-300">
+          <div className="flex flex-wrap items-center gap-6 mt-6 pt-6 border-t border-giv-neutral-300">
             <div className="flex items-center justify-start gap-1 text-left text-xs text-giv-neutral-900">
               <span className="mr-2">
                 <IconPraiseHand

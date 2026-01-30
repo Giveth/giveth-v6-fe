@@ -19,8 +19,8 @@ export function DonationTabs({ activeTab, onTabChange }: DonationTabsProps) {
         onClick={() => handleTabClick('one-time')}
         className={`px-6 py-2.5 rounded-2xl text-base font-bold transition-colors border cursor-pointer hover:opacity-85 ${
           activeTab === 'one-time'
-            ? 'text-giv-primary-400 border-giv-primary-300 bg-giv-primary-50'
-            : 'text-giv-gray-700 border-giv-primary-100 bg-[#FCFCFF]'
+            ? 'text-giv-brand-400 border-giv-brand-300 bg-giv-brand-50'
+            : 'text-giv-neutral-700 border-giv-brand-100 bg-giv-brand-000'
         }`}
       >
         One-time donations
@@ -29,8 +29,8 @@ export function DonationTabs({ activeTab, onTabChange }: DonationTabsProps) {
         onClick={() => handleTabClick('recurring')}
         className={`px-6 py-2.5 rounded-2xl text-base font-bold transition-colors border cursor-pointer hover:opacity-85 ${
           activeTab === 'recurring'
-            ? 'text-giv-primary-400 border-giv-primary-300 bg-giv-primary-50'
-            : 'text-giv-gray-700 border-giv-primary-100 bg-[#FCFCFF]'
+            ? 'text-giv-brand-400 border-giv-brand-300 bg-giv-brand-50'
+            : 'text-giv-neutral-700 border-giv-brand-100 bg-giv-brand-000'
         }`}
       >
         Recurring donations

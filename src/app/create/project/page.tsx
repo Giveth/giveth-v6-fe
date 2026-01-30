@@ -57,9 +57,9 @@ export default function CreateProjectPage() {
   // Show loading state while checking auth
   if (isLoading || isInitializing) {
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5326ec] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-giv-brand-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Setting up your session...</p>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function CreateProjectPage() {
   // Show connect wallet if not connected
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Connect Your Wallet
@@ -86,9 +86,9 @@ export default function CreateProjectPage() {
   // Show sign in if wallet connected but not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5326ec] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-giv-brand-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Signing you in...</p>
         </div>
       </div>
@@ -96,13 +96,13 @@ export default function CreateProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
-      <div className="bg-gradient-to-r from-[#f5edff] via-[#fdf4ff] to-[#eef4ff]">
+    <div className="min-h-screen bg-giv-neutral-200">
+      <div className="bg-linear-to-r from-giv-brand-050 via-giv-brand-100 to-giv-brand-050">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 text-sm text-[#5326ec]">
+          <div className="flex items-center gap-3 text-sm text-giv-brand-500">
             <Link
               href="/"
-              className="flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[#5326ec] shadow-sm ring-1 ring-white/70 transition hover:-translate-x-0.5 hover:shadow"
+              className="flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-giv-brand-500 shadow-sm ring-1 ring-white/70 transition hover:-translate-x-0.5 hover:shadow"
             >
               <svg
                 width="18"
@@ -118,17 +118,17 @@ export default function CreateProjectPage() {
               </svg>
               Back
             </Link>
-            <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#7f7f92] ring-1 ring-white/60">
+            <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-giv-neutral-700 ring-1 ring-white/60">
               Create a project
             </span>
           </div>
 
           <div className="flex flex-col gap-6 rounded-2xl border border-white/60 bg-white/70 p-6 shadow-sm backdrop-blur-sm sm:p-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
-              <p className="text-sm font-medium uppercase tracking-[0.08em] text-[#7f7f92]">
+              <p className="text-sm font-medium uppercase tracking-[0.08em] text-giv-neutral-700">
                 Get started
               </p>
-              <h1 className="text-3xl font-bold text-[#1d1e1f] sm:text-4xl">
+              <h1 className="text-3xl font-bold text-giv-neutral-900 sm:text-4xl">
                 Launch your project on Giveth
               </h1>
               <p className="max-w-2xl text-sm text-gray-600 sm:text-base">
@@ -144,7 +144,7 @@ export default function CreateProjectPage() {
               </div>
             </div>
 
-            <div className="flex w-full flex-col gap-3 rounded-2xl bg-[#5326ec] px-5 py-4 text-white shadow-md sm:w-auto">
+            <div className="flex w-full flex-col gap-3 rounded-2xl bg-giv-brand-500 px-5 py-4 text-white shadow-md sm:w-auto">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
@@ -236,7 +236,7 @@ const sectionLabel = (section: CreateFormSection) => {
 
 function Badge({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-[#1d1e1f] ring-1 ring-white/80">
+    <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-giv-neutral-900 ring-1 ring-white/80">
       {children}
     </span>
   )

@@ -27,7 +27,7 @@ export function ProjectHero({ project }: ProjectHeroProps) {
     <div className="relative rounded-2xl overflow-hidden h-[400px] lg:h-full">
       {/* Background Image with Gradient Overlay */}
       <div
-        className="absolute bg-cover bg-center inset-0 bg-linear-to-br from-giv-primary-800 via-[#2d1f5e] to-giv-primary-800"
+        className="absolute bg-cover bg-center inset-0 bg-linear-to-br from-giv-brand-800 via-giv-brand-800 to-giv-brand-800"
         style={{
           backgroundImage: project.image
             ? `url(${project.image})`
@@ -36,7 +36,7 @@ export function ProjectHero({ project }: ProjectHeroProps) {
           backgroundPosition: 'center',
         }}
       />
-      <div className="absolute inset-0 bg-linear-to-t from-[#1b1657]/90 via-[#1b1657]/40 to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-t from-giv-brand-800/90 via-giv-brand-800/40 to-transparent" />
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-8">
@@ -44,12 +44,12 @@ export function ProjectHero({ project }: ProjectHeroProps) {
         {adminAddress ? (
           <Link
             href={`/user/${adminAddress}` as Route}
-            className="text-xl text-giv-gray-300! hover:opacity-80 transition-opacity duration-300"
+            className="text-xl text-giv-neutral-300! hover:opacity-80 transition-opacity duration-300"
           >
             {adminName}
           </Link>
         ) : (
-          <span className="text-xl text-giv-gray-300!">{adminName}</span>
+          <span className="text-xl text-giv-neutral-300!">{adminName}</span>
         )}
       </div>
     </div>

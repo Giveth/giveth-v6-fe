@@ -18,8 +18,8 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
     return (
       <div className="mt-12">
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5326ec] mx-auto"></div>
-          <p className="mt-2 text-3xl text-giv-gray-600 font-bold">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-giv-brand-500 mx-auto"></div>
+          <p className="mt-2 text-3xl text-giv-neutral-600 font-bold">
             Loading similar projects...
           </p>
         </div>
@@ -54,7 +54,7 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
   return (
     <div className="mt-12">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl text-giv-gray-600 font-bold">
+        <h2 className="text-3xl text-giv-neutral-600 font-bold">
           Similar projects
         </h2>
         <div className="flex items-center gap-2">
@@ -63,7 +63,7 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
             disabled={currentPage === 0}
             className={clsx(
               'w-10 h-10 rounded-xl flex items-center justify-center bg-white',
-              'text-giv-gray-600 hover:text-giv-gray-900',
+              'text-giv-neutral-600 hover:text-giv-neutral-900',
               'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
             )}
           >
@@ -75,8 +75,8 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
               onClick={() => handlePageClick(index)}
               className={`text-2xl px-2 py-1 cursor-pointer ${
                 currentPage === index
-                  ? 'font-bold text-giv-gray-900'
-                  : 'text-giv-gray-700 hover:text-giv-gray-900'
+                  ? 'font-bold text-giv-neutral-900'
+                  : 'text-giv-neutral-700 hover:text-giv-neutral-900'
               }`}
             >
               {index + 1}
@@ -87,7 +87,7 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
             disabled={currentPage === totalPages - 1}
             className={clsx(
               'w-10 h-10 rounded-xl flex items-center justify-center bg-white',
-              'text-giv-gray-600 hover:text-giv-gray-900',
+              'text-giv-neutral-600 hover:text-giv-neutral-900',
               'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
             )}
           >

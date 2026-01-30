@@ -510,7 +510,7 @@ export function CreateProjectFullForm({
         <div className="flex items-center justify-between mb-4">
           <label
             htmlFor="title"
-            className="text-base font-semibold text-[#1d1e1f]"
+            className="text-base font-semibold text-giv-neutral-900"
           >
             Project Name
           </label>
@@ -529,7 +529,7 @@ export function CreateProjectFullForm({
           maxLength={55}
           className={`w-full px-4 py-3 rounded-lg border ${
             errors.title ? 'border-red-500' : 'border-gray-200'
-          } focus:outline-none focus:ring-2 focus:ring-[#5326ec]/20 focus:border-[#5326ec] text-[#1d1e1f]`}
+          } focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-giv-neutral-900`}
         />
         {errors.title && (
           <p className="mt-2 text-sm text-red-600">{errors.title}</p>
@@ -544,7 +544,7 @@ export function CreateProjectFullForm({
       >
         <label
           htmlFor="description"
-          className="block text-base font-semibold text-[#1d1e1f] mb-2"
+          className="block text-base font-semibold text-giv-neutral-900 mb-2"
         >
           Tell us about your project...
         </label>
@@ -674,7 +674,7 @@ export function CreateProjectFullForm({
           rows={8}
           className={`w-full px-4 py-3 border-x border-b ${
             errors.description ? 'border-red-500' : 'border-gray-200'
-          } rounded-b-lg focus:outline-none focus:ring-2 focus:ring-[#5326ec]/20 focus:border-[#5326ec] text-[#1d1e1f] resize-none`}
+          } rounded-b-lg focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-giv-neutral-900 resize-none`}
         />
         {errors.description && (
           <p className="mt-2 text-sm text-red-600">{errors.description}</p>
@@ -690,7 +690,7 @@ export function CreateProjectFullForm({
         onMouseEnter={() => notifySection('social')}
         onFocus={() => notifySection('social')}
       >
-        <h2 className="text-base font-semibold text-[#1d1e1f] mb-4">
+        <h2 className="text-base font-semibold text-giv-neutral-900 mb-4">
           Social Media Links
         </h2>
         <p className="text-sm text-gray-500 mb-6">
@@ -718,7 +718,7 @@ export function CreateProjectFullForm({
                     handleSocialLinkChange(platform.id, e.target.value)
                   }
                   placeholder={platform.placeholder}
-                  className="w-full pl-12 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#5326ec]/20 focus:border-[#5326ec] text-sm text-[#1d1e1f]"
+                  className="w-full pl-12 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-sm text-giv-neutral-900"
                 />
               </div>
             </div>
@@ -733,7 +733,7 @@ export function CreateProjectFullForm({
         onFocus={() => notifySection('categories')}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-base font-semibold text-[#1d1e1f]">
+          <h2 className="text-base font-semibold text-giv-neutral-900">
             Please select a category
           </h2>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
@@ -747,7 +747,7 @@ export function CreateProjectFullForm({
         <div className="space-y-6">
           {groupedCategories.map(group => (
             <div key={group.title} className="space-y-3">
-              <h3 className="text-sm font-semibold text-[#1d1e1f] uppercase tracking-[0.08em]">
+              <h3 className="text-sm font-semibold text-giv-neutral-900 uppercase tracking-[0.08em]">
                 {group.title}
               </h3>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -762,13 +762,13 @@ export function CreateProjectFullForm({
                       key={`${group.title}-${cat.id}`}
                       className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm transition ${
                         isSelected
-                          ? 'border-[#5326ec] bg-[#5326ec]/5 text-[#1d1e1f]'
+                          ? 'border-giv-brand-500 bg-giv-brand-050 text-giv-neutral-900'
                           : 'border-gray-200 bg-white text-gray-800 hover:border-gray-300'
                       }`}
                     >
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-[#5326ec] focus:ring-[#5326ec]"
+                        className="h-4 w-4 rounded border-gray-300 text-giv-brand-500 focus:ring-giv-brand-500"
                         checked={isSelected}
                         onChange={() => catValue && toggleSubcategory(catValue)}
                       />
@@ -788,7 +788,7 @@ export function CreateProjectFullForm({
         onMouseEnter={() => notifySection('location')}
         onFocus={() => notifySection('location')}
       >
-        <h2 className="text-base font-semibold text-[#1d1e1f] mb-2">
+        <h2 className="text-base font-semibold text-giv-neutral-900 mb-2">
           Where will your project have the most impact?
         </h2>
         <p className="text-sm text-gray-500 mb-4">
@@ -799,7 +799,7 @@ export function CreateProjectFullForm({
           <select
             value={formData.impactLocation}
             onChange={e => handleInputChange('impactLocation', e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#5326ec]/20 focus:border-[#5326ec] text-[#1d1e1f] appearance-none bg-white"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-giv-neutral-900 appearance-none bg-white"
           >
             <option value="Worldwide">🌍 Worldwide</option>
             <option value="North America">North America</option>
@@ -848,7 +848,7 @@ export function CreateProjectFullForm({
         onMouseEnter={() => notifySection('image')}
         onFocus={() => notifySection('image')}
       >
-        <h2 className="text-base font-semibold text-[#1d1e1f] mb-2">
+        <h2 className="text-base font-semibold text-giv-neutral-900 mb-2">
           Add one image to your project
         </h2>
         <p className="text-sm text-gray-500 mb-4">
@@ -862,12 +862,12 @@ export function CreateProjectFullForm({
             value={formData.image}
             onChange={e => handleInputChange('image', e.target.value)}
             placeholder="Paste image URL here (e.g., https://example.com/image.jpg)"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#5326ec]/20 focus:border-[#5326ec] text-[#1d1e1f]"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-giv-neutral-900"
           />
         </div>
 
         {/* Image Upload Area */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#5326ec] transition-colors cursor-pointer">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-giv-brand-500 transition-colors cursor-pointer">
           <svg
             className="mx-auto mb-4"
             width="48"
@@ -900,7 +900,7 @@ export function CreateProjectFullForm({
                 onClick={() => handleInputChange('imageColor', color)}
                 className={`w-10 h-10 rounded-lg transition-transform ${
                   formData.imageColor === color
-                    ? 'ring-2 ring-offset-2 ring-[#5326ec] scale-110'
+                    ? 'ring-2 ring-offset-2 ring-giv-brand-500 scale-110'
                     : ''
                 }`}
                 style={{ backgroundColor: color }}
@@ -916,7 +916,7 @@ export function CreateProjectFullForm({
         onMouseEnter={() => notifySection('addresses')}
         onFocus={() => notifySection('addresses')}
       >
-        <h2 className="text-base font-semibold text-[#1d1e1f] mb-2">
+        <h2 className="text-base font-semibold text-giv-neutral-900 mb-2">
           Receiving Funds
         </h2>
         <p className="text-sm text-gray-500 mb-4">
@@ -931,7 +931,7 @@ export function CreateProjectFullForm({
             placeholder="0x..."
             className={`w-full px-4 py-3 rounded-lg border ${
               errors.walletAddress ? 'border-red-500' : 'border-gray-200'
-            } focus:outline-none focus:ring-2 focus:ring-[#5326ec]/20 focus:border-[#5326ec] text-[#1d1e1f] font-mono text-sm`}
+            } focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-giv-neutral-900 font-mono text-sm`}
           />
           {account?.address && formData.walletAddress !== account.address && (
             <button
@@ -939,7 +939,7 @@ export function CreateProjectFullForm({
               onClick={() =>
                 handleInputChange('walletAddress', account.address)
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#5326ec] hover:underline"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-giv-brand-500 hover:underline"
             >
               Use connected wallet
             </button>
@@ -957,11 +957,11 @@ export function CreateProjectFullForm({
 
       {/* Submit Section */}
       <section
-        className="bg-gradient-to-r from-[#fd67ac]/10 via-[#5326ec]/10 to-[#3edbf3]/10 rounded-xl p-6 border border-[#5326ec]/20"
+        className="bg-linear-to-r from-giv-pink-100 via-giv-brand-050 to-giv-cyan-100 rounded-xl p-6 border border-giv-brand-500/20"
         onMouseEnter={() => notifySection('publish')}
         onFocus={() => notifySection('publish')}
       >
-        <h2 className="text-xl font-bold text-[#1d1e1f] mb-2">
+        <h2 className="text-xl font-bold text-giv-neutral-900 mb-2">
           {mode === 'edit' ? 'Review and save' : 'Let&apos;s Publish!'}
         </h2>
         <p className="text-sm text-gray-600 mb-6">
@@ -994,7 +994,7 @@ export function CreateProjectFullForm({
             type="submit"
             variant="primary"
             disabled={isSubmitting}
-            className="flex-1 bg-gradient-to-r from-[#fd67ac] to-[#5326ec] hover:opacity-90"
+            className="flex-1 bg-linear-to-r from-giv-pink-500 to-giv-brand-500 hover:opacity-90"
           >
             {isSubmitting ? (
               <>

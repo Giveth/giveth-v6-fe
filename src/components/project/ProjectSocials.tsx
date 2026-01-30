@@ -59,7 +59,7 @@ export function ProjectSocials({
 
   return (
     <div className="mt-2">
-      <div className="font-semibold text-giv-gray-800">
+      <div className="font-semibold text-giv-neutral-800">
         Find us on Social Media
       </div>
       <div className="mt-4 flex flex-wrap gap-6">
@@ -72,7 +72,7 @@ export function ProjectSocials({
               rel="noreferrer noopener"
               className="inline-flex"
             >
-              <div className="px-6 py-3 rounded-md border border-giv-gray-300 text-giv-gray-900 hover:bg-giv-gray-300 transition-colors">
+              <div className="px-6 py-3 rounded-md border border-giv-neutral-300 text-giv-neutral-900 hover:bg-giv-neutral-300 transition-colors">
                 <div className="flex items-center gap-2">
                   <SocialIcon type={social.type} />
                   <div className="text-base font-medium">
@@ -84,7 +84,7 @@ export function ProjectSocials({
           )
         })}
       </div>
-      <div className="mt-4 text-giv-gray-800 text-sm">
+      <div className="mt-4 text-giv-neutral-800 text-sm">
         Giveth does NOT verify social media links published by projects, click
         at your own discretion!
       </div>

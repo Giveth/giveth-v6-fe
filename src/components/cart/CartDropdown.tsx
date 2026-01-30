@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
+import clsx from 'clsx'
 import { ArrowRight, X } from 'lucide-react'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
@@ -28,15 +29,15 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
   return (
     <div className="absolute right-0 top-full px-5 mt-2 w-[380px] bg-white rounded-3xl shadow-[0px_3px_20px_rgba(33,32,60,0.24)] z-50">
       {/* Header */}
-      <div className="py-4 border-b border-giv-gray-300">
-        <h3 className="text-sm font-medium text-giv-gray-700">Donate</h3>
+      <div className="py-4 border-b border-giv-neutral-300">
+        <h3 className="text-sm font-medium text-giv-neutral-700">Donate</h3>
       </div>
 
       {/* Empty State */}
       {cartItems.length === 0 && (
         <div className="p-8 text-center">
-          <p className="text-sm text-giv-gray-700">Your cart is empty</p>
-          <p className="text-xs text-giv-gray-700 mt-2">
+          <p className="text-sm text-giv-neutral-700">Your cart is empty</p>
+          <p className="text-xs text-giv-neutral-700 mt-2">
             Add projects to your cart to get started
           </p>
         </div>
@@ -51,14 +52,14 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
               {qfRoundGroups.map(group => (
                 <div
                   key={group.roundId}
-                  className="px-1 pb-1 bg-giv-gray-300 rounded-2xl overflow-hidden"
+                  className="px-1 pb-1 bg-giv-neutral-300 rounded-2xl overflow-hidden"
                 >
                   {/* Round Header */}
                   <div className="flex items-center justify-between px-2 py-3">
-                    <span className="text-base font-medium text-giv-gray-700">
+                    <span className="text-base font-medium text-giv-neutral-700">
                       QF Round
                     </span>
-                    <span className="text-base font-medium text-giv-gray-800">
+                    <span className="text-base font-medium text-giv-neutral-800">
                       {group.roundName}
                     </span>
                   </div>
@@ -80,7 +81,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
                         </div>
 
                         {/* Project Title */}
-                        <h4 className="flex-1 text-base font-medium text-giv-gray-900 line-clamp-2">
+                        <h4 className="flex-1 text-base font-medium text-giv-neutral-900 line-clamp-2">
                           {item.title}
                         </h4>
 
@@ -89,7 +90,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
                           onClick={() =>
                             handleRemoveItem(group.roundId, item.id)
                           }
-                          className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer"
+                          className="w-6 h-6 rounded border border-giv-neutral-500 flex items-center justify-center text-giv-neutral-500 hover:border-giv-pink-500 hover:text-giv-pink-500 transition-colors shrink-0 bg-white cursor-pointer"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -103,7 +104,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
               {nonQfProjects.map(item => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 px-2 py-2 bg-giv-gray-300 rounded-2xl overflow-hidden"
+                  className="flex items-center gap-3 px-2 py-2 bg-giv-neutral-300 rounded-2xl overflow-hidden"
                 >
                   {/* Project Image */}
                   <div className="w-14 h-[45px] rounded-md overflow-hidden shrink-0">
@@ -115,14 +116,17 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
                   </div>
 
                   {/* Project Title */}
-                  <h4 className="flex-1 text-base font-medium text-giv-gray-900 line-clamp-2">
+                  <h4 className="flex-1 text-base font-medium text-giv-neutral-900 line-clamp-2">
                     {item.title}
                   </h4>
 
                   {/* Remove Button */}
                   <button
                     onClick={() => handleRemoveItem(0, item.id)}
-                    className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer"
+                    className={clsx(
+                      'w-6 h-6 rounded border border-giv-neutral-500 flex items-center justify-center text-giv-neutral-500',
+                      'hover:border-giv-pink-500 hover:text-giv-pink-500 transition-colors shrink-0 bg-white cursor-pointer',
+                    )}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -136,7 +140,10 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
             <Link
               href={'/cart' as Route}
               onClick={onClose}
-              className="w-full py-3 bg-giv-primary-500 text-white! rounded-3xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-giv-primary-400 transition-colors cursor-pointer"
+              className={clsx(
+                'w-full py-3 bg-giv-brand-500 text-white! rounded-3xl text-xs font-bold',
+                'flex items-center justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer',
+              )}
             >
               Donate
               <ArrowRight className="w-5 h-5" />

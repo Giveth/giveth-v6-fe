@@ -102,16 +102,16 @@ export function QFSorting({
         onClick={() => setIsOpen(!isOpen)}
         className={clsx(
           'flex items-center gap-2 px-4 py-2 bg-white',
-          'rounded-sm text-base font-medium text-giv-gray-900 min-w-[200px]',
+          'rounded-sm text-base font-medium text-giv-neutral-900 min-w-[200px]',
           'justify-between transition-colors cursor-pointer',
         )}
       >
         <div className="flex items-center gap-2">
-          <span className="text-giv-primary-900">{selectedOption.icon}</span>
+          <span className="text-giv-brand-900">{selectedOption.icon}</span>
           <span>{selectedOption.label}</span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 ml-6 text-giv-gray-900 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 ml-6 text-giv-neutral-900 transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -124,10 +124,10 @@ export function QFSorting({
                 onSortChange(option.field, option.direction)
                 setIsOpen(false)
               }}
-              className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm hover:bg-giv-gray-200 transition-colors cursor-pointer ${
+              className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm hover:bg-giv-neutral-200 transition-colors cursor-pointer ${
                 option.label === selectedOption.label
-                  ? 'bg-giv-primary-050 text-giv-primary-500 font-semibold'
-                  : 'text-giv-gray-900'
+                  ? 'bg-giv-brand-050 text-giv-brand-500 font-semibold'
+                  : 'text-giv-neutral-900'
               }`}
             >
               {option.icon}

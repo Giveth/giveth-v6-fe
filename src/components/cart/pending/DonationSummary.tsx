@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import clsx from 'clsx'
 import {
   CheckCircle2,
   CircleDashed,
@@ -122,21 +123,17 @@ export function DonationSummary({
     <div className="p-4 bg-white rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="mb-6 mt-2">
-        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-neutral-300">
           <IconPraiseHand />
-          <h2 className="text-2xl font-bold text-giv-gray-900 font-inter">
+          <h2 className="text-2xl font-bold text-giv-neutral-900">
             Your donation summary
           </h2>
         </div>
-        <p className="text-giv-gray-700 text-lg font-medium font-inter">
+        <p className="text-giv-neutral-700 text-lg font-medium">
           You are donating{' '}
-          <span className="text-giv-primary-700">
-            ~${formatNumber(totalUsd)}
-          </span>{' '}
+          <span className="text-giv-brand-700">~${formatNumber(totalUsd)}</span>{' '}
           to{' '}
-          <span className="text-giv-primary-700">
-            {totalProjects} projects.
-          </span>
+          <span className="text-giv-brand-700">{totalProjects} projects.</span>
         </p>
       </div>
 
@@ -169,11 +166,11 @@ export function DonationSummary({
           return (
             <div
               key={roundKey}
-              className="p-4 pb-0 border-4 border-giv-gray-300 rounded-xl overflow-hidden"
+              className="p-4 pb-0 border-4 border-giv-neutral-300 rounded-xl overflow-hidden"
             >
               {/* Round Header */}
-              <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
-                <p className="text-giv-gray-800 text-base font-normal">
+              <div className="bg-giv-neutral-300 px-4 py-2 rounded-xl">
+                <p className="text-giv-neutral-800 text-base font-normal">
                   <span className="font-medium">
                     {formatNumber(totalAmountInRound, {
                       minDecimals: 2,
@@ -200,7 +197,7 @@ export function DonationSummary({
               </div>
 
               {/* Toggle */}
-              <div className="py-3 font-inter">
+              <div className="py-3">
                 {/* Processing Status */}
                 <div className="flex items-center justify-between mb-3">
                   <div
@@ -210,8 +207,8 @@ export function DonationSummary({
                         : status?.status === 'error' ||
                             overallStatus === 'failed'
                           ? 'text-red-700 border-red-300'
-                          : 'text-giv-gray-700 border-giv-gray-400'
-                    } bg-giv-gray-200 rounded-md border`}
+                          : 'text-giv-neutral-700 border-giv-neutral-400'
+                    } bg-giv-neutral-200 rounded-md border`}
                   >
                     {overallStatus === 'failed' && overallError && (
                       <>
@@ -234,7 +231,12 @@ export function DonationSummary({
                   </div>
                   <button
                     onClick={() => toggleRound(roundKey)}
-                    className="flex items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 bg-giv-gray-200 rounded-md px-3 py-2 transition-colors cursor-pointer"
+                    className={clsx(
+                      'flex items-center gap-1 text-base font-medium',
+                      'text-giv-neutral-900 hover:text-giv-brand-500',
+                      'bg-giv-neutral-200 rounded-md px-3 py-2',
+                      'transition-colors cursor-pointer',
+                    )}
                   >
                     {expandedRounds.has(roundKey) ? 'Hide' : 'Show'} Transaction
                     details
@@ -252,7 +254,10 @@ export function DonationSummary({
                     {round.projects.map(project => (
                       <div
                         key={project.id}
-                        className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal"
+                        className={clsx(
+                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base',
+                          'text-giv-neutral-900 font-normal',
+                        )}
                       >
                         {/* Amount */}
                         <span className="font-medium">
@@ -268,10 +273,10 @@ export function DonationSummary({
                   </div>
                 )}
                 {givethPercentage > 0 && expandedRounds.has(roundKey) && (
-                  <div className="text-giv-gray-700 text-sm font-normal mt-2">
+                  <div className="text-giv-neutral-700 text-sm font-normal mt-2">
                     <div
                       key={GIVETH_PROJECT_ID}
-                      className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal"
+                      className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-800 font-normal"
                     >
                       {/* Amount */}
                       <span className="font-medium">
@@ -291,18 +296,18 @@ export function DonationSummary({
         })}
 
         {nonQfProjects.length > 0 && (
-          <div className="p-4 border-4 border-giv-gray-300 rounded-xl overflow-hidden">
-            <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
-              <p className="text-giv-gray-800 text-base font-normal">
+          <div className="p-4 border-4 border-giv-neutral-300 rounded-xl overflow-hidden">
+            <div className="bg-giv-neutral-300 px-4 py-2 rounded-xl">
+              <p className="text-giv-neutral-800 text-base font-normal">
                 <span className="font-medium">Direct donations</span>
               </p>
             </div>
-            <div className="py-3 font-inter">
+            <div className="py-3">
               <div className="space-y-2 flex flex-col items-start gap-2">
                 {nonQfProjects.map(project => (
                   <div
                     key={project.id}
-                    className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal"
+                    className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-800 font-normal"
                   >
                     <span className="font-medium">
                       {project.donationAmount} {project.tokenSymbol}

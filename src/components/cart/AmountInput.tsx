@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import clsx from 'clsx'
 import { ArrowLeftRight } from 'lucide-react'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { formatNumber } from '@/lib/helpers/cartHelper'
@@ -80,23 +81,32 @@ export const AmountInput = ({
 
   return (
     <>
-      <div className="flex-wrap flex items-center gap-2 rounded-md border border-giv-gray-100 px-3 py-2">
+      <div className="flex-wrap flex items-center gap-2 rounded-md border border-giv-neutral-100 px-3 py-2">
         {enteringType === 'usd' && <span>$</span>}
         <input
           type="text"
           value={enteringType === 'amount' ? enteredValue : enteredUsdValue}
           onChange={e => setEnteredAmount(e.target.value, enteringType)}
-          className="w-full max-[480px]:w-24 md:w-16 focus:w-28 transition-[width] duration-200 ease-out text-base p-0 font-medium text-left text-giv-gray-900 focus:outline-none"
+          className={clsx(
+            'w-full max-[480px]:w-24 md:w-16 focus:w-28',
+            'transition-[width] duration-200 ease-out text-base p-0',
+            'font-medium text-left text-giv-neutral-900 focus:outline-none',
+          )}
         />
         <ArrowLeftRight
-          className="w-4 h-4 text-giv-gray-800 cursor-pointer"
+          className={clsx('w-4 h-4', 'text-giv-neutral-800 cursor-pointer')}
           onClick={() => {
             const newEnteringType = enteringType === 'amount' ? 'usd' : 'amount'
             setEnteringType(newEnteringType)
             setSelectedAmountVsDollars(newEnteringType === 'amount' ? 0 : 1)
           }}
         />
-        <span className="px-2 py-1 bg-giv-gray-300 rounded-lg text-xs text-giv-gray-700">
+        <span
+          className={clsx(
+            'px-2 py-1 bg-giv-neutral-300 rounded-lg text-xs',
+            'text-giv-neutral-700',
+          )}
+        >
           {enteringType === 'amount' ? '$' : selectedToken?.symbol}{' '}
           {enteringType === 'amount'
             ? formatNumber(enteredUsdValue)
@@ -105,7 +115,10 @@ export const AmountInput = ({
       </div>
       {/* Apply to all */}
       <button
-        className="ml-1 text-base font-medium text-giv-primary-500 hover:text-giv-primary-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className={clsx(
+          'ml-1 text-base font-medium text-giv-brand-500 hover:text-giv-brand-700',
+          'transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+        )}
         onClick={() => handleApplyToAll(_roundId)}
       >
         Apply to all

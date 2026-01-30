@@ -26,13 +26,13 @@ export function CartButton() {
         onClick={() => setIsCartOpen(!isCartOpen)}
         className={clsx(
           'relative inline-flex items-center justify-center py-2.5 px-3',
-          'hover:bg-giv-primary-50 rounded-md transition-colors border border-giv-primary-100 cursor-pointer',
-          'text-giv-primary-600!',
+          'hover:bg-giv-brand-50 rounded-md transition-colors border border-giv-brand-100 cursor-pointer',
+          'text-giv-brand-600!',
         )}
       >
-        <ShoppingCart className="w-4 h-4 text-giv-primary-600 lg:w-6 lg:h-6" />
+        <ShoppingCart className="w-4 h-4 text-giv-brand-600 lg:w-6 lg:h-6" />
         {cartItems.length > 0 && (
-          <span className="block ms-2 font-bold text-giv-primary-600 text-base">
+          <span className="block ms-2 font-bold text-giv-brand-600 text-base">
             {cartItems.length}
           </span>
         )}

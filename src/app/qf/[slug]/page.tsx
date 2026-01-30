@@ -104,7 +104,7 @@ export default function QFRoundPage() {
   if (isRoundLoading) {
     // Basic loading state
     return (
-      <div className="min-h-screen bg-giv-gray-200 flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         Loading...
       </div>
     )
@@ -112,14 +112,14 @@ export default function QFRoundPage() {
 
   if (!qfRound) {
     return (
-      <div className="min-h-screen bg-giv-gray-200 flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         Round not found
       </div>
     )
   }
 
   return (
-    <div className="font-inter min-h-screen bg-giv-gray-200">
+    <div className="min-h-screen bg-giv-neutral-200">
       {/* Passport Banner */}
       <PassportBanner />
 

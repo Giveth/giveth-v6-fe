@@ -61,7 +61,7 @@ export function QFProjectFilters({
       >
         Filters
         {activeCount > 0 && (
-          <span className="bg-giv-primary-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[18px] text-center">
+          <span className="bg-giv-brand-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[18px] text-center">
             {activeCount}
           </span>
         )}
@@ -72,16 +72,16 @@ export function QFProjectFilters({
         <div className="absolute top-full right-0 mt-2 w-[320px] bg-white rounded-md z-30 p-6">
           {/* Project features */}
           <div className="mb-3">
-            <h4 className="text-giv-gray-900 font-medium text-sm mb-5">
+            <h4 className="text-giv-neutral-900 font-medium text-sm mb-5">
               Project features
             </h4>
-            <div className="space-y-3 border-b border-giv-gray-200 pb-5">
+            <div className="space-y-3 border-b border-giv-neutral-200 pb-5">
               <label className="flex items-center gap-3 cursor-pointer group mb-5">
                 <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.isGivbacksEligible ? 'bg-giv-primary-50 border-[#7F56D9]' : 'border-giv-gray-400 bg-white group-hover:border-giv-primary-500'}`}
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.isGivbacksEligible ? 'bg-giv-brand-50 border-giv-brand-500' : 'border-giv-neutral-400 bg-white group-hover:border-giv-brand-500'}`}
                 >
                   {currentFilters.isGivbacksEligible && (
-                    <Check className="w-3.5 h-3.5 text-[#7F56D9]" />
+                    <Check className="w-3.5 h-3.5 text-giv-brand-500" />
                   )}
                 </div>
                 <input
@@ -92,17 +92,17 @@ export function QFProjectFilters({
                     handleCheckboxChange('isGivbacksEligible', e.target.checked)
                   }
                 />
-                <span className="text-giv-gray-800 text-sm font-medium">
+                <span className="text-giv-neutral-800 text-sm font-medium">
                   GIVbacks Eligible
                 </span>
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.eligibleForMatching ? 'bg-giv-primary-50 border-[#7F56D9]' : 'border-giv-gray-400 bg-white group-hover:border-giv-primary-500'}`}
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.eligibleForMatching ? 'bg-giv-brand-50 border-giv-brand-500' : 'border-giv-neutral-400 bg-white group-hover:border-giv-brand-500'}`}
                 >
                   {currentFilters.eligibleForMatching && (
-                    <Check className="w-3.5 h-3.5 text-[#7F56D9]" />
+                    <Check className="w-3.5 h-3.5 text-giv-brand-500" />
                   )}
                 </div>
                 <input
@@ -116,7 +116,7 @@ export function QFProjectFilters({
                     )
                   }
                 />
-                <span className="text-giv-gray-800 text-sm font-medium">
+                <span className="text-giv-neutral-800 text-sm font-medium">
                   Eligible for Matching
                 </span>
               </label>
@@ -125,7 +125,7 @@ export function QFProjectFilters({
 
           {/* Accepts funds on */}
           <div>
-            <h4 className="text-giv-gray-900 font-medium text-sm mb-5">
+            <h4 className="text-giv-neutral-900 font-medium text-sm mb-5">
               Accepts funds on
             </h4>
             <div className="space-y-3 overflow-y-auto custom-scrollbar">
@@ -135,10 +135,10 @@ export function QFProjectFilters({
                   className="flex items-center gap-3 cursor-pointer group mb-5 last:mb-0"
                 >
                   <div
-                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.networks.includes(network) ? 'bg-giv-primary-50 border-[#7F56D9]' : 'border-giv-gray-400 bg-white group-hover:border-giv-primary-500'}`}
+                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${currentFilters.networks.includes(network) ? 'bg-giv-brand-50 border-giv-brand-500' : 'border-giv-neutral-400 bg-white group-hover:border-giv-brand-500'}`}
                   >
                     {currentFilters.networks.includes(network) && (
-                      <Check className="w-3.5 h-3.5 text-[#7F56D9]" />
+                      <Check className="w-3.5 h-3.5 text-giv-brand-500" />
                     )}
                   </div>
                   <input
@@ -147,7 +147,7 @@ export function QFProjectFilters({
                     checked={currentFilters.networks.includes(network)}
                     onChange={() => handleCheckboxChange('networks', network)}
                   />
-                  <span className="text-giv-gray-800 text-sm font-medium">
+                  <span className="text-giv-neutral-800 text-sm font-medium">
                     {network}
                   </span>
                 </label>

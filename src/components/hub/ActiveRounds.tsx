@@ -24,20 +24,22 @@ export function ActiveRounds() {
   }, [rounds, activeRoundsData])
 
   return (
-    <div className="font-inter space-y-8">
-      <h2 className="text-2xl font-bold text-giv-deep-900">Active Rounds</h2>
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-giv-deep-blue-900">
+        Active Rounds
+      </h2>
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-giv-primary-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-giv-brand-500" />
         </div>
       )}
       {error && (
-        <div className="text-center py-12 text-giv-gray-700">
+        <div className="text-center py-12 text-giv-neutral-700">
           Failed to load active rounds. Please try again later. {error.message}
         </div>
       )}
       {rounds.length === 0 && (
-        <div className="text-center py-12 text-giv-gray-700">
+        <div className="text-center py-12 text-giv-neutral-700">
           No active rounds at the moment.
         </div>
       )}

@@ -159,8 +159,8 @@ export function ShareProjectModal({
           {/* Header */}
           <Flex align="center" justify="between" className="mb-10">
             <div className="flex items-center gap-3">
-              <Share2 className="h-5 w-5 text-giv-gray-900" />
-              <Text size="4" weight="bold" className="text-giv-gray-900">
+              <Share2 className="h-5 w-5 text-giv-neutral-900" />
+              <Text size="4" weight="bold" className="text-giv-neutral-900">
                 Share
               </Text>
             </div>
@@ -177,11 +177,16 @@ export function ShareProjectModal({
 
           {/* Body */}
           <div className="text-center">
-            <Text as="div" size="7" weight="bold" className="text-giv-gray-900">
+            <Text
+              as="div"
+              size="7"
+              weight="bold"
+              className="text-giv-neutral-900"
+            >
               {heading}
             </Text>
             {description && (
-              <Text as="div" size="3" className="mt-2 text-giv-gray-700">
+              <Text as="div" size="3" className="mt-2 text-giv-neutral-700">
                 {description}
               </Text>
             )}
@@ -190,30 +195,30 @@ export function ShareProjectModal({
           {/* Social buttons */}
           <div className="mt-10 flex justify-center gap-4">
             <ShareSquareLink href={xHref} label="Share on X">
-              <X className="h-5 w-5 text-giv-gray-900" />
+              <X className="h-5 w-5 text-giv-neutral-900" />
             </ShareSquareLink>
             <ShareSquareLink href={linkedinHref} label="Share on LinkedIn">
-              <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+              <Linkedin className="h-5 w-5 text-giv-link-500" />
             </ShareSquareLink>
             <ShareSquareLink href={facebookHref} label="Share on Facebook">
-              <Facebook className="h-5 w-5 text-[#1877F2]" />
+              <Facebook className="h-5 w-5 text-giv-link-500" />
             </ShareSquareLink>
             <ShareSquareLink href={warpcastHref} label="Share on Warpcast">
-              <WarpcastIcon className="h-5 w-5 text-[#7C65C1]" />
+              <WarpcastIcon className="h-5 w-5 text-giv-brand-500" />
             </ShareSquareLink>
           </div>
 
           {/* Copy link */}
           <div className="mt-10 text-center">
-            <Text as="div" size="3" className="text-giv-gray-900">
+            <Text as="div" size="3" className="text-giv-neutral-900">
               Or copy the link
             </Text>
 
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-giv-gray-100 bg-white px-4 py-3">
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-giv-neutral-100 bg-white px-4 py-3">
               <Text
                 as="div"
                 size="2"
-                className="truncate text-[#2F6FED]"
+                className="truncate text-giv-link-500"
                 title={url}
               >
                 {url}
@@ -222,7 +227,7 @@ export function ShareProjectModal({
               <button
                 type="button"
                 onClick={copyToClipboard}
-                className="shrink-0 rounded-full bg-giv-gray-100 px-4 py-2 text-sm font-bold text-giv-gray-900 hover:bg-giv-gray-200 transition-colors cursor-pointer"
+                className="shrink-0 rounded-full bg-giv-neutral-100 px-4 py-2 text-sm font-bold text-giv-neutral-900 hover:bg-giv-neutral-200 transition-colors cursor-pointer"
               >
                 {copied ? 'Copied' : 'Copy Link'}
               </button>
@@ -234,7 +239,7 @@ export function ShareProjectModal({
             <Dialog.Close>
               <button
                 type="button"
-                className="text-sm font-medium text-[#9AA1B2] hover:text-giv-gray-900 transition-colors cursor-pointer"
+                className="text-sm font-medium text-giv-neutral-700 hover:text-giv-neutral-900 transition-colors cursor-pointer"
               >
                 Dismiss
               </button>
@@ -261,7 +266,7 @@ function ShareSquareLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="flex h-11 w-11 items-center justify-center rounded-xl border border-giv-gray-100 bg-white hover:bg-giv-gray-200 transition-colors"
+      className="flex h-11 w-11 items-center justify-center rounded-xl border border-giv-neutral-100 bg-white hover:bg-giv-neutral-200 transition-colors"
     >
       {children}
     </a>

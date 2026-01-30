@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import clsx from 'clsx'
 import {
   ArrowRight,
   CircleCheck,
@@ -100,19 +101,17 @@ export function SuccessDonationSummary() {
     <div className="p-4 bg-white rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="mb-6 mt-2">
-        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-gray-300">
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-giv-neutral-300">
           <IconPraiseHand />
-          <h2 className="text-2xl font-bold text-giv-gray-900 font-inter">
+          <h2 className="text-2xl font-bold text-giv-neutral-900">
             Your donation summary
           </h2>
         </div>
-        <p className="text-giv-gray-700 text-lg font-medium font-inter">
+        <p className="text-giv-neutral-700 text-lg font-medium">
           You’ve donated{' '}
-          <span className="text-giv-primary-700">
-            ~${formatNumber(totalUsd)}
-          </span>{' '}
+          <span className="text-giv-brand-700">~${formatNumber(totalUsd)}</span>{' '}
           to{' '}
-          <span className="text-giv-primary-700">
+          <span className="text-giv-brand-700">
             {totalProjects} project{totalProjects > 1 ? 's' : ''}.
           </span>
         </p>
@@ -121,7 +120,7 @@ export function SuccessDonationSummary() {
       {/* Donation Rounds */}
       <div className="space-y-4">
         {!receipt?.qfRoundGroups?.length && (
-          <div className="p-4 border-2 border-giv-gray-300 rounded-xl text-giv-gray-700">
+          <div className="p-4 border-2 border-giv-neutral-300 rounded-xl text-giv-neutral-700">
             No receipt found. Please complete a donation first.
           </div>
         )}
@@ -147,11 +146,11 @@ export function SuccessDonationSummary() {
           return (
             <div
               key={roundKey}
-              className="p-4 pb-0 border-4 border-giv-gray-300 rounded-xl overflow-hidden"
+              className="p-4 pb-0 border-4 border-giv-neutral-300 rounded-xl overflow-hidden"
             >
               {/* Round Header */}
-              <div className="bg-giv-gray-300 px-4 py-2 rounded-xl">
-                <p className="text-giv-gray-800 text-base font-normal">
+              <div className="bg-giv-neutral-300 px-4 py-2 rounded-xl">
+                <p className="text-giv-neutral-800 text-base font-normal">
                   <span className="font-medium">
                     {formatNumber(totalAmountInRound, {
                       minDecimals: 2,
@@ -178,12 +177,12 @@ export function SuccessDonationSummary() {
               </div>
 
               {/* Toggle */}
-              <div className="py-3 mt-2 font-inter">
+              <div className="py-3 mt-2">
                 <div className="flex justify-between mb-3">
                   <div className="flex flex-col items-start gap-2">
                     {isSuccess ? (
-                      <div className="inline-flex w-auto items-center gap-2 px-3 py-2.5 bg-giv-gray-200 rounded-md border border-giv-gray-400">
-                        <div className="flex items-center gap-2 text-sm font-medium text-giv-jade-500">
+                      <div className="inline-flex w-auto items-center gap-2 px-3 py-2.5 bg-giv-neutral-200 rounded-md border border-giv-neutral-400">
+                        <div className="flex items-center gap-2 text-sm font-medium text-giv-success-500">
                           <span>
                             <CircleCheck className="w-4 h-4" />
                           </span>
@@ -191,7 +190,7 @@ export function SuccessDonationSummary() {
                         </div>
                       </div>
                     ) : isFailed ? (
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-giv-gray-200 rounded-md border border-giv-gray-400">
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-giv-neutral-200 rounded-md border border-giv-neutral-400">
                         <div className="flex items-center gap-2 text-sm font-medium text-(--color-danger)">
                           <span>
                             <CircleX className="w-4 h-4" />
@@ -200,8 +199,8 @@ export function SuccessDonationSummary() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-giv-gray-200 rounded-md border border-giv-gray-400">
-                        <div className="flex items-center gap-2 text-sm font-medium text-giv-gray-700">
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-giv-neutral-200 rounded-md border border-giv-neutral-400">
+                        <div className="flex items-center gap-2 text-sm font-medium text-giv-neutral-700">
                           <span>Pending</span>
                         </div>
                       </div>
@@ -215,20 +214,26 @@ export function SuccessDonationSummary() {
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center gap-2 text-base font-medium text-giv-primary-500 bg-giv-gray-200 rounded-md px-3 py-2 border border-giv-primary-500 hover:opacity-85"
+                        className={clsx(
+                          'mt-2 inline-flex items-center gap-2 text-base font-medium text-giv-brand-500',
+                          'bg-giv-neutral-200 rounded-md px-3 py-2 border border-giv-brand-500 hover:opacity-85',
+                        )}
                       >
-                        <LinkIcon className="w-4 h-4 text-giv-primary-500" />
-                        <span className="text-giv-primary-500">
+                        <LinkIcon className="w-4 h-4 text-giv-brand-500" />
+                        <span className="text-giv-brand-500">
                           View on block explorer
                         </span>
-                        <ArrowRight className="w-4 h-4 text-giv-primary-500" />
+                        <ArrowRight className="w-4 h-4 text-giv-brand-500" />
                       </a>
                     )}
                   </div>
 
                   <button
                     onClick={() => toggleRound(roundKey)}
-                    className="flex items-center gap-1 h-12 px-3 py-2 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 bg-giv-gray-200 rounded-md transition-colors cursor-pointer"
+                    className={clsx(
+                      'flex items-center gap-1 h-12 px-3 py-2 text-base font-medium text-giv-neutral-900 hover:text-giv-brand-500',
+                      'bg-giv-neutral-200 rounded-md transition-colors cursor-pointer',
+                    )}
                   >
                     {expandedRounds.has(roundKey) ? 'Hide' : 'Show'} Transaction
                     details
@@ -246,7 +251,9 @@ export function SuccessDonationSummary() {
                     {round.projects.map(project => (
                       <div
                         key={project.id}
-                        className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal"
+                        className={clsx(
+                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-900 font-normal',
+                        )}
                       >
                         <span className="font-medium">
                           {project.donationAmount} {project.tokenSymbol}
@@ -260,7 +267,11 @@ export function SuccessDonationSummary() {
                 {effectiveGivethPercentage > 0 &&
                   expandedRounds.has(roundKey) && (
                     <div className="space-y-2 flex flex-col items-start gap-2 mt-2">
-                      <div className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-gray-200 rounded-md text-base text-giv-gray-800 font-normal">
+                      <div
+                        className={clsx(
+                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-900 font-normal',
+                        )}
+                      >
                         <span className="font-medium">
                           {givethAmountForRound > 0
                             ? `${givethAmountForRound} ${round.tokenSymbol}`

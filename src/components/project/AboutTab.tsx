@@ -58,7 +58,7 @@ export function AboutTab({
             'ql-readonly',
             '[&_.ql-container]:border-none!',
             '[&_.ql-toolbar]:hidden',
-            '[&_.ql-editor]:text-[#1f2333]',
+            '[&_.ql-editor]:text-giv-deep-blue-800',
             '[&_.ql-editor]:px-0!',
             '[&_.ql-editor]:text-base!',
             '[&_.ql-editor]:leading-relaxed',
@@ -80,7 +80,7 @@ export function AboutTab({
       </div>
       {!!socialMedia?.length && (
         <>
-          <div className="my-4 h-px bg-giv-gray-500" />
+          <div className="my-4 h-px bg-giv-neutral-500" />
           <ProjectSocials socialMedia={socialMedia} />
         </>
       )}

@@ -115,7 +115,7 @@ export default function PendingPage() {
   ])
 
   return (
-    <div className="bg-giv-gray-200 flex flex-col">
+    <div className="bg-giv-neutral-200 flex flex-col">
       <main className="flex-1 pb-8">
         <PendingHero
           overallError={state.overallError}

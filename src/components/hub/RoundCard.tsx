@@ -58,10 +58,10 @@ export function RoundCard({
       </div>
 
       <div className={`${contentContainerWidth} flex flex-col justify-between`}>
-        <h3 className="text-3xl font-bold text-giv-gray-900 mb-2">
+        <h3 className="text-3xl font-bold text-giv-neutral-900 mb-2">
           <Link href={`/qf/${round.slug}` as Route}>{round.name}</Link>
         </h3>
-        <p className="text-base text-giv-gray-800 leading-relaxed mb-4 min-h-[72px]">
+        <p className="text-base text-giv-neutral-800 leading-relaxed mb-4 min-h-[72px]">
           {truncateText(
             round.description || '',
             layout === 'horizontal' ? 200 : 155,
@@ -70,13 +70,13 @@ export function RoundCard({
 
         {layoutOption === 'vertical' && (
           <div className="mt-auto">
-            <p className="text-lg font-bold text-giv-deep-900">
+            <p className="text-lg font-bold text-giv-deep-blue-900">
               {getDateRange(round.beginDate, round.endDate)}
             </p>
           </div>
         )}
 
-        <div className="flex items-center gap-3 justify-center border-giv-gray-300 border-[1.85px] mt-3 py-1 px-2.5 rounded-2xl text-giv-gray-900">
+        <div className="flex items-center gap-3 justify-center border-giv-neutral-300 border-[1.85px] mt-3 py-1 px-2.5 rounded-2xl text-giv-neutral-900">
           <span className="text-lg font-bold">
             {formatMatchingPool(
               round.allocatedFundUSD,
@@ -100,7 +100,7 @@ export function RoundCard({
 
         {layoutOption === 'horizontal' && (
           <div className="flex justify-between items-center">
-            <p className="text-xl font-bold text-giv-deep-900">
+            <p className="text-xl font-bold text-giv-deep-blue-900">
               {getDateRange(round.beginDate, round.endDate)}
             </p>
             <ExploreButton
@@ -125,14 +125,14 @@ const ExploreButton = ({
   isClosed?: boolean
 }) => {
   let exploreButtonClass =
-    'bg-giv-primary-300 text-white! hover:bg-giv-primary-400 '
+    'bg-giv-brand-300 text-white! hover:bg-giv-brand-400 '
   if (layoutOption === 'vertical' && !isClosed) {
     exploreButtonClass =
-      'text-giv-primary-700 hover:text-white! hover:bg-giv-primary-800! w-full justify-center bg-giv-primary-50 border border-giv-primary-100'
+      'text-giv-brand-700 hover:text-white! hover:bg-giv-brand-800! w-full justify-center bg-giv-brand-50 border border-giv-brand-100'
   }
   if (isClosed) {
     exploreButtonClass =
-      'text-giv-primary-700 hover:text-white! hover:bg-giv-primary-800! w-full justify-center bg-white! border border-giv-gray-100'
+      'text-giv-brand-700 hover:text-white! hover:bg-giv-brand-800! w-full justify-center bg-white! border border-giv-neutral-100'
   }
   return (
     <Link

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import clsx from 'clsx'
 import { X } from 'lucide-react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
 import { ProjectImage } from '@/components/project/ProjectImage'
@@ -49,7 +50,7 @@ export const ProjectCartCard = ({
   }
 
   return (
-    <div className="px-4 py-4 border border-giv-gray-300 mb-4 mn-last:mb-0 rounded-xl hover:bg-giv-gray-200 transition-colors">
+    <div className="px-4 py-4 border border-giv-neutral-300 mb-4 mn-last:mb-0 rounded-xl hover:bg-giv-neutral-200 transition-colors">
       {/* Project Info */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -58,7 +59,7 @@ export const ProjectCartCard = ({
             alt={project.title}
             className="w-14 h-[45px] rounded-md overflow-hidden"
           />
-          <h4 className="text-base font-medium text-giv-gray-900">
+          <h4 className="text-base font-medium text-giv-neutral-900">
             {project.title}
           </h4>
         </div>
@@ -66,7 +67,11 @@ export const ProjectCartCard = ({
           onClick={() =>
             handleRemoveItem(Number(roundData?.id ?? 0), project.id)
           }
-          className="w-6 h-6 rounded border border-giv-gray-500 flex items-center justify-center text-giv-gray-500 hover:border-giv-pinky-500 hover:text-giv-pinky-500 transition-colors shrink-0 bg-white cursor-pointer"
+          className={clsx(
+            'w-6 h-6 rounded border border-giv-neutral-500',
+            'flex items-center justify-center text-giv-neutral-500 hover:border-giv-pink-500 hover:text-giv-pink-500',
+            'transition-colors shrink-0 bg-white cursor-pointer',
+          )}
         >
           <X className="w-4 h-4" />
         </button>
@@ -80,7 +85,9 @@ export const ProjectCartCard = ({
 
         <div
           className={`flex items-center text-base font-medium gap-2 border rounded-md pr-3 pl-2 py-2 ${
-            shouldShowMissingAmount ? 'border-red-400' : 'border-giv-gray-100'
+            shouldShowMissingAmount
+              ? 'border-red-400'
+              : 'border-giv-neutral-100'
           }`}
         >
           {project.selectedToken?.symbol && project.selectedToken?.address && (
@@ -97,7 +104,7 @@ export const ProjectCartCard = ({
           {/* If selectedAmountVsDollars is 0, show the amount input */}
           {selectedAmountVsDollars === 0 && (
             <>
-              <span className="text-giv-gray-700">
+              <span className="text-giv-neutral-700">
                 {project.selectedToken?.symbol ?? ''}
               </span>
               <input
@@ -114,7 +121,11 @@ export const ProjectCartCard = ({
                   )
                 }}
                 autoComplete="off"
-                className="w-full max-[480px]:w-24 md:w-16 focus:w-28 transition-[width] duration-200 ease-out text-base p-0 font-medium text-left text-giv-gray-900 focus:outline-none"
+                className={clsx(
+                  'w-full max-[480px]:w-24 md:w-16 focus:w-28',
+                  'transition-[width] duration-200 ease-out text-base p-0',
+                  'font-medium text-left text-giv-neutral-900 focus:outline-none',
+                )}
               />
             </>
           )}
@@ -142,14 +153,18 @@ export const ProjectCartCard = ({
                   )
                 }}
                 autoComplete="off"
-                className="w-full max-[480px]:w-24 md:w-16 focus:w-28 transition-[width] duration-200 ease-out text-base p-0 font-medium text-left text-giv-gray-900 focus:outline-none"
+                className={clsx(
+                  'w-full max-[480px]:w-24 md:w-16 focus:w-28',
+                  'transition-[width] duration-200 ease-out text-base p-0',
+                  'font-medium text-left text-giv-neutral-900 focus:outline-none',
+                )}
               />
             </>
           )}
-          <span className="px-2 py-1 bg-giv-gray-300 rounded-lg text-xs text-giv-gray-700">
+          <span className="px-2 py-1 bg-giv-neutral-300 rounded-lg text-xs text-giv-neutral-700">
             {selectedAmountVsDollars === 1 && (
               <>
-                <span className="text-giv-gray-700">
+                <span className="text-giv-neutral-700">
                   {project.selectedToken?.symbol ?? ''}
                 </span>{' '}
                 {formatNumber(Number(project.donationAmount ?? 0))}

@@ -18,9 +18,9 @@
 // }
 
 // const fieldClass =
-//   'w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-3 text-sm text-[#111827] outline-none focus:border-[#8668fc] focus:ring-2 focus:ring-[#eadaff] transition-all'
+//   'w-full rounded-xl border border-giv-neutral-300 bg-white px-3 py-3 text-sm text-giv-neutral-900 outline-none focus:border-giv-brand-500 focus:ring-2 focus:ring-giv-brand-050 transition-all'
 
-// const labelClass = 'block mb-1.5 text-sm font-medium text-[#374151]'
+// const labelClass = 'block mb-1.5 text-sm font-medium text-giv-neutral-900'
 
 // export const EditProfileModal = ({ open, token, onClose }: Props) => {
 //   const { data, refetch } = useProfile(token)
@@ -141,18 +141,18 @@
 
 //   return (
 //     <div
-//       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 font-sans backdrop-blur-sm"
+//       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
 //       role="dialog"
 //       aria-modal="true"
 //     >
 //       <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl relative">
 //         {/* Header */}
 //         <div className="flex items-center justify-between mb-6">
-//           <h2 className="text-2xl font-bold text-[#1f2333]">Edit Profile</h2>
+//           <h2 className="text-2xl font-bold text-giv-deep-blue-800">Edit Profile</h2>
 //           <button
 //             aria-label="Close"
 //             onClick={handleClose}
-//             className="rounded-full p-1 text-[#1f2333] hover:bg-gray-100 transition-colors"
+//             className="rounded-full p-1 text-giv-deep-blue-800 hover:bg-gray-100 transition-colors"
 //           >
 //             <X size={24} />
 //           </button>
@@ -190,14 +190,14 @@
 //             <button
 //               onClick={() => fileInputRef.current?.click()}
 //               disabled={uploadAvatar.isPending}
-//               className="text-[#E94886] font-semibold text-sm hover:underline disabled:opacity-50"
+//               className="text-giv-pink-500 font-semibold text-sm hover:underline disabled:opacity-50"
 //             >
 //               {uploadAvatar.isPending ? 'Uploading...' : 'Upload New Picture'}
 //             </button>
 //             {avatarUrl && (
 //               <button
 //                 onClick={handleDeleteAvatar}
-//                 className="text-[#849bfd] font-semibold text-sm hover:underline"
+//                 className="text-giv-brand-500 font-semibold text-sm hover:underline"
 //               >
 //                 Delete Picture
 //               </button>
@@ -258,7 +258,7 @@
 //                       !email ||
 //                       isVerifying
 //                     }
-//                     className="text-[#8668fc] border border-[#8668fc] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#8668fc] hover:text-white transition-colors disabled:opacity-50"
+//                     className="text-giv-brand-500 border border-giv-brand-500 px-3 py-1 rounded-full text-xs font-semibold hover:bg-giv-brand-500 hover:text-white transition-colors disabled:opacity-50"
 //                   >
 //                     {requestEmailVerification.isPending
 //                       ? 'Sending...'
@@ -270,18 +270,18 @@
 
 //             {/* Email Verification UI */}
 //             {profile?.isEmailVerified ? (
-//               <p className="mt-2 text-xs text-[#6b7280]">
+//               <p className="mt-2 text-xs text-giv-neutral-700">
 //                 Your email has been verified. You can now save your profile
 //                 information.
 //               </p>
 //             ) : isVerifying ? (
 //               <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100 animate-in fade-in slide-in-from-top-2">
-//                 <p className="text-xs text-[#374151] mb-2">
+//                 <p className="text-xs text-giv-neutral-900 mb-2">
 //                   Enter the code sent to your email:
 //                 </p>
 //                 <div className="flex gap-2">
 //                   <input
-//                     className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8668fc]"
+//                     className="flex-1 rounded-lg border border-giv-neutral-300 px-3 py-2 text-sm outline-none focus:border-giv-brand-500"
 //                     value={verifyCode}
 //                     onChange={e => setVerifyCode(e.target.value)}
 //                     placeholder="123456"
@@ -290,7 +290,7 @@
 //                     size="sm"
 //                     onClick={handleVerifyCode}
 //                     disabled={confirmEmailVerification.isPending || !verifyCode}
-//                     className="bg-[#8668fc] hover:bg-[#6f52e0]"
+//                     className="bg-giv-brand-500 hover:bg-giv-brand-400"
 //                   >
 //                     {confirmEmailVerification.isPending ? '...' : 'Confirm'}
 //                   </Button>
@@ -341,7 +341,7 @@
 //               onChange={e => setWebsite(e.target.value)}
 //               placeholder="https://example.com"
 //             />
-//             <p className="mt-1.5 text-xs text-[#6b7280]">
+//             <p className="mt-1.5 text-xs text-giv-neutral-700">
 //               Your homepage, blog, or company site.
 //             </p>
 //           </div>
@@ -349,7 +349,7 @@
 
 //         {/* Global Message */}
 //         {message && (
-//           <div className="mt-6 mb-2 rounded-xl bg-[#f3f4f6] px-4 py-3 text-sm text-[#374151] text-center">
+//           <div className="mt-6 mb-2 rounded-xl bg-giv-neutral-200 px-4 py-3 text-sm text-giv-neutral-900 text-center">
 //             {message}
 //           </div>
 //         )}
@@ -359,13 +359,13 @@
 //           <Button
 //             onClick={handleSave}
 //             disabled={updateProfile.isPending}
-//             className="w-full bg-[#8668fc] hover:bg-[#6f52e0] text-white py-6 text-lg rounded-xl font-bold shadow-lg shadow-[#8668fc]/20"
+//             className="w-full bg-giv-brand-500 hover:bg-giv-brand-400 text-white py-6 text-lg rounded-xl font-bold shadow-lg shadow-giv-brand-500/20"
 //           >
 //             {updateProfile.isPending ? 'Saving...' : 'Save'}
 //           </Button>
 //           <button
 //             onClick={handleClose}
-//             className="w-full text-[#849bfd] font-semibold py-2 hover:bg-gray-50 rounded-xl transition-colors"
+//             className="w-full text-giv-brand-500 font-semibold py-2 hover:bg-gray-50 rounded-xl transition-colors"
 //           >
 //             Cancel
 //           </button>

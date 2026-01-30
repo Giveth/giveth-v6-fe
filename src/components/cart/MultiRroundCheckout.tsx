@@ -93,11 +93,11 @@ export function MultiRoundCheckout({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl border border-[#ebecf2] p-6">
-        <h2 className="text-xl font-semibold text-[#1f2333] mb-2">
+      <div className="bg-white rounded-xl border border-giv-neutral-300 p-6">
+        <h2 className="text-xl font-semibold text-giv-deep-blue-800 mb-2">
           Multi-Round Checkout
         </h2>
-        <p className="text-sm text-[#82899a]">
+        <p className="text-sm text-giv-neutral-700">
           {rounds.length} round{rounds.length > 1 ? 's' : ''} •{' '}
           {state.status === 'completed'
             ? `${state.completedRounds} completed, ${state.failedRounds} failed`
@@ -110,7 +110,7 @@ export function MultiRoundCheckout({
       {/* Overall Status */}
       {state.overallError && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-red-900">Error</p>
             <p className="text-xs text-red-700 mt-1">{state.overallError}</p>
@@ -131,17 +131,17 @@ export function MultiRoundCheckout({
               key={round.roundId}
               className={`bg-white rounded-xl border p-4 transition-all ${
                 isActive
-                  ? 'border-[#5326ec] shadow-md'
+                  ? 'border-giv-brand-500 shadow-md'
                   : isCompleted
                     ? 'border-green-200'
                     : isFailed
                       ? 'border-red-200'
-                      : 'border-[#ebecf2]'
+                      : 'border-giv-neutral-300'
               }`}
             >
               <div className="flex items-start gap-4">
                 {/* Status Icon */}
-                <div className="flex-shrink-0 mt-1">
+                <div className="shrink-0 mt-1">
                   {getStatusIcon(round.roundId)}
                 </div>
 
@@ -149,10 +149,10 @@ export function MultiRoundCheckout({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold text-[#1f2333]">
+                      <h3 className="font-semibold text-giv-deep-blue-800">
                         {round.roundName}
                       </h3>
-                      <p className="text-sm text-[#82899a] mt-1">
+                      <p className="text-sm text-giv-neutral-700 mt-1">
                         {round.projects.length} project
                         {round.projects.length > 1 ? 's' : ''} •{' '}
                         {formatNumber(Number(round.totalAmount), {
@@ -165,8 +165,8 @@ export function MultiRoundCheckout({
                     </div>
 
                     {/* Amount Badge */}
-                    <div className="shrink-0 px-3 py-1 bg-[#f7f7f9] rounded-lg">
-                      <p className="text-sm font-medium text-[#1f2333]">
+                    <div className="shrink-0 px-3 py-1 bg-giv-neutral-200 rounded-lg">
+                      <p className="text-sm font-medium text-giv-deep-blue-800">
                         {formatNumber(round.totalAmount, {
                           minDecimals: 2,
                           maxDecimals: 6,
@@ -183,7 +183,7 @@ export function MultiRoundCheckout({
                         ? 'text-green-600'
                         : isFailed
                           ? 'text-red-600'
-                          : 'text-[#82899a]'
+                          : 'text-giv-neutral-700'
                     }`}
                   >
                     {getStatusText(round.roundId)}
@@ -195,7 +195,7 @@ export function MultiRoundCheckout({
                       href={`https://polygonscan.com/tx/${roundStatus.transactionHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-[#5326ec] hover:underline mt-1 inline-block"
+                      className="text-xs text-giv-brand-500 hover:underline mt-1 inline-block"
                     >
                       View transaction →
                     </a>
@@ -214,7 +214,7 @@ export function MultiRoundCheckout({
             <Button
               onClick={handleCheckout}
               disabled={rounds.length === 0}
-              className="flex-1 bg-[#e1458d] hover:bg-[#c93a7a] text-white font-medium py-6 rounded-full"
+              className="flex-1 bg-giv-pink-500 hover:bg-giv-pink-400 text-white font-medium py-6 rounded-full"
             >
               Checkout All Rounds
             </Button>
@@ -260,8 +260,8 @@ export function MultiRoundCheckout({
 
       {/* Help Text */}
       {state.status === 'idle' && (
-        <div className="bg-[#f7f7f9] rounded-xl p-4">
-          <p className="text-xs text-[#82899a]">
+        <div className="bg-giv-neutral-200 rounded-xl p-4">
+          <p className="text-xs text-giv-neutral-700">
             <strong>Note:</strong> Each round will be executed as a separate
             transaction. You may need to approve transactions on different
             chains. All transactions are independent - if one fails, others will

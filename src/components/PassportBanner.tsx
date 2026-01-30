@@ -140,20 +140,20 @@ export function PassportBanner() {
   return (
     <>
       {showLoading && (
-        <div className=" bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className=" bg-giv-brand-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           Checking Eligibility...
         </div>
       )}
       {/* Wallet Not Connected */}
       {!account && !showLoading && !isError && (
-        <div className="bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className="bg-giv-warning-200 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           Connect your wallet to verify your eligibility for donation matching.
         </div>
       )}
       {/* Wallet Connected but no eligibility data yet and user is not signed in */}
       {account && !data && !showLoading && !isError && !isAuthenticated && (
-        <div className=" bg-[#fff3d2] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className=" bg-giv-warning-200 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <Info className="w-6 h-6 text-giv-warning-600" />
           <p>
             Get your donations matched! Verify your uniqueness with one click.
@@ -161,7 +161,7 @@ export function PassportBanner() {
           <button
             onClick={checkEligibility}
             disabled={isAuthLoading}
-            className="text-base text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-base text-giv-brand-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Check Eligibility
           </button>
@@ -169,19 +169,19 @@ export function PassportBanner() {
       )}
       {/* If the user's MBD score is below the threshold for MBD and their passport score is below the threshold for Passport */}
       {account && data && !isUserEligible && (
-        <div className=" bg-giv-primary-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+        <div className=" bg-giv-brand-100 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <IconWarning width={24} height={24} />
           <Link
             href={PassportLink.href as unknown as Route}
             target={PassportLink.target as HTMLAttributeAnchorTarget}
             className="flex items-center gap-2"
           >
-            <span className="text-giv-primary-500! font-normal disabled:opacity-85">
+            <span className="text-giv-brand-500! font-normal disabled:opacity-85">
               Go to Passport
             </span>
-            <ExternalLink className="w-3.5 h-3.5 text-giv-primary-500" />
+            <ExternalLink className="w-3.5 h-3.5 text-giv-brand-500" />
           </Link>
-          <p className="text-giv-gray-900">
+          <p className="text-giv-neutral-900">
             to increase your score above{' '}
             <span className="font-bold">
               {globalSettingScore.globalMinimumPassportScore}
@@ -192,7 +192,7 @@ export function PassportBanner() {
             type="button"
             onClick={checkEligibility}
             disabled={isAuthLoading}
-            className="text-base text-giv-primary-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-base text-giv-brand-500 cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isChecking ? 'Refreshing Score...' : 'Refresh Score'}
           </button>
@@ -200,8 +200,8 @@ export function PassportBanner() {
       )}
       {/* Wallet Connected And Has Eligibility Data */}
       {account && data && isUserEligible && !showLoading && (
-        <div className="font-inter bg-[#D2FFFB] py-2.5 px-4 flex items-center justify-center gap-2 text-base">
-          <BadgeCheck className="w-6 h-6 text-giv-jade-600" />
+        <div className="bg-giv-success-200 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
+          <BadgeCheck className="w-6 h-6 text-giv-success-600" />
           <p>You donations are eligible to be matched!</p>
         </div>
       )}

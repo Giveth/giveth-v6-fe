@@ -135,7 +135,7 @@ export function ProjectDonationsTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-giv-gray-300 p-6">
+      <div className="bg-white rounded-xl border border-giv-neutral-300 p-6">
         <div className="text-center py-8">Loading donations...</div>
       </div>
     )
@@ -209,22 +209,22 @@ export function ProjectDonationsTable({
 
       <div className="overflow-hidden">
         {isFetching && (
-          <div className="text-sm text-giv-gray-600 mb-2">Loading…</div>
+          <div className="text-sm text-giv-neutral-600 mb-2">Loading…</div>
         )}
         {/* Table */}
         {!isFetching && (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-giv-gray-400">
-                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                <tr className="border-b border-giv-neutral-400">
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                     <button
                       type="button"
                       onClick={() => handleSort(DonationSortField.CreatedAt)}
-                      className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                      className={`flex items-center gap-2 hover:text-giv-brand-500 cursor-pointer ${
                         orderBy === DonationSortField.CreatedAt
-                          ? 'text-giv-primary-500'
-                          : 'text-giv-gray-900 hover:text-giv-primary-500'
+                          ? 'text-giv-brand-500'
+                          : 'text-giv-neutral-900 hover:text-giv-brand-500'
                       }`}
                     >
                       Donated at
@@ -241,20 +241,20 @@ export function ProjectDonationsTable({
                       )}
                     </button>
                   </th>
-                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                     Donor
                   </th>
-                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                     Network
                   </th>
-                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                     <button
                       type="button"
                       onClick={() => handleSort(DonationSortField.Amount)}
-                      className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                      className={`flex items-center gap-2 hover:text-giv-brand-500 cursor-pointer ${
                         orderBy === DonationSortField.Amount
-                          ? 'text-giv-primary-500'
-                          : 'text-giv-gray-900 hover:text-giv-primary-500'
+                          ? 'text-giv-brand-500'
+                          : 'text-giv-neutral-900 hover:text-giv-brand-500'
                       }`}
                     >
                       Amount
@@ -271,14 +271,14 @@ export function ProjectDonationsTable({
                       )}
                     </button>
                   </th>
-                  <th className="text-left px-1 py-3 text-base font-medium text-giv-gray-900">
+                  <th className="text-left px-1 py-3 text-base font-medium text-giv-neutral-900">
                     <button
                       type="button"
                       onClick={() => handleSort(DonationSortField.ValueUsd)}
-                      className={`flex items-center gap-2 hover:text-giv-primary-500 cursor-pointer ${
+                      className={`flex items-center gap-2 hover:text-giv-brand-500 cursor-pointer ${
                         orderBy === DonationSortField.ValueUsd
-                          ? 'text-giv-primary-500'
-                          : 'text-giv-gray-900 hover:text-giv-primary-500'
+                          ? 'text-giv-brand-500'
+                          : 'text-giv-neutral-900 hover:text-giv-brand-500'
                       }`}
                     >
                       USD Value
@@ -302,7 +302,7 @@ export function ProjectDonationsTable({
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-8 text-center text-base text-giv-gray-700"
+                      className="px-6 py-8 text-center text-base text-giv-neutral-700"
                     >
                       No donations yet
                     </td>
@@ -321,7 +321,7 @@ export function ProjectDonationsTable({
                     return (
                       <tr
                         key={idx}
-                        className="text-base border-b border-giv-gray-300 hover:bg-[#fcfcff] transition-colors"
+                        className="text-base border-b border-giv-neutral-300 hover:bg-giv-brand-000 transition-colors"
                       >
                         <td className="px-1 py-4">{donation.date}</td>
                         <td className="px-1 py-4">
@@ -365,7 +365,7 @@ export function ProjectDonationsTable({
                                 maxDecimals: 2,
                               })}{' '}
                             </span>
-                            <span className="text-giv-gray-800">
+                            <span className="text-giv-neutral-800">
                               {donation.token}
                             </span>
                             <a
@@ -375,9 +375,9 @@ export function ProjectDonationsTable({
                               )}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="hover:text-giv-primary-500 transition-colors"
+                              className="hover:text-giv-brand-500 transition-colors"
                             >
-                              <ExternalLink className="w-3 h-3 text-giv-gray-800" />
+                              <ExternalLink className="w-3 h-3 text-giv-neutral-800" />
                             </a>
                           </div>
                         </td>
@@ -397,7 +397,7 @@ export function ProjectDonationsTable({
             <button
               onClick={handlePrevious}
               disabled={currentPage === 0}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-900 hover:text-giv-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-blue-900 hover:text-giv-brand-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-3 h-3" />
               Prev
@@ -417,8 +417,8 @@ export function ProjectDonationsTable({
                   onClick={() => handlePageClick(pageIndex)}
                   className={`w-7 h-7 text-sm rounded cursor-pointer ${
                     currentPage === pageIndex
-                      ? 'font-medium text-giv-primary-500'
-                      : 'text-giv-gray-600 hover:text-giv-primary-500'
+                      ? 'font-medium text-giv-brand-500'
+                      : 'text-giv-neutral-600 hover:text-giv-brand-500'
                   }`}
                 >
                   {pageIndex + 1}
@@ -427,13 +427,13 @@ export function ProjectDonationsTable({
             })}
 
             {totalPages > 5 && currentPage < totalPages - 3 && (
-              <span className="px-2 text-sm text-giv-gray-600">...</span>
+              <span className="px-2 text-sm text-giv-neutral-600">...</span>
             )}
 
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages - 1}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-900 hover:text-giv-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1 text-sm text-giv-deep-blue-900 hover:text-giv-brand-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               Next
               <ChevronRight className="w-3 h-3" />

@@ -106,11 +106,7 @@ export const TokenIcon = memo(function TokenIcon({
     >
       {isGivbackEligible && (
         <div className="absolute right-0 bottom-1 w-[9px] h-[10px] bg-white rounded-md">
-          <GivBacksEligible
-            width={9}
-            height={10}
-            fill="var(--giv-primary-500)"
-          />
+          <GivBacksEligible width={9} height={10} fill="var(--giv-brand-500)" />
         </div>
       )}
       {localIconUrl ? (
@@ -129,7 +125,7 @@ export const TokenIcon = memo(function TokenIcon({
           <ThirdwebTokenIcon className="h-5 w-5" />
         </TokenProvider>
       ) : (
-        <div className="text-[10px] font-medium text-giv-gray-600">
+        <div className="text-[10px] font-medium text-giv-neutral-600">
           {fallbackLabel}
         </div>
       )}
