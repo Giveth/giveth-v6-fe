@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { PassportBanner } from '@/components/PassportBanner'
-import { AboutTab } from '@/components/project/about-tab'
-import { SimilarProjects } from '@/components/project/AimilarProjects'
+import { AboutTab } from '@/components/project/AboutTab'
 import { AllTimeDonations } from '@/components/project/AllTimeDonations'
 import { DonationCard } from '@/components/project/DonationCard'
 import { GivbacksInfoBox } from '@/components/project/GivbacksInfoBox'
@@ -13,6 +12,7 @@ import { ProjectHero } from '@/components/project/ProjectHero'
 import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
 import { ProjectTabs } from '@/components/project/ProjectTabs'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
+import { SimilarProjects } from '@/components/project/SimilarProjects'
 import { UpdatesTab } from '@/components/project/updates-tab'
 import { useProjectBySlug } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
@@ -72,14 +72,16 @@ export default function ProjectPage() {
             <AllTimeDonations project={project} />
           </div>
         </div>
+      </main>
 
-        {/* Tabs */}
-        <ProjectTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          updatesCount={updatesCount}
-        />
+      {/* Tabs */}
+      <ProjectTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        updatesCount={updatesCount}
+      />
 
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Tab Content */}
         <div className="mt-8">
           {activeTab === 'donations' && (
@@ -135,7 +137,7 @@ export default function ProjectPage() {
 
         {/* Similar Projects */}
         <SimilarProjects projectSlug={slug} />
-      </main>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {
   Facebook,
   Github,
@@ -11,6 +12,7 @@ import {
   Twitter,
   Youtube,
 } from 'lucide-react'
+import { type Route } from 'next'
 import { ensureHttps, getSocialMediaHandle } from '@/lib/social-media'
 
 export type ProjectSocialMedia = {
@@ -19,27 +21,9 @@ export type ProjectSocialMedia = {
   link: string
 }
 
-const SOCIAL_COLORS: Record<string, string> = {
-  facebook: '#4267B2',
-  x: '#26A7DE',
-  twitter: '#26A7DE',
-  instagram: '#8668FC',
-  youtube: '#C4302B',
-  linkedin: '#165FFA',
-  reddit: '#FF5700',
-  discord: '#7289DA',
-  website: '#2EA096',
-  telegram: '#229ED9',
-  github: '#1D1E1F',
-}
-
-function getSocialColor(type: string) {
-  return SOCIAL_COLORS[type.toLowerCase()] ?? SOCIAL_COLORS.website
-}
-
-function SocialIcon({ type, color }: { type: string; color: string }) {
+function SocialIcon({ type }: { type: string }) {
   const t = type.toLowerCase()
-  const props = { size: 18, color, strokeWidth: 2 } as const
+  const props = { size: 18, strokeWidth: 2 } as const
 
   switch (t) {
     case 'facebook':
@@ -74,34 +58,33 @@ export function ProjectSocials({
   if (!socialMedia?.length) return null
 
   return (
-    <div>
-      <div className="font-semibold text-[#1f2333]">
+    <div className="mt-2">
+      <div className="font-semibold text-giv-gray-800">
         Find us on Social Media
       </div>
       <div className="mt-4 flex flex-wrap gap-6">
         {socialMedia.map(social => {
-          const color = getSocialColor(social.type)
           return (
-            <a
+            <Link
               key={social.id || `${social.type}:${social.link}`}
-              href={ensureHttps(social.link)}
+              href={{ pathname: ensureHttps(social.link) as Route }}
               target="_blank"
               rel="noreferrer noopener"
               className="inline-flex"
             >
-              <div className="px-6 py-4 rounded-full bg-[#f3f4f8] shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+              <div className="px-6 py-3 rounded-md border border-giv-gray-300 text-giv-gray-900 hover:bg-giv-gray-300 transition-colors">
                 <div className="flex items-center gap-2">
-                  <SocialIcon type={social.type} color={color} />
-                  <div className="font-semibold" style={{ color }}>
+                  <SocialIcon type={social.type} />
+                  <div className="text-base font-medium">
                     {getSocialMediaHandle(social.link, social.type)}
                   </div>
                 </div>
               </div>
-            </a>
+            </Link>
           )
         })}
       </div>
-      <div className="mt-4 text-[#4b5563] text-sm italic">
+      <div className="mt-4 text-giv-gray-800 text-sm">
         Giveth does NOT verify social media links published by projects, click
         at your own discretion!
       </div>

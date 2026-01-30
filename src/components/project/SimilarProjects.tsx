@@ -18,7 +18,9 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
       <div className="mt-12">
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5326ec] mx-auto"></div>
-          <p className="mt-2 text-[#82899a]">Loading similar projects...</p>
+          <p className="mt-2 text-3xl text-giv-gray-600 font-bold">
+            Loading similar projects...
+          </p>
         </div>
       </div>
     )
@@ -51,7 +53,7 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
   return (
     <div className="mt-12">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-[#5326ec]">
+        <h2 className="text-3xl text-giv-gray-600 font-bold">
           Similar projects
         </h2>
         <div className="flex items-center gap-2">
