@@ -13,6 +13,7 @@ import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import { graphQLClient } from '@/lib/graphql/client'
 import type { TokensByNetworkQuery } from '@/lib/graphql/generated/graphql'
 import { tokensByNetworkQuery } from '@/lib/graphql/queries'
+import { roundAmount } from '@/lib/helpers/numbersHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { GroupedProjects } from '@/lib/types/cart'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
@@ -427,7 +428,7 @@ export const calculateRoundTotalMatchingValue = (
   return cartItems
     .filter(item => item.roundId === roundId)
     .reduce((sum, item) => {
-      const amount = item.estimatedMatchingValue ?? 0
+      const amount = roundAmount(item.estimatedMatchingValue ?? 0)
       return sum + amount
     }, 0)
 }
