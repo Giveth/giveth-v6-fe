@@ -1,35 +1,13 @@
-import { GraphQLClient } from 'graphql-request'
-import { env } from '@/lib/env'
-
-const impactGraphClient = new GraphQLClient(env.IMPACT_GRAPH_URL, {
-  headers: {
-    'Content-Type': 'application/json',
-    'apollo-require-preflight': 'true',
-  },
-})
-
-const userExistsByAddressQuery = `
-  query UserExistsByAddress($address: String!) {
-    userExistsByAddress(address: $address)
-  }
-`
-
-const createUserByAddressMutation = `
-  mutation CreateUserByAddress($address: String!) {
-    createUserByAddress(address: $address) {
-      existing
-      user {
-        id
-        walletAddress
-      }
-    }
-  }
-`
+import { impactGraphClient } from '@/lib/impact-graph/client'
+import {
+  impactGraphCreateUserByAddressMutation,
+  impactGraphUserExistsByAddressQuery,
+} from '@/lib/impact-graph/queries'
 
 export async function userExistsByAddress(address: string): Promise<boolean> {
   const res = await impactGraphClient.request<{
     userExistsByAddress: boolean
-  }>(userExistsByAddressQuery, { address })
+  }>(impactGraphUserExistsByAddressQuery, { address })
   return Boolean(res.userExistsByAddress)
 }
 
@@ -42,7 +20,7 @@ export async function createUserByAddress(address: string): Promise<{
       existing: boolean
       user: { id: number; walletAddress?: string | null }
     }
-  }>(createUserByAddressMutation, { address })
+  }>(impactGraphCreateUserByAddressMutation, { address })
   return res.createUserByAddress.user
 }
 

@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input'
 import { useUpcomingQfRounds } from '@/hooks/useUpcomingQfRounds'
 import { CHAINS } from '@/lib/constants/chain'
 import { env } from '@/lib/env'
-import { graphQLClient } from '@/lib/graphql/client'
-import { projectAddressesBySlugQuery } from '@/lib/graphql/queries'
 import { parseGivethProjectRef } from '@/lib/helpers/qfApplicationGate'
+import { impactGraphClient } from '@/lib/impact-graph/client'
+import { impactGraphProjectBySlugForQfApplyQuery } from '@/lib/impact-graph/queries'
 
 type Props = {
   initialProject?: string
@@ -125,11 +125,20 @@ export default function QfApplyGatePageClient({
 
       const parsed = parseGivethProjectRef(projectInput)
 
-      const project = await graphQLClient.request(projectAddressesBySlugQuery, {
-        slug: parsed.slug,
-      })
+      const projectRes = await impactGraphClient.request<{
+        projectBySlug?: {
+          id: number | string
+          title: string
+          slug: string
+          addresses?: Array<{
+            address?: string | null
+            networkId?: number | null
+            isRecipient?: boolean | null
+          }> | null
+        } | null
+      }>(impactGraphProjectBySlugForQfApplyQuery, { slug: parsed.slug })
 
-      const projectEntity = project.projectAddressesBySlug
+      const projectEntity = projectRes.projectBySlug
 
       if (!projectEntity) {
         throw new Error(
