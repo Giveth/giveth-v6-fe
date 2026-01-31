@@ -1,8 +1,8 @@
 'use client'
 
 import * as Switch from '@radix-ui/react-switch'
+import { HelpTooltip } from '@/components/HelpTooltip'
 import { useCart } from '@/context/CartContext'
-import { HelpTooltip } from '../HelpTooltip'
 
 export function DonateToGiveth() {
   const { givethPercentage, setGivethPercentage } = useCart()
