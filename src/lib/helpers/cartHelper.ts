@@ -9,10 +9,10 @@ import {
   uniswapV2FactoryAbi,
   uniswapV2PairAbi,
 } from '@/lib/abis/abis'
-import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import { graphQLClient } from '@/lib/graphql/client'
 import type { TokensByNetworkQuery } from '@/lib/graphql/generated/graphql'
 import { tokensByNetworkQuery } from '@/lib/graphql/queries'
+import { roundAmount } from '@/lib/helpers/numbersHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { GroupedProjects } from '@/lib/types/cart'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
@@ -427,11 +427,18 @@ export const calculateRoundTotalMatchingValue = (
   return cartItems
     .filter(item => item.roundId === roundId)
     .reduce((sum, item) => {
-      const amount = item.estimatedMatchingValue ?? 0
+      const amount = roundAmount(item.estimatedMatchingValue ?? 0)
       return sum + amount
     }, 0)
 }
 
+/**
+ * Apply the Giveth percentage to the cart items
+ *
+ * @param cartItems - The cart items
+ * @param givethPercentage - The Giveth percentage
+ * @returns The cart items with the Giveth percentage applied
+ */
 export function applyGivethPercentageToCartItems(
   cartItems: ProjectCartItem[],
   givethPercentage: number,
@@ -443,8 +450,6 @@ export function applyGivethPercentageToCartItems(
   const ratio = Math.max(0, 1 - Math.min(percentage, 100) / 100)
 
   return cartItems.map(item => {
-    if (item.id === String(GIVETH_PROJECT_ID)) return item
-
     const amount = Number(item.donationAmount)
     if (!Number.isFinite(amount)) return item
 

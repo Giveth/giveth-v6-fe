@@ -274,11 +274,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           })
 
           const shouldAddGivethDonation =
-            givethPercentage > 0 &&
-            givethPercentage < 100 &&
-            !round.projects.some(
-              project => project.id === String(GIVETH_PROJECT_ID),
-            )
+            givethPercentage > 0 && givethPercentage < 100
 
           if (shouldAddGivethDonation) {
             const givethRecipient = givethProjectData?.project?.addresses?.find(
