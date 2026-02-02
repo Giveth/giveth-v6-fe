@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { CHAINS } from '@/lib/constants/chain'
+import { serverEnv } from '@/lib/env/server'
+import { ChainType } from '@/lib/graphql/generated/graphql'
+
+type DraftChainType = ChainType
 
 type Draft = {
   title: string
@@ -10,7 +14,7 @@ type Draft = {
   categoryIds: number[]
   socialMedia: { type: string; link: string }[]
   recipientAddresses: {
-    chainType: 'EVM' | 'SOLANA' | 'STELLAR'
+    chainType: DraftChainType
     networkId: number
     address: string
   }[]
@@ -19,6 +23,7 @@ type Draft = {
 const requestSchema = z.object({
   message: z.string().min(1),
   draft: z.unknown(),
+  attachmentImageUrl: z.string().min(1).optional(),
   history: z
     .array(
       z.object({
@@ -43,7 +48,11 @@ const patchSchema = z
     recipientAddresses: z
       .array(
         z.object({
-          chainType: z.enum(['EVM', 'SOLANA', 'STELLAR']),
+          chainType: z.enum([
+            ChainType.Evm,
+            ChainType.Solana,
+            ChainType.Stellar,
+          ]),
           networkId: z.number().int(),
           address: z.string(),
         }),
@@ -76,8 +85,8 @@ type PatchOut = {
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
+  const apiKey = serverEnv.OPENAI_API_KEY
+  if (!apiKey?.trim()) {
     return NextResponse.json(
       {
         assistantMessage:
@@ -94,6 +103,11 @@ export async function POST(req: Request) {
 
   const message = parsedReq.data.message
   const draft = sanitizeDraft(parsedReq.data.draft)
+  const attachmentImageUrl =
+    typeof parsedReq.data.attachmentImageUrl === 'string' &&
+    parsedReq.data.attachmentImageUrl.trim()
+      ? parsedReq.data.attachmentImageUrl.trim()
+      : undefined
 
   const supportedEvmNetworkIds = Object.values(CHAINS)
     .filter(c => !c.isTestnet)
@@ -214,6 +228,10 @@ export async function POST(req: Request) {
     '- impactLocation',
     '- socialMedia: array of {type, link}',
     '- recipientAddresses: array of {chainType, networkId, address}.',
+    '',
+    'Attachments:',
+    '- If the user attached an image, you will receive ATTACHED_IMAGE_URL in the prompt.',
+    '- Do NOT set image unless the user explicitly asks to use the attached image as the project image.',
   ].join('\n')
 
   const history = Array.isArray(parsedReq.data.history)
@@ -222,6 +240,9 @@ export async function POST(req: Request) {
   const user = [
     'CURRENT_DRAFT_JSON:',
     JSON.stringify(draft),
+    '',
+    'ATTACHED_IMAGE_URL:',
+    attachmentImageUrl ?? '(none)',
     '',
     'RECENT_CHAT_HISTORY:',
     history
@@ -233,14 +254,18 @@ export async function POST(req: Request) {
     message,
   ].join('\n')
 
-  const openAiRes = await fetch('https://api.openai.com/v1/responses', {
+  const openAiUrl = new URL(
+    '/v1/responses',
+    serverEnv.OPENAI_BASE_URL,
+  ).toString()
+  const openAiRes = await fetch(openAiUrl, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-5-mini',
+      model: serverEnv.OPENAI_MODEL || 'gpt-5-mini',
       input: [
         { role: 'system', content: [{ type: 'input_text', text: system }] },
         { role: 'user', content: [{ type: 'input_text', text: user }] },
@@ -341,12 +366,12 @@ function sanitizeDraft(input: unknown): Draft {
             ? (item as Record<string, unknown>)
             : ({} as Record<string, unknown>)
           const chainTypeRaw = toStringOrEmpty(rec['chainType']).toUpperCase()
-          const chainType: Draft['recipientAddresses'][number]['chainType'] =
+          const chainType: DraftChainType =
             chainTypeRaw === 'SOLANA'
-              ? 'SOLANA'
+              ? ChainType.Solana
               : chainTypeRaw === 'STELLAR'
-                ? 'STELLAR'
-                : 'EVM'
+                ? ChainType.Stellar
+                : ChainType.Evm
 
           return {
             chainType,
