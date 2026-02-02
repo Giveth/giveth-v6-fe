@@ -80,8 +80,12 @@ export function QFProjectCard({
     : `/project/${project.slug}`
 
   const contentContainerHeight = isMobile
-    ? 'h-[580px]'
-    : 'h-[580px] md:h-[505px]'
+    ? isActiveRound
+      ? 'h-[580px]'
+      : 'h-[485px]'
+    : isActiveRound
+      ? 'h-[580px] md:h-[505px]'
+      : 'h-[380px] md:h-[495px]'
   return (
     <div
       className={clsx(
@@ -107,7 +111,7 @@ export function QFProjectCard({
       <div
         className={clsx(
           'absolute bottom-0 left-0 right-0 z-20 top-[140px] bg-white pt-5 pb-5 px-5 rounded-t-2xl',
-          'transition-transform duration-500 ease-out transform translate-y-[68px] group-hover:translate-y-0',
+          `transition-transform duration-500 ease-out transform translate-y-[${isActiveRound ? '68px' : '0px'}] group-hover:translate-y-0`,
           'shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[370px] flex flex-col pointer-events-auto',
         )}
       >
