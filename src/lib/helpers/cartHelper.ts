@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getContract, readContract } from 'thirdweb'
 import { defineChain } from 'thirdweb/chains'
 import { balanceOf } from 'thirdweb/extensions/erc20'
+import { getWalletBalance } from 'thirdweb/wallets'
 import { formatUnits } from 'viem'
 import { type ProjectCartItem } from '@/context/CartContext'
 import {
@@ -24,6 +25,7 @@ const MAINNET_USDC_ADDRESS = '0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const MAINNET_USDC_DECIMALS = 6
 const MAINNET_WETH_USD_FEED_ADDRESS =
   '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const
 
 /**
  * Group cart items by round
@@ -99,22 +101,55 @@ export function useWalletTokens(
 
       const results = await Promise.allSettled(
         tokens.map(async token => {
-          // Skip invalid ERC20 definitions
-          if (!token.address) return null
+          const isNativeToken =
+            !token.address ||
+            token.address === ZERO_ADDRESS ||
+            token.address === ''
 
           try {
+            // Native token (ETH / xDAI / etc) balance is not an ERC20 contract call.
+            if (isNativeToken) {
+              const native = await getWalletBalance({
+                client: thirdwebClient,
+                chain,
+                address: accountAddress!,
+              })
+
+              const decimals = token.decimals ?? native.decimals ?? 18
+              const symbol = token.symbol || native.symbol || ''
+              const name = token.name || symbol
+
+              const value = native.value ?? BigInt(0)
+              const displayValue =
+                native.displayValue ?? formatUnits(value, decimals)
+
+              const priceInUSD = 0
+
+              return {
+                address: ZERO_ADDRESS,
+                symbol,
+                decimals,
+                name,
+                chainId: selectedChainId,
+                balance: String(value),
+                formattedBalance: displayValue,
+                priceInUSD,
+                isGivbackEligible: token.isGivbacksEligible,
+                coingeckoId: token.coingeckoId ?? null,
+              } satisfies WalletTokenWithBalance
+            }
+
+            // ERC20 token balance
             const contract = getContract({
               client: thirdwebClient,
               chain,
-              address: token.address,
+              address: token.address as `0x${string}`,
             })
 
             const balance = await balanceOf({
               contract,
               address: accountAddress!,
             })
-
-            // if (balance === 0n) return null
 
             const priceInUSD = 0
 
