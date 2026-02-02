@@ -118,8 +118,6 @@ export default function QFRoundPage() {
     )
   }
 
-  console.log('qfRound', qfRound)
-
   return (
     <div className="min-h-screen bg-giv-neutral-200">
       {/* Passport Banner */}
