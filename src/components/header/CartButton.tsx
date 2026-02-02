@@ -21,11 +21,11 @@ export function CartButton() {
   }, [])
 
   return (
-    <div className="relative" ref={cartRef}>
+    <div className="md:relative" ref={cartRef}>
       <button
         onClick={() => setIsCartOpen(!isCartOpen)}
         className={clsx(
-          'relative inline-flex items-center justify-center py-2.5 px-3',
+          'md:relative inline-flex items-center justify-center py-1 md:py-2.5 px-3',
           'hover:bg-giv-brand-50 rounded-md transition-colors border border-giv-brand-100 cursor-pointer',
           'text-giv-brand-600!',
         )}

@@ -199,9 +199,9 @@ export function DonationSummary({
               {/* Toggle */}
               <div className="py-3">
                 {/* Processing Status */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap md:flex-nowrap items-center justify-between mb-3">
                   <div
-                    className={`flex items-center gap-2 px-3 py-1.5 ${
+                    className={`flex items-center w-full md:w-auto gap-2 px-3 py-1.5 mb-3 md:mb-0 ${
                       status?.status === 'success'
                         ? 'text-green-700 border-green-300'
                         : status?.status === 'error' ||
@@ -233,6 +233,7 @@ export function DonationSummary({
                     onClick={() => toggleRound(roundKey)}
                     className={clsx(
                       'flex items-center gap-1 text-base font-medium',
+                      'w-full md:w-auto',
                       'text-giv-neutral-900 hover:text-giv-brand-500',
                       'bg-giv-neutral-200 rounded-md px-3 py-2',
                       'transition-colors cursor-pointer',
@@ -255,7 +256,7 @@ export function DonationSummary({
                       <div
                         key={project.id}
                         className={clsx(
-                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base',
+                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-xs md:text-base',
                           'text-giv-neutral-900 font-normal',
                         )}
                       >
@@ -276,7 +277,7 @@ export function DonationSummary({
                   <div className="text-giv-neutral-700 text-sm font-normal mt-2">
                     <div
                       key={GIVETH_PROJECT_ID}
-                      className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-800 font-normal"
+                      className="w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-xs md:text-base text-giv-neutral-800 font-normal"
                     >
                       {/* Amount */}
                       <span className="font-medium">

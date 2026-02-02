@@ -78,7 +78,7 @@ export function HeaderConnectWallet() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={clsx(
-            'flex items-center gap-3 px-4 py-[10px] lg:py-3 bg-white rounded-md',
+            'flex items-center gap-1 md:gap-3 px-2 md:px-4 py-[6px] md:py-[10px] lg:py-3 bg-white rounded-md',
             'hover:opacity-85 transition-all duration-200',
             'border border-giv-brand-100 cursor-pointer',
             'text-xs lg:text-sm text-giv-brand-600! font-bold',
@@ -88,7 +88,7 @@ export function HeaderConnectWallet() {
           <ChainIcon networkId={chain?.id || 0} />
 
           {/* Address and Network Info */}
-          <div className="flex flex-col items-start">
+          <div className="hidden md:flex flex-col items-start">
             {(user && getUserName(user)) || (
               <EnsName address={account.address as Address as `0x${string}`} />
             )}

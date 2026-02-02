@@ -178,10 +178,10 @@ export function SuccessDonationSummary() {
 
               {/* Toggle */}
               <div className="py-3 mt-2">
-                <div className="flex justify-between mb-3">
-                  <div className="flex flex-col items-start gap-2">
+                <div className="flex flex-wrap md:flex-nowrap justify-between mb-3">
+                  <div className="flex flex-col items-start gap-2 w-full md:w-auto">
                     {isSuccess ? (
-                      <div className="inline-flex w-auto items-center gap-2 px-3 py-2.5 bg-giv-neutral-200 rounded-md border border-giv-neutral-400">
+                      <div className="inline-flex w-full md:w-auto items-center gap-2 px-3 py-2.5 bg-giv-neutral-200 rounded-md border border-giv-neutral-400">
                         <div className="flex items-center gap-2 text-sm font-medium text-giv-success-500">
                           <span>
                             <CircleCheck className="w-4 h-4" />
@@ -215,6 +215,7 @@ export function SuccessDonationSummary() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={clsx(
+                          'w-full md:w-auto mb-3 md:mb-0',
                           'mt-2 inline-flex items-center gap-2 text-base font-medium text-giv-brand-500',
                           'bg-giv-neutral-200 rounded-md px-3 py-2 border border-giv-brand-500 hover:opacity-85',
                         )}
@@ -231,6 +232,7 @@ export function SuccessDonationSummary() {
                   <button
                     onClick={() => toggleRound(roundKey)}
                     className={clsx(
+                      'w-full md:w-auto',
                       'flex items-center gap-1 h-12 px-3 py-2 text-base font-medium text-giv-neutral-900 hover:text-giv-brand-500',
                       'bg-giv-neutral-200 rounded-md transition-colors cursor-pointer',
                     )}
@@ -252,7 +254,8 @@ export function SuccessDonationSummary() {
                       <div
                         key={project.id}
                         className={clsx(
-                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-900 font-normal',
+                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md',
+                          'text-xs md:text-base text-giv-neutral-900 font-normal',
                         )}
                       >
                         <span className="font-medium">
@@ -269,7 +272,8 @@ export function SuccessDonationSummary() {
                     <div className="space-y-2 flex flex-col items-start gap-2 mt-2">
                       <div
                         className={clsx(
-                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md text-base text-giv-neutral-900 font-normal',
+                          'w-auto inline-flex items-center gap-3 py-2 px-3 bg-giv-neutral-200 rounded-md',
+                          'text-xs md:text-base text-giv-neutral-900 font-normal',
                         )}
                       >
                         <span className="font-medium">

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowRight, X } from 'lucide-react'
+import { IconUnstakeDonate } from '@/components/icons/IconUnstakeDonate'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
@@ -27,7 +28,13 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
   )
 
   return (
-    <div className="absolute right-0 top-full px-5 mt-2 w-[380px] bg-white rounded-3xl shadow-[0px_3px_20px_rgba(33,32,60,0.24)] z-50">
+    <div
+      className={clsx(
+        'absolute right-0 top-full px-5 mt-2',
+        'w-full md:w-[380px]',
+        'bg-white rounded-3xl shadow-[0px_3px_20px_rgba(33,32,60,0.24)] z-50',
+      )}
+    >
       {/* Header */}
       <div className="py-4 border-b border-giv-neutral-300">
         <h3 className="text-sm font-medium text-giv-neutral-700">Donate</h3>
@@ -35,10 +42,14 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
 
       {/* Empty State */}
       {cartItems.length === 0 && (
-        <div className="p-8 text-center">
-          <p className="text-sm text-giv-neutral-700">Your cart is empty</p>
-          <p className="text-xs text-giv-neutral-700 mt-2">
-            Add projects to your cart to get started
+        <div className="p-8 text-center flex flex-col items-center justify-center">
+          <IconUnstakeDonate
+            width={32}
+            height={32}
+            fill="var(--giv-neutral-700)"
+          />
+          <p className="text-sm font-semibold text-giv-neutral-700 mt-2">
+            Add projects to cart to donate
           </p>
         </div>
       )}
@@ -141,8 +152,8 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
               href={'/cart' as Route}
               onClick={onClose}
               className={clsx(
-                'w-full py-3 bg-giv-brand-500 text-white! rounded-3xl text-xs font-bold',
-                'flex items-center justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer',
+                'flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-md',
+                'transition-colors bg-giv-brand-300 text-white! hover:bg-giv-brand-400 cursor-pointer',
               )}
             >
               Donate
