@@ -23,7 +23,6 @@ export function AiChatPanel({
   const { token } = useSiweAuth()
   const draft = useCreateProjectDraftStore(s => s.draft)
   const applyPatch = useCreateProjectDraftStore(s => s.applyPatch)
-  const setImage = useCreateProjectDraftStore(s => s.setImage)
 
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -74,11 +73,13 @@ export function AiChatPanel({
     const text = raw.trim()
     if (!text || isSending || isUploadingImage) return
 
+    const attachmentImageUrl = attachedImageUrl
+
     setError(null)
     setIsSending(true)
     setInput('')
     // Match ChatGPT behavior: once you send a message, clear the local attachment preview.
-    // (We keep the uploaded URL in the draft state.)
+    // (This is an attachment only; it should not auto-fill the sidebar image field.)
     setAttachedImageUrl(null)
     resetComposerHeight(composerRef.current)
     setMessages(prev => [
@@ -95,6 +96,7 @@ export function AiChatPanel({
         body: JSON.stringify({
           message: text,
           draft,
+          attachmentImageUrl: attachmentImageUrl || undefined,
           history: messages.slice(-12),
         }),
       })
@@ -148,17 +150,7 @@ export function AiChatPanel({
     setAttachedImageUrl(null)
     try {
       const url = await uploadImageFile({ file, token })
-      setImage(url)
       setAttachedImageUrl(url)
-      setMessages(prev => [
-        ...prev,
-        {
-          id: cryptoId(),
-          role: 'assistant',
-          content: `Uploaded image and set it as your project image.\n${url}`,
-        },
-      ])
-      scrollToBottom()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Image upload failed')
     } finally {
@@ -225,7 +217,6 @@ export function AiChatPanel({
                   disabled={isUploadingImage}
                   onClick={() => {
                     setAttachedImageUrl(null)
-                    setImage('')
                   }}
                 >
                   <X className="size-4" />

@@ -339,6 +339,15 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
           if (!id || !slug) {
             throw new Error('Project created but response was incomplete.')
           }
+
+          // After successful publish, clear the draft
+          localStorage.removeItem('giveth-create-project-draft')
+          set({
+            draft: { ...initialDraft },
+            errors: {},
+            submitError: undefined,
+          })
+
           return { id, slug }
         } catch (e) {
           const msg =
@@ -355,7 +364,19 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
     {
       name: 'giveth-create-project-draft',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      // Only persist the draft fields. Errors/submitError are UI state and
+      // should not survive refreshes (avoid "stuck" error messages).
+      partialize: state => ({ draft: state.draft }),
+      version: 2,
+      migrate: (persisted, version) => {
+        // v1 stored the whole store shape (including errors). Drop everything
+        // except the draft when rehydrating older persisted states.
+        if (version < 2) {
+          const p = persisted as Partial<CreateProjectDraftState> | undefined
+          return { draft: p?.draft ?? initialDraft }
+        }
+        return persisted as unknown as Partial<CreateProjectDraftState>
+      },
     },
   ),
 )
