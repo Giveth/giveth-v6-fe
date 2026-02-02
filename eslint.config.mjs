@@ -17,6 +17,8 @@ export default [
       '**/*.config.mjs',
       '**/next-env.d.ts',
       '**/public/**',
+      // Codegen output
+      '**/src/lib/graphql/generated/**',
     ],
   },
   {

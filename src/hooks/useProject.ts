@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
 import {
+  DonationSortField,
+  SortDirection,
+} from '@/lib/graphql/generated/graphql'
+import {
   donationsByProjectQuery,
+  projectByIDQuery,
   projectBySlugQuery,
-  projectsQuery,
   similarProjectsBySlugQuery,
 } from '@/lib/graphql/queries'
 
@@ -22,11 +26,23 @@ export const useProjectDonations = (
   skip: number = 0,
   take: number = 10,
   qfRoundId?: number,
+  orderBy?: DonationSortField,
+  orderDirection?: SortDirection,
 ) => {
   return useQuery({
-    queryKey: ['donationsByProject', projectId, skip, take, qfRoundId],
+    queryKey: [
+      'donationsByProject',
+      projectId,
+      skip,
+      take,
+      qfRoundId,
+      orderBy || DonationSortField.CreatedAt,
+      orderDirection || SortDirection.Desc,
+    ],
     queryFn: async () => {
       return graphQLClient.request(donationsByProjectQuery, {
+        orderBy: orderBy || DonationSortField.CreatedAt,
+        orderDirection: orderDirection || SortDirection.Desc,
         projectId,
         skip,
         take,
@@ -34,18 +50,9 @@ export const useProjectDonations = (
       })
     },
     enabled: !!projectId,
-  })
-}
-
-export const useProjects = (skip: number = 0, take: number = 10) => {
-  return useQuery({
-    queryKey: ['projects', skip, take],
-    queryFn: async () => {
-      return graphQLClient.request(projectsQuery, {
-        skip,
-        take,
-      })
-    },
+    // This table is interactive (filter/sort/pagination). We prefer refetching
+    // whenever the params change, even if the query key was used recently.
+    staleTime: 0,
   })
 }
 
@@ -64,5 +71,21 @@ export const useSimilarProjectsBySlug = (
       })
     },
     enabled: !!slug,
+  })
+}
+
+/**
+ * Hook to get a project by its ID
+ *
+ * @param projectId - The ID of the project
+ * @returns The project
+ */
+export const useProjectById = (projectId: number) => {
+  return useQuery({
+    queryKey: ['projectById', projectId],
+    queryFn: async () => {
+      return graphQLClient.request(projectByIDQuery, { id: projectId })
+    },
+    enabled: !!projectId,
   })
 }

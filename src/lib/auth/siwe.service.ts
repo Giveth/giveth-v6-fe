@@ -1,7 +1,8 @@
 import { GraphQLClient } from 'graphql-request'
 import { SiweMessage } from 'siwe'
+import { env } from '@/lib/env'
 import { verifySiweTokenMutation } from '@/lib/graphql/mutations'
-import { meQuery } from '@/lib/graphql/queries'
+import { userProfileQuery } from '@/lib/graphql/queries'
 
 interface SiweAuthResponse {
   jwt: string
@@ -24,6 +25,20 @@ interface CoreAuthResponse {
   }
 }
 
+// interface CheckWalletUserResponse {
+//   checkWalletUser: {
+//     success: boolean
+//     user?: {
+//       id: number
+//       email?: string
+//       name?: string
+//       avatar?: string
+//       primaryWallet?: string
+//     }
+//     error?: string
+//   }
+// }
+
 interface User {
   id: number
   email?: string
@@ -42,11 +57,8 @@ export class SiweService {
   private graphqlClient: GraphQLClient
 
   constructor() {
-    this.siweAuthServiceUrl =
-      process.env.NEXT_PUBLIC_SIWE_AUTH_SERVICE_URL || 'https://auth.giveth.io'
-    this.coreServiceUrl =
-      process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-      'http://localhost:4000/graphql'
+    this.siweAuthServiceUrl = env.SIWE_AUTH_SERVICE_URL
+    this.coreServiceUrl = env.GRAPHQL_ENDPOINT
     this.graphqlClient = new GraphQLClient(this.coreServiceUrl)
   }
 
@@ -141,7 +153,7 @@ export class SiweService {
         },
       })
 
-      const response = await client.request<{ me: User }>(meQuery)
+      const response = await client.request<{ me: User }>(userProfileQuery)
 
       if (response.me) {
         // Find primary wallet from user's wallets
@@ -166,16 +178,43 @@ export class SiweService {
     }
   }
 
+  // async checkWalletUser(
+  //   walletAddress: string,
+  // ): Promise<{ success: boolean; user?: User; error?: string }> {
+  //   try {
+  //     const result = await this.graphqlClient.request<CheckWalletUserResponse>(
+  //       checkWalletUserMutation,
+  //       { walletAddress },
+  //     )
+
+  //     if (result.checkWalletUser.success && result.checkWalletUser.user) {
+  //       return {
+  //         success: true,
+  //         user: result.checkWalletUser.user,
+  //       }
+  //     } else {
+  //       return {
+  //         success: false,
+  //         error: result.checkWalletUser.error || 'Failed to check wallet user',
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking wallet user:', error)
+  //     return { success: false, error: 'Failed to check wallet user' }
+  //   }
+  // }
+
   async signInWithEthereum(
     address: string,
     signMessage: (message: string) => Promise<string>,
+    chainId?: number,
   ): Promise<CoreAuthResponse> {
     try {
       // Step 1: Get nonce from SIWE auth service
       const nonce = await this.getNonce()
 
       // Step 2: Create SIWE message
-      const siweMessage = this.createSiweMessage(address, nonce)
+      const siweMessage = this.createSiweMessage(address, nonce, chainId)
 
       // Step 3: Get user's signature
       const signature = await signMessage(siweMessage.toMessage())
@@ -200,6 +239,28 @@ export class SiweService {
     } catch (error) {
       console.error('Error in SIWE sign-in flow:', error)
       throw error
+    }
+  }
+
+  async invalidateToken(jwt: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.siweAuthServiceUrl}/v1/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jwt }),
+      })
+
+      if (!response.ok) {
+        console.warn('Failed to invalidate token on server')
+        return false
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error invalidating token:', error)
+      return false
     }
   }
 }

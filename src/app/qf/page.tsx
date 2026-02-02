@@ -1,50 +1,17 @@
-import { ActiveRounds } from '../../components/hub/active-rounds'
-import { ClosedRounds } from '../../components/hub/closed-rounds'
-import { HubHero } from '../../components/hub/hub-hero'
+import { ActiveRounds } from '@/components/hub/ActiveRounds'
+import { ClosedRounds } from '@/components/hub/ClosedRounds'
+import { HubHero } from '@/components/hub/HubHero'
+import { PassportBanner } from '@/components/PassportBanner'
 
 export default function HubPage() {
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
+    <div className="min-h-screen bg-giv-neutral-200">
       {/* Matching Banner */}
-      <div className="bg-[#1b1657] py-2.5 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-[#37b4a9] flex items-center justify-center">
-            <svg
-              className="w-3 h-3 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <span className="text-white text-sm">
-            You donations are eligible to be matched!{' '}
-            <a
-              href="#"
-              className="underline hover:text-[#d2fffb] inline-flex items-center gap-1"
-            >
-              Go to Passport
-              <svg
-                className="w-3 h-3"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
-            </a>
-          </span>
-        </div>
-      </div>
+      <PassportBanner />
 
       <HubHero />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto mt-1 pb-16">
         <ActiveRounds />
         <ClosedRounds />
       </main>

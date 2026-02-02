@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
+import { clsx } from 'clsx'
 import { ChevronDown } from 'lucide-react'
 import { z } from 'zod'
 
@@ -28,7 +29,12 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
       >
         <Link
           href={{ pathname: href }}
-          className="flex justify-between md:justify-start items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 p-3 hover:bg-giv-primary-50 rounded-lg transition-colors"
+          className={clsx(
+            'flex justify-between md:justify-start items-center gap-1',
+            'text-sm font-semibold text-giv-neutral-900 hover:text-giv-brand-500',
+            'p-3 hover:bg-giv-brand-50 rounded-md transition-colors',
+            menuOpen && 'bg-giv-brand-50',
+          )}
         >
           {label}
           <ChevronDown
@@ -39,12 +45,21 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
         </Link>
         {/* Dropdown Menu */}
         {menuOpen && (
-          <div className="md:absolute top-full left-0 w-48 bg-white md:rounded-lg md:shadow-lg p-4 z-50 animate-slide-in">
+          <div
+            className={clsx(
+              'md:absolute top-full left-0 w-48 bg-white md:rounded-lg md:shadow-lg p-4 z-50 animate-slide-in',
+              menuOpen && 'bg-giv-brand-50',
+            )}
+          >
             {submenu.map(item => (
               <Link
                 key={item.label}
                 href={{ pathname: item.href }}
-                className="flex items-center gap-1 text-sm font-medium text-giv-gray-900 hover:text-giv-primary-500 px-4 py-3 mb-2 hover:bg-giv-primary-50 rounded-md transition-colors"
+                className={clsx(
+                  'flex items-center gap-1',
+                  'text-sm font-medium text-giv-neutral-900 hover:text-giv-brand-500',
+                  'px-4 py-3 mb-2 hover:bg-giv-brand-50 rounded-md transition-colors',
+                )}
               >
                 {item.label}
               </Link>
@@ -57,7 +72,11 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
     return (
       <Link
         href={{ pathname: href }}
-        className="flex items-center gap-1 text-base font-medium text-giv-gray-900 hover:text-giv-primary-500 p-3 hover:bg-giv-primary-50 rounded-lg transition-colors"
+        className={clsx(
+          'flex items-center gap-1',
+          'text-sm font-semibold text-giv-neutral-900 hover:text-giv-brand-500',
+          'p-3 hover:bg-giv-brand-50 rounded-md transition-colors',
+        )}
       >
         {label}
       </Link>

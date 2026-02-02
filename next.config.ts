@@ -1,6 +1,5 @@
+import { isProd } from './src/lib/env'
 import type { NextConfig } from 'next'
-
-const isProd = process.env.NODE_ENV === 'production'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -36,6 +35,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'ipfs.io' },
       { protocol: 'https', hostname: '**.ipfs.w3s.link' },
       { protocol: 'https', hostname: 'giveth.mypinata.cloud' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
   logging: {

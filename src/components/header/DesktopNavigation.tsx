@@ -1,8 +1,8 @@
-import { menuItems } from './DefaultHeader'
+import { menuItems } from '@/lib/constants/menu-links'
 import { MenuLink } from './MenuLink'
 import { SearchButton } from './SearchButton'
 
-export function DesktopNavigation() {
+export function DesktopNavigation({ hideSearch }: { hideSearch?: boolean }) {
   return (
     <nav className="hidden md:flex items-center gap-6">
       {menuItems.map(item => (
@@ -14,7 +14,7 @@ export function DesktopNavigation() {
         />
       ))}
 
-      <SearchButton />
+      {!hideSearch && <SearchButton />}
     </nav>
   )
 }

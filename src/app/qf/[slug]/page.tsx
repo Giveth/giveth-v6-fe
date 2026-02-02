@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
-import { type QFFiltersState } from '@/components/qf/components/qf-project-filters'
-import { QFHero } from '@/components/qf/qf-hero'
-import { QFProjectsGrid } from '@/components/qf/qf-projects-grid'
-import { QFStats } from '@/components/qf/qf-stats'
+import { PassportBanner } from '@/components/PassportBanner'
+import { type QFFiltersState } from '@/components/qf/components/QFProjectFilters'
+import { QFHero } from '@/components/qf/QFHero'
+import { QFProjectsGrid } from '@/components/qf/QFProjectsGrid'
+import { QFStats } from '@/components/qf/QFStats'
 import { useProjects } from '@/hooks/useProjects'
 import { useQfRoundBySlug } from '@/hooks/useQfRoundBySlug'
 import { useQfRoundStats } from '@/hooks/useQfRoundStats'
+import { NETWORK_FILTERS_NAME_TO_ID } from '@/lib/constants/round-constants'
 import {
   type ProjectEntity,
   ProjectSortField,
@@ -30,6 +31,26 @@ export default function QFRoundPage() {
     eligibleForMatching: false,
     networks: [],
   })
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim())
+    }, 700)
+    return () => clearTimeout(t)
+  }, [searchTerm])
+
+  // If user clears search, don't keep "Best match" selected (it won't be available)
+  useEffect(() => {
+    if (
+      debouncedSearchTerm.length < 2 &&
+      sortField === ProjectSortField.Relevance
+    ) {
+      setSortField(ProjectSortField.QualityScore)
+      setSortDirection('DESC')
+    }
+  }, [debouncedSearchTerm, sortField])
 
   // 1. Fetch Round Info
   const { data: roundData, isLoading: isRoundLoading } = useQfRoundBySlug(slug)
@@ -43,12 +64,24 @@ export default function QFRoundPage() {
   const stats = statsData?.qfRoundStats
 
   // 3. Fetch Projects
-  const { data: projectsData, isLoading: isProjectsLoading } = useProjects({
+  const networkIds =
+    filters.networks
+      .map(n => NETWORK_FILTERS_NAME_TO_ID[n])
+      .filter((id): id is number => Number.isInteger(id)) || []
+
+  const {
+    data: projectsData,
+    isLoading: isProjectsLoading,
+    isFetching: isProjectsFetching,
+  } = useProjects({
     filters: {
       qfRoundId: roundId,
       isGivbacksEligible: filters.isGivbacksEligible || undefined,
       vouched: filters.eligibleForMatching || undefined,
-      // Note: Networks filtering is not currently supported by the backend ProjectFiltersInput
+      networkIds: networkIds.length > 0 ? networkIds : undefined,
+      // Avoid triggering expensive backend search for 0-1 char inputs (noise + can be slow in prod DBs)
+      searchTerm:
+        debouncedSearchTerm.length >= 2 ? debouncedSearchTerm : undefined,
     },
     orderBy: sortField,
     orderDirection:
@@ -58,6 +91,7 @@ export default function QFRoundPage() {
 
   const projects = (projectsData?.projects?.projects as ProjectEntity[]) || []
   const totalProjects = projectsData?.projects?.total || 0
+  const hasProjectsData = !!projectsData?.projects
 
   const handleSortChange = (
     field: ProjectSortField,
@@ -70,7 +104,7 @@ export default function QFRoundPage() {
   if (isRoundLoading) {
     // Basic loading state
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         Loading...
       </div>
     )
@@ -78,41 +112,27 @@ export default function QFRoundPage() {
 
   if (!qfRound) {
     return (
-      <div className="min-h-screen bg-[#f7f7f9] flex items-center justify-center">
+      <div className="min-h-screen bg-giv-neutral-200 flex items-center justify-center">
         Round not found
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f9]">
-      {/* Matching Banner */}
-      <div className="bg-[#1b1657] py-3 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-white text-sm">
-          <div className="w-5 h-5 rounded-full bg-[#37b4a9] flex items-center justify-center">
-            <svg className="w-3 h-3" fill="white" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <span>You donations are eligible to be matched!</span>
-          <a
-            href="#"
-            className="font-semibold underline flex items-center gap-1 hover:text-[#e7e1ff]"
-          >
-            Go to Passport
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </div>
+    <div className="min-h-screen bg-giv-neutral-200">
+      {/* Passport Banner */}
+      <PassportBanner />
 
-      <QFHero title={qfRound.title || qfRound.name} endDate={qfRound.endDate} />
+      <QFHero
+        bannerImage={qfRound.bannerBgImage ?? undefined}
+        bannerFull={qfRound.bannerFull ?? undefined}
+        bannerMobile={qfRound.bannerMobile ?? undefined}
+        title={qfRound.title || qfRound.name}
+        endDate={qfRound.endDate}
+      />
 
       <QFStats
-        matchingPool={qfRound.allocatedFundUSD || 0} // requires update to query to fetch this field
+        matchingPool={qfRound.allocatedFundUSD || 0}
         totalDonations={stats?.totalDonationsUsd || 0}
         donationsCount={stats?.donationsCount || 0}
         beginDate={qfRound.beginDate}
@@ -121,11 +141,16 @@ export default function QFRoundPage() {
 
       <main className="max-w-7xl mx-auto px-6 pb-16">
         <QFProjectsGrid
+          isActiveRound={qfRound.isActive ?? false}
           projects={projects}
           isLoading={isProjectsLoading}
+          isFetching={isProjectsFetching}
+          hasProjectsData={hasProjectsData}
           roundId={roundId}
           roundName={qfRound.title || qfRound.name}
           totalProjects={totalProjects}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
           currentSortField={sortField}
           currentSortDirection={sortDirection}
           onSortChange={handleSortChange}

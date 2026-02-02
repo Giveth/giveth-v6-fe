@@ -79,14 +79,16 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                       onMouseLeave={() => setHoveredProjectId(null)}
                     >
                       <button
-                        onClick={() => removeFromCart(project.id)}
+                        onClick={() =>
+                          removeFromCart(project.roundId ?? 0, project.id)
+                        }
                         className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                           hoveredProjectId === project.id
                             ? 'w-[180px] gap-2 rounded-full border border-gray-300 bg-white px-4 py-2'
                             : 'h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200'
                         }`}
                       >
-                        <Cross2Icon className="h-4 w-4 flex-shrink-0 text-gray-600" />
+                        <Cross2Icon className="h-4 w-4 shrink-0 text-gray-600" />
                         {hoveredProjectId === project.id && (
                           <span className="animate-slide-in whitespace-nowrap text-sm font-medium text-gray-700">
                             Remove from cart
@@ -135,14 +137,14 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                           onMouseLeave={() => setHoveredProjectId(null)}
                         >
                           <button
-                            onClick={() => removeFromCart(project.id)}
+                            onClick={() => removeFromCart(0, project.id)}
                             className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                               hoveredProjectId === project.id
                                 ? 'w-[180px] gap-2 rounded-full border border-gray-300 bg-white px-4 py-2'
                                 : 'h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200'
                             }`}
                           >
-                            <Cross2Icon className="h-4 w-4 flex-shrink-0 text-gray-600" />
+                            <Cross2Icon className="h-4 w-4 shrink-0 text-gray-600" />
                             {hoveredProjectId === project.id && (
                               <span className="animate-slide-in whitespace-nowrap text-sm font-medium text-gray-700">
                                 Remove from cart
@@ -163,7 +165,7 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
           <Link
             href="/cart"
             onClick={onClose}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#5326ec] py-4 text-base font-bold text-white transition-all hover:bg-[#4520c7]"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-giv-brand-500 py-4 text-base font-bold text-white transition-all hover:bg-giv-brand-400"
           >
             Checkout To Donate
             <svg

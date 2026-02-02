@@ -1,4 +1,4 @@
-import { Red_Hat_Text } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { Providers } from '@/app/providers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -8,14 +8,17 @@ import type { Metadata } from 'next'
 
 import './globals.css'
 
-const redHatText = Red_Hat_Text({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-red-hat-text',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
   title: 'Giveth',
   description: 'The Future of Giving',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
@@ -25,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={redHatText.className}>
+      <body className={`${inter.variable}`}>
         <Providers>
           <CartProvider>
             <Header />

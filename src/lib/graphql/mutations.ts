@@ -1,4 +1,6 @@
-export const createProjectMutation = `
+import { graphql } from './generated'
+
+export const createProjectMutation = graphql(`
   mutation CreateProject($input: CreateProjectInput!) {
     createProject(input: $input) {
       id
@@ -18,12 +20,19 @@ export const createProjectMutation = `
         id
         address
         networkId
+        chainType
+        memo
+      }
+      socialMedia {
+        id
+        type
+        link
       }
     }
   }
-`
+`)
 
-export const updateProjectMutation = `
+export const updateProjectMutation = graphql(`
   mutation UpdateProject($projectId: Int!, $input: UpdateProjectInput!) {
     updateProject(projectId: $projectId, input: $input) {
       id
@@ -42,31 +51,36 @@ export const updateProjectMutation = `
         address
         networkId
         chainType
-        title
+        memo
+      }
+      socialMedia {
+        id
+        type
+        link
       }
     }
   }
-`
+`)
 
-export const updateProfileMutation = `
-  mutation UpdateProfile($input: UpdateUserInput!) {
-    updateUser(input: $input) {
-      id
-      email
-      firstName
-      lastName
-      name
-      avatar
-      url
-      location
-      twitterName
-      telegramName
-      isEmailVerified
-    }
-  }
-`
+// export const updateProfileMutation = graphql(`
+//   mutation UpdateProfile($input: UpdateUserInput!) {
+//     updateUser(input: $input) {
+//       id
+//       email
+//       firstName
+//       lastName
+//       name
+//       avatar
+//       url
+//       location
+//       twitterName
+//       telegramName
+//       isEmailVerified
+//     }
+//   }
+// `)
 
-export const requestEmailVerificationMutation = `
+export const requestEmailVerificationMutation = graphql(`
   mutation RequestEmailVerification($input: RequestEmailVerificationInput!) {
     requestEmailVerification(input: $input) {
       status
@@ -74,9 +88,9 @@ export const requestEmailVerificationMutation = `
       expiresAt
     }
   }
-`
+`)
 
-export const confirmEmailVerificationMutation = `
+export const confirmEmailVerificationMutation = graphql(`
   mutation ConfirmEmailVerification($input: ConfirmEmailVerificationInput!) {
     confirmEmailVerification(input: $input) {
       id
@@ -84,15 +98,15 @@ export const confirmEmailVerificationMutation = `
       isEmailVerified
     }
   }
-`
+`)
 
-export const uploadAvatarMutation = `
+export const uploadAvatarMutation = graphql(`
   mutation UploadAvatar($file: Upload!) {
     createAvatarUploadUrl(file: $file)
   }
-`
+`)
 
-export const verifySiweTokenMutation = `
+export const verifySiweTokenMutation = graphql(`
   mutation VerifySiweToken($jwt: String!) {
     verifySiweToken(jwt: $jwt) {
       success
@@ -107,4 +121,20 @@ export const verifySiweTokenMutation = `
       error
     }
   }
-`
+`)
+
+// export const checkWalletUserMutation = graphql(`
+//   mutation CheckWalletUser($walletAddress: String!) {
+//     checkWalletUser(walletAddress: $walletAddress) {
+//       success
+//       user {
+//         id
+//         email
+//         name
+//         avatar
+//         primaryWallet
+//       }
+//       error
+//     }
+//   }
+// `)

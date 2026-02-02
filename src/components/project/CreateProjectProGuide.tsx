@@ -92,7 +92,7 @@ export function CreateProjectProGuide({
     <aside className="sticky top-24">
       <div className="rounded-2xl border border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm">
         <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#5326ec]/10 text-[#5326ec]">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-giv-brand-500/10 text-giv-brand-500">
             <svg
               width="20"
               height="20"
@@ -109,10 +109,10 @@ export function CreateProjectProGuide({
             </svg>
           </span>
           <div>
-            <p className="text-xs uppercase tracking-[0.08em] text-[#7f7f92]">
+            <p className="text-xs uppercase tracking-[0.08em] text-giv-neutral-700">
               Pro tips
             </p>
-            <p className="text-base font-semibold text-[#1d1e1f]">
+            <p className="text-base font-semibold text-giv-neutral-900">
               {content.title}
             </p>
           </div>
@@ -121,7 +121,7 @@ export function CreateProjectProGuide({
         <div className="space-y-3 px-5 py-5 text-sm text-gray-700">
           {content.body.map(line => (
             <div key={line} className="flex gap-3">
-              <span className="mt-[6px] h-2 w-2 rounded-full bg-[#5326ec]" />
+              <span className="mt-[6px] h-2 w-2 rounded-full bg-giv-brand-500" />
               <p className="leading-relaxed text-gray-700">{line}</p>
             </div>
           ))}

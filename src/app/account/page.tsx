@@ -1,21 +1,19 @@
-import { CtaSection } from '@/components/account/cta-section'
-import { DashboardTabs } from '@/components/account/dashboard-tabs'
-import { DonationTabs } from '@/components/account/donation-tabs'
-import { DonationsTable } from '@/components/account/donations-table'
-import { ProfileSection } from '@/components/account/profile-section'
-import { RaffleCard } from '@/components/account/raffle-card'
+import { Suspense } from 'react'
+import AccountPageClient from '@/app/account/AccountPageClient'
 
-export default function HomePage() {
+export default function AccountPage() {
   return (
-    <div className="min-h-screen bg-[#fcfcff]">
-      <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        <ProfileSection />
-        <DashboardTabs />
-        <RaffleCard />
-        <DonationTabs />
-        <DonationsTable />
-      </main>
-      <CtaSection />
-    </div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-giv-brand-000 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-giv-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-giv-neutral-700">Loading account…</p>
+          </div>
+        </div>
+      }
+    >
+      <AccountPageClient />
+    </Suspense>
   )
 }

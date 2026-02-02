@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { MenuIcon, X } from 'lucide-react'
-import { CreateProjectButton } from './CreateProjectButton'
-import { menuItems } from './DefaultHeader'
+import { CreateProjectButton } from '@/components/header/CreateProjectButton'
+import { menuItems } from '@/lib/constants/menu-links'
 import { MenuLink } from './MenuLink'
 import { SearchButton } from './SearchButton'
 
-export function MobileNavigation() {
+export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export function MobileNavigation() {
       {/* Open button */}
       <button
         onClick={() => setIsMenuOpen(true)}
-        className="md:hidden flex items-center gap-2 p-3 rounded-lg text-base font-medium text-giv-gray-900 hover:bg-giv-primary-50 transition"
+        className="md:hidden flex items-center gap-2 p-3 rounded-lg text-base font-medium text-giv-neutral-900 hover:bg-giv-brand-50 transition"
       >
         <MenuIcon className="h-6 w-6" />
         Menu
@@ -46,7 +46,7 @@ export function MobileNavigation() {
           <button
             onClick={() => setIsMenuOpen(false)}
             aria-label="Close menu"
-            className="p-2 rounded-lg hover:bg-giv-gray-100"
+            className="p-2 rounded-lg hover:bg-white"
           >
             <X className="h-6 w-6" />
           </button>
@@ -54,17 +54,23 @@ export function MobileNavigation() {
 
         {/* Content */}
         <div className="flex flex-col gap-4 p-4 overflow-y-auto h-full">
-          {menuItems.map(item => (
-            <MenuLink
-              key={item.label}
-              href={item.href}
-              label={item.label}
-              submenu={item.submenu}
-            />
-          ))}
+          {menuItems.map(
+            (item: {
+              label: string
+              href: string
+              submenu?: { label: string; href: string }[]
+            }) => (
+              <MenuLink
+                key={item.label}
+                href={item.href}
+                label={item.label}
+                submenu={item.submenu}
+              />
+            ),
+          )}
 
           <div className="flex flex-col gap-4 mt-4">
-            <SearchButton />
+            {!hideSearch && <SearchButton />}
             <div className="mt-2 ml-2 flex justify-center">
               <CreateProjectButton />
             </div>

@@ -1,69 +1,53 @@
 'use client'
 
+import { Wallet } from 'lucide-react'
+import { ConnectButton } from 'thirdweb/react'
 import {
-  ConnectButton,
-  lightTheme,
-  useActiveAccount,
-  useActiveWalletChain,
-} from 'thirdweb/react'
-import { supportedWallets, thirdwebClient } from '@/lib/thirdweb/client'
-import { cn } from '@/lib/utils/cn'
+  supportedChains,
+  supportedWallets,
+  thirdwebClient,
+} from '@/lib/thirdweb/client'
 
-const shortenAddress = (address?: string) => {
-  if (!address) return ''
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
-}
-
-const WalletBadge = () => {
-  const account = useActiveAccount()
-  const chain = useActiveWalletChain()
-
-  return (
-    <div
-      className={cn(
-        'flex items-center gap-2 rounded-full bg-white px-4 py-2.5',
-        'shadow-[0_10px_24px_rgba(83,38,236,0.08)] ring-1 ring-[#ebe9ff]',
-      )}
-    >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-lime-300 via-green-500 to-amber-400 shadow-inner" />
-      <div className="leading-tight">
-        <div className="text-base font-semibold text-[#1f1f2d]">
-          {shortenAddress(account?.address)}
-        </div>
-        <div className="text-xs font-medium text-[#2c1b8b]">
-          Connected to {chain?.name || 'Network'}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const customTheme = lightTheme({
-  colors: {
-    accentButtonBg: '#d81a72', // Giveth pink
-    accentButtonText: '#ffffff',
-  },
-})
-
-export function ConnectWalletButton() {
+const ConnectWalletButton = ({
+  className,
+  textColor,
+  backgroundColor,
+  showIcon = false,
+}: {
+  className?: string
+  textColor?: string
+  backgroundColor?: string
+  showIcon?: boolean
+  showLabel?: boolean
+}) => {
   return (
     <ConnectButton
       client={thirdwebClient}
-      wallets={supportedWallets}
-      theme={customTheme}
       connectButton={{
-        label: 'Connect Wallet',
-        className:
-          'rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-[#d81a72] shadow-[0_10px_24px_rgba(83,38,236,0.08)] ring-1 ring-[#ebe9ff]',
+        label: (
+          <span className="inline-flex items-center gap-2 hover:opacity-80">
+            {showIcon && <Wallet className="h-4 w-4" />}
+            Connect Wallet
+          </span>
+        ),
+        className: `rounded-full transition-all duration-200 shadow-sm cursor-pointer ${className}`,
+        style: {
+          height: 'auto',
+          backgroundColor: backgroundColor || '#8668fc',
+          color: textColor || 'white',
+          padding: '14px 20px',
+          fontSize: '14px',
+          fontWeight: '600',
+        },
       }}
-      detailsButton={{
-        render: () => <WalletBadge />,
-      }}
+      wallets={supportedWallets}
+      chains={supportedChains}
       connectModal={{
         size: 'compact',
-        title: 'Connect to Giveth',
         showThirdwebBranding: false,
       }}
     />
   )
 }
+
+export default ConnectWalletButton

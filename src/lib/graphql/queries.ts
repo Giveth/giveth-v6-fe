@@ -52,12 +52,20 @@ export const projectBySlugQuery = graphql(`
       countUniqueDonors
       vouched
       isGivbacksEligible
+      socialMedia {
+        id
+        type
+        link
+      }
       adminUser {
         id
         name
         firstName
         lastName
         avatar
+        wallets {
+          address
+        }
       }
       categories {
         id
@@ -73,25 +81,37 @@ export const projectBySlugQuery = graphql(`
         id
         address
         networkId
-        title
         chainType
+        memo
       }
       projectQfRounds {
-        id
-        qfRoundId
+        countUniqueDonors
+        sumDonationValueUsd
         qfRound {
           id
           name
           slug
           isActive
         }
-        project {
-          id
-          qfRoundMatchingProjects {
-            qfRoundMatchingId
-            matchingAmount
-          }
-        }
+      }
+    }
+  }
+`)
+
+export const projectByIDQuery = graphql(`
+  query Project($id: Int!) {
+    project(id: $id) {
+      id
+      title
+      slug
+      description
+      image
+      status
+      addresses {
+        address
+        networkId
+        chainType
+        memo
       }
     }
   }
@@ -112,6 +132,10 @@ export const qfRoundBySlugQuery = graphql(`
       beginDate
       endDate
       allocatedFundUSD
+      allocatedFundUSDPreferred
+      allocatedTokenSymbol
+      maximumReward
+      isActive
     }
   }
 `)
@@ -121,10 +145,54 @@ export const activeQfRoundsQuery = graphql(`
     activeQfRounds {
       id
       name
+      description
       slug
       isActive
       beginDate
       endDate
+      eligibleNetworks
+      hubCardImage
+      allocatedFundUSD
+      allocatedFundUSDPreferred
+      allocatedFund
+      allocatedTokenSymbol
+      minimumValidUsdValue
+      displaySize
+      maximumReward
+    }
+  }
+`)
+
+export const qfRoundsQuery = graphql(`
+  query QfRounds(
+    $skip: Int = 0
+    $take: Int = 50
+    $filters: QfRoundsFiltersInput
+  ) {
+    qfRounds(skip: $skip, take: $take, filters: $filters) {
+      total
+      rounds {
+        id
+        name
+        slug
+        eligibleNetworks
+        applicationTypeformUrl
+      }
+    }
+  }
+`)
+
+export const projectAddressesBySlugQuery = graphql(`
+  query ProjectAddressesBySlug($slug: String!) {
+    projectAddressesBySlug(slug: $slug) {
+      id
+      title
+      slug
+      addresses {
+        address
+        networkId
+        isRecipient
+      }
     }
   }
 `)
@@ -134,12 +202,16 @@ export const donationsByProjectQuery = graphql(`
     $projectId: Int!
     $skip: Int
     $take: Int
+    $orderBy: DonationSortField!
+    $orderDirection: SortDirection!
     $qfRoundId: Int
   ) {
     donationsByProject(
       projectId: $projectId
       skip: $skip
       take: $take
+      orderBy: $orderBy
+      orderDirection: $orderDirection
       qfRoundId: $qfRoundId
     ) {
       donations {
@@ -158,6 +230,7 @@ export const donationsByProjectQuery = graphql(`
           lastName
           avatar
         }
+        anonymous
       }
       total
     }
@@ -184,36 +257,25 @@ export const projectsQuery = graphql(`
         title
         slug
         image
+        reviewStatus
         descriptionSummary
         totalDonations
         countUniqueDonors
-        qualityScore
         vouched
         isGivbacksEligible
-        searchRank
-        adminUser {
-          id
-          name
-          firstName
-          lastName
-          avatar
-        }
-        categories {
-          id
-          name
-          value
-          mainCategory {
-            id
-            title
-            slug
-          }
-        }
         addresses {
           id
           address
           networkId
-          title
           chainType
+          memo
+        }
+        adminUser {
+          id
+          name
+          wallets {
+            address
+          }
         }
         projectQfRounds {
           id
@@ -223,6 +285,19 @@ export const projectsQuery = graphql(`
         }
       }
       total
+    }
+  }
+`)
+
+export const createDonationMutation = graphql(`
+  mutation CreateDonation($input: CreateDonationInput!) {
+    createDonation(input: $input) {
+      id
+      status
+      transactionId
+      transactionNetworkId
+      projectId
+      qfRoundId
     }
   }
 `)
@@ -263,8 +338,8 @@ export const similarProjectsBySlugQuery = graphql(`
           id
           address
           networkId
-          title
           chainType
+          memo
         }
       }
       total
@@ -278,10 +353,16 @@ export const archivedQfRoundsQuery = graphql(`
       rounds {
         id
         name
+        description
+        allocatedFundUSD
+        allocatedFundUSDPreferred
+        allocatedFund
+        allocatedTokenSymbol
         slug
         isActive
         beginDate
         endDate
+        hubCardImage
       }
       total
     }
@@ -303,8 +384,8 @@ export const qfRoundStatsQuery = graphql(`
   }
 `)
 
-export const meQuery = graphql(`
-  query Me {
+export const userProfileQuery = graphql(`
+  query UserProfile {
     me {
       id
       email
@@ -316,6 +397,10 @@ export const meQuery = graphql(`
       url
       totalDonated
       totalReceived
+      location
+      twitterName
+      telegramName
+      isEmailVerified
       wallets {
         id
         address
@@ -342,6 +427,10 @@ export const userStatsQuery = graphql(`
       donationsCount
       projectsCount
       likedProjectsCount
+      projectsWithDonationsCount
+      totalDonated
+      totalReceived
+      uniqueProjectsDonatedTo
       wallets {
         id
         address
@@ -381,8 +470,18 @@ export const myProjectsQuery = graphql(`
 `)
 
 export const myDonationsQuery = graphql(`
-  query MyDonations($skip: Int = 0, $take: Int = 20) {
-    myDonations(skip: $skip, take: $take) {
+  query MyDonations(
+    $skip: Int = 0
+    $take: Int = 20
+    $orderBy: DonationSortField! = CreatedAt
+    $orderDirection: SortDirection! = DESC
+  ) {
+    myDonations(
+      skip: $skip
+      take: $take
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+    ) {
       total
       donations {
         id
@@ -393,11 +492,30 @@ export const myDonationsQuery = graphql(`
         transactionId
         transactionNetworkId
         createdAt
+        qfRoundName
         project {
           id
           title
           slug
         }
+      }
+    }
+  }
+`)
+
+export const projectUpdatesQuery = graphql(`
+  query ProjectUpdates($input: ProjectUpdateQueryInput!) {
+    projectUpdates(input: $input) {
+      totalCount
+      projectUpdates {
+        id
+        title
+        projectId
+        content
+        contentSummary
+        createdAt
+        isMain
+        totalReactions
       }
     }
   }
@@ -422,6 +540,189 @@ export const profileQuery = graphql(`
         address
         isPrimary
         chainType
+      }
+    }
+  }
+`)
+
+export const tokensQuery = graphql(`
+  query Tokens {
+    tokens {
+      id
+      name
+      symbol
+      address
+      decimals
+      networkId
+      chainType
+      isActive
+      coingeckoId
+    }
+  }
+`)
+
+export const tokensByNetworkQuery = graphql(`
+  query TokensByNetwork($networkId: Int!) {
+    tokensByNetwork(networkId: $networkId) {
+      id
+      name
+      symbol
+      address
+      decimals
+      networkId
+      chainType
+      isActive
+      coingeckoId
+      isGivbacksEligible
+    }
+  }
+`)
+
+export const estimatedMatchingQuery = graphql(`
+  query EstimatedMatching(
+    $donationAmount: Float!
+    $donorAddress: String!
+    $projectId: Int!
+    $qfRoundId: Int!
+  ) {
+    estimatedMatching(
+      donationAmount: $donationAmount
+      donorAddress: $donorAddress
+      projectId: $projectId
+      qfRoundId: $qfRoundId
+    ) {
+      projectId
+      qfRoundId
+      matchingPool
+      allProjectsSqrtSum
+      projectDonationsSqrtSum
+      estimatedMatching
+    }
+  }
+`)
+
+export const checkPassportEligibilityQuery = graphql(`
+  query CheckPassportEligibility($input: CheckPassportEligibilityInput!) {
+    checkPassportEligibility(input: $input) {
+      isEligible
+      passportScore
+      mbdScore
+      threshold
+      expirationDate
+      message
+      eligibility {
+        id
+        address
+        score
+        mbdScore
+        lastScoreTimestamp
+        expirationTimestamp
+        stamps
+        error
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`)
+
+export const refreshPassportEligibilityQuery = graphql(`
+  mutation RefreshPassportScore($address: String!) {
+    refreshPassportScore(input: { address: $address }) {
+      isEligible
+      passportScore
+      mbdScore
+      threshold
+      expirationDate
+      message
+      eligibility {
+        id
+        address
+        score
+        mbdScore
+        lastScoreTimestamp
+        expirationTimestamp
+        stamps
+        error
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`)
+
+export const globalConfigurationsQuery = graphql(`
+  query GlobalConfigurations($isActive: Boolean) {
+    globalConfigurations(isActive: $isActive) {
+      id
+      key
+      value
+      description
+      type
+      isActive
+      createdAt
+      updatedAt
+    }
+  }
+`)
+
+export const globalConfigurationQuery = graphql(`
+  query GlobalConfiguration($key: String!) {
+    globalConfiguration(key: $key) {
+      id
+      key
+      value
+      description
+      type
+      isActive
+      createdAt
+      updatedAt
+    }
+  }
+`)
+
+export const userByAddressQuery = graphql(`
+  query UserByAddress($address: String!) {
+    userByAddress(address: $address) {
+      id
+      name
+      firstName
+      lastName
+      avatar
+      primaryEns
+      totalDonated
+      totalReceived
+      wallets {
+        address
+        chainType
+        isPrimary
+      }
+      createdAt
+    }
+  }
+`)
+
+export const donationsByUserQuery = graphql(`
+  query DonationsByUser($userId: Int!, $skip: Int! = 0, $take: Int! = 20) {
+    donationsByUser(userId: $userId, skip: $skip, take: $take) {
+      total
+      donations {
+        id
+        createdAt
+        amount
+        currency
+        valueUsd
+        status
+        transactionId
+        transactionNetworkId
+        projectId
+        qfRoundId
+        qfRoundName
+        project {
+          id
+          title
+          slug
+        }
       }
     }
   }

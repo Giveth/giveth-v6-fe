@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants'
+import { PROJECT_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 
 interface ProjectImageProps extends Omit<
   React.ImgHTMLAttributes<HTMLImageElement>,

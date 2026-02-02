@@ -1,72 +1,78 @@
-import { writeFileSync } from 'fs'
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import type { CodegenConfig } from '@graphql-codegen/cli'
 
-const schemaEndpoint =
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? 'http://localhost:4000/graphql'
+// GraphQL Codegen executes this config in Node (not in the Next.js runtime),
+// so Next's `.env*` files aren't loaded unless we do it explicitly.
+function loadDotEnvFiles() {
+  const cwd = process.cwd()
+  const nodeEnv = process.env.NODE_ENV || 'development'
 
-// TODO: change githubSchemaUrl to respect development and production environments
-const githubSchemaUrl =
-  'https://raw.githubusercontent.com/Giveth/giveth-v6-core/main/src/schema.gql'
+  const candidates = [
+    `.env.${nodeEnv}.local`,
+    ...(nodeEnv === 'test' ? [] : ['.env.local']),
+    `.env.${nodeEnv}`,
+    '.env',
+  ]
 
-const localSchemaPath = './src/lib/graphql/schema.gql'
+  for (const file of candidates) {
+    const fullPath = path.join(cwd, file)
+    if (!existsSync(fullPath)) continue
+    const raw = readFileSync(fullPath, 'utf8')
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
 
-// Try BE endpoint first, fall back to downloading from GitHub
-async function getSchemaSource(): Promise<string> {
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000) // 5s timeout
+      const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/)
+      if (!m) continue
+      const key = m[1]
+      let value = m[2] ?? ''
 
-    const response = await fetch(schemaEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: '{ __typename }' }),
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
+      const isDoubleQuoted = value.startsWith('"') && value.endsWith('"')
+      const isSingleQuoted = value.startsWith("'") && value.endsWith("'")
 
-    if (response.ok) {
-      console.warn(`✓ Using live schema from: ${schemaEndpoint}`)
-      return schemaEndpoint
+      if (isDoubleQuoted || isSingleQuoted) {
+        value = value.slice(1, -1)
+      } else {
+        // Strip inline comments for unquoted values: FOO=bar # comment
+        value = value.replace(/\s+#.*$/, '')
+      }
+
+      if (isDoubleQuoted) {
+        value = value
+          .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '\r')
+          .replace(/\\t/g, '\t')
+      }
+
+      // Do not override real environment variables (shell/CI wins).
+      if (process.env[key] === undefined) {
+        process.env[key] = value
+      }
     }
-  } catch {
-    // Endpoint not available
   }
-
-  // Fallback: download schema from GitHub and save locally
-  console.warn(`⚠ BE unavailable, downloading schema from GitHub...`)
-  try {
-    const response = await fetch(githubSchemaUrl)
-    if (response.ok) {
-      const schemaContent = await response.text()
-      writeFileSync(localSchemaPath, schemaContent)
-      console.warn(`✓ Schema downloaded and saved to: ${localSchemaPath}`)
-      return localSchemaPath
-    }
-  } catch (err) {
-    console.error(`✗ Failed to download schema from GitHub:`, err)
-  }
-
-  // Last resort: use the local file if it exists
-  return localSchemaPath
 }
 
-async function buildConfig(): Promise<CodegenConfig> {
-  return {
-    schema: await getSchemaSource(),
-    documents: ['src/**/*.{ts,tsx}'],
-    ignoreNoDocuments: true,
-    generates: {
-      './src/lib/graphql/generated/': {
-        preset: 'client',
-        presetConfig: {
-          fragmentMasking: { unmaskFunctionName: 'getFragmentData' },
-        },
-        config: {
-          documentMode: 'string',
-        },
+loadDotEnvFiles()
+
+const config: CodegenConfig = {
+  schema:
+    process.env.NEXT_PUBLIC_SCHEMA_URL ||
+    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+    '../giveth-v6-core/src/schema.gql',
+  documents: ['src/**/*.{ts,tsx}'],
+  ignoreNoDocuments: true,
+  generates: {
+    './src/lib/graphql/generated/': {
+      preset: 'client',
+      presetConfig: {
+        fragmentMasking: { unmaskFunctionName: 'getFragmentData' },
+      },
+      config: {
+        documentMode: 'string',
       },
     },
-  }
+  },
 }
 
-export default buildConfig()
+export default config
