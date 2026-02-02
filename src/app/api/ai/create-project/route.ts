@@ -10,11 +10,9 @@ type Draft = {
   categoryIds: number[]
   socialMedia: { type: string; link: string }[]
   recipientAddresses: {
-    id?: string
     chainType: 'EVM' | 'SOLANA' | 'STELLAR'
     networkId: number
     address: string
-    memo?: string
   }[]
 }
 
@@ -45,11 +43,9 @@ const patchSchema = z
     recipientAddresses: z
       .array(
         z.object({
-          id: z.string().nullable(),
           chainType: z.enum(['EVM', 'SOLANA', 'STELLAR']),
           networkId: z.number().int(),
           address: z.string(),
-          memo: z.string().nullable(),
         }),
       )
       .nullable(),
@@ -59,6 +55,7 @@ const patchSchema = z
 const modelResponseSchema = z
   .object({
     patch: patchSchema.nullable(),
+    assistantMessage: z.string(),
     updatedFields: z.array(z.string()),
   })
   .strict()
@@ -70,11 +67,9 @@ type PatchOut = {
   impactLocation?: string
   socialMedia?: { type: string; link: string }[]
   recipientAddresses?: {
-    id?: string
     chainType: Draft['recipientAddresses'][number]['chainType']
     networkId: number
     address: string
-    memo?: string
   }[]
 }
 
@@ -114,6 +109,7 @@ export async function POST(req: Request) {
       type: 'object',
       additionalProperties: false,
       properties: {
+        assistantMessage: { type: 'string' },
         patch: {
           anyOf: [
             { type: 'null' },
@@ -143,22 +139,14 @@ export async function POST(req: Request) {
                     type: 'object',
                     additionalProperties: false,
                     properties: {
-                      id: { type: ['string', 'null'] },
                       chainType: {
                         type: 'string',
                         enum: ['EVM', 'SOLANA', 'STELLAR'],
                       },
                       networkId: { type: 'integer' },
                       address: { type: 'string' },
-                      memo: { type: ['string', 'null'] },
                     },
-                    required: [
-                      'id',
-                      'chainType',
-                      'networkId',
-                      'address',
-                      'memo',
-                    ],
+                    required: ['chainType', 'networkId', 'address'],
                   },
                 },
               },
@@ -178,7 +166,7 @@ export async function POST(req: Request) {
           items: { type: 'string' },
         },
       },
-      required: ['patch', 'updatedFields'],
+      required: ['assistantMessage', 'patch', 'updatedFields'],
     },
   } as const
 
@@ -190,6 +178,13 @@ export async function POST(req: Request) {
     '',
     'DEFAULT behavior: extract explicit user-provided facts into form fields.',
     'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
+    '',
+    'assistantMessage behavior (this is what the user will see in chat):',
+    '- Write a natural, helpful reply focused ONLY on completing the form.',
+    '- If you applied any patch fields, briefly confirm what changed (no need to list everything).',
+    '- If anything important is missing/ambiguous, ask 1–2 specific questions.',
+    '- Do NOT mention JSON, schemas, or internal rules.',
+    '- Do NOT claim you updated something unless it is present in the patch.',
     '',
     'Reset / clear behavior:',
     '- If the user asks to reset/clear/wipe/remove a specific field, you MUST set that field to its empty value in the patch (and set other fields to null).',
@@ -207,7 +202,7 @@ export async function POST(req: Request) {
     '- If the user implies different addresses per EVM network but does not provide a mapping, do NOT guess. Leave recipientAddresses as null and ask which address should be used for which EVM network.',
     '',
     'EXCEPTION (opt-in generation): If the user explicitly asks you to "generate / draft / write" a project description, you MAY create a neutral draft description.',
-    '- Should be at least 1200 characters.',
+    '- Aim for ~300–500 words.',
     '- Base it only on the project title and any facts in the current draft/user message.',
     '- Avoid unverifiable specifics; keep wording general.',
     '- If title is missing, ask for it and do not draft.',
@@ -218,12 +213,21 @@ export async function POST(req: Request) {
     '- image (URL only, if explicitly provided)',
     '- impactLocation',
     '- socialMedia: array of {type, link}',
-    '- recipientAddresses: array of {chainType, networkId, address, memo?}.',
+    '- recipientAddresses: array of {chainType, networkId, address}.',
   ].join('\n')
 
+  const history = Array.isArray(parsedReq.data.history)
+    ? parsedReq.data.history
+    : []
   const user = [
     'CURRENT_DRAFT_JSON:',
     JSON.stringify(draft),
+    '',
+    'RECENT_CHAT_HISTORY:',
+    history
+      .slice(-12)
+      .map(h => `${h.role.toUpperCase()}: ${h.content}`)
+      .join('\n'),
     '',
     'USER_MESSAGE:',
     message,
@@ -270,18 +274,16 @@ export async function POST(req: Request) {
   }
 
   const parsed = modelResponseSchema.safeParse(safeJsonParse(jsonText) ?? null)
-  const patchRaw = parsed.success ? parsed.data.patch : null
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'AI response did not match expected format' },
+      { status: 500 },
+    )
+  }
+
+  const patchRaw = parsed.data.patch
   const patch = patchRaw ? normalizePatch(patchRaw) : undefined
-
-  const nextDraft = applyPatch(draft, patch)
-  const { updated, question } = summarizeAndAsk(nextDraft, patch)
-
-  const assistantMessage = [
-    updated ? `Updated: ${updated}.` : 'Got it.',
-    question,
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const assistantMessage = parsed.data.assistantMessage
 
   return NextResponse.json({ assistantMessage, patch })
 }
@@ -302,8 +304,6 @@ function normalizePatch(patch: z.infer<typeof patchSchema>): PatchOut {
       chainType: a.chainType,
       networkId: a.networkId,
       address: a.address,
-      id: typeof a.id === 'string' ? a.id : undefined,
-      memo: typeof a.memo === 'string' ? a.memo : undefined,
     }))
   }
 
@@ -349,76 +349,13 @@ function sanitizeDraft(input: unknown): Draft {
                 : 'EVM'
 
           return {
-            id:
-              typeof rec['id'] === 'string' ? (rec['id'] as string) : undefined,
             chainType,
             networkId: Number(rec['networkId'] ?? 1),
             address: toStringOrEmpty(rec['address']),
-            memo:
-              typeof rec['memo'] === 'string'
-                ? (rec['memo'] as string)
-                : undefined,
           }
         })
       : [],
   }
-}
-
-function applyPatch(draft: Draft, patch?: PatchOut): Draft {
-  if (!patch) return draft
-  const next: Draft = { ...draft }
-  if (typeof patch.title === 'string') next.title = patch.title
-  if (typeof patch.description === 'string')
-    next.description = patch.description
-  if (typeof patch.image === 'string') next.image = patch.image
-  if (typeof patch.impactLocation === 'string')
-    next.impactLocation = patch.impactLocation
-
-  if (patch.socialMedia) {
-    const byType = new Map<string, { type: string; link: string }>()
-    for (const s of draft.socialMedia) byType.set(s.type, s)
-    for (const s of patch.socialMedia) byType.set(s.type, s)
-    next.socialMedia = Array.from(byType.values())
-  }
-
-  if (patch.recipientAddresses) {
-    next.recipientAddresses = patch.recipientAddresses.map(a => ({
-      ...a,
-      id: a.id || undefined,
-    }))
-  }
-
-  return next
-}
-
-function summarizeAndAsk(draft: Draft, patch?: PatchOut) {
-  const changed: string[] = []
-  if (patch?.title === '') changed.push('project name')
-  else if (patch?.title) changed.push('project name')
-  if (patch?.description === '') changed.push('description')
-  else if (patch?.description) changed.push('description')
-  if (patch?.image === '') changed.push('image')
-  else if (patch?.image) changed.push('image')
-  if (patch?.impactLocation === '') changed.push('impact location')
-  else if (patch?.impactLocation) changed.push('impact location')
-  if (patch?.socialMedia) changed.push('social links')
-  if (patch?.recipientAddresses) changed.push('recipient addresses')
-
-  const updated = changed.length ? changed.join(', ') : ''
-
-  const needsTitle = !draft.title.trim()
-  const needsDescription = !draft.description.trim()
-  const needsAddress = draft.recipientAddresses.length === 0
-
-  const question = needsTitle
-    ? 'What should the project name be?'
-    : needsDescription
-      ? 'Can you describe what your project does in 2–3 sentences?'
-      : needsAddress
-        ? 'Which wallet address should receive donations? (EVM, Solana, or Stellar)'
-        : 'Anything else you want to add (image, socials, or impact location)?'
-
-  return { updated, question }
 }
 
 function safeJsonParse(text: string): unknown | null {

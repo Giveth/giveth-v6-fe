@@ -467,6 +467,8 @@ export type Mutation = {
   createDonation: DonationEntity;
   createGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   createProject: ProjectEntity;
+  /** Upload a project image and return a public URL (no side effects). */
+  createProjectImageUploadUrl: Scalars['String']['output'];
   createQfRound: QfRoundEntity;
   deleteProjectUpdate: Scalars['Boolean']['output'];
   editProjectUpdate: ProjectUpdateEntity;
@@ -563,6 +565,11 @@ export type MutationCreateGivbacksEligibilityFormArgs = {
 
 export type MutationCreateProjectArgs = {
   input: CreateProjectInput;
+};
+
+
+export type MutationCreateProjectImageUploadUrlArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
