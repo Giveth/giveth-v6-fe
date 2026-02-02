@@ -8,6 +8,7 @@ import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { IconVerified } from '@/components/icons/IconVerified'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 
 interface QFProjectCardProps {
@@ -21,8 +22,8 @@ export function QFProjectCard({
   roundId,
   roundName,
 }: QFProjectCardProps) {
+  const isMobile = useIsMobile()
   const { addToCart, removeFromCart, isInCart: checkIsInCart } = useCart()
-
   const projectId = String(project.id)
   const isInCart = checkIsInCart(projectId, roundId)
 
@@ -76,8 +77,16 @@ export function QFProjectCard({
     ? `/project/${project.slug}?roundId=${roundId}`
     : `/project/${project.slug}`
 
+  const contentContainerHeight = isMobile
+    ? 'h-[580px]'
+    : 'h-[580px] md:h-[505px]'
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[505px]">
+    <div
+      className={clsx(
+        contentContainerHeight,
+        'group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300',
+      )}
+    >
       {/* Image Layer - Static */}
       <div className="absolute top-0 left-0 w-full h-[220px] z-0 bg-white">
         <ProjectImage
