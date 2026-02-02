@@ -19,8 +19,6 @@ import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
 import {
   createProjectLink,
-  myCausesLink,
-  myGIVPowerLink,
   myProjectsLink,
   reportBugLink,
   supportLink,
@@ -147,13 +145,13 @@ export function HeaderConnectWallet() {
               </button>
             </div>
 
-            <Link
+            {/* <Link
               href="/account"
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
               My Account
-            </Link>
+            </Link> */}
 
             <Link
               href={myProjectsLink.href as Route}
@@ -163,13 +161,13 @@ export function HeaderConnectWallet() {
               {myProjectsLink.label}
             </Link>
 
-            <Link
+            {/* <Link
               href={myCausesLink.href as Route}
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
               {myCausesLink.label}
-            </Link>
+            </Link> */}
 
             <Link
               href="/account"
@@ -179,13 +177,13 @@ export function HeaderConnectWallet() {
               My Donations
             </Link>
 
-            <Link
+            {/* <Link
               href={myGIVPowerLink.href as Route}
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
               {myGIVPowerLink.label}
-            </Link>
+            </Link> */}
 
             <Link
               href={createProjectLink.href as Route}
