@@ -101,6 +101,7 @@ export function SimilarProjects({ projectSlug }: SimilarProjectsProps) {
           <QFProjectCard
             key={project.id}
             project={project as unknown as ProjectEntity}
+            isActiveRound={false}
           />
         ))}
       </div>

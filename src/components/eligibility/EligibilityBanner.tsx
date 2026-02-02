@@ -153,7 +153,7 @@ export function EligibilityBanner() {
       {/* Check passport expiration date */}
       {isTooOld && (
         <div className="p-4 space-y-2 border border-giv-warning-600 rounded-2xl">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
             <MatchingEligible
               fill="var(--giv-warning-600)"
               width={20}
@@ -164,8 +164,8 @@ export function EligibilityBanner() {
             </h4>
           </div>
 
-          <div className="flex justify-between items-center gap-3">
-            <p className="text-lg font-medium text-giv-neutral-900">
+          <div className="flex flex-wrap md:flex-nowrap justify-between items-center gap-3">
+            <p className="w-full md:w-auto text-lg font-medium text-giv-neutral-900">
               Verify your donor uniqueness with a quick check of your on-chain
               activity.
             </p>
@@ -190,7 +190,7 @@ export function EligibilityBanner() {
             'p-4 space-y-2 border border-giv-success-600 rounded-2xl',
           )}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
             <MatchingEligible
               fill="var(--giv-success-600)"
               width={20}
@@ -212,7 +212,7 @@ export function EligibilityBanner() {
       {/* Wallet Connected And Has No Eligibility Data */}
       {account && data && !isUserEligible && !isTooOld && (
         <div className="p-4 space-y-2 border border-giv-brand-500 rounded-2xl">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
             <MatchingEligible
               fill="var(--giv-brand-500)"
               width={20}
@@ -223,7 +223,7 @@ export function EligibilityBanner() {
             </h4>
           </div>
 
-          <div className="flex justify-between items-center gap-3">
+          <div className="flex flex-wrap md:flex-nowrap justify-between items-center gap-3">
             <p className="text-lg font-medium text-giv-neutral-900">
               Please go to Passport to increase your score to{' '}
               <span className="font-bold">
@@ -233,9 +233,9 @@ export function EligibilityBanner() {
             </p>
           </div>
 
-          <div className="flex justify-between items-center gap-3 mt-4 border-t border-giv-neutral-300 pt-4">
-            <div className="flex gap-4">
-              <p className="text-lg font-medium text-giv-neutral-900 rounded-lg py-3 px-4 bg-giv-neutral-200">
+          <div className="flex flex-wrap md:flex-nowrap justify-between items-center gap-3 mt-4 border-t border-giv-neutral-300 pt-4">
+            <div className="flex w-full md:w-auto flex-col md:flex-row gap-4">
+              <p className="w-full md:w-auto text-lg font-medium text-giv-neutral-900 rounded-lg py-3 px-4 bg-giv-neutral-200">
                 <span>Your Passport score</span>
                 <span className="font-bold ml-12">
                   {userPassportData?.passportScore?.toString() ?? 0}
@@ -245,6 +245,7 @@ export function EligibilityBanner() {
                 href={PassportLink.href as unknown as Route}
                 target="_blank"
                 className={clsx(
+                  'w-full! md:w-auto!',
                   'text-xs font-bold text-giv-pink-400!',
                   'cursor-pointer hover:opacity-85 border-2 border-giv-pink-400 rounded-3xl px-6 py-3',
                 )}
@@ -258,7 +259,7 @@ export function EligibilityBanner() {
             <button
               onClick={checkEligibility}
               disabled={isAuthLoading}
-              className="text-xs font-bold text-giv-pink-400 cursor-pointer hover:opacity-85 border-2 border-giv-pink-400 rounded-3xl px-6 py-3"
+              className="w-full md:w-auto text-xs font-bold text-giv-pink-400 cursor-pointer hover:opacity-85 border-2 border-giv-pink-400 rounded-3xl px-6 py-3"
             >
               <span className="flex items-center gap-2">
                 {isChecking ? 'Refreshing Score...' : 'Refresh Score'}

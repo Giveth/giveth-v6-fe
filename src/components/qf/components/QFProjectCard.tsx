@@ -8,21 +8,24 @@ import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { IconVerified } from '@/components/icons/IconVerified'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 
 interface QFProjectCardProps {
   project: ProjectEntity
+  isActiveRound: boolean
   roundId?: number
   roundName?: string
 }
 
 export function QFProjectCard({
   project,
+  isActiveRound,
   roundId,
   roundName,
 }: QFProjectCardProps) {
+  const isMobile = useIsMobile()
   const { addToCart, removeFromCart, isInCart: checkIsInCart } = useCart()
-
   const projectId = String(project.id)
   const isInCart = checkIsInCart(projectId, roundId)
 
@@ -76,8 +79,20 @@ export function QFProjectCard({
     ? `/project/${project.slug}?roundId=${roundId}`
     : `/project/${project.slug}`
 
+  const contentContainerHeight = isMobile
+    ? isActiveRound
+      ? 'h-[580px]'
+      : 'h-[485px]'
+    : isActiveRound
+      ? 'h-[580px] md:h-[505px]'
+      : 'h-[380px] md:h-[495px]'
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 h-[505px]">
+    <div
+      className={clsx(
+        contentContainerHeight,
+        'group relative bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300',
+      )}
+    >
       {/* Image Layer - Static */}
       <div className="absolute top-0 left-0 w-full h-[220px] z-0 bg-white">
         <ProjectImage
@@ -96,7 +111,7 @@ export function QFProjectCard({
       <div
         className={clsx(
           'absolute bottom-0 left-0 right-0 z-20 top-[140px] bg-white pt-5 pb-5 px-5 rounded-t-2xl',
-          'transition-transform duration-500 ease-out transform translate-y-[68px] group-hover:translate-y-0',
+          `transition-transform duration-500 ease-out transform translate-y-[${isActiveRound ? '68px' : '0px'}] group-hover:translate-y-0`,
           'shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[370px] flex flex-col pointer-events-auto',
         )}
       >
@@ -180,28 +195,30 @@ export function QFProjectCard({
         </div>
 
         {/* Action Button - Slides into view on hover */}
-        <div className="mt-auto h-[52px]">
-          <button
-            onClick={toggleCart}
-            className={`w-full h-[48px] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              isInCart
-                ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
-                : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
-            }`}
-          >
-            {isInCart ? (
-              <>
-                <X className="w-6 h-6 text-giv-brand-700" />
-                Remove From Cart
-              </>
-            ) : (
-              <>
-                <Plus className="w-6 h-6 text-white" />
-                Add To Cart
-              </>
-            )}
-          </button>
-        </div>
+        {isActiveRound && (
+          <div className="mt-auto h-[52px]">
+            <button
+              onClick={toggleCart}
+              className={`w-full h-[48px] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                isInCart
+                  ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
+                  : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
+              }`}
+            >
+              {isInCart ? (
+                <>
+                  <X className="w-6 h-6 text-giv-brand-700" />
+                  Remove From Cart
+                </>
+              ) : (
+                <>
+                  <Plus className="w-6 h-6 text-white" />
+                  Add To Cart
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
