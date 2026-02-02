@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import clsx from 'clsx'
 import { ArrowRight, Wallet } from 'lucide-react'
 import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
@@ -288,8 +289,10 @@ export function DonationSidebar({
           <button
             onClick={handleDonateButtonClick}
             disabled={!hasDonationAmount || !walletAddress || !isAuthenticated}
-            className="w-full py-3 mt-5 bg-giv-pink-500 text-white! rounded-3xl text-xs font-bold flex items-center 
-          justify-center gap-2 hover:bg-giv-pink-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className={clsx(
+              'w-full py-4 mt-5 bg-giv-brand-300 text-white! rounded-md text-xs font-bold flex items-center',
+              'justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
           >
             Donate now
             <ArrowRight className="w-5 h-5" />

@@ -1,6 +1,7 @@
 'use client'
 
 import * as Switch from '@radix-ui/react-switch'
+import clsx from 'clsx'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { useCart } from '@/context/CartContext'
 
@@ -57,12 +58,16 @@ export function DonateToGiveth() {
             onClick={() =>
               handleSetGivethPercentage(Number(value.replace('%', '')))
             }
-            className="
-              rounded-full px-3 py-2 text-xs font-medium
-              bg-giv-brand-50 text-giv-brand-500
-              hover:bg-giv-brand-100
-              transition-colors cursor-pointer
-            "
+            className={clsx(
+              'rounded-full px-3 py-2 text-xs font-medium',
+              'bg-giv-brand-050 text-giv-brand-500',
+              'hover:bg-giv-brand-100',
+              'transition-colors cursor-pointer',
+              givethPercentage === Number(value.replace('%', '')) &&
+                'bg-giv-brand-100',
+              givethPercentage === Number(value.replace('%', '')) &&
+                'font-semibold',
+            )}
           >
             {value}
           </button>
@@ -70,9 +75,12 @@ export function DonateToGiveth() {
 
         {/* Custom / 0% */}
         <div
-          className="flex items-center gap-1 rounded-full px-2 py-2 text-sm font-medium ml-auto
-              border border-giv-neutral-300 
-              hover:bg-giv-neutral-200"
+          className={clsx(
+            'flex items-center gap-1 rounded-full px-2 py-2 text-sm font-medium ml-auto',
+            'border border-giv-neutral-300',
+            'hover:bg-giv-neutral-200',
+            'transition-colors cursor-pointer',
+          )}
         >
           <input
             type="text"
