@@ -28,7 +28,13 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
   )
 
   return (
-    <div className="absolute right-0 top-full px-5 mt-2 w-[380px] bg-white rounded-3xl shadow-[0px_3px_20px_rgba(33,32,60,0.24)] z-50">
+    <div
+      className={clsx(
+        'absolute right-0 top-full px-5 mt-2',
+        'w-full md:w-[380px]',
+        'bg-white rounded-3xl shadow-[0px_3px_20px_rgba(33,32,60,0.24)] z-50',
+      )}
+    >
       {/* Header */}
       <div className="py-4 border-b border-giv-neutral-300">
         <h3 className="text-sm font-medium text-giv-neutral-700">Donate</h3>
