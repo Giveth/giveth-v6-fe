@@ -118,6 +118,8 @@ export default function QFRoundPage() {
     )
   }
 
+  console.log('qfRound', qfRound)
+
   return (
     <div className="min-h-screen bg-giv-neutral-200">
       {/* Passport Banner */}
@@ -141,6 +143,7 @@ export default function QFRoundPage() {
 
       <main className="max-w-7xl mx-auto px-6 pb-16">
         <QFProjectsGrid
+          isActiveRound={qfRound.isActive ?? false}
           projects={projects}
           isLoading={isProjectsLoading}
           isFetching={isProjectsFetching}

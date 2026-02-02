@@ -13,12 +13,14 @@ import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 
 interface QFProjectCardProps {
   project: ProjectEntity
+  isActiveRound: boolean
   roundId?: number
   roundName?: string
 }
 
 export function QFProjectCard({
   project,
+  isActiveRound,
   roundId,
   roundName,
 }: QFProjectCardProps) {
@@ -189,28 +191,30 @@ export function QFProjectCard({
         </div>
 
         {/* Action Button - Slides into view on hover */}
-        <div className="mt-auto h-[52px]">
-          <button
-            onClick={toggleCart}
-            className={`w-full h-[48px] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              isInCart
-                ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
-                : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
-            }`}
-          >
-            {isInCart ? (
-              <>
-                <X className="w-6 h-6 text-giv-brand-700" />
-                Remove From Cart
-              </>
-            ) : (
-              <>
-                <Plus className="w-6 h-6 text-white" />
-                Add To Cart
-              </>
-            )}
-          </button>
-        </div>
+        {isActiveRound && (
+          <div className="mt-auto h-[52px]">
+            <button
+              onClick={toggleCart}
+              className={`w-full h-[48px] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                isInCart
+                  ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
+                  : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
+              }`}
+            >
+              {isInCart ? (
+                <>
+                  <X className="w-6 h-6 text-giv-brand-700" />
+                  Remove From Cart
+                </>
+              ) : (
+                <>
+                  <Plus className="w-6 h-6 text-white" />
+                  Add To Cart
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

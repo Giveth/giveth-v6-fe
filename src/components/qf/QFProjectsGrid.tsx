@@ -15,6 +15,7 @@ import {
 import { QFSorting } from './components/QFSorting'
 
 interface QFProjectsGridProps {
+  isActiveRound: boolean
   projects: ProjectEntity[]
   isLoading?: boolean
   isFetching?: boolean
@@ -35,6 +36,7 @@ interface QFProjectsGridProps {
 }
 
 export function QFProjectsGrid({
+  isActiveRound,
   projects,
   isLoading,
   isFetching,
@@ -155,6 +157,7 @@ export function QFProjectsGrid({
                 project={project}
                 roundId={roundId}
                 roundName={roundName}
+                isActiveRound={isActiveRound}
               />
             ))}
           </div>

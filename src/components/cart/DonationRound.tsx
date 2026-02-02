@@ -101,7 +101,7 @@ export function DonationRound({
         <span className="text-base font-medium text-giv-neutral-700">
           {projects.length} projects
         </span>
-        <div className="flex justify-between items-center md:ml-auto gap-2 text-sm">
+        <div className="flex flex-wrap md:flex-nowrap justify-between items-center md:ml-auto gap-2 text-sm">
           <span className="flex items-center gap-1.5 text-base font-medium text-giv-neutral-800">
             Total match
             <MatchingEligible
@@ -119,7 +119,9 @@ export function DonationRound({
               )}
             </span>
           </span>
-          <span className="text-giv-neutral-500 text-lg font-normal">|</span>
+          <span className="hidden md:block text-giv-neutral-500 text-lg font-normal">
+            |
+          </span>
           <span className="text-giv-neutral-800 text-base font-medium">
             Total donation{' '}
             <span>

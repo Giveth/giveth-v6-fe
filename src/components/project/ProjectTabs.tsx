@@ -31,7 +31,7 @@ export function ProjectTabs({
     <div className="bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-0 py-4">
         {/* Tabs */}
-        <div className="flex items-center gap-6 px-6 py-2">
+        <div className="flex items-center flex-wrap md:flex-nowrap gap-6 px-6 py-2">
           {tabs.map(tab => (
             <button
               key={tab.id}
