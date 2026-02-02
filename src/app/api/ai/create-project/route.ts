@@ -63,6 +63,21 @@ const modelResponseSchema = z
   })
   .strict()
 
+type PatchOut = {
+  title?: string
+  description?: string
+  image?: string
+  impactLocation?: string
+  socialMedia?: { type: string; link: string }[]
+  recipientAddresses?: {
+    id?: string
+    chainType: Draft['recipientAddresses'][number]['chainType']
+    networkId: number
+    address: string
+    memo?: string
+  }[]
+}
+
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
@@ -158,7 +173,10 @@ export async function POST(req: Request) {
             },
           ],
         },
-        updatedFields: { type: 'array', items: { type: 'string' } },
+        updatedFields: {
+          type: 'array',
+          items: { type: 'string' },
+        },
       },
       required: ['patch', 'updatedFields'],
     },
@@ -172,6 +190,14 @@ export async function POST(req: Request) {
     '',
     'DEFAULT behavior: extract explicit user-provided facts into form fields.',
     'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
+    '',
+    'Reset / clear behavior:',
+    '- If the user asks to reset/clear/wipe/remove a specific field, you MUST set that field to its empty value in the patch (and set other fields to null).',
+    '- Empty values:',
+    '  - title/description/image/impactLocation: empty string ""',
+    '  - recipientAddresses: empty array []',
+    '  - socialMedia: keep types but clear links, e.g. [{type:"website",link:""}, {type:"facebook",link:""}, {type:"x",link:""}, {type:"linkedin",link:""}]',
+    '- If the user asks to reset everything / start over, clear all fields above.',
     '',
     'EVM recipient address behavior:',
     `- The product supports these EVM networkIds: ${supportedEvmNetworkIds.join(
@@ -258,21 +284,6 @@ export async function POST(req: Request) {
     .join(' ')
 
   return NextResponse.json({ assistantMessage, patch })
-}
-
-type PatchOut = {
-  title?: string
-  description?: string
-  image?: string
-  impactLocation?: string
-  socialMedia?: { type: string; link: string }[]
-  recipientAddresses?: {
-    id?: string
-    chainType: Draft['recipientAddresses'][number]['chainType']
-    networkId: number
-    address: string
-    memo?: string
-  }[]
 }
 
 function normalizePatch(patch: z.infer<typeof patchSchema>): PatchOut {
@@ -382,12 +393,16 @@ function applyPatch(draft: Draft, patch?: PatchOut): Draft {
 
 function summarizeAndAsk(draft: Draft, patch?: PatchOut) {
   const changed: string[] = []
-  if (patch?.title) changed.push('project name')
-  if (patch?.description) changed.push('description')
-  if (patch?.image) changed.push('image')
-  if (patch?.impactLocation) changed.push('impact location')
-  if (patch?.socialMedia?.length) changed.push('social links')
-  if (patch?.recipientAddresses?.length) changed.push('recipient addresses')
+  if (patch?.title === '') changed.push('project name')
+  else if (patch?.title) changed.push('project name')
+  if (patch?.description === '') changed.push('description')
+  else if (patch?.description) changed.push('description')
+  if (patch?.image === '') changed.push('image')
+  else if (patch?.image) changed.push('image')
+  if (patch?.impactLocation === '') changed.push('impact location')
+  else if (patch?.impactLocation) changed.push('impact location')
+  if (patch?.socialMedia) changed.push('social links')
+  if (patch?.recipientAddresses) changed.push('recipient addresses')
 
   const updated = changed.length ? changed.join(', ') : ''
 
