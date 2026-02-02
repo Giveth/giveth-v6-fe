@@ -81,8 +81,8 @@ export const projectBySlugQuery = graphql(`
         id
         address
         networkId
-        title
         chainType
+        memo
       }
       projectQfRounds {
         countUniqueDonors
@@ -111,6 +111,7 @@ export const projectByIDQuery = graphql(`
         address
         networkId
         chainType
+        memo
       }
     }
   }
@@ -266,8 +267,8 @@ export const projectsQuery = graphql(`
           id
           address
           networkId
-          title
           chainType
+          memo
         }
         adminUser {
           id
@@ -337,8 +338,8 @@ export const similarProjectsBySlugQuery = graphql(`
           id
           address
           networkId
-          title
           chainType
+          memo
         }
       }
       total

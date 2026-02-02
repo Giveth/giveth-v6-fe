@@ -20,6 +20,13 @@ export const createProjectMutation = graphql(`
         id
         address
         networkId
+        chainType
+        memo
+      }
+      socialMedia {
+        id
+        type
+        link
       }
     }
   }
@@ -44,7 +51,12 @@ export const updateProjectMutation = graphql(`
         address
         networkId
         chainType
-        title
+        memo
+      }
+      socialMedia {
+        id
+        type
+        link
       }
     }
   }
