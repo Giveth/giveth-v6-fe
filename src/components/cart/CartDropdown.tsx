@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowRight, X } from 'lucide-react'
+import { IconUnstakeDonate } from '@/components/icons/IconUnstakeDonate'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
@@ -35,10 +36,14 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
 
       {/* Empty State */}
       {cartItems.length === 0 && (
-        <div className="p-8 text-center">
-          <p className="text-sm text-giv-neutral-700">Your cart is empty</p>
-          <p className="text-xs text-giv-neutral-700 mt-2">
-            Add projects to your cart to get started
+        <div className="p-8 text-center flex flex-col items-center justify-center">
+          <IconUnstakeDonate
+            width={32}
+            height={32}
+            fill="var(--giv-neutral-700)"
+          />
+          <p className="text-sm font-semibold text-giv-neutral-700 mt-2">
+            Add projects to cart to donate
           </p>
         </div>
       )}
