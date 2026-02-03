@@ -140,16 +140,17 @@ export function DonationCard({ project }: DonationCardProps) {
 
   const isActiveRound = Boolean(selectedRound?.qfRound?.isActive)
   let showFutureRoundNotice = false
+  let projectFutureRounds = project.projectQfRounds ?? []
 
   // Check if have future rounds
   if (!isActiveRound) {
-    const futureRounds = project?.projectQfRounds?.filter(
+    projectFutureRounds = projectFutureRounds.filter(
       pqr =>
         pqr.qfRound?.isActive &&
         pqr.qfRound?.beginDate &&
         new Date(pqr.qfRound.beginDate) > new Date(),
     )
-    if (futureRounds?.length && futureRounds?.length > 0) {
+    if (projectFutureRounds?.length && projectFutureRounds?.length > 0) {
       showFutureRoundNotice = true
     }
   }
@@ -356,8 +357,8 @@ export function DonationCard({ project }: DonationCardProps) {
         <DonateTimeModal
           isOpen={showDonateTimeModal}
           onClose={() => setShowDonateTimeModal(false)}
-          roundName={selectedRound?.qfRound?.name ?? ''}
-          beginDate={selectedRound?.qfRound?.beginDate}
+          roundName={projectFutureRounds[0]?.qfRound?.name ?? ''}
+          beginDate={projectFutureRounds[0]?.qfRound?.beginDate}
           projectSlug={project.slug}
         />
       )}
