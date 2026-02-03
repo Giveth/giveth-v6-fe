@@ -151,13 +151,12 @@ export function DonationSummary({
           const roundKey = String(round.roundId)
           const roundTotalAmount = Number(round.totalAmount || 0)
           const givethAmountForRound =
-            givethPercentage > 0 && givethPercentage < 100
-              ? (roundTotalAmount * givethPercentage) / (100 - givethPercentage)
-              : 0
+            (roundTotalAmount * givethPercentage) / 100
 
-          const totalAmountInRound = roundTotalAmount + givethAmountForRound
+          const totalGroupAmountWithGiveth =
+            roundTotalAmount + givethAmountForRound
 
-          // COunt only projects that have donation amount
+          // Count only projects that have donation amount
           const projectsWithAmount = round.projects.filter(
             p => Number(p.donationAmount) > 0,
           )
@@ -172,7 +171,7 @@ export function DonationSummary({
               <div className="bg-giv-neutral-300 px-4 py-2 rounded-xl">
                 <p className="text-giv-neutral-800 text-base font-normal">
                   <span className="font-medium">
-                    {formatNumber(totalAmountInRound, {
+                    {formatNumber(totalGroupAmountWithGiveth, {
                       minDecimals: 2,
                       maxDecimals: 6,
                     })}{' '}

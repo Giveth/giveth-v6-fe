@@ -287,8 +287,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               )
             } else {
               const roundTotalAmount = Number(round.totalAmount || '0')
-              const givethAmount =
-                roundTotalAmount * (givethPercentage / (100 - givethPercentage))
+              const givethAmount = (roundTotalAmount * givethPercentage) / 100
 
               if (givethAmount > 0) {
                 donations.push({
