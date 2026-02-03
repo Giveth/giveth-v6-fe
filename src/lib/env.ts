@@ -37,7 +37,7 @@ export const isProd = raw.VERCEL_ENV === 'production'
 
 const defaults: Partial<ClientEnv> = {
   GRAPHQL_ENDPOINT: isProd
-    ? 'https://core.v6.giveth.io/graphql'
+    ? 'https://core.qf.giveth.io/graphql'
     : 'https://core.v6-staging.giveth.io/graphql',
   THIRDWEB_CLIENT_ID: 'demo-client-id',
   WALLETCONNECT_PROJECT_ID: 'demo-project-id',
