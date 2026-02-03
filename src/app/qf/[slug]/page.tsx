@@ -124,11 +124,17 @@ export default function QFRoundPage() {
       <PassportBanner />
 
       <QFHero
+        isActiveRound={qfRound.isActive ?? false}
+        isFutureRound={
+          qfRound.beginDate &&
+          new Date(qfRound.beginDate).getTime() > new Date().getTime()
+        }
         bannerImage={qfRound.bannerBgImage ?? undefined}
         bannerFull={qfRound.bannerFull ?? undefined}
         bannerMobile={qfRound.bannerMobile ?? undefined}
         title={qfRound.title || qfRound.name}
         endDate={qfRound.endDate}
+        beginDate={qfRound.beginDate}
       />
 
       <QFStats
@@ -142,12 +148,17 @@ export default function QFRoundPage() {
       <main className="max-w-7xl mx-auto px-6 pb-16">
         <QFProjectsGrid
           isActiveRound={qfRound.isActive ?? false}
+          isFutureRound={
+            qfRound.beginDate &&
+            new Date(qfRound.beginDate).getTime() > new Date().getTime()
+          }
           projects={projects}
           isLoading={isProjectsLoading}
           isFetching={isProjectsFetching}
           hasProjectsData={hasProjectsData}
           roundId={roundId}
           roundName={qfRound.title || qfRound.name}
+          roundBeginDate={qfRound.beginDate}
           totalProjects={totalProjects}
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
