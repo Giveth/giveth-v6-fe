@@ -138,7 +138,7 @@ export function QFHero({
           </div>
 
           <div
-            className={`absolute bottom-4 left-4 rounded-2xl p-8 text-white ${
+            className={`absolute bottom-2 md:bottom-4 left-1 md:left-2 md:left-4 rounded-2xl p-4 md:p-8 text-white ${
               hasBanner ? 'bg-transparent' : 'bg-giv-brand-500'
             }`}
           >
@@ -169,8 +169,8 @@ export function QFHero({
             )}
 
             <div>
-              <h1 className="text-3xl font-bold mb-4">{title}</h1>
-              <div className="inline-flex flex-col items-start gap-1 px-8 py-4 bg-giv-brand-500 rounded-full text-md font-bold border-2 border-white">
+              <h1 className="text-base md:text-3xl font-bold mb-4">{title}</h1>
+              <div className="inline-flex flex-col items-start gap-1 px-4 md:px-8 py-2 md:py-4 bg-giv-brand-500 rounded-full text-xs md:text-sm font-bold border-2 border-white">
                 {heroText}
               </div>
             </div>
