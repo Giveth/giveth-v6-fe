@@ -138,8 +138,10 @@ export function DonationCard({ project }: DonationCardProps) {
     <div className="h-full bg-white rounded-xl p-4">
       {/* If there is only one round, show the round name */}
       {availableRounds.length === 1 && (
-        <div className="w-full flex items-center justify-between px-4 py-3 border border-giv-neutral-100 rounded-xl mb-4 transition-colors">
-          {selectedRound?.qfRound?.name ?? ''}
+        <div className="w-full flex items-center justify-center px-4 py-3 border border-giv-neutral-100 rounded-xl mb-4 transition-colors">
+          <span className="text-sm font-semibold text-giv-neutral-900">
+            {selectedRound?.qfRound?.name ?? ''}
+          </span>
         </div>
       )}
 

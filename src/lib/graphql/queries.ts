@@ -92,6 +92,8 @@ export const projectBySlugQuery = graphql(`
           name
           slug
           isActive
+          beginDate
+          endDate
         }
       }
     }
