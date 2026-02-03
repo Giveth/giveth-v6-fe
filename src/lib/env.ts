@@ -47,7 +47,7 @@ const defaults: Partial<ClientEnv> = {
   SIWE_AUTH_SERVICE_URL: 'https://auth.giveth.io',
   OLD_FRONTEND_URL: isProd ? 'https://giveth.io' : 'https://staging.giveth.io',
   FRONTEND_URL: isProd
-    ? 'https://v6.giveth.io'
+    ? 'https://qf.giveth.io'
     : 'https://v6-staging.giveth.io',
 }
 
