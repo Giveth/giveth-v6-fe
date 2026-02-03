@@ -29,11 +29,31 @@ export const calculateEstimatedMatchingWithDonationAmount = (
 }
 
 /**
- * Get the active rounds for a project
+ * Get the active rounds adn roudns that begin date match the current date for a project
+ * Sort the rounds by begin date
  *
  * @param project - The project to get the active rounds for
  * @returns The active rounds for the project
  */
 export const getProjectActiveRounds = (project: ProjectEntity) => {
-  return project.projectQfRounds?.filter(pqr => pqr.qfRound?.isActive)
+  const currentDate = new Date()
+  return project.projectQfRounds
+    ?.filter(pqr => pqr.qfRound?.isActive)
+    ?.filter(pqr => {
+      if (pqr.qfRound?.beginDate) {
+        return (
+          new Date(pqr.qfRound.beginDate).getTime() <= currentDate.getTime()
+        )
+      }
+      return false
+    })
+    .sort((a, b) => {
+      if (a.qfRound?.beginDate && b.qfRound?.beginDate) {
+        return (
+          new Date(a.qfRound.beginDate).getTime() -
+          new Date(b.qfRound.beginDate).getTime()
+        )
+      }
+      return 0
+    })
 }

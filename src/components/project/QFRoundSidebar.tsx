@@ -47,6 +47,7 @@ export function QFRoundSidebar({
 
   const countUniqueDonors =
     (selectedRound?.countUniqueDonors ?? project.countUniqueDonors) || 0
+
   return (
     <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
       <h3 className="text-base font-medium text-giv-neutral-900 border-b border-giv-neutral-300 pb-2 mb-4">

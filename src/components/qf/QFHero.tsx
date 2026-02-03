@@ -4,19 +4,25 @@ import { useEffect, useState } from 'react'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 
 interface QFHeroProps {
+  isActiveRound?: boolean
+  isFutureRound?: boolean
   bannerImage?: string
   bannerFull?: string
   bannerMobile?: string
   title: string
   endDate: string
+  beginDate: string
 }
 
 export function QFHero({
+  isActiveRound,
+  isFutureRound,
   bannerImage,
   bannerFull,
   bannerMobile,
   title,
   endDate,
+  beginDate,
 }: QFHeroProps) {
   const isMobile = useIsMobile()
   const [now, setNow] = useState(() => Date.now())
@@ -38,11 +44,27 @@ export function QFHero({
 
   const hasBanner = !!resolvedBannerUrl
 
+  // Ending period
   const remainingMs = Math.max(0, new Date(endDate).getTime() - now)
   const totalMinutes = Math.floor(remainingMs / 60000)
   const days = Math.floor(totalMinutes / 1440)
   const hours = Math.floor((totalMinutes % 1440) / 60)
   const minutes = totalMinutes % 60
+
+  // Starting period
+  const remainingMsStart = Math.max(0, new Date(beginDate).getTime() - now)
+  const totalMinutesStart = Math.floor(remainingMsStart / 60000)
+  const daysStart = Math.floor(totalMinutesStart / 1440)
+  const hoursStart = Math.floor((totalMinutesStart % 1440) / 60)
+  const minutesStart = totalMinutesStart % 60
+
+  // Hero text
+  const heroText =
+    isActiveRound && !isFutureRound
+      ? `Round ends in ${days} d ${hours} h ${minutes} min`
+      : isFutureRound
+        ? `Round starts in ${daysStart} d ${hoursStart} h ${minutesStart} min`
+        : 'Round ended'
 
   return (
     <div className="relative">
@@ -149,7 +171,7 @@ export function QFHero({
             <div>
               <h1 className="text-3xl font-bold mb-4">{title}</h1>
               <div className="inline-flex flex-col items-start gap-1 px-8 py-4 bg-giv-brand-500 rounded-full text-md font-bold border-2 border-white">
-                Round ends in {days} d {hours} h {minutes} min
+                {heroText}
               </div>
             </div>
           </div>
