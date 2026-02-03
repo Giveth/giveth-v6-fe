@@ -37,7 +37,7 @@ export const isProd = raw.VERCEL_ENV === 'production'
 
 const defaults: Partial<ClientEnv> = {
   GRAPHQL_ENDPOINT: isProd
-    ? 'https://core.qf.giveth.io/graphql'
+    ? 'https://core.v6.giveth.io/graphql'
     : 'https://core.v6-staging.giveth.io/graphql',
   THIRDWEB_CLIENT_ID: 'demo-client-id',
   WALLETCONNECT_PROJECT_ID: 'demo-project-id',
@@ -47,7 +47,7 @@ const defaults: Partial<ClientEnv> = {
   SIWE_AUTH_SERVICE_URL: 'https://auth.giveth.io',
   OLD_FRONTEND_URL: isProd ? 'https://giveth.io' : 'https://staging.giveth.io',
   FRONTEND_URL: isProd
-    ? 'https://v6.giveth.io'
+    ? 'https://qf.giveth.io'
     : 'https://v6-staging.giveth.io',
 }
 
