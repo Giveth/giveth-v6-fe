@@ -66,7 +66,10 @@ export function DonationSidebar({
       )
     }, 0)
 
-    if (totalGroupCartValueUsd > totalGroupCartBalanceUsd) {
+    const totalGroupCartValueWithGiveth =
+      totalGroupCartValueUsd + (totalGroupCartValueUsd * givethPercentage) / 100
+
+    if (totalGroupCartValueWithGiveth > totalGroupCartBalanceUsd) {
       setIsInsufficientFund(true)
       return
     }
@@ -88,7 +91,11 @@ export function DonationSidebar({
       )
     }, 0)
 
-    if (totalNonGroupCartValueUsd > totalNonGroupCartBalanceUsd) {
+    const totalNonGroupCartValueWithGiveth =
+      totalNonGroupCartValueUsd +
+      (totalNonGroupCartValueUsd * givethPercentage) / 100
+
+    if (totalNonGroupCartValueWithGiveth > totalNonGroupCartBalanceUsd) {
       setIsInsufficientFund(true)
       return
     }
