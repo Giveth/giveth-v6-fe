@@ -466,31 +466,3 @@ export const calculateRoundTotalMatchingValue = (
       return sum + amount
     }, 0)
 }
-
-/**
- * Apply the Giveth percentage to the cart items
- *
- * @param cartItems - The cart items
- * @param givethPercentage - The Giveth percentage
- * @returns The cart items with the Giveth percentage applied
- */
-export function applyGivethPercentageToCartItems(
-  cartItems: ProjectCartItem[],
-  givethPercentage: number,
-) {
-  const percentage = Number(givethPercentage)
-
-  if (!Number.isFinite(percentage) || percentage <= 0) return cartItems
-
-  const ratio = Math.max(0, 1 - Math.min(percentage, 100) / 100)
-
-  return cartItems.map(item => {
-    const amount = Number(item.donationAmount)
-    if (!Number.isFinite(amount)) return item
-
-    return {
-      ...item,
-      donationAmount: (amount * ratio).toString(),
-    }
-  })
-}

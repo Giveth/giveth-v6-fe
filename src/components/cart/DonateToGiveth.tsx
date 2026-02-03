@@ -1,12 +1,26 @@
 'use client'
 
+import { useEffect } from 'react'
 import * as Switch from '@radix-ui/react-switch'
 import clsx from 'clsx'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { useCart } from '@/context/CartContext'
+import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 
 export function DonateToGiveth() {
-  const { givethPercentage, setGivethPercentage } = useCart()
+  const { givethPercentage, setGivethPercentage, cartItems } = useCart()
+
+  // Check if we have Giveth project inside cart
+  // if we have it don't show the component and reset percentage to 0
+  const hasGivethProject = cartItems.some(
+    item => item.id === String(GIVETH_PROJECT_ID),
+  )
+
+  useEffect(() => {
+    if (hasGivethProject) setGivethPercentage(0)
+  }, [hasGivethProject, setGivethPercentage])
+
+  if (hasGivethProject) return null
 
   const handleToggleGiveth = () => {
     setGivethPercentage(givethPercentage === 0 ? 10 : 0)
@@ -46,7 +60,7 @@ export function DonateToGiveth() {
           <span className="text-base font-medium text-giv-neutral-900">
             Donate to Giveth
           </span>
-          <HelpTooltip text="This donation supports Giveth platform sustainability." />
+          <HelpTooltip text="This optional contribution helps Giveth keep building and supporting public goods.The selected percentage is added on top of each donation you make." />
         </div>
       </div>
 

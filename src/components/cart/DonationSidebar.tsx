@@ -224,13 +224,16 @@ export function DonationSidebar({
               const totalGroupAmount = Number(group.totalAmount)
               const totalGroupAmountUsd = Number(group.totalUsdValue)
 
+              const totalGroupAmountWithGiveth =
+                totalGroupAmount + (totalGroupAmount * givethPercentage) / 100
+
               return (
                 <div
                   key={group.roundId}
                   className="p-3 rounded-lg border border-giv-neutral-300"
                 >
                   <p className="text-base text-giv-neutral-900 font-medium">
-                    {formatNumber(totalGroupAmount, {
+                    {formatNumber(totalGroupAmountWithGiveth, {
                       minDecimals: 2,
                       maxDecimals: 2,
                     })}{' '}
@@ -285,6 +288,7 @@ export function DonationSidebar({
           className={`${walletAddress && isAuthenticated ? 'block' : 'opacity-50 cursor-not-allowed'}`}
         >
           <DonateToGiveth />
+
           {/* Donate Button */}
           <button
             onClick={handleDonateButtonClick}

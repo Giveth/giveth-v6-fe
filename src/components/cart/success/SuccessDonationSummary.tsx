@@ -130,16 +130,12 @@ export function SuccessDonationSummary() {
           const roundKey = String(round.roundId)
           const isSuccess = status?.status === 'success'
           const isFailed = status?.status === 'error'
-
-          const givethAmountForRound =
-            effectiveGivethPercentage > 0 && effectiveGivethPercentage < 100
-              ? (Number(round.totalAmount) * effectiveGivethPercentage) /
-                (100 - effectiveGivethPercentage)
-              : 0
-
           const totalAmountForRound = round.projects
             .filter(p => Number(p.donationAmount) > 0)
             .reduce((acc, p) => acc + Number(p.donationAmount), 0)
+
+          const givethAmountForRound =
+            (totalAmountForRound * effectiveGivethPercentage) / 100
 
           const totalAmountInRound = totalAmountForRound + givethAmountForRound
 
