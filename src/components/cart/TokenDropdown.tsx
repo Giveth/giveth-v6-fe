@@ -127,12 +127,12 @@ export const TokenDropdown = ({
               className="
                 cursor-default rounded-lg px-3 py-2 text-sm
                 text-giv-deep-blue-800 outline-none
-                hover:-giv-neutral-200
-                focus:-giv-neutral-200
+                hover:bg-giv-neutral-200
+                focus:bg-giv-neutral-200
               "
             >
               <div className="flex items-center justify-start gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer text-giv-neutral-900">
                   <input
                     type="checkbox"
                     checked={hide0BalanceTokens}
@@ -197,8 +197,8 @@ function TokenDropdownItems({
           className="
             cursor-pointer rounded-lg px-3 py-2 text-sm
             text-giv-deep-blue-800 outline-none
-            hover:-giv-neutral-200
-            focus:-giv-neutral-200
+            hover:bg-giv-neutral-200
+            focus:bg-giv-neutral-200
           "
         >
           <div className="flex items-center justify-start gap-4">
@@ -210,7 +210,7 @@ function TokenDropdownItems({
               width={20}
               isGivbackEligible={t.isGivbackEligible}
             />
-            <span className="font-medium">{t.symbol}</span>
+            <span className="font-medium text-giv-neutral-900">{t.symbol}</span>
             <span className="text-giv-neutral-700 tabular-nums ml-auto">
               {formatNumber(t.formattedBalance, {
                 minDecimals: 2,
