@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import {
   ArrowDown,
@@ -8,6 +9,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
+import { type Route } from 'next'
 import { type Address } from 'thirdweb'
 import { EnsName } from '@/components/account/EnsName'
 import { ChainIcon } from '@/components/ChainIcon'
@@ -335,15 +337,21 @@ export function ProjectDonationsTable({
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <span className="">
-                              {donation.donorName === 'Anonymous'
-                                ? 'Anonymous'
-                                : donation.donorName ||
-                                  (donorAddress ? (
+                            <span>
+                              {donation.donorName === 'Anonymous' ? (
+                                'Anonymous'
+                              ) : donorAddress ? (
+                                <Link
+                                  href={`/user/${donorAddress}` as Route}
+                                  className="text-base! hover:text-giv-brand-500!"
+                                >
+                                  {donation.donorName || (
                                     <EnsName address={donorAddress} />
-                                  ) : (
-                                    'Anonymous'
-                                  ))}
+                                  )}
+                                </Link>
+                              ) : (
+                                donation.donorName || 'Anonymous'
+                              )}
                             </span>
                           </div>
                         </td>
@@ -368,17 +376,19 @@ export function ProjectDonationsTable({
                             <span className="text-giv-neutral-800">
                               {donation.token}
                             </span>
-                            <a
-                              href={getTransactionUrl(
-                                donation.networkId,
-                                donation.transactionId,
-                              )}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-giv-brand-500 transition-colors"
-                            >
-                              <ExternalLink className="w-3 h-3 text-giv-neutral-800" />
-                            </a>
+                            {donation.transactionId && (
+                              <a
+                                href={getTransactionUrl(
+                                  donation.networkId,
+                                  donation.transactionId,
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-giv-brand-500 transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3 text-giv-neutral-800" />
+                              </a>
+                            )}
                           </div>
                         </td>
                         <td className="px-1 py-4">{donation.usd}</td>
@@ -428,6 +438,15 @@ export function ProjectDonationsTable({
 
             {totalPages > 5 && currentPage < totalPages - 3 && (
               <span className="px-2 text-sm text-giv-neutral-600">...</span>
+            )}
+
+            {totalPages > 5 && currentPage < totalPages - 3 && (
+              <button
+                onClick={() => handlePageClick(totalPages - 1)}
+                className="w-7 h-7 text-sm rounded cursor-pointer text-giv-neutral-600 hover:text-giv-brand-500"
+              >
+                {totalPages}
+              </button>
             )}
 
             <button
