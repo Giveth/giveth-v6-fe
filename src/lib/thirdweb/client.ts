@@ -19,12 +19,14 @@ export const supportedChains: Chain[] = [
   gnosis,
   mainnet,
   optimism,
-  optimismSepolia,
   base,
   polygon,
   celoAlfajores,
-  arbitrumSepolia,
-  baseSepolia,
+  ...(process.env.VERCEL_ENV === 'development' ||
+  process.env.VERCEL_ENV === 'preview' ||
+  process.env.VERCEL_ENV === 'local'
+    ? [optimismSepolia, baseSepolia, arbitrumSepolia]
+    : []),
 ]
 
 const baseWallets: Wallet[] = [

@@ -111,6 +111,7 @@ export default function ProjectPage() {
               description={project.description}
               descriptionSummary={project.descriptionSummary}
               socialMedia={project.socialMedia}
+              categories={project.categories}
             />
           )}
 
