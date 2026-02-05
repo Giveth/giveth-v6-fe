@@ -127,6 +127,9 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
         errors.push(
           `Round "${round.roundName}" has ${projectsWithoutAddress.length} project(s) without wallet addresses.`,
         )
+        console.error(
+          `Round "${round.roundName}" has ${projectsWithoutAddress.length} project(s) without wallet addresses.`,
+        )
       }
 
       // Check that projects have donation amounts
@@ -135,6 +138,9 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
       )
       if (projectsWithoutAmount.length > 0) {
         errors.push(
+          `Round "${round.roundName}" has ${projectsWithoutAmount.length} project(s) without donation amounts.`,
+        )
+        console.error(
           `Round "${round.roundName}" has ${projectsWithoutAmount.length} project(s) without donation amounts.`,
         )
       }
