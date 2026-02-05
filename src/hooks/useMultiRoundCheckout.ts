@@ -474,6 +474,15 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               ? `${failed} of ${rounds.length} rounds failed`
               : undefined,
       }))
+      if (failed > 0) {
+        console.error(
+          failed === rounds.length
+            ? rounds.length > 1
+              ? 'All rounds transactions failed'
+              : 'Round transaction failed'
+            : `${failed} of ${rounds.length} rounds failed`,
+        )
+      }
     },
     [
       account,
