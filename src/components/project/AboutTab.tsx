@@ -1,9 +1,12 @@
 import dynamic from 'next/dynamic'
 import clsx from 'clsx'
+import { ProjectCategories } from '@/components/project/ProjectCategories'
 import {
   type ProjectSocialMedia,
   ProjectSocials,
 } from '@/components/project/ProjectSocials'
+import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
+import { groupByMainCategory } from '@/lib/helpers/projectHelper'
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill-new'), {
@@ -15,12 +18,14 @@ interface AboutTabProps {
   description?: string | null
   descriptionSummary?: string | null
   socialMedia?: ProjectSocialMedia[] | null
+  categories?: ProjectBySlugQuery['projectBySlug']['categories']
 }
 
 export function AboutTab({
   description,
   descriptionSummary,
   socialMedia,
+  categories: _categories,
 }: AboutTabProps) {
   const displayDescription =
     description || descriptionSummary || 'No description available.'
@@ -28,6 +33,8 @@ export function AboutTab({
   const modules = {
     toolbar: false, // Disable toolbar for read-only mode
   }
+
+  const projectCategories = groupByMainCategory(_categories ?? [])
 
   const formats = [
     'header',
@@ -82,6 +89,12 @@ export function AboutTab({
         <>
           <div className="my-4 h-px bg-giv-neutral-500" />
           <ProjectSocials socialMedia={socialMedia} />
+        </>
+      )}
+      {!!projectCategories?.length && (
+        <>
+          <div className="my-4 h-px bg-giv-neutral-500" />
+          <ProjectCategories categories={projectCategories} />
         </>
       )}
     </div>

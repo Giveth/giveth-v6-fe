@@ -1,4 +1,18 @@
-import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
+import {
+  type ProjectBySlugQuery,
+  type ProjectEntity,
+} from '@/lib/graphql/generated/graphql'
+
+type ProjectCategory = NonNullable<
+  NonNullable<ProjectBySlugQuery['projectBySlug']['categories']>[number]
+>
+
+export type GroupedCategory = {
+  id: string
+  title: string
+  slug: string
+  categories: ProjectCategory[]
+}
 
 export const calculateEstimatedMatchingWithDonationAmount = (
   donationAmountInUSD: number,
@@ -56,4 +70,37 @@ export const getProjectActiveRounds = (project: ProjectEntity) => {
       }
       return 0
     })
+}
+
+/**
+ * Group the categories by main category
+ *
+ * @param categories - The categories to group by main category
+ * @returns The categories grouped by main category
+ */
+export function groupByMainCategory(
+  categories:
+    | ProjectBySlugQuery['projectBySlug']['categories']
+    | null
+    | undefined,
+): GroupedCategory[] {
+  const map = new Map<string, GroupedCategory>()
+
+  for (const item of categories ?? []) {
+    const main = item.mainCategory
+    if (!main) continue
+
+    if (!map.has(main.id)) {
+      map.set(main.id, {
+        id: main.id,
+        title: main.title,
+        slug: main.slug,
+        categories: [],
+      })
+    }
+
+    map.get(main.id)!.categories.push(item)
+  }
+
+  return Array.from(map.values())
 }
