@@ -100,11 +100,6 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
 
       {!isLoading && !error && (timelineUpdates.length > 0 || total > 0) && (
         <div className="space-y-0 relative">
-          {/* One continuous timeline line (prevents gaps between rows) */}
-          <div
-            className="absolute left-[28px] top-0 bottom-0 w-px bg-giv-neutral-300"
-            aria-hidden="true"
-          />
           {timelineUpdates.map((u, idx) => {
             const date = new Date(u.createdAt)
             const day = format(date, 'd')
@@ -147,14 +142,15 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
                       </span>
                     </div>
                   </div>
+                  <div className="mx-auto mt-4 h-full w-px bg-giv-neutral-300" />
                 </div>
 
                 {/* Content */}
-                <div>
+                <div className="border-b border-giv-neutral-400 pb-6">
                   <div className="text-2xl text-giv-neutral-700">{u.title}</div>
 
                   {u.content?.trim() && (
-                    <div className="mt-6 border-b border-giv-neutral-300 pb-6">
+                    <div className="mt-6">
                       <ReactQuill
                         value={u.content}
                         readOnly={true}

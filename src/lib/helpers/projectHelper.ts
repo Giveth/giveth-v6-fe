@@ -1,4 +1,5 @@
 import {
+  type MainCategoryEntity,
   type ProjectBySlugQuery,
   type ProjectEntity,
 } from '@/lib/graphql/generated/graphql'
