@@ -5,7 +5,7 @@ interface ProjectTabsProps {
   onTabChange: (tab: string) => void
   updatesCount?: number | null
   donationsCount?: number | null
-  givpowerCount?: number | null
+  // givpowerCount?: number | null
 }
 
 export function ProjectTabs({
@@ -13,7 +13,7 @@ export function ProjectTabs({
   onTabChange,
   updatesCount = null,
   donationsCount = null,
-  givpowerCount = null,
+  // givpowerCount = null,
 }: ProjectTabsProps) {
   const tabs = [
     { id: 'about', label: 'About', count: null },
@@ -24,7 +24,7 @@ export function ProjectTabs({
       count: donationsCount,
       highlight: true,
     },
-    { id: 'givpower', label: 'GIVpower', count: givpowerCount },
+    // { id: 'givpower', label: 'GIVpower', count: givpowerCount },
   ]
 
   return (
