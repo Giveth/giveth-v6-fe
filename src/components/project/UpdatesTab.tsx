@@ -76,7 +76,7 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
   )
 
   return (
-    <div className="max-w-4xl">
+    <div>
       {isLoading && (
         <div className="flex items-center justify-center py-12 text-giv-neutral-700">
           Loading updates...
@@ -126,22 +126,22 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
             return (
               <div
                 key={u.id}
-                className={`grid grid-cols-[120px_1fr] gap-12 ${
+                className={`grid grid-cols-[60px_1fr] gap-12 ${
                   isLast ? '' : 'pb-28'
                 }`}
               >
                 {/* Date + timeline */}
-                <div className="relative">
+                <div className="relative text-center">
                   <div className="leading-none">
-                    <div className="text-[14px] font-medium text-giv-neutral-700">
+                    <div className="text-xs font-medium text-giv-neutral-600">
                       <span className={showDate ? '' : 'invisible'}>{day}</span>
                     </div>
-                    <div className="mt-2 text-[20px] font-semibold tracking-wide text-giv-deep-blue-800">
+                    <div className="text-base font-medium tracking-wide text-giv-neutral-800">
                       <span className={showDate ? '' : 'invisible'}>
                         {month}
                       </span>
                     </div>
-                    <div className="mt-2 text-[14px] font-medium text-giv-neutral-700">
+                    <div className="text-xs font-medium text-giv-neutral-600">
                       <span className={showDate ? '' : 'invisible'}>
                         {year}
                       </span>
@@ -151,12 +151,10 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
 
                 {/* Content */}
                 <div>
-                  <div className="text-[52px] leading-[1.05] font-semibold text-giv-neutral-700">
-                    {u.title}
-                  </div>
+                  <div className="text-2xl text-giv-neutral-700">{u.title}</div>
 
                   {u.content?.trim() && (
-                    <div className="mt-12 max-w-3xl">
+                    <div className="mt-6 border-b border-giv-neutral-300 pb-6">
                       <ReactQuill
                         value={u.content}
                         readOnly={true}
@@ -170,8 +168,10 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
                           '[&_.ql-editor]:text-giv-deep-blue-800',
                           '[&_.ql-editor]:leading-7',
                           '[&_.ql-editor]:p-0',
+                          '[&_.ql-editor_p]:text-base',
+                          '[&_.ql-editor_p]:text-giv-neutral-900',
                           '[&_.ql-editor_h1]:text-giv-deep-blue-800',
-                          '[&_.ql-editor_h1]:font-semibold',
+                          '[&_.ql-editor_h1]:font-bold',
                           '[&_.ql-editor_h1]:tracking-tight',
                           '[&_.ql-editor_h2]:text-giv-deep-blue-800',
                           '[&_.ql-editor_h2]:font-semibold',

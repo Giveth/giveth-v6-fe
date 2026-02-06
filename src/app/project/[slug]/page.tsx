@@ -13,7 +13,7 @@ import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
 import { ProjectTabs } from '@/components/project/ProjectTabs'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
 // import { SimilarProjects } from '@/components/project/SimilarProjects'
-import { UpdatesTab } from '@/components/project/updates-tab'
+import { UpdatesTab } from '@/components/project/UpdatesTab'
 import { useProjectBySlug } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
 import {
