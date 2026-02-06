@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import clsx from 'clsx'
 import {
   ArrowRight,
@@ -258,7 +259,13 @@ export function SuccessDonationSummary() {
                           {project.donationAmount} {project.tokenSymbol}
                         </span>
                         <span>to</span>
-                        <span className="font-medium">{project.title}</span>
+                        <Link
+                          href={`/project/${project.slug}`}
+                          target="_blank"
+                          className="font-medium hover:text-giv-brand-500! transition-colors duration-300 cursor-pointer"
+                        >
+                          {project.title}
+                        </Link>
                       </div>
                     ))}
                   </div>
