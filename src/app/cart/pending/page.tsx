@@ -6,10 +6,7 @@ import { DonationSummary } from '@/components/cart/pending/DonationSummary'
 import { PendingHero } from '@/components/cart/pending/PendingHero'
 import { useCart, type DonationRound } from '@/context/CartContext'
 import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
-import {
-  applyGivethPercentageToCartItems,
-  groupCartItemsByRound,
-} from '@/lib/helpers/cartHelper'
+import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 import {
   clearCheckoutReceipt,
   saveCheckoutReceipt,
@@ -26,17 +23,9 @@ export default function PendingPage() {
     ? checkoutGivethPercentageRef.current
     : givethPercentage
 
-  // Reduce cart items by Giveth percentage if we are donating to Giveth
-  const adjustedCartItems = useMemo(() => {
-    return applyGivethPercentageToCartItems(
-      cartItems,
-      effectiveGivethPercentage,
-    )
-  }, [cartItems, effectiveGivethPercentage])
-
   const { qfRoundGroups, nonQfProjects } = useMemo(
-    () => groupCartItemsByRound(adjustedCartItems),
-    [adjustedCartItems],
+    () => groupCartItemsByRound(cartItems),
+    [cartItems],
   )
 
   const roundsForCheckout: DonationRound[] = useMemo(() => {

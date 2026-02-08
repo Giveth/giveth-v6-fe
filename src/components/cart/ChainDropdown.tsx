@@ -82,7 +82,7 @@ export const ChainDropdown = ({
                 focus:bg-giv-neutral-200
               "
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-giv-neutral-900">
                 <ChainIcon networkId={id} />
                 {getChainName(id)}
               </div>

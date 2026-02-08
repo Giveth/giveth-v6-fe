@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import clsx from 'clsx'
 import { X } from 'lucide-react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
@@ -54,14 +55,22 @@ export const ProjectCartCard = ({
       {/* Project Info */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <ProjectImage
-            src={project.image}
-            alt={project.title}
-            className="w-14 h-[45px] rounded-md overflow-hidden"
-          />
-          <h4 className="text-base font-medium text-giv-neutral-900">
-            {project.title}
-          </h4>
+          <Link
+            href={`/project/${project.slug}`}
+            target="_blank"
+            className="hover:opacity-80 transition-opacity duration-300"
+          >
+            <ProjectImage
+              src={project.image}
+              alt={project.title}
+              className="w-14 h-[45px] rounded-md overflow-hidden"
+            />
+          </Link>
+          <Link href={`/project/${project.slug}`} target="_blank">
+            <h4 className="text-base font-medium text-giv-neutral-900 hover:text-giv-brand-500 transition-colors duration-300">
+              {project.title}
+            </h4>
+          </Link>
         </div>
         <button
           onClick={() =>

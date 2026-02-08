@@ -16,13 +16,9 @@ import {
   joinUsLink,
   onboardingGuideLink,
   partnershipsLink,
-  projectsLink,
   supportLink,
   termsOfUseLink,
-  hiringLink,
   leaveFeedbackLink,
-  QaccLink,
-  QaccNewsLink,
   InstagramLink,
   MediumLink,
   GithubLink,
@@ -42,51 +38,25 @@ export function Footer() {
             grid gap-8
             grid-cols-2
             sm:grid-cols-3
-            md:grid-cols-[1fr_1fr_1fr_1fr_2fr]
+            md:grid-cols-[1fr_1fr__2fr]
           "
         >
           {/* Column 1 */}
           <div className="flex flex-col gap-2">
-            <Link
-              href="/"
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              Home
-            </Link>
-            <Link
-              href={{ pathname: projectsLink.href as Route }}
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {projectsLink.label}
-            </Link>
             <Link
               href={{ pathname: aboutUsLink.href as Route }}
               className="text-base text-gray-600 hover:text-gray-900"
             >
               {aboutUsLink.label}
             </Link>
-            <Link
-              href={{ pathname: faqLink.href as Route }}
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {faqLink.label}
-            </Link>
-            <Link
-              href={{ pathname: supportLink.href as Route }}
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {supportLink.label}
-            </Link>
-          </div>
 
-          {/* Column 2 */}
-          <div className="flex flex-col gap-2">
             <Link
-              href={{ pathname: joinUsLink.href as Route }}
+              href={{ pathname: onboardingGuideLink.href as Route }}
               className="text-base text-gray-600 hover:text-gray-900"
             >
-              {joinUsLink.label}
+              {onboardingGuideLink.label}
             </Link>
+
             <Link
               href={{ pathname: documentationLink.href as Route }}
               target={documentationLink.target}
@@ -100,27 +70,36 @@ export function Footer() {
               {documentationLink.label}
             </Link>
             <Link
-              href={{ pathname: termsOfUseLink.href as Route }}
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {termsOfUseLink.label}
-            </Link>
-            <Link
-              href={{ pathname: onboardingGuideLink.href as Route }}
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {onboardingGuideLink.label}
-            </Link>
-          </div>
-
-          {/* Column 3 */}
-          <div className="flex flex-col gap-2">
-            <Link
               href={{ pathname: partnershipsLink.href as Route }}
               className="text-base text-gray-600 hover:text-gray-900"
             >
               {partnershipsLink.label}
             </Link>
+
+            <Link
+              href={{ pathname: joinUsLink.href as Route }}
+              className="text-base text-gray-600 hover:text-gray-900"
+            >
+              {joinUsLink.label}
+            </Link>
+          </div>
+
+          {/* Column 2 */}
+          <div className="flex flex-col gap-2">
+            <Link
+              href={{ pathname: faqLink.href as Route }}
+              className="text-base text-gray-600 hover:text-gray-900"
+            >
+              {faqLink.label}
+            </Link>
+
+            <Link
+              href={{ pathname: supportLink.href as Route }}
+              className="text-base text-gray-600 hover:text-gray-900"
+            >
+              {supportLink.label}
+            </Link>
+
             <Link
               href={{ pathname: leaveFeedbackLink.href as Route }}
               target={leaveFeedbackLink.target}
@@ -133,41 +112,16 @@ export function Footer() {
             >
               {leaveFeedbackLink.label}
             </Link>
+
             <Link
-              href={{ pathname: hiringLink.href as Route }}
+              href={{ pathname: termsOfUseLink.href as Route }}
               className="text-base text-gray-600 hover:text-gray-900"
             >
-              {hiringLink.label}
+              {termsOfUseLink.label}
             </Link>
           </div>
 
-          {/* Column 4 */}
-          <div className="flex flex-col gap-2">
-            <Link
-              href={{ pathname: QaccLink.href as Route }}
-              target={QaccLink.target}
-              rel={
-                QaccLink.target === '_blank' ? 'noopener noreferrer' : undefined
-              }
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {QaccLink.label}
-            </Link>
-            <Link
-              href={{ pathname: QaccNewsLink.href as Route }}
-              target={QaccNewsLink.target}
-              rel={
-                QaccNewsLink.target === '_blank'
-                  ? 'noopener noreferrer'
-                  : undefined
-              }
-              className="text-base text-gray-600 hover:text-gray-900"
-            >
-              {QaccLink.label}
-            </Link>
-          </div>
-
-          {/* Column 5*/}
+          {/* Column 3*/}
           <div className="flex flex-col gap-6 md:justify-self-end">
             <div className="flex flex-wrap gap-4">
               <Link

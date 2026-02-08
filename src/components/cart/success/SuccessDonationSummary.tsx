@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import clsx from 'clsx'
 import {
   ArrowRight,
@@ -130,16 +131,12 @@ export function SuccessDonationSummary() {
           const roundKey = String(round.roundId)
           const isSuccess = status?.status === 'success'
           const isFailed = status?.status === 'error'
-
-          const givethAmountForRound =
-            effectiveGivethPercentage > 0 && effectiveGivethPercentage < 100
-              ? (Number(round.totalAmount) * effectiveGivethPercentage) /
-                (100 - effectiveGivethPercentage)
-              : 0
-
           const totalAmountForRound = round.projects
             .filter(p => Number(p.donationAmount) > 0)
             .reduce((acc, p) => acc + Number(p.donationAmount), 0)
+
+          const givethAmountForRound =
+            (totalAmountForRound * effectiveGivethPercentage) / 100
 
           const totalAmountInRound = totalAmountForRound + givethAmountForRound
 
@@ -262,7 +259,13 @@ export function SuccessDonationSummary() {
                           {project.donationAmount} {project.tokenSymbol}
                         </span>
                         <span>to</span>
-                        <span className="font-medium">{project.title}</span>
+                        <Link
+                          href={`/project/${project.slug}`}
+                          target="_blank"
+                          className="font-medium hover:text-giv-brand-500! transition-colors duration-300 cursor-pointer"
+                        >
+                          {project.title}
+                        </Link>
                       </div>
                     ))}
                   </div>

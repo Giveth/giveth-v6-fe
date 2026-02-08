@@ -1,4 +1,18 @@
-import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
+import {
+  type ProjectBySlugQuery,
+  type ProjectEntity,
+} from '@/lib/graphql/generated/graphql'
+
+type ProjectCategory = NonNullable<
+  NonNullable<ProjectBySlugQuery['projectBySlug']['categories']>[number]
+>
+
+export type GroupedCategory = {
+  id: string
+  title: string
+  slug: string
+  categories: ProjectCategory[]
+}
 
 export const calculateEstimatedMatchingWithDonationAmount = (
   donationAmountInUSD: number,
@@ -29,11 +43,64 @@ export const calculateEstimatedMatchingWithDonationAmount = (
 }
 
 /**
- * Get the active rounds for a project
+ * Get the active rounds adn roudns that begin date match the current date for a project
+ * Sort the rounds by begin date
  *
  * @param project - The project to get the active rounds for
  * @returns The active rounds for the project
  */
 export const getProjectActiveRounds = (project: ProjectEntity) => {
-  return project.projectQfRounds?.filter(pqr => pqr.qfRound?.isActive)
+  const currentDate = new Date()
+  return project.projectQfRounds
+    ?.filter(pqr => pqr.qfRound?.isActive)
+    ?.filter(pqr => {
+      if (pqr.qfRound?.beginDate) {
+        return (
+          new Date(pqr.qfRound.beginDate).getTime() <= currentDate.getTime()
+        )
+      }
+      return false
+    })
+    .sort((a, b) => {
+      if (a.qfRound?.beginDate && b.qfRound?.beginDate) {
+        return (
+          new Date(a.qfRound.beginDate).getTime() -
+          new Date(b.qfRound.beginDate).getTime()
+        )
+      }
+      return 0
+    })
+}
+
+/**
+ * Group the categories by main category
+ *
+ * @param categories - The categories to group by main category
+ * @returns The categories grouped by main category
+ */
+export function groupByMainCategory(
+  categories:
+    | ProjectBySlugQuery['projectBySlug']['categories']
+    | null
+    | undefined,
+): GroupedCategory[] {
+  const map = new Map<string, GroupedCategory>()
+
+  for (const item of categories ?? []) {
+    const main = item.mainCategory
+    if (!main) continue
+
+    if (!map.has(main.id)) {
+      map.set(main.id, {
+        id: main.id,
+        title: main.title,
+        slug: main.slug,
+        categories: [],
+      })
+    }
+
+    map.get(main.id)!.categories.push(item)
+  }
+
+  return Array.from(map.values())
 }

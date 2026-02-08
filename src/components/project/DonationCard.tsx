@@ -15,6 +15,7 @@ import { EContentType } from '@/lib/constants/share-constants'
 import { env } from '@/lib/env'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 import { getProjectActiveRounds } from '@/lib/helpers/projectHelper'
+import { DonateTimeModal } from './DonateTimeModal'
 
 interface DonationCardProps {
   project: {
@@ -33,12 +34,15 @@ interface DonationCardProps {
         id: string
         name: string
         isActive?: boolean
+        beginDate?: string | null
       } | null
     }> | null
   }
 }
 
 export function DonationCard({ project }: DonationCardProps) {
+  const [showDonateTimeModal, setShowDonateTimeModal] = useState(false)
+
   // Stuff related to the rounds selector
   const availableRounds = useMemo(() => {
     return getProjectActiveRounds(project as unknown as ProjectEntity)
@@ -134,12 +138,31 @@ export function DonationCard({ project }: DonationCardProps) {
     setIsProjectInCart(Boolean(existingCartItem))
   }, [cartItems, project, selectedRoundId])
 
+  const isActiveRound = Boolean(selectedRound?.qfRound?.isActive)
+  let showFutureRoundNotice = false
+  let projectFutureRounds = project.projectQfRounds ?? []
+
+  // Check if have future rounds
+  if (!isActiveRound) {
+    projectFutureRounds = projectFutureRounds.filter(
+      pqr =>
+        pqr.qfRound?.isActive &&
+        pqr.qfRound?.beginDate &&
+        new Date(pqr.qfRound.beginDate) > new Date(),
+    )
+    if (projectFutureRounds?.length && projectFutureRounds?.length > 0) {
+      showFutureRoundNotice = true
+    }
+  }
+
   return (
     <div className="h-full bg-white rounded-xl p-4">
       {/* If there is only one round, show the round name */}
       {availableRounds.length === 1 && (
-        <div className="w-full flex items-center justify-between px-4 py-3 border border-giv-neutral-100 rounded-xl mb-4 transition-colors">
-          {selectedRound?.qfRound?.name ?? ''}
+        <div className="w-full flex items-center justify-center px-4 py-3 border border-giv-neutral-100 rounded-xl mb-4 transition-colors">
+          <span className="text-sm font-semibold text-giv-neutral-900">
+            {selectedRound?.qfRound?.name ?? ''}
+          </span>
         </div>
       )}
 
@@ -220,27 +243,46 @@ export function DonationCard({ project }: DonationCardProps) {
       </div>
 
       {/* Add to Cart Button */}
-      <button
-        type="button"
-        onClick={handleCartAction}
-        className={`w-full h-[48px] rounded-md text-sm font-bold mb-2 flex items-center justify-center gap-2 transition-all cursor-pointer ${
-          isProjectInCart
-            ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
-            : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
-        }`}
-      >
-        {isProjectInCart ? (
-          <>
-            <X className="w-6 h-6 text-giv-brand-700" />
-            Remove From Cart
-          </>
-        ) : (
+      {isActiveRound && (
+        <button
+          type="button"
+          onClick={handleCartAction}
+          className={`w-full h-[48px] rounded-md text-sm font-bold mb-2 flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            isProjectInCart
+              ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
+              : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
+          }`}
+        >
+          {isProjectInCart ? (
+            <>
+              <X className="w-6 h-6 text-giv-brand-700" />
+              Remove From Cart
+            </>
+          ) : (
+            <>
+              <Plus className="w-6 h-6 text-white" />
+              Add To Cart
+            </>
+          )}
+        </button>
+      )}
+      {/* If the round is active but not started, show the donate time modal */}
+      {showFutureRoundNotice && (
+        <button
+          type="button"
+          onClick={() => setShowDonateTimeModal(true)}
+          className={`w-full h-[48px] rounded-md text-sm font-bold mb-2 flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            isProjectInCart
+              ? 'border border-giv-brand-100 bg-giv-brand-50 text-giv-brand-700 hover:bg-giv-brand-100 hover:text-giv-brand-700'
+              : 'bg-giv-brand-300 text-white hover:bg-giv-brand-400 hover:text-white'
+          }`}
+        >
           <>
             <Plus className="w-6 h-6 text-white" />
             Add To Cart
           </>
-        )}
-      </button>
+        </button>
+      )}
 
       {/* Share Button */}
       <button
@@ -311,6 +353,15 @@ export function DonationCard({ project }: DonationCardProps) {
         numberOfProjects={0}
         shareText="Check out this project on Giveth"
       />
+      {showDonateTimeModal && (
+        <DonateTimeModal
+          isOpen={showDonateTimeModal}
+          onClose={() => setShowDonateTimeModal(false)}
+          roundName={projectFutureRounds[0]?.qfRound?.name ?? ''}
+          beginDate={projectFutureRounds[0]?.qfRound?.beginDate}
+          projectSlug={project.slug}
+        />
+      )}
     </div>
   )
 }

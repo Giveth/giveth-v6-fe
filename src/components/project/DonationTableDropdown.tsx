@@ -8,6 +8,7 @@ interface QfRound {
   id: string
   name: string
   isActive: boolean
+  beginDate?: string | null
 }
 
 export type FilterType =
@@ -84,11 +85,13 @@ export function DonationTableDropdown({
             >
               <div className="flex items-center gap-2">
                 <span className="truncate max-w-[140px]">{round.name}</span>
-                {round.isActive && (
-                  <span className="bg-giv-success-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
-                    Open
-                  </span>
-                )}
+                {round.isActive &&
+                  round.beginDate &&
+                  new Date(round.beginDate) <= new Date() && (
+                    <span className="bg-giv-success-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                      Open
+                    </span>
+                  )}
               </div>
               {selectedFilter.type === 'round' &&
                 selectedFilter.id === round.id && (

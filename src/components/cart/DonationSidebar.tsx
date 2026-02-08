@@ -3,10 +3,11 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
-import { ArrowRight, Wallet } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
+import { IconWalletApproved } from '@/components/icons/IconWalletApproved'
 import { InsufficientFund } from '@/components/modals/InsufficientFund'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -66,7 +67,10 @@ export function DonationSidebar({
       )
     }, 0)
 
-    if (totalGroupCartValueUsd > totalGroupCartBalanceUsd) {
+    const totalGroupCartValueWithGiveth =
+      totalGroupCartValueUsd + (totalGroupCartValueUsd * givethPercentage) / 100
+
+    if (totalGroupCartValueWithGiveth > totalGroupCartBalanceUsd) {
       setIsInsufficientFund(true)
       return
     }
@@ -88,7 +92,11 @@ export function DonationSidebar({
       )
     }, 0)
 
-    if (totalNonGroupCartValueUsd > totalNonGroupCartBalanceUsd) {
+    const totalNonGroupCartValueWithGiveth =
+      totalNonGroupCartValueUsd +
+      (totalNonGroupCartValueUsd * givethPercentage) / 100
+
+    if (totalNonGroupCartValueWithGiveth > totalNonGroupCartBalanceUsd) {
       setIsInsufficientFund(true)
       return
     }
@@ -205,8 +213,8 @@ export function DonationSidebar({
               className="px-6 py-2.5 font-semibold rounded-md transition-all duration-200 shadow-sm cursor-pointer bg-giv-brand-300 text-white hover:opacity-85"
             >
               <span className="inline-flex items-center gap-2">
-                <Wallet className="h-4 w-4" />
                 Sign wallet
+                <IconWalletApproved className="w-6 h-6" />
               </span>
             </button>
           </div>
@@ -224,13 +232,16 @@ export function DonationSidebar({
               const totalGroupAmount = Number(group.totalAmount)
               const totalGroupAmountUsd = Number(group.totalUsdValue)
 
+              const totalGroupAmountWithGiveth =
+                totalGroupAmount + (totalGroupAmount * givethPercentage) / 100
+
               return (
                 <div
                   key={group.roundId}
                   className="p-3 rounded-lg border border-giv-neutral-300"
                 >
                   <p className="text-base text-giv-neutral-900 font-medium">
-                    {formatNumber(totalGroupAmount, {
+                    {formatNumber(totalGroupAmountWithGiveth, {
                       minDecimals: 2,
                       maxDecimals: 2,
                     })}{' '}
@@ -285,6 +296,7 @@ export function DonationSidebar({
           className={`${walletAddress && isAuthenticated ? 'block' : 'opacity-50 cursor-not-allowed'}`}
         >
           <DonateToGiveth />
+
           {/* Donate Button */}
           <button
             onClick={handleDonateButtonClick}

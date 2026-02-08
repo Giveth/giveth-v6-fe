@@ -16,12 +16,14 @@ import { QFSorting } from './components/QFSorting'
 
 interface QFProjectsGridProps {
   isActiveRound: boolean
+  isFutureRound: boolean
   projects: ProjectEntity[]
   isLoading?: boolean
   isFetching?: boolean
   hasProjectsData?: boolean
   roundId?: number
   roundName?: string
+  roundBeginDate?: string | null
   // Search Props
   searchTerm: string
   onSearchTermChange: (value: string) => void
@@ -37,12 +39,14 @@ interface QFProjectsGridProps {
 
 export function QFProjectsGrid({
   isActiveRound,
+  isFutureRound,
   projects,
   isLoading,
   isFetching,
   hasProjectsData,
   roundId,
   roundName,
+  roundBeginDate,
   searchTerm,
   onSearchTermChange,
   currentSortField,
@@ -157,7 +161,9 @@ export function QFProjectsGrid({
                 project={project}
                 roundId={roundId}
                 roundName={roundName}
+                roundBeginDate={roundBeginDate}
                 isActiveRound={isActiveRound}
+                isFutureRound={isFutureRound}
               />
             ))}
           </div>
