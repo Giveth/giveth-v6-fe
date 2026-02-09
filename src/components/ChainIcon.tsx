@@ -1,17 +1,17 @@
 'use client'
 
 import { memo, useState } from 'react'
+import { IconArbitrum } from '@/components/icons/chain-networks/IconArbitrum'
+import { IconBase } from '@/components/icons/chain-networks/IconBase'
+import { IconCelo } from '@/components/icons/chain-networks/IconCelo'
+import { IconEthereumClassic } from '@/components/icons/chain-networks/IconEthereumClassic'
+import { IconGnosis } from '@/components/icons/chain-networks/IconGnosis'
 import { IconMainnet } from '@/components/icons/chain-networks/IconMainnet'
 import { IconOptimism } from '@/components/icons/chain-networks/IconOptimism'
+import { IconPolygon } from '@/components/icons/chain-networks/IconPolygon'
+import { IconPolygonzkEVM } from '@/components/icons/chain-networks/IconPolygonzkEVM'
+import { IconSolana } from '@/components/icons/chain-networks/IconSolana'
 import { getChainIcon } from '@/lib/helpers/chainHelper'
-import { IconArbitrum } from './icons/chain-networks/IconArbitrum'
-import { IconBase } from './icons/chain-networks/IconBase'
-import { IconCelo } from './icons/chain-networks/IconCelo'
-import { IconEthereumClassic } from './icons/chain-networks/IconEthereumClassic'
-import { IconGnosis } from './icons/chain-networks/IconGnosis'
-import { IconPolygon } from './icons/chain-networks/IconPolygon'
-import { IconPolygonzkEVM } from './icons/chain-networks/IconPolygonzkEVM'
-import { IconSolana } from './icons/chain-networks/IconSolana'
 
 const CHAIN_ICON_COMPONENTS: Record<
   number,

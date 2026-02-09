@@ -1,4 +1,4 @@
-import QfApplyGatePageClient from './QfApplyGatePageClient'
+import QfApplyGatePageClient from '@/app/qf/apply/QfApplyGatePageClient'
 
 type PageProps = {
   searchParams?:

@@ -1,4 +1,4 @@
-import { CHAINS } from './chain'
+import { CHAINS } from '@/lib/constants/chain'
 
 export const NETWROKS_FILTERS = [
   'Arbitrum',

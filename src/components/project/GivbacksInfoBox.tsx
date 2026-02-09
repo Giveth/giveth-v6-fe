@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { type Route } from 'next'
+import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { GIVBACKS_DONATION_QUALIFICATION_VALUE_USD } from '@/lib/constants/app-main'
 import { givpowerDocLink } from '@/lib/constants/menu-links'
-import { GivBacksEligible } from '../icons/GivBacksEligible'
 
 export function GivbacksInfoBox() {
   return (
