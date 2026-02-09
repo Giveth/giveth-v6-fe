@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { useActiveWalletChain } from 'thirdweb/react'
+import { ChainIcon } from '@/components/ChainIcon'
 import { useCart } from '@/context/CartContext'
 import { getChainName } from '@/lib/helpers/chainHelper'
-import { ChainIcon } from '../ChainIcon'
 
 export const ChainDropdown = ({
   selectedChainId,

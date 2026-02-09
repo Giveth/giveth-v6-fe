@@ -1,5 +1,5 @@
-import { GivBacksEligible } from '../icons/GivBacksEligible'
-import { MatchingEligible } from '../icons/MatchingEligible'
+import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
+import { MatchingEligible } from '@/components/icons/MatchingEligible'
 
 interface GivBacksBadgeProps {
   type: 'eligible' | 'matching'

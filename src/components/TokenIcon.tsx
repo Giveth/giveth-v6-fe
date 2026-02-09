@@ -3,8 +3,8 @@
 import { memo, useEffect, useMemo, useState } from 'react'
 import { defineChain } from 'thirdweb/chains'
 import { TokenIcon as ThirdwebTokenIcon, TokenProvider } from 'thirdweb/react'
+import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { thirdwebClient } from '@/lib/thirdweb/client'
-import { GivBacksEligible } from './icons/GivBacksEligible'
 
 const tokenIconCache = new Map<string, string | null>()
 const tokenImageExtensions = ['svg', 'png']

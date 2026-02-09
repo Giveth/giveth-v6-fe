@@ -3,16 +3,16 @@
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { Search, X } from 'lucide-react'
+import { QFProjectCard } from '@/components/qf/components/QFProjectCard'
+import {
+  QFProjectFilters,
+  type QFFiltersState,
+} from '@/components/qf/components/QFProjectFilters'
+import { QFSorting } from '@/components/qf/components/QFSorting'
 import {
   type ProjectEntity,
   type ProjectSortField,
 } from '@/lib/graphql/generated/graphql'
-import { QFProjectCard } from './components/QFProjectCard'
-import {
-  QFProjectFilters,
-  type QFFiltersState,
-} from './components/QFProjectFilters'
-import { QFSorting } from './components/QFSorting'
 
 interface QFProjectsGridProps {
   isActiveRound: boolean

@@ -1,6 +1,6 @@
+import { MenuLink } from '@/components/header/MenuLink'
+import { SearchButton } from '@/components/header/SearchButton'
 import { menuItems } from '@/lib/constants/menu-links'
-import { MenuLink } from './MenuLink'
-import { SearchButton } from './SearchButton'
 
 export function DesktopNavigation({ hideSearch }: { hideSearch?: boolean }) {
   return (
