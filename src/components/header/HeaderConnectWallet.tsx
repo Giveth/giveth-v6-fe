@@ -14,6 +14,7 @@ import {
 } from 'thirdweb/react'
 import { EnsName } from '@/components/account/EnsName'
 import { ChainIcon } from '@/components/ChainIcon'
+import { CryptoWalletIcon } from '@/components/CryptoWalletIcon'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
@@ -84,6 +85,9 @@ export function HeaderConnectWallet() {
             'text-xs lg:text-sm text-giv-brand-600! font-bold',
           )}
         >
+          {/* Wallet Icon */}
+          {wallet && <CryptoWalletIcon walletId={wallet?.id || ''} />}
+
           {/* Cain Icon */}
           <ChainIcon networkId={chain?.id || 0} />
 
