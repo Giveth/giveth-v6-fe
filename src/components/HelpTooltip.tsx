@@ -1,20 +1,40 @@
 'use client'
 
 import * as Tooltip from '@radix-ui/react-tooltip'
+import clsx from 'clsx'
 
-export function HelpTooltip({ text }: { text: string }) {
+export function HelpTooltip({
+  text,
+  className,
+  width = 4,
+  height = 4,
+  side = 'top',
+  fontSize = 'text-xs',
+}: {
+  text: string
+  className?: string
+  width?: number
+  height?: number
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  fontSize?: string
+}) {
   return (
     <Tooltip.Provider delayDuration={150}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <div className="flex h-4 w-4 cursor-pointer p-2.5 items-center justify-center rounded-full bg-black text-xs font-semibold text-white">
+          <div
+            className={clsx(
+              className,
+              `flex h-${height} w-${width} cursor-pointer p-2.5 items-center justify-center rounded-full bg-black ${fontSize} font-semibold text-white`,
+            )}
+          >
             ?
           </div>
         </Tooltip.Trigger>
 
         <Tooltip.Portal>
           <Tooltip.Content
-            side="top"
+            side={side}
             sideOffset={8}
             className="
               z-50 max-w-xs rounded-lg bg-black px-3 py-2 text-md text-white
