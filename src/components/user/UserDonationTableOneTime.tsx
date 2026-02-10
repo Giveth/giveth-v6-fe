@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react'
+import { ChainIcon } from '@/components/ChainIcon'
 import { useUserDonations } from '@/hooks/useUser'
 import {
   DonationSortField,
@@ -16,7 +17,6 @@ import {
 } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getTransactionUrl } from '@/lib/helpers/chainHelper'
-import { ChainIcon } from '../ChainIcon'
 
 const PAGE_SIZE = 15
 

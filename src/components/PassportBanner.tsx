@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { BadgeCheck, ExternalLink, Info } from 'lucide-react'
 import { type Route } from 'next'
 import { useActiveAccount } from 'thirdweb/react'
+import { IconWarning } from '@/components/icons/IconWarning'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useGlobalConfiguration } from '@/hooks/useGlobalConfiguration'
 import {
@@ -17,7 +18,6 @@ import {
   useRefreshPassportEligibility,
 } from '@/hooks/usePassportEligibility'
 import { PassportLink } from '@/lib/constants/menu-links'
-import { IconWarning } from './icons/IconWarning'
 
 let globalSettingScore = {
   globalMinimumMBDScore: 0,

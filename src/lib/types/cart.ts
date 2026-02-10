@@ -1,5 +1,5 @@
 import type { ProjectCartItem } from '@/context/CartContext'
-import { type WalletTokenWithBalance } from './chain'
+import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
 export interface GroupedProjects {
   roundId: number

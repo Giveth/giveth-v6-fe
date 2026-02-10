@@ -1,3 +1,15 @@
+import { IconArgent } from '@/components/icons/wallets/IconArgent'
+import { IconBinance } from '@/components/icons/wallets/IconBinance'
+import { IconBrave } from '@/components/icons/wallets/IconBrave'
+import { IconCoinbase } from '@/components/icons/wallets/IconCoinbase'
+import { IconLedger } from '@/components/icons/wallets/IconLedger'
+import { IconMetamask } from '@/components/icons/wallets/IconMetamask'
+import { IconOKX } from '@/components/icons/wallets/IconOKX'
+import { IconPhantom } from '@/components/icons/wallets/IconPhantom'
+import { IconRabby } from '@/components/icons/wallets/IconRabby'
+import { IconRainbow } from '@/components/icons/wallets/IconRainbow'
+import { IconSafe } from '@/components/icons/wallets/IconSafe'
+import { IconTrust } from '@/components/icons/wallets/IconTrust'
 import type { ChainInfo } from '@/lib/types/chain'
 
 export const CHAINS: Record<number, ChainInfo> = {
@@ -483,4 +495,25 @@ export const EXPLORER_BY_CHAIN_ID: Record<number, string> = {
 export const getTransactionExplorerUrl = (chainId: number, hash: string) => {
   const base = EXPLORER_BY_CHAIN_ID[chainId] || 'https://polygonscan.com'
   return `${base}/tx/${hash}`
+}
+
+export const cryptoWallets: Record<
+  string,
+  {
+    icon: React.FC<{ width?: number; height?: number; className?: string }>
+    name: string
+  }
+> = {
+  'io.metamask': { icon: IconMetamask, name: 'MetaMask' },
+  'com.trustwallet.app': { icon: IconTrust, name: 'Trust Wallet' },
+  'com.coinbase.wallet': { icon: IconCoinbase, name: 'Coinbase Wallet' },
+  'me.rainbow': { icon: IconRainbow, name: 'Rainbow' },
+  'app.phantom': { icon: IconPhantom, name: 'Phantom' },
+  'im.argent': { icon: IconArgent, name: 'Argent' },
+  'com.okex.wallet': { icon: IconOKX, name: 'OKX Wallet' },
+  'io.gnosis.safe': { icon: IconSafe, name: 'Safe Wallet' },
+  'io.rabby': { icon: IconRabby, name: 'Rabby' },
+  'com.wallet.brave': { icon: IconBrave, name: 'Brave' },
+  ledger: { icon: IconLedger, name: 'Ledger' },
+  'com.binance.wallet': { icon: IconBinance, name: 'Binance' },
 }

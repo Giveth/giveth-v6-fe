@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { type Route } from 'next'
-import { HeaderConnectWallet } from './HeaderConnectWallet'
+import { HeaderConnectWallet } from '@/components/header/HeaderConnectWallet'
 
 export const CartHeader = () => {
   const pathname = usePathname()

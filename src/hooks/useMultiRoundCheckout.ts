@@ -24,13 +24,13 @@ import { parseUnits } from 'viem'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import type { DonationRound } from '@/context/CartContext'
+import { useDonation, type DonationStatus } from '@/hooks/useDonation'
 import { useProjectById } from '@/hooks/useProject'
 import { GIVETH_PROJECT_ID } from '@/lib/constants/app-main'
 import type { BatchDonationDetails } from '@/lib/contracts/donation-handler'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import type { CreateDonationInput } from '@/lib/graphql/generated/graphql'
 import { createDonationMutation } from '@/lib/graphql/queries'
-import { useDonation, type DonationStatus } from './useDonation'
 
 export interface RoundCheckoutStatus {
   roundId: number
@@ -378,9 +378,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                     address => address.networkId === round.selectedChainId,
                   )?.address
                 const roundTotalAmount = Number(round.totalAmount || '0')
-                const givethAmount =
-                  roundTotalAmount *
-                  (givethPercentage / (100 - givethPercentage))
+                const givethAmount = (roundTotalAmount * givethPercentage) / 100
 
                 if (givethRecipient && givethAmount > 0) {
                   createInputs.push({
@@ -390,7 +388,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                     currency: round.tokenSymbol,
                     fromWalletAddress: account.address,
                     projectId: GIVETH_PROJECT_ID,
-                    qfRoundId: round.roundId,
+                    qfRoundId: undefined,
                     toWalletAddress: givethRecipient,
                     tokenAddress:
                       round.tokenAddress ===

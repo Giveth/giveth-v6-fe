@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { MenuIcon, X } from 'lucide-react'
 import { CreateProjectButton } from '@/components/header/CreateProjectButton'
+import { MenuLink } from '@/components/header/MenuLink'
+import { SearchButton } from '@/components/header/SearchButton'
 import { menuItems } from '@/lib/constants/menu-links'
-import { MenuLink } from './MenuLink'
-import { SearchButton } from './SearchButton'
 
 export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

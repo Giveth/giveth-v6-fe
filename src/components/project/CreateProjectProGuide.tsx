@@ -1,4 +1,4 @@
-import type { CreateFormSection } from './CreateProjectFullForm'
+import type { CreateFormSection } from '@/components/project/CreateProjectFullForm'
 
 type TipContent = {
   title: string

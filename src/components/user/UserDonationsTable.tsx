@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import { type Route } from 'next'
+import { UserDonationTableOneTime } from '@/components/user/UserDonationTableOneTime'
 import { UserDonationTabs } from '@/components/user/UserDonationTabs'
 import { myRecurringDonationsLink } from '@/lib/constants/menu-links'
-import { UserDonationTableOneTime } from './UserDonationTableOneTime'
 
 export function UserDonationsTable({ userId }: { userId?: number }) {
   const router = useRouter()

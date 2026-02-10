@@ -8,6 +8,7 @@ import clsx from 'clsx'
 import { Check, ChevronDown, ChevronRight, Plus, Share2, X } from 'lucide-react'
 import { type Route } from 'next'
 import { ShareProjectModal } from '@/components/modals/ShareProjectModal'
+import { DonateTimeModal } from '@/components/project/DonateTimeModal'
 import { DonationMatchCard } from '@/components/project/DonationMatchCard'
 import { useCart } from '@/context/CartContext'
 import { HowItWorksLink } from '@/lib/constants/menu-links'
@@ -15,7 +16,6 @@ import { EContentType } from '@/lib/constants/share-constants'
 import { env } from '@/lib/env'
 import { type ProjectEntity } from '@/lib/graphql/generated/graphql'
 import { getProjectActiveRounds } from '@/lib/helpers/projectHelper'
-import { DonateTimeModal } from './DonateTimeModal'
 
 interface DonationCardProps {
   project: {
