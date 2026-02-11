@@ -219,7 +219,7 @@ export type DonationEntity = {
   createdAt: Scalars['DateTime']['output'];
   currency: Scalars['String']['output'];
   donationPercentage?: Maybe<Scalars['Float']['output']>;
-  fromWalletAddress: Scalars['String']['output'];
+  fromWalletAddress?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isCustomToken: Scalars['Boolean']['output'];
   isExternal: Scalars['Boolean']['output'];
@@ -235,7 +235,7 @@ export type DonationEntity = {
   status: DonationStatus;
   toWalletAddress: Scalars['String']['output'];
   tokenAddress?: Maybe<Scalars['String']['output']>;
-  transactionId: Scalars['String']['output'];
+  transactionId?: Maybe<Scalars['String']['output']>;
   transactionNetworkId: Scalars['Int']['output'];
   useDonationBox: Scalars['Boolean']['output'];
   user?: Maybe<UserEntity>;
@@ -1112,7 +1112,6 @@ export type Query = {
   donationsTotalUsdPerDate?: Maybe<ResourcePerDateRangeEntity>;
   estimatedMatching: EstimatedMatchingEntity;
   featuredProjectUpdate?: Maybe<FeaturedUpdateEntity>;
-  featuredProjects: PaginatedProjectsEntity;
   getAllowedCountries: Array<Country>;
   getCurrentGivbacksEligibilityForm: GivbacksEligibilityFormEntity;
   getDonationById?: Maybe<DonationEntity>;
@@ -1247,12 +1246,6 @@ export type QueryEstimatedMatchingArgs = {
 
 export type QueryFeaturedProjectUpdateArgs = {
   projectId: Scalars['Int']['input'];
-};
-
-
-export type QueryFeaturedProjectsArgs = {
-  skip?: Scalars['Int']['input'];
-  take?: Scalars['Int']['input'];
 };
 
 
@@ -1619,6 +1612,7 @@ export type UserEntity = {
 
 export enum UserRole {
   Admin = 'ADMIN',
+  Campaignmanager = 'CAMPAIGNMANAGER',
   Operator = 'OPERATOR',
   Qfmanager = 'QFMANAGER',
   Restricted = 'RESTRICTED',
@@ -1780,7 +1774,7 @@ export type DonationsByProjectQueryVariables = Exact<{
 }>;
 
 
-export type DonationsByProjectQuery = { __typename?: 'Query', donationsByProject: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, transactionId: string, transactionNetworkId: number, fromWalletAddress: string, createdAt: any, anonymous?: boolean | null, user?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null }> } };
+export type DonationsByProjectQuery = { __typename?: 'Query', donationsByProject: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, transactionId?: string | null, transactionNetworkId: number, fromWalletAddress?: string | null, createdAt: any, anonymous?: boolean | null, user?: { __typename?: 'UserEntity', id: string, name?: string | null, firstName?: string | null, lastName?: string | null, avatar?: string | null } | null }> } };
 
 export type ProjectsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -1798,7 +1792,7 @@ export type CreateDonationMutationVariables = Exact<{
 }>;
 
 
-export type CreateDonationMutation = { __typename?: 'Mutation', createDonation: { __typename?: 'DonationEntity', id: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null } };
+export type CreateDonationMutation = { __typename?: 'Mutation', createDonation: { __typename?: 'DonationEntity', id: string, status: DonationStatus, transactionId?: string | null, transactionNetworkId: number, projectId: number, qfRoundId?: number | null } };
 
 export type SimilarProjectsBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1854,7 +1848,7 @@ export type MyDonationsQueryVariables = Exact<{
 }>;
 
 
-export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId: string, transactionNetworkId: number, createdAt: any, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+export type MyDonationsQuery = { __typename?: 'Query', myDonations: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, amount: number, valueUsd?: number | null, currency: string, status: DonationStatus, transactionId?: string | null, transactionNetworkId: number, createdAt: any, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export type ProjectUpdatesQueryVariables = Exact<{
   input: ProjectUpdateQueryInput;
@@ -1932,7 +1926,7 @@ export type DonationsByUserQueryVariables = Exact<{
 }>;
 
 
-export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId: string, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId?: string | null, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
