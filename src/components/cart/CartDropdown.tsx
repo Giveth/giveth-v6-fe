@@ -153,7 +153,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
               onClick={onClose}
               className={clsx(
                 'w-full py-3 bg-giv-brand-300! text-white! rounded-md text-xs font-bold',
-                'flex items-center justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer',
+                'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
               )}
             >
               Donate
