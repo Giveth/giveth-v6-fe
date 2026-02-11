@@ -37,7 +37,7 @@ export function HelpTooltip({
             side={side}
             sideOffset={8}
             className="
-              z-50 max-w-xs rounded-lg bg-black px-3 py-2 text-md text-white
+              z-50 max-w-xs rounded-lg bg-black px-3 py-2 text-xs text-white
               shadow-lg
               animate-in fade-in zoom-in-95
             "
