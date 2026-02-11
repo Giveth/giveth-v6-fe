@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type Route } from 'next'
 import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
 // import { IconRocket } from '@/components/icons/IconRocket'
-// import { IconSparks } from '@/components/icons/IconSparks'
+import { IconSparks } from '@/components/icons/IconSparks'
 // import { IconStake } from '@/components/icons/IconStake'
 // import {
 //   givBacksLink,
@@ -28,17 +28,17 @@ export const DashboardTabs = ({
 
   const tabs = [
     {
+      id: 'staking',
+      label: 'Staking & Rewards',
+      icon: <IconSparks width={24} height={24} />,
+      href: null,
+    },
+    {
       id: 'donations',
       label: 'My Donations',
       icon: <IconPraiseHandBold width={24} height={24} />,
       href: null,
     },
-    // {
-    //   id: 'staking',
-    //   label: 'Staking & Rewards',
-    //   icon: <IconSparks width={24} height={24} />,
-    //   href: givBacksLink.href as unknown as Route,
-    // },
     // {
     //   id: 'boosted',
     //   label: 'Boosted Projects',

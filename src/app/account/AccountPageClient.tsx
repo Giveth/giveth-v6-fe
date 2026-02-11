@@ -6,6 +6,7 @@ import { CtaSection } from '@/components/account/CtaGivBacks'
 import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
 import { ProfileSection } from '@/components/account/ProfileSection'
+import { StakingRewards } from '@/components/account/staking-rewards/StakingRewards'
 import { Button } from '@/components/ui/button'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -135,8 +136,8 @@ export default function AccountPageClient() {
           <ProfileSection />
           <DashboardTabs activeTab={activeTab} />
 
+          {activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
-          {activeTab === 'staking' && <DonationsTable />}
           {activeTab === 'boosted' && <DonationsTable />}
           {activeTab === 'projects' && <DonationsTable />}
         </main>
