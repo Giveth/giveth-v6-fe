@@ -425,7 +425,7 @@ export function ProjectDonationsTable({
                 <button
                   key={pageIndex}
                   onClick={() => handlePageClick(pageIndex)}
-                  className={`w-7 h-7 text-sm rounded cursor-pointer ${
+                  className={`${Number(pageIndex) > 999 ? 'w-10' : 'w-8'} h-7 text-sm rounded cursor-pointer ${
                     currentPage === pageIndex
                       ? 'font-medium text-giv-brand-500'
                       : 'text-giv-neutral-600 hover:text-giv-brand-500'
@@ -443,7 +443,7 @@ export function ProjectDonationsTable({
             {totalPages > 5 && currentPage < totalPages - 3 && (
               <button
                 onClick={() => handlePageClick(totalPages - 1)}
-                className="w-7 h-7 text-sm rounded cursor-pointer text-giv-neutral-600 hover:text-giv-brand-500"
+                className={`${Number(totalPages) > 999 ? 'w-10' : 'w-8'} h-7 text-sm rounded cursor-pointer text-giv-neutral-600 hover:text-giv-brand-500`}
               >
                 {totalPages}
               </button>

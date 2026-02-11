@@ -346,7 +346,7 @@ export function DonationCard({ project }: DonationCardProps) {
       <ShareProjectModal
         open={showShareModal}
         onOpenChange={setShowShareModal}
-        shareUrl={`${env.FRONTEND_URL}/project/${project.slug}?roundId=${selectedRoundId}`}
+        shareUrl={`${env.FRONTEND_URL}/project/${project.slug}${selectedRoundId ? `?roundId=${selectedRoundId}` : ''}`}
         projectSlug={project.slug}
         contentType={EContentType.thisProject}
         isCause={false}
