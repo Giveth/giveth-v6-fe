@@ -312,7 +312,7 @@ export const DonationTableOneTime = ({
               <button
                 key={page}
                 onClick={() => handlePageChange(page as number)}
-                className={`w-8 h-7 text-sm rounded cursor-pointer ${
+                className={`${Number(page) > 999 ? 'w-10' : 'w-8'} h-7 text-sm rounded cursor-pointer ${
                   currentPage === page
                     ? 'font-medium text-giv-brand-500'
                     : 'text-giv-neutral-600 hover:text-giv-brand-500'
