@@ -1,6 +1,74 @@
+import { useEffect, useState } from 'react'
 import clsx from 'clsx'
+import { useActiveAccount } from 'thirdweb/react'
+import { formatUnits } from 'viem'
+import { getTokenPriceInUSDByCoingeckoId } from '@/lib/helpers/cartHelper'
+import { fetchUserOverview } from '@/lib/helpers/stakeHelper'
 
 export const ClaimRewardsBanner = ({ chainLabel }: { chainLabel: string }) => {
+  const [data, setData] = useState<Awaited<
+    ReturnType<typeof fetchUserOverview>
+  > | null>(null)
+  const [isLoading, _setIsLoading] = useState(false)
+  const [error, _setError] = useState<string | null>(null)
+  const [tokenPriceUsd, setTokenPriceUsd] = useState(0)
+
+  const account = useActiveAccount()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!account?.address) return
+      try {
+        const data = await fetchUserOverview(
+          account.address as `0x${string}`,
+          10,
+        )
+        setData(data)
+      } catch (err) {
+        _setError(err instanceof Error ? err.message : 'Failed to load rewards')
+      }
+    }
+    fetchData()
+  }, [account?.address])
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      const price = await getTokenPriceInUSDByCoingeckoId('giveth')
+      setTokenPriceUsd(price || 0)
+    }
+
+    fetchPrice()
+  }, [])
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    console.error(error)
+  }
+
+  const givbacksClaimable = data?.givbacks?.claimable ?? 0n
+  const locksClaimable = data?.givbacks?.claimableFromLocks ?? 0n
+  const stakingClaimable = data?.staking?.claimable ?? 0n
+  const givbacksEffective =
+    locksClaimable > givbacksClaimable ? locksClaimable : givbacksClaimable
+  const totalClaimable = givbacksEffective + stakingClaimable
+
+  // Convert once to human units
+  const totalClaimableGiv = parseFloat(formatUnits(totalClaimable, 18))
+  const totalClaimableUsd = totalClaimableGiv * tokenPriceUsd
+
+  const totalClaimableLabel = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalClaimableGiv)
+
+  const totalUsdLabel = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalClaimableUsd)
+
   return (
     <div
       className={clsx(
@@ -15,8 +83,8 @@ export const ClaimRewardsBanner = ({ chainLabel }: { chainLabel: string }) => {
       </div>
 
       <div className="text-center md:text-left text-giv-neutral-900">
-        <div className="text-3xl font-semibold">274,901 GIV</div>
-        <div className="mt-1 text-xl">~$970.60</div>
+        <div className="text-3xl font-semibold">{totalClaimableLabel} GIV</div>
+        <div className="mt-1 text-xl">~${totalUsdLabel}</div>
       </div>
 
       <button

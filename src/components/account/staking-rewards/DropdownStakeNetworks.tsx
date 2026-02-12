@@ -12,9 +12,6 @@ export const DropdownStakeNetworks = ({
   chains: { id: number; name: string }[]
   onSelectChain: (chainId: number) => void
 }) => {
-  console.log('selectedChain', selectedChain)
-  console.log('chains', chains)
-  console.log('onSelectChain', onSelectChain)
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
