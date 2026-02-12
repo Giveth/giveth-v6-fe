@@ -17,6 +17,7 @@ import {
 } from 'thirdweb/react'
 import { SiweService } from '@/lib/auth/siwe.service'
 import { ensureImpactGraphUserExists } from '@/lib/impact-graph/userSync'
+import { useAAWalletStore } from '@/store/aa-wallet'
 
 interface User {
   id: number
@@ -39,6 +40,8 @@ interface AuthContextValue extends AuthState {
   signOut: () => Promise<void>
   isConnected: boolean
   walletAddress: string | undefined
+  /** Whether the connected wallet is an AA (in-app) wallet */
+  isAAWallet: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -55,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const account = useActiveAccount()
   const connectionStatus = useActiveWalletConnectionStatus()
   const chain = useActiveWalletChain()
+  const { isAAWallet } = useAAWalletStore()
 
   const siweService = useMemo(() => new SiweService(), [])
   const lastWalletAddressRef = useRef<string | undefined>(undefined)
@@ -230,12 +234,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('giveth_token')
   }, [setSignedOutState])
 
+  // AA wallet users are considered authenticated even without SIWE
+  // because they signed in via email/Google through Thirdweb
+  const effectiveIsAuthenticated = authState.isAuthenticated || isAAWallet
+
   const value: AuthContextValue = {
     ...authState,
+    isAuthenticated: effectiveIsAuthenticated,
     signIn,
     signOut,
     isConnected: connectionStatus === 'connected',
     walletAddress: account?.address,
+    isAAWallet,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

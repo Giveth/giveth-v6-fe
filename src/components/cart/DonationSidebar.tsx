@@ -3,15 +3,17 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, DollarSign, Plus } from 'lucide-react'
 import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
 import { IconWalletApproved } from '@/components/icons/IconWalletApproved'
+import { DepositModal } from '@/components/modals/DepositModal'
 import { InsufficientFund } from '@/components/modals/InsufficientFund'
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
+import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
 import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
@@ -21,6 +23,7 @@ import {
   thirdwebClient,
 } from '@/lib/thirdweb/client'
 import { type GroupedProjects } from '@/lib/types/cart'
+import { useAAWalletStore } from '@/store/aa-wallet'
 
 export function DonationSidebar({
   qfRoundGroups,
@@ -38,6 +41,9 @@ export function DonationSidebar({
   const { reset } = useMultiRoundCheckout()
   const account = useActiveAccount()
   const { connect } = useConnectModal()
+  const { isAAWallet, setDepositModalOpen, isDepositModalOpen } =
+    useAAWalletStore()
+  const { formattedBalance } = useAAWalletBalance()
 
   const [isInsufficientFund, setIsInsufficientFund] = useState(false)
 
@@ -178,16 +184,30 @@ export function DonationSidebar({
 
   return (
     <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
-      {/* Credit Card Option */}
-      {/* <div className="bg-white p-5 rounded-2xl">
-        <p className="text-base font-medium text-giv-neutral-900 mb-3">
-          New to crypto? REMOVE THIS PART
-        </p>
-        <button className="w-full px-4 py-3 rounded-lg border border-giv-brand-500 hover:border-giv-brand-900 text-giv-neutral-800 text-sm font-medium hover:bg-giv-brand-05 transition-colors flex items-center justify-center gap-1 cursor-pointer">
-          Donate with your credit card
-          <span className="text-giv-brand-400">New*</span>
-        </button>
-      </div> */}
+      {/* AA Wallet Balance & Deposit Card */}
+      {isAAWallet && walletAddress && (
+        <div className="bg-white p-5 rounded-2xl">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-base font-medium text-giv-neutral-900">
+              Your Balance
+            </p>
+            <button
+              onClick={() => setDepositModalOpen(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-giv-brand-300 text-white rounded-lg text-xs font-semibold hover:bg-giv-brand-400 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Deposit
+            </button>
+          </div>
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-giv-brand-05 border border-giv-brand-100">
+            <DollarSign className="w-5 h-5 text-green-600" />
+            <span className="text-2xl font-bold text-giv-neutral-900">
+              {formattedBalance}
+            </span>
+            <span className="text-sm text-giv-neutral-500">USD</span>
+          </div>
+        </div>
+      )}
 
       {/* Donation Summary */}
 
@@ -203,7 +223,7 @@ export function DonationSidebar({
             <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
           </div>
         )}
-        {!isAuthenticated && walletAddress && (
+        {!isAuthenticated && walletAddress && !isAAWallet && (
           <div className="flex flex-col justify-center items-center h-48">
             <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Please sign in to donate
@@ -221,7 +241,7 @@ export function DonationSidebar({
         )}
         <div className="pt-2 space-y-4">
           {walletAddress &&
-            isAuthenticated &&
+            (isAuthenticated || isAAWallet) &&
             qfRoundGroups.map(group => {
               // Show only number of the project that have amout
               const projectsWithAmount = group.projects.filter(
@@ -241,14 +261,27 @@ export function DonationSidebar({
                   className="p-3 rounded-lg border border-giv-neutral-300"
                 >
                   <p className="text-base text-giv-neutral-900 font-medium">
-                    {formatNumber(totalGroupAmountWithGiveth, {
-                      minDecimals: 2,
-                      maxDecimals: 2,
-                    })}{' '}
-                    {group.tokenSymbol}{' '}
-                    <span className="font-normal">
-                      (~${formatNumber(totalGroupAmountUsd)}) to
-                    </span>{' '}
+                    {isAAWallet ? (
+                      <>
+                        $
+                        {formatNumber(totalGroupAmountUsd, {
+                          minDecimals: 2,
+                          maxDecimals: 2,
+                        })}{' '}
+                        <span className="font-normal">to</span>{' '}
+                      </>
+                    ) : (
+                      <>
+                        {formatNumber(totalGroupAmountWithGiveth, {
+                          minDecimals: 2,
+                          maxDecimals: 2,
+                        })}{' '}
+                        {group.tokenSymbol}{' '}
+                        <span className="font-normal">
+                          (~${formatNumber(totalGroupAmountUsd)}) to
+                        </span>{' '}
+                      </>
+                    )}
                     {numberOfProjectsWithAmount} project
                     {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
                     <span className="font-normal">in</span>
@@ -261,13 +294,17 @@ export function DonationSidebar({
                         <span className="font-medium"> Giveth</span>{' '}
                       </>
                     )}{' '}
-                    <span className="font-normal">on</span>{' '}
-                    {getChainName(group.selectedChainId)}
+                    {!isAAWallet && (
+                      <>
+                        <span className="font-normal">on</span>{' '}
+                        {getChainName(group.selectedChainId)}
+                      </>
+                    )}
                   </p>
                 </div>
               )
             })}
-          {isAuthenticated &&
+          {(isAuthenticated || isAAWallet) &&
             walletAddress &&
             nonQfProjects.map(project => (
               <div
@@ -278,35 +315,51 @@ export function DonationSidebar({
                   {project.title}
                 </p>
                 <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
-                  {project.donationAmount} {project.tokenSymbol}{' '}
-                  <span className="font-normal">
-                    (~$
-                    {formatNumber(
-                      Number(project.donationAmount) *
-                        (project.selectedToken?.priceInUSD ?? 0),
-                    )}
-                    )
-                  </span>
+                  {isAAWallet ? (
+                    <>
+                      $
+                      {formatNumber(
+                        Number(project.donationAmount) *
+                          (project.selectedToken?.priceInUSD ?? 0),
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {project.donationAmount} {project.tokenSymbol}{' '}
+                      <span className="font-normal">
+                        (~$
+                        {formatNumber(
+                          Number(project.donationAmount) *
+                            (project.selectedToken?.priceInUSD ?? 0),
+                        )}
+                        )
+                      </span>
+                    </>
+                  )}
                 </p>
               </div>
             ))}
         </div>
 
         <div
-          className={`${walletAddress && isAuthenticated ? 'block' : 'opacity-50 cursor-not-allowed'}`}
+          className={`${walletAddress && (isAuthenticated || isAAWallet) ? 'block' : 'opacity-50 cursor-not-allowed'}`}
         >
           <DonateToGiveth />
 
           {/* Donate Button */}
           <button
             onClick={handleDonateButtonClick}
-            disabled={!hasDonationAmount || !walletAddress || !isAuthenticated}
+            disabled={
+              !hasDonationAmount ||
+              !walletAddress ||
+              (!isAuthenticated && !isAAWallet)
+            }
             className={clsx(
               'w-full py-4 mt-5 bg-giv-brand-300 text-white! rounded-md text-xs font-bold flex items-center',
               'justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
-            Donate now
+            {isAAWallet ? 'Donate with dollars' : 'Donate now'}
             <ArrowRight className="w-5 h-5" />
           </button>
           <AnonymousOption />
@@ -317,6 +370,13 @@ export function DonationSidebar({
         open={isInsufficientFund}
         onOpenChange={setIsInsufficientFund}
       />
+
+      {isAAWallet && (
+        <DepositModal
+          open={isDepositModalOpen}
+          onOpenChange={setDepositModalOpen}
+        />
+      )}
     </div>
   )
 }
