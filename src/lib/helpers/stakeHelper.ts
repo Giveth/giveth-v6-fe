@@ -1,4 +1,4 @@
-import { type Address, formatUnits } from 'viem'
+import { type Address } from 'viem'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
 
@@ -56,6 +56,13 @@ type TokenDistroData = {
   Core Query
 ============================================================================ */
 
+/**
+ * Query the subgraph for a user
+ *
+ * @param chainId - The chain ID
+ * @param query - The query to run
+ * @returns The subgraph data
+ */
 async function querySubgraph<T>(chainId: number, query: string): Promise<T> {
   const config = STAKING_POOLS[chainId]
 
@@ -91,6 +98,13 @@ async function querySubgraph<T>(chainId: number, query: string): Promise<T> {
   Query Builders
 ============================================================================ */
 
+/**
+ * Query the staking data for a user
+ *
+ * @param user - The user's address
+ * @param lm - The LM address
+ * @returns The staking query
+ */
 function stakingQuery(user: Address, lm: Address) {
   return `{
     unipool(id: "${lm.toLowerCase()}") {
@@ -108,6 +122,13 @@ function stakingQuery(user: Address, lm: Address) {
   }`
 }
 
+/**
+ * Query the token balance for a user
+ *
+ * @param user - The user's address
+ * @param token - The token address
+ * @returns The token balance query
+ */
 function tokenBalanceQuery(user: Address, token: Address) {
   return `{
     tokenBalance(id: "${token.toLowerCase()}-${user.toLowerCase()}") {
@@ -136,6 +157,14 @@ function tokenDistroQuery(user: Address, distro: Address) {
   }`
 }
 
+/**
+ * Query the token locks for a user
+ *
+ * @param user - The user's address
+ * @param first - The number of locks to return (default: 100)
+ * @param skip - The number of locks to skip (default: 0)
+ * @returns The token locks query
+ */
 function tokenLocksQuery(user: Address, first = 100, skip = 0) {
   return `{
     tokenLocks(where:{user: "${user.toLowerCase()}", unlocked: false}, first: ${first}, skip: ${skip}, orderBy: unlockableAt){
@@ -145,6 +174,13 @@ function tokenLocksQuery(user: Address, first = 100, skip = 0) {
   }`
 }
 
+/**
+ * Fetch the staking data for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The staking data
+ */
 export async function fetchStaking(user: Address, chainId: number) {
   const cfg = STAKING_POOLS[chainId]
 
@@ -185,6 +221,13 @@ export async function fetchStaking(user: Address, chainId: number) {
   Wallet Balance
 ============================================================================ */
 
+/**
+ * Fetch the wallet balance for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The wallet balance
+ */
 export async function fetchWalletBalance(user: Address, chainId: number) {
   const cfg = STAKING_POOLS[chainId]
 
@@ -200,6 +243,13 @@ export async function fetchWalletBalance(user: Address, chainId: number) {
   GIVbacks (TokenDistro)
 ============================================================================ */
 
+/**
+ * Fetch the GIVbacks for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The GIVbacks
+ */
 export async function fetchGIVbacks(user: Address, chainId: number) {
   const cfg = STAKING_POOLS[chainId]
 
@@ -286,6 +336,13 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
   User Overview (Main API)
 ============================================================================ */
 
+/**
+ * Fetch the user overview for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The user overview
+ */
 export async function fetchUserOverview(user: Address, chainId: number) {
   const [walletResult, stakingResult, givbacksResult] =
     await Promise.allSettled([
@@ -329,12 +386,4 @@ export async function fetchUserOverview(user: Address, chainId: number) {
 
     givbacks,
   }
-}
-
-/* ============================================================================
-  Format Helpers
-============================================================================ */
-
-export function formatGIV(value: bigint) {
-  return Number(formatUnits(value, 18))
 }
