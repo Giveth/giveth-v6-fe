@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { useActiveAccount } from 'thirdweb/react'
 import { formatUnits } from 'viem'
+import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { getTokenPriceInUSDByCoingeckoId } from '@/lib/helpers/cartHelper'
 import { fetchUserOverview } from '@/lib/helpers/stakeHelper'
 
-export const ClaimRewardsBanner = ({ chainLabel }: { chainLabel: string }) => {
+export const ClaimRewardsBanner = ({
+  selectedChain,
+  chainLabel,
+}: {
+  selectedChain: number
+  chainLabel: string
+}) => {
   const [data, setData] = useState<Awaited<
     ReturnType<typeof fetchUserOverview>
   > | null>(null)
@@ -21,7 +28,7 @@ export const ClaimRewardsBanner = ({ chainLabel }: { chainLabel: string }) => {
       try {
         const data = await fetchUserOverview(
           account.address as `0x${string}`,
-          10,
+          selectedChain,
         )
         setData(data)
       } catch (err) {
@@ -29,16 +36,22 @@ export const ClaimRewardsBanner = ({ chainLabel }: { chainLabel: string }) => {
       }
     }
     fetchData()
-  }, [account?.address])
+  }, [account?.address, selectedChain])
 
+  // Fetch token price
   useEffect(() => {
     const fetchPrice = async () => {
-      const price = await getTokenPriceInUSDByCoingeckoId('giveth')
+      const coingeckoId = STAKING_POOLS[selectedChain]?.GIVPOWER?.coingeckoId
+      if (!coingeckoId) {
+        setTokenPriceUsd(0)
+        return
+      }
+      const price = await getTokenPriceInUSDByCoingeckoId(coingeckoId)
       setTokenPriceUsd(price || 0)
     }
 
     fetchPrice()
-  }, [])
+  }, [selectedChain])
 
   if (isLoading) {
     return <div>Loading...</div>

@@ -1,6 +1,9 @@
+import { defineChain, getContract, readContract } from 'thirdweb'
 import { type Address } from 'viem'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
+import { thirdwebClient } from '@/lib/thirdweb/client'
+import { type ITokenDistroBalance } from '@/lib/types/subgraph'
 
 /* ============================================================================
   Types
@@ -16,6 +19,7 @@ type StakingData = {
     totalSupply: string
     rewardRate: string
     periodFinish: string
+    lastUpdateTime?: string
     rewardPerTokenStored?: string
   }
   unipoolBalance?: {
@@ -51,6 +55,16 @@ type TokenDistroData = {
     unlockableAt?: string
   }>
 }
+
+const LM_ABI = [
+  {
+    type: 'function',
+    name: 'earned',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+] as const
 
 /* ============================================================================
   Core Query
@@ -111,6 +125,7 @@ function stakingQuery(user: Address, lm: Address) {
       totalSupply
       rewardRate
       periodFinish
+      lastUpdateTime
       rewardPerTokenStored
     }
 
@@ -183,7 +198,6 @@ function tokenLocksQuery(user: Address, first = 100, skip = 0) {
  */
 export async function fetchStaking(user: Address, chainId: number) {
   const cfg = STAKING_POOLS[chainId]
-
   const data = await querySubgraph<StakingData>(
     chainId,
     stakingQuery(user, cfg.GIVPOWER.LM_ADDRESS as Address),
@@ -193,30 +207,109 @@ export async function fetchStaking(user: Address, chainId: number) {
 
   const staked = BigInt(data.unipoolBalance?.balance || '0')
   const baseRewards = BigInt(data.unipoolBalance?.rewards || '0')
-  const rewardPerTokenStored = BigInt(data.unipool?.rewardPerTokenStored || '0')
   const rewardPerTokenPaid = BigInt(
     data.unipoolBalance?.rewardPerTokenPaid || '0',
   )
+  const rewardPerTokenStored = BigInt(data.unipool.rewardPerTokenStored || '0')
+  const totalSupply = BigInt(data.unipool.totalSupply)
+  const rewardRate = BigInt(data.unipool.rewardRate)
+  const periodFinish = Number(data.unipool.periodFinish)
+
+  // ✅ ADD THIS: Calculate FRESH rewardPerToken
+  let freshRewardPerToken = rewardPerTokenStored
+  if (totalSupply > 0n) {
+    const now = Math.floor(Date.now() / 1000)
+    const lastTimeRewardApplicable = Math.min(now, periodFinish)
+
+    // Need lastUpdateTime from subgraph - add it to your query!
+    const lastUpdateTime = Number(data.unipool.lastUpdateTime || now)
+    const timeDelta = BigInt(lastTimeRewardApplicable - lastUpdateTime)
+
+    const E18 = 1_000_000_000_000_000_000n
+    freshRewardPerToken =
+      rewardPerTokenStored + (timeDelta * rewardRate * E18) / totalSupply
+  }
+
+  // Use FRESH value for calculation
   const rewardPerTokenDelta =
-    rewardPerTokenStored > rewardPerTokenPaid
-      ? rewardPerTokenStored - rewardPerTokenPaid
+    freshRewardPerToken > rewardPerTokenPaid
+      ? freshRewardPerToken - rewardPerTokenPaid
       : 0n
   const accruedRewards =
-    rewardPerTokenDelta > 0n
-      ? (staked * rewardPerTokenDelta) / 1_000_000_000_000_000_000n
-      : 0n
-  const earned = baseRewards + accruedRewards
-  const claimable = earned
+    (staked * rewardPerTokenDelta) / 1_000_000_000_000_000_000n
+  let earned = baseRewards + accruedRewards
 
+  // ✅ KEEP THIS: Your on-chain fallback is good!
+  if (earned === 0n) {
+    try {
+      const contract = getContract({
+        client: thirdwebClient,
+        chain: defineChain(chainId),
+        address: cfg.GIVPOWER.LM_ADDRESS as Address,
+        abi: LM_ABI,
+      })
+      const onchainEarned = (await readContract({
+        contract,
+        method: 'earned',
+        params: [user],
+      })) as bigint
+      earned = onchainEarned
+    } catch (error) {
+      console.warn('Failed to read on-chain earned:', error)
+    }
+  }
+  // Calculate APR
+  const now = Math.floor(Date.now() / 1000)
+  const poolActive = periodFinish > now
+
+  const apr =
+    poolActive && totalSupply > 0n
+      ? (Number(rewardRate) / Number(totalSupply)) * 31_536_000 * 100
+      : 0
+
+  // Calculate streaming/claimable split
+  if (cfg.TOKEN_DISTRO_ADDRESS && earned > 0n) {
+    const distroData = await querySubgraph<TokenDistroData>(
+      chainId,
+      tokenDistroQuery(user, cfg.TOKEN_DISTRO_ADDRESS as Address),
+    )
+
+    if (distroData.tokenDistro) {
+      const helper = new TokenDistroHelper({
+        contractAddress: cfg.TOKEN_DISTRO_ADDRESS as Address,
+        initialAmount: distroData.tokenDistro.initialAmount,
+        lockedAmount: distroData.tokenDistro.lockedAmount,
+        totalTokens: distroData.tokenDistro.totalTokens,
+        startTime: Number(distroData.tokenDistro.startTime) * 1000,
+        cliffTime: Number(distroData.tokenDistro.cliffTime) * 1000,
+        endTime:
+          (Number(distroData.tokenDistro.startTime) +
+            Number(distroData.tokenDistro.duration)) *
+          1000,
+      })
+
+      const claimable = helper.getLiquidPart(earned)
+      const streaming = helper.getStreamPartTokenPerWeek(earned)
+
+      return {
+        staked,
+        earned,
+        claimable,
+        streaming,
+        apr,
+      }
+    }
+  }
+
+  // No streaming - everything is claimable
   return {
     staked,
     earned,
-    claimable,
+    claimable: earned,
     streaming: 0n,
-    apr: 0,
+    apr,
   }
 }
-
 /* ============================================================================
   Wallet Balance
 ============================================================================ */
@@ -317,7 +410,18 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
     claimableFromLocks: claimableFromLocks.toString(),
   })
 
-  const claimable = BigInt(balance.givbackLiquidPart || '0')
+  const liquidPart = BigInt(balance.givbackLiquidPart || '0')
+  const givbackTotal = BigInt(balance.givback || '0')
+  const claimed = BigInt(balance.claimed || '0')
+  const claimableByTotal = givbackTotal > claimed ? givbackTotal - claimed : 0n
+  const helperClaimable = helper.getUserClaimableNow(
+    balance as unknown as ITokenDistroBalance,
+  )
+  const claimableCandidates = [liquidPart, claimableByTotal, helperClaimable]
+  const claimable = claimableCandidates.reduce(
+    (max, current) => (current > max ? current : max),
+    0n,
+  )
 
   return {
     claimable,

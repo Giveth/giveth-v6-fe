@@ -49,6 +49,7 @@ export const DEV_STAKING_POOLS: Record<
       title: string
       description: string
       unit: string
+      coingeckoId: string
     }
     TOKEN_DISTRO_ADDRESS: string
     GIV_TOKEN_ADDRESS: string
@@ -66,6 +67,7 @@ export const DEV_STAKING_POOLS: Record<
       title: 'GIV',
       description: '100% GIV',
       unit: 'GIV',
+      coingeckoId: 'giveth',
     },
     TOKEN_DISTRO_ADDRESS: '0x301C739CF6bfb6B47A74878BdEB13f92F13Ae5E7',
     GIV_TOKEN_ADDRESS: '0x2f2c819210191750F2E11F7CfC5664a0eB4fd5e6',
@@ -86,6 +88,7 @@ export const PROD_STAKING_POOLS: Record<
       title: string
       description: string
       unit: string
+      coingeckoId: string
     }
     TOKEN_DISTRO_ADDRESS: string
     GIV_TOKEN_ADDRESS: string
@@ -103,6 +106,7 @@ export const PROD_STAKING_POOLS: Record<
       title: 'GIV',
       description: '100% GIV',
       unit: 'GIV',
+      coingeckoId: 'giveth',
     },
     TOKEN_DISTRO_ADDRESS: '0xe3ac7b3e6b4065f4765d76fdc215606483bf3bd1',
     GIV_TOKEN_ADDRESS: '0x528CDc92eAB044E1E39FE43B9514bfdAB4412B98',

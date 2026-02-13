@@ -18,7 +18,10 @@ export const StakingRewards = () => {
           onSelectChain={setSelectedChain}
         />
       </div>
-      <ClaimRewardsBanner chainLabel={chainLabel} />
+      <ClaimRewardsBanner
+        selectedChain={selectedChain}
+        chainLabel={chainLabel}
+      />
     </div>
   )
 }
