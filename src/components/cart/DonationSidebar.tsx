@@ -223,7 +223,7 @@ export function DonationSidebar({
             <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
           </div>
         )}
-        {!isAuthenticated && walletAddress && !isAAWallet && (
+        {!isAuthenticated && walletAddress && (
           <div className="flex flex-col justify-center items-center h-48">
             <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Please sign in to donate
@@ -241,7 +241,7 @@ export function DonationSidebar({
         )}
         <div className="pt-2 space-y-4">
           {walletAddress &&
-            (isAuthenticated || isAAWallet) &&
+            isAuthenticated &&
             qfRoundGroups.map(group => {
               // Show only number of the project that have amout
               const projectsWithAmount = group.projects.filter(
@@ -304,7 +304,7 @@ export function DonationSidebar({
                 </div>
               )
             })}
-          {(isAuthenticated || isAAWallet) &&
+          {isAuthenticated &&
             walletAddress &&
             nonQfProjects.map(project => (
               <div
@@ -342,18 +342,14 @@ export function DonationSidebar({
         </div>
 
         <div
-          className={`${walletAddress && (isAuthenticated || isAAWallet) ? 'block' : 'opacity-50 cursor-not-allowed'}`}
+          className={`${walletAddress && isAuthenticated ? 'block' : 'opacity-50 cursor-not-allowed'}`}
         >
           <DonateToGiveth />
 
           {/* Donate Button */}
           <button
             onClick={handleDonateButtonClick}
-            disabled={
-              !hasDonationAmount ||
-              !walletAddress ||
-              (!isAuthenticated && !isAAWallet)
-            }
+            disabled={!hasDonationAmount || !walletAddress || !isAuthenticated}
             className={clsx(
               'w-full py-4 mt-5 bg-giv-brand-300 text-white! rounded-md text-xs font-bold flex items-center',
               'justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',

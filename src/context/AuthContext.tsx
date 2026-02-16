@@ -234,13 +234,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('giveth_token')
   }, [setSignedOutState])
 
-  // AA wallet users are considered authenticated even without SIWE
-  // because they signed in via email/Google through Thirdweb
-  const effectiveIsAuthenticated = authState.isAuthenticated || isAAWallet
-
   const value: AuthContextValue = {
     ...authState,
-    isAuthenticated: effectiveIsAuthenticated,
+    isAuthenticated: authState.isAuthenticated,
     signIn,
     signOut,
     isConnected: connectionStatus === 'connected',
