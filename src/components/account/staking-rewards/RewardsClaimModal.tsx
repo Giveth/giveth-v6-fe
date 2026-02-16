@@ -113,7 +113,11 @@ export default function RewardsClaimModal({
 
           <button
             type="button"
-            className="w-full rounded-2xl bg-giv-brand-300 py-3 text-sm font-semibold text-white transition hover:bg-giv-brand-400"
+            className={clsx(
+              'w-full mt-30 py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+              'border-none! focus:outline-none!',
+              'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
+            )}
           >
             Claim Rewards
           </button>
@@ -121,9 +125,13 @@ export default function RewardsClaimModal({
           <Dialog.Close>
             <button
               type="button"
-              className="text-sm font-medium text-giv-neutral-700 hover:text-giv-neutral-900 transition-colors cursor-pointer"
+              className={clsx(
+                'w-full mt-1.5 py-3 px-8 bg-giv-brand-050! text-giv-brand-700! rounded-md text-sm font-bold',
+                'border border-giv-brand-100! text-giv-neutral-900!',
+                'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
+              )}
             >
-              Dismiss
+              Cancel
             </button>
           </Dialog.Close>
         </div>
