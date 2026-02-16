@@ -99,6 +99,8 @@ export const ClaimRewardsBanner = ({
     }).format(parseFloat(formatUnits(value, 18)))} GIV/week`
 
   const tokenDistroAddress = STAKING_POOLS[selectedChain]?.TOKEN_DISTRO_ADDRESS
+  const givpowerLmAddress = STAKING_POOLS[selectedChain]?.GIVPOWER?.LM_ADDRESS
+  const stakedAmount = data?.staking?.staked ?? 0n
 
   return (
     <div
@@ -135,6 +137,8 @@ export const ClaimRewardsBanner = ({
         account={account}
         chainId={selectedChain}
         tokenDistroAddress={tokenDistroAddress as Address | undefined}
+        givpowerLmAddress={givpowerLmAddress as Address | undefined}
+        stakedAmount={stakedAmount}
         totalGiv={totalClaimableLabel}
         totalUsd={`$${totalUsdLabel}`}
         streamRate={formatGivRate(givstreamRate + givfarmRate)}

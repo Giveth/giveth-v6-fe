@@ -4,6 +4,7 @@ import {
   prepareContractCall,
   readContract,
   sendTransaction,
+  waitForReceipt,
 } from 'thirdweb'
 import { type Account } from 'thirdweb/wallets'
 import { type Address } from 'viem'
@@ -540,10 +541,61 @@ export async function claimAll(
   })
 
   // Send transaction
-  const { transactionHash } = await sendTransaction({
+  const receipt = await sendTransaction({
     account,
     transaction,
   })
 
-  return transactionHash
+  const finalReceipt = await waitForReceipt(receipt)
+
+  return finalReceipt.transactionHash
+}
+
+const UNIPOOL_ABI = [
+  {
+    type: 'function',
+    name: 'getReward',
+    stateMutability: 'nonpayable',
+    inputs: [],
+    outputs: [],
+  },
+] as const
+
+/**
+ * Harvest rewards based on whether the user is staking GIVpower
+ *
+ * - If staking: claim from GIVpower (includes GIVbacks/GIVstream)
+ * - If not staking: claim from TokenDistro only
+ */
+export async function harvestRewards(
+  account: Account,
+  chainId: number,
+  givpowerLmAddress: Address,
+  tokenDistroAddress: Address,
+  stakedAmount: bigint,
+) {
+  if (stakedAmount > 0n) {
+    const contract = getContract({
+      client: thirdwebClient,
+      chain: defineChain(chainId),
+      address: givpowerLmAddress,
+      abi: UNIPOOL_ABI,
+    })
+
+    const transaction = prepareContractCall({
+      contract,
+      method: 'getReward',
+      params: [],
+    })
+
+    const receipt = await sendTransaction({
+      account,
+      transaction,
+    })
+
+    const finalReceipt = await waitForReceipt(receipt)
+    return finalReceipt.transactionHash
+  }
+
+  return claimAll(account, chainId, tokenDistroAddress)
 }

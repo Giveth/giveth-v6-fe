@@ -1,10 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Dialog, Text } from '@radix-ui/themes'
 import clsx from 'clsx'
-import { X } from 'lucide-react'
+import { ExternalLink, X } from 'lucide-react'
+import { type Route } from 'next'
+import { defineChain } from 'thirdweb'
+import {
+  useActiveWalletChain,
+  useSwitchActiveWalletChain,
+} from 'thirdweb/react'
 import { type Account } from 'thirdweb/wallets'
 import { type Address } from 'viem'
-import { claimAll } from '@/lib/helpers/stakeHelper'
+import { getTransactionUrl } from '@/lib/helpers/chainHelper'
+import { harvestRewards } from '@/lib/helpers/stakeHelper'
 
 type RewardsClaimModalProps = {
   open: boolean
@@ -12,6 +20,8 @@ type RewardsClaimModalProps = {
   account?: Account | null
   chainId?: number
   tokenDistroAddress?: Address
+  givpowerLmAddress?: Address
+  stakedAmount?: bigint
   totalGiv?: string
   totalUsd?: string
   streamRate?: string
@@ -29,6 +39,8 @@ export default function RewardsClaimModal({
   account,
   chainId,
   tokenDistroAddress,
+  givpowerLmAddress,
+  stakedAmount = 0n,
   totalGiv = '0.00',
   totalUsd = '$0.00',
   streamRate = '0.00 GIV/week',
@@ -40,12 +52,41 @@ export default function RewardsClaimModal({
   totalRate = '0.00 GIV/week',
 }: RewardsClaimModalProps) {
   const [isClaiming, setIsClaiming] = useState(false)
+  const [claimTxHash, setClaimTxHash] = useState<string | null>(null)
+  const activeChain = useActiveWalletChain()
+  const switchChain = useSwitchActiveWalletChain()
+
+  useEffect(() => {
+    if (!open) {
+      setIsClaiming(false)
+      setClaimTxHash(null)
+    }
+  }, [open])
 
   const handleClaim = async () => {
-    if (!account || !chainId || !tokenDistroAddress || isClaiming) return
+    if (
+      !account ||
+      !chainId ||
+      !tokenDistroAddress ||
+      !givpowerLmAddress ||
+      isClaiming
+    )
+      return
     setIsClaiming(true)
+    setClaimTxHash(null)
     try {
-      await claimAll(account, chainId, tokenDistroAddress)
+      // Change user network to the chainId
+      if (activeChain?.id !== chainId) {
+        await switchChain(defineChain(chainId))
+      }
+      const txHash = await harvestRewards(
+        account,
+        chainId,
+        givpowerLmAddress,
+        tokenDistroAddress,
+        stakedAmount,
+      )
+      setClaimTxHash(txHash)
     } catch (error) {
       console.error(error)
     } finally {
@@ -54,7 +95,14 @@ export default function RewardsClaimModal({
   }
 
   const isClaimDisabled =
-    isClaiming || !account || !chainId || !tokenDistroAddress
+    isClaiming ||
+    !account ||
+    !chainId ||
+    !tokenDistroAddress ||
+    !givpowerLmAddress
+  const txUrl = claimTxHash
+    ? getTransactionUrl(chainId ?? 0, claimTxHash)
+    : undefined
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
@@ -73,7 +121,7 @@ export default function RewardsClaimModal({
       >
         <div className="flex items-center justify-between gap-3">
           <Dialog.Title className="text-2xl font-bold text-giv-neutral-900 m-0!">
-            Claim Rewards
+            Claim Rewards{chainId}
           </Dialog.Title>
           <Dialog.Close
             aria-label="Close"
@@ -127,17 +175,20 @@ export default function RewardsClaimModal({
             </div>
 
             {/* GIVbacks */}
-            <span>GIVbacks</span>
+            {Number(givbacksAmount) > 0 && (
+              <>
+                <span>GIVbacks</span>
+                <div className="flex justify-end gap-2 md:contents">
+                  <span className="font-semibold md:text-right text-base md:text-lg">
+                    {givbacksAmount}
+                  </span>
+                  <span />
+                </div>
+              </>
+            )}
 
-            <div className="flex justify-end gap-2 md:contents">
-              <span className="font-semibold md:text-right text-base md:text-lg">
-                {givbacksAmount}
-              </span>
-              <span />
-            </div>
-
-            {/* GIVfarm */}
-            <span>GIVfarm</span>
+            {/* GIVpower */}
+            <span>GIVpower</span>
 
             <div className="flex justify-end gap-2 md:contents">
               <span className="font-semibold md:text-right text-base md:text-lg">
@@ -178,7 +229,35 @@ export default function RewardsClaimModal({
           >
             {isClaiming ? 'Claiming...' : 'Claim Rewards'}
           </button>
-
+          {isClaiming && (
+            <div className="mt-2 text-center text-xs text-giv-neutral-600">
+              Check your wallet to confirm the network switch and claim.
+            </div>
+          )}
+          {!isClaiming && claimTxHash && (
+            <div className="text-center rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-base text-giv-neutral-700 mt-4">
+              <div className="text-base font-semibold">
+                Transaction confirmed!
+              </div>
+              <div className="mt-1 text-base">
+                It may take a few minutes for the UI to update.
+              </div>
+              {txUrl && (
+                <Link
+                  href={txUrl as Route}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={clsx(
+                    'mt-4 inline-flex items-center justify-center gap-1 underline underline-offset-2',
+                    'text-xs font-semibold text-giv-brand-600! hover:text-giv-brand-700! transition-colors',
+                  )}
+                >
+                  View on Blockscout
+                  <ExternalLink className="w-3.5 h-3.5 text-giv-brand-600! hover:text-giv-brand-700! transition-colors" />
+                </Link>
+              )}
+            </div>
+          )}
           <Dialog.Close>
             <button
               type="button"
