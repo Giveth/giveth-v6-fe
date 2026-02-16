@@ -96,14 +96,14 @@ export function DepositModal({ open, onOpenChange }: DepositModalProps) {
           {/* Options View */}
           {view === 'options' && (
             <div className="space-y-3 pt-2">
-              <Text size="2" className="text-giv-neutral-600 block mb-4">
+              <Text size="2" className="text-giv-neutral-600 block">
                 Choose how you'd like to add funds to your account.
               </Text>
 
               {/* Deposit Crypto */}
               <button
                 onClick={() => setView('crypto')}
-                className="w-full p-4 rounded-xl border border-giv-neutral-300 hover:border-giv-brand-300 hover:bg-giv-brand-05 transition-all cursor-pointer text-left"
+                className="w-full p-4 mt-2 rounded-xl border border-giv-neutral-300 hover:border-giv-brand-300 hover:bg-giv-brand-05 transition-all cursor-pointer text-left"
               >
                 <Flex align="center" gap="3">
                   <div className="w-10 h-10 rounded-full bg-giv-brand-05 flex items-center justify-center shrink-0">

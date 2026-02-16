@@ -192,12 +192,12 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <>
               {/* Browser Wallet Option */}
               <div>
-                <Text size="2" className="text-giv-neutral-600 mb-2 block">
+                <Text size="2" className="text-giv-neutral-600 block">
                   Already have a wallet?
                 </Text>
                 <button
                   onClick={handleConnectWallet}
-                  className="w-full px-4 py-3.5 rounded-xl border border-giv-neutral-300 hover:border-giv-brand-300 hover:bg-giv-brand-05 text-giv-neutral-900 text-sm font-semibold transition-all flex items-center gap-3 cursor-pointer"
+                  className="w-full px-4 py-3.5 mt-2 rounded-xl border border-giv-neutral-300 hover:border-giv-brand-300 hover:bg-giv-brand-05 text-giv-neutral-900 text-sm font-semibold transition-all flex items-center gap-3 cursor-pointer"
                 >
                   <Wallet className="w-5 h-5 text-giv-brand-500" />
                   Connect Wallet
