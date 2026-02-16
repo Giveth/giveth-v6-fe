@@ -412,24 +412,24 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
 
   const liquidPart = BigInt(balance.givbackLiquidPart || '0')
   const givbackTotal = BigInt(balance.givback || '0')
-  const claimed = BigInt(balance.claimed || '0')
-  const claimableByTotal = givbackTotal > claimed ? givbackTotal - claimed : 0n
   const helperClaimable = helper.getUserClaimableNow(
     balance as unknown as ITokenDistroBalance,
   )
-  const claimableCandidates = [liquidPart, claimableByTotal, helperClaimable]
-  const claimable = claimableCandidates.reduce(
-    (max, current) => (current > max ? current : max),
-    0n,
-  )
+  const streamableAmount =
+    helperClaimable > liquidPart ? helperClaimable - liquidPart : 0n
+  const givbackStream = helper.getStreamPartTokenPerWeek(givbackTotal)
 
   return {
-    claimable,
+    claimable: helperClaimable,
+    claimableByHelper: helperClaimable,
+    streamableAmount,
     streaming: helper.getStreamPartTokenPerWeek(
       BigInt(balance.allocatedTokens),
     ),
     allocated: BigInt(balance.allocatedTokens),
     claimed: BigInt(balance.claimed),
+    givbackLiquidPart: liquidPart,
+    givbackStream,
     claimableFromLocks,
     streamingFromLocks,
     totalLocked,
@@ -471,12 +471,16 @@ export async function fetchUserOverview(user: Address, chainId: number) {
       ? givbacksResult.value
       : {
           claimable: 0n,
+          claimableByHelper: 0n,
+          streamableAmount: 0n,
           streaming: 0n,
           allocated: 0n,
           claimed: 0n,
           claimableFromLocks: 0n,
           streamingFromLocks: 0n,
           totalLocked: 0n,
+          givbackLiquidPart: 0n,
+          givbackStream: 0n,
         }
 
   return {

@@ -29,7 +29,8 @@ export const ClaimRewardsBanner = ({
       if (!account?.address) return
       try {
         const data = await fetchUserOverview(
-          account.address as `0x${string}`,
+          // account.address as `0x${string}`,
+          '0xcd192b61a8Dd586A97592555c1f5709e032F2505',
           selectedChain,
         )
         setData(data)
@@ -63,14 +64,12 @@ export const ClaimRewardsBanner = ({
     console.error(error)
   }
 
-  const givbacksClaimable = data?.givbacks?.claimable ?? 0n
-  const locksClaimable = data?.givbacks?.claimableFromLocks ?? 0n
   const stakingClaimable = data?.staking?.claimable ?? 0n
-  const givbacksEffective =
-    locksClaimable > givbacksClaimable ? locksClaimable : givbacksClaimable
-  const totalClaimable = givbacksEffective + stakingClaimable
-  const givstreamAmount = givbacksEffective
+  const givbacksLiquid = data?.givbacks?.givbackLiquidPart ?? 0n
   const givfarmAmount = stakingClaimable
+  const givbacksAmount = givbacksLiquid
+  const givstreamAmount = data?.givbacks?.streamableAmount ?? 0n
+  const totalClaimable = givbacksAmount + givfarmAmount + givstreamAmount
   const givstreamRate = data?.givbacks?.streaming ?? 0n
   const givfarmRate = data?.staking?.streaming ?? 0n
 
@@ -137,8 +136,10 @@ export const ClaimRewardsBanner = ({
         streamRate={formatGivRate(givstreamRate + givfarmRate)}
         givstreamAmount={`${formatGiv(givstreamAmount)} GIV`}
         givstreamRate={formatGivRate(givstreamRate)}
+        givbacksAmount={`${formatGiv(givbacksAmount)} GIV`}
         givfarmAmount={`${formatGiv(givfarmAmount)} GIV`}
         givfarmRate={`+${formatGivRate(givfarmRate)}`}
+        totalRate={formatGivRate(givstreamRate + givfarmRate)}
       />
     </div>
   )

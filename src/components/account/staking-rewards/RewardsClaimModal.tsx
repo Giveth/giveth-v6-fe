@@ -1,6 +1,6 @@
-import { Cross2Icon } from '@radix-ui/react-icons'
-import { Dialog, Flex, Text } from '@radix-ui/themes'
+import { Dialog, Text } from '@radix-ui/themes'
 import clsx from 'clsx'
+import { X } from 'lucide-react'
 
 type RewardsClaimModalProps = {
   open: boolean
@@ -10,20 +10,24 @@ type RewardsClaimModalProps = {
   streamRate?: string
   givstreamAmount?: string
   givstreamRate?: string
+  givbacksAmount?: string
   givfarmAmount?: string
   givfarmRate?: string
+  totalRate?: string
 }
 
 export default function RewardsClaimModal({
   open,
   onOpenChange,
-  totalGiv = '11,958.50',
-  totalUsd = '$36.75',
-  streamRate = '5,718.50 GIV/week',
-  givstreamAmount = '10,645.50 GIV',
-  givstreamRate = '5,711.50 GIV/week',
-  givfarmAmount = '1,312.50 GIV',
-  givfarmRate = '+6.68 GIV/week',
+  totalGiv = '0.00',
+  totalUsd = '$0.00',
+  streamRate = '0.00 GIV/week',
+  givstreamAmount = '0.00 GIV',
+  givstreamRate = '0.00 GIV/week',
+  givbacksAmount = '0.00 GIV',
+  givfarmAmount = '0.00 GIV',
+  givfarmRate = '+0.00 GIV/week',
+  totalRate = '0.00 GIV/week',
 }: RewardsClaimModalProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -36,35 +40,35 @@ export default function RewardsClaimModal({
           transform: 'none',
         }}
         className={clsx(
-          'z-50 h-screen w-[90vw] md:w-[600px]',
-          'overflow-y-auto bg-white p-8',
-          'rounded-none md:rounded-l-3xl',
+          'z-50 h-screen w-[90vw]! md:w-[750px]! md:max-w-[750px]!',
+          'overflow-y-auto bg-white py-10! px-8!',
+          'rounded-none! md:rounded-l-2xl! rounded-r-none!',
         )}
       >
-        <Flex align="start" justify="between" gap="3">
-          <Dialog.Title className="text-xl font-semibold text-giv-neutral-900">
+        <div className="flex items-center justify-between gap-3">
+          <Dialog.Title className="text-2xl font-bold text-giv-neutral-900 m-0!">
             Claim Rewards
           </Dialog.Title>
           <Dialog.Close
             aria-label="Close"
-            className="rounded-full p-2 text-giv-neutral-700 transition hover:bg-giv-neutral-100"
+            className="text-giv-neutral-900 transition cursor-pointer hover:text-giv-neutral-700"
           >
-            <Cross2Icon className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </Dialog.Close>
-        </Flex>
+        </div>
 
         <div className="mt-6 space-y-6">
-          <div className="rounded-2xl border border-giv-neutral-200 p-6">
-            <Text
-              as="div"
-              className="text-2xl font-semibold text-giv-neutral-900"
-            >
+          <div className="rounded-xl border border-giv-brand-100 p-6">
+            <Text as="div" className="text-2xl font-bold text-giv-neutral-900">
               {totalGiv} GIV
             </Text>
-            <Text as="div" className="mt-1 text-sm text-giv-neutral-600">
+            <Text
+              as="div"
+              className="mt-1 text-base text-giv-neutral-900 font-medium"
+            >
               ~ {totalUsd}
             </Text>
-            <div className="mt-6 flex items-center justify-between text-sm text-giv-neutral-700">
+            <div className="mt-6 flex items-center justify-between text-lg text-giv-neutral-700">
               <span>Your new GIVstream flowrate</span>
               <span className="font-medium text-giv-neutral-900">
                 {streamRate}
@@ -72,26 +76,39 @@ export default function RewardsClaimModal({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-giv-neutral-200 bg-giv-neutral-50 p-6 text-sm text-giv-neutral-700">
+          <div className="rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-base text-giv-neutral-700">
             When you claim GIV, all liquid GIV allocated to you on that chain is
             sent to your wallet. Your GIVstream flowrate may also increase.
             Below is the breakdown of rewards you will get when you claim.
           </div>
 
-          <div className="rounded-2xl border border-giv-neutral-200 p-6 text-sm text-giv-neutral-900">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">GIVstream</span>
-              <span className="font-semibold">{givstreamAmount}</span>
-              <span className="text-giv-neutral-600">{givstreamRate}</span>
-            </div>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="font-medium">GIVpower</span>
-              <span className="font-semibold">{givfarmAmount}</span>
-              <span className="text-giv-neutral-600">{givfarmRate}</span>
-            </div>
-            <div className="mt-6 border-t border-giv-neutral-200 pt-4 text-right font-semibold">
-              {totalGiv} GIV
-            </div>
+          <div className="grid grid-cols-[1fr_1.5fr_2fr] gap-y-4 gap-x-6 rounded-2xl border border-giv-brand-100 p-6 text-lg text-giv-neutral-900 font-medium">
+            {/* GIVstream */}
+            <span>GIVstream</span>
+            <span className="text-right">{givstreamAmount}</span>
+            <span className="text-giv-neutral-700 text-right">
+              {givstreamRate}
+            </span>
+
+            {/* GIVbacks */}
+            <span>GIVbacks</span>
+            <span className="text-right">{givbacksAmount}</span>
+            <span></span>
+
+            {/* GIVfarm */}
+            <span>GIVfarm</span>
+            <span className="text-right">{givfarmAmount}</span>
+            <span className="text-giv-neutral-700 text-right">
+              {givfarmRate}
+            </span>
+
+            {/* Divider */}
+            <div className="col-span-3 border-t border-giv-neutral-300 my-2" />
+
+            {/* Total */}
+            <span></span>
+            <span className="text-right">{totalGiv} GIV</span>
+            <span className="text-giv-neutral-700 text-right">{totalRate}</span>
           </div>
 
           <button
