@@ -1,10 +1,17 @@
+import { useState } from 'react'
 import { Dialog, Text } from '@radix-ui/themes'
 import clsx from 'clsx'
 import { X } from 'lucide-react'
+import { type Account } from 'thirdweb/wallets'
+import { type Address } from 'viem'
+import { claimAll } from '@/lib/helpers/stakeHelper'
 
 type RewardsClaimModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  account?: Account | null
+  chainId?: number
+  tokenDistroAddress?: Address
   totalGiv?: string
   totalUsd?: string
   streamRate?: string
@@ -19,6 +26,9 @@ type RewardsClaimModalProps = {
 export default function RewardsClaimModal({
   open,
   onOpenChange,
+  account,
+  chainId,
+  tokenDistroAddress,
   totalGiv = '0.00',
   totalUsd = '$0.00',
   streamRate = '0.00 GIV/week',
@@ -29,6 +39,22 @@ export default function RewardsClaimModal({
   givfarmRate = '+0.00 GIV/week',
   totalRate = '0.00 GIV/week',
 }: RewardsClaimModalProps) {
+  const [isClaiming, setIsClaiming] = useState(false)
+
+  const handleClaim = async () => {
+    if (!account || !chainId || !tokenDistroAddress || isClaiming) return
+    setIsClaiming(true)
+    try {
+      await claimAll(account, chainId, tokenDistroAddress)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsClaiming(false)
+    }
+  }
+
+  const isClaimDisabled =
+    isClaiming || !account || !chainId || !tokenDistroAddress
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
@@ -140,13 +166,17 @@ export default function RewardsClaimModal({
 
           <button
             type="button"
+            onClick={handleClaim}
+            disabled={isClaimDisabled}
             className={clsx(
               'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
               'border-none! focus:outline-none!',
-              'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
+              'flex items-center justify-center gap-2 transition-colors cursor-pointer',
+              !isClaimDisabled && 'hover:bg-giv-brand-400!',
+              isClaimDisabled && 'opacity-60 cursor-not-allowed',
             )}
           >
-            Claim Rewards
+            {isClaiming ? 'Claiming...' : 'Claim Rewards'}
           </button>
 
           <Dialog.Close>

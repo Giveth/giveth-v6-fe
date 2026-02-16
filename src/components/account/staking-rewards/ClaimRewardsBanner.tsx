@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { useActiveAccount } from 'thirdweb/react'
-import { formatUnits } from 'viem'
+import { type Address, formatUnits } from 'viem'
 import RewardsClaimModal from '@/components/account/staking-rewards/RewardsClaimModal'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { getTokenPriceInUSDByCoingeckoId } from '@/lib/helpers/cartHelper'
@@ -29,8 +29,7 @@ export const ClaimRewardsBanner = ({
       if (!account?.address) return
       try {
         const data = await fetchUserOverview(
-          // account.address as `0x${string}`,
-          '0xcd192b61a8Dd586A97592555c1f5709e032F2505',
+          account.address as `0x${string}`,
           selectedChain,
         )
         setData(data)
@@ -99,6 +98,8 @@ export const ClaimRewardsBanner = ({
       maximumFractionDigits: 2,
     }).format(parseFloat(formatUnits(value, 18)))} GIV/week`
 
+  const tokenDistroAddress = STAKING_POOLS[selectedChain]?.TOKEN_DISTRO_ADDRESS
+
   return (
     <div
       className={clsx(
@@ -131,6 +132,9 @@ export const ClaimRewardsBanner = ({
       <RewardsClaimModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        account={account}
+        chainId={selectedChain}
+        tokenDistroAddress={tokenDistroAddress as Address | undefined}
         totalGiv={totalClaimableLabel}
         totalUsd={`$${totalUsdLabel}`}
         streamRate={formatGivRate(givstreamRate + givfarmRate)}
