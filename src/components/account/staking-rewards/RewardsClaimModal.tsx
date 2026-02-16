@@ -41,7 +41,7 @@ export default function RewardsClaimModal({
         }}
         className={clsx(
           'z-50 h-screen w-[90vw]! md:w-[750px]! md:max-w-[750px]!',
-          'overflow-y-auto bg-white py-10! px-8!',
+          'bg-white py-10! px-8!',
           'rounded-none! md:rounded-l-2xl! rounded-r-none!',
         )}
       >
@@ -57,8 +57,8 @@ export default function RewardsClaimModal({
           </Dialog.Close>
         </div>
 
-        <div className="mt-6 space-y-6">
-          <div className="rounded-xl border border-giv-brand-100 p-6">
+        <div className="mt-6 flex h-[calc(100%-48px)] flex-col">
+          <div className="rounded-xl border border-giv-brand-100 p-6 mb-6">
             <Text as="div" className="text-2xl font-bold text-giv-neutral-900">
               {totalGiv} GIV
             </Text>
@@ -76,7 +76,7 @@ export default function RewardsClaimModal({
             </div>
           </div>
 
-          <div className="rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-base text-giv-neutral-700">
+          <div className="rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-base text-giv-neutral-700 mb-6">
             When you claim GIV, all liquid GIV allocated to you on that chain is
             sent to your wallet. Your GIVstream flowrate may also increase.
             Below is the breakdown of rewards you will get when you claim.
@@ -114,7 +114,7 @@ export default function RewardsClaimModal({
           <button
             type="button"
             className={clsx(
-              'w-full mt-30 py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+              'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
               'border-none! focus:outline-none!',
               'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
             )}
@@ -126,7 +126,7 @@ export default function RewardsClaimModal({
             <button
               type="button"
               className={clsx(
-                'w-full mt-1.5 py-3 px-8 bg-giv-brand-050! text-giv-brand-700! rounded-md text-sm font-bold',
+                'w-full mt-4 py-3 px-8 bg-giv-brand-050! text-giv-brand-700! rounded-md text-sm font-bold',
                 'border border-giv-brand-100! text-giv-neutral-900!',
                 'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
               )}
