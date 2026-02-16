@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import clsx from 'clsx'
-import { Check, ChevronDown, Copy, LogOut, Plus } from 'lucide-react'
+import { Check, ChevronDown, Copy, Loader2, LogOut, Plus } from 'lucide-react'
 import { type Route } from 'next'
 import { type Address } from 'thirdweb'
 import {
   useActiveAccount,
   useActiveWallet,
   useActiveWalletChain,
+  useActiveWalletConnectionStatus,
 } from 'thirdweb/react'
 import { EnsName } from '@/components/account/EnsName'
 import { ChainIcon } from '@/components/ChainIcon'
@@ -33,6 +34,7 @@ export function HeaderConnectWallet() {
   const account = useActiveAccount()
   const wallet = useActiveWallet()
   const chain = useActiveWalletChain()
+  const connectionStatus = useActiveWalletConnectionStatus()
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -50,6 +52,7 @@ export function HeaderConnectWallet() {
   const { formattedBalance } = useAAWalletBalance()
 
   const user = profileData?.me
+  const isConnectingWallet = connectionStatus === 'connecting'
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -280,14 +283,26 @@ export function HeaderConnectWallet() {
     <>
       <button
         onClick={() => setSignInModalOpen(true)}
+        disabled={isConnectingWallet}
+        aria-busy={isConnectingWallet}
         className={clsx(
-          'rounded-full transition-all duration-200 shadow-sm cursor-pointer',
-          'inline-flex items-center gap-2 hover:opacity-80',
+          'rounded-full transition-all duration-200 shadow-sm',
+          'inline-flex items-center gap-2',
           'bg-[#8668fc] text-white',
           'px-5 py-3 text-sm font-semibold',
+          isConnectingWallet
+            ? 'opacity-80 cursor-not-allowed'
+            : 'hover:opacity-80 cursor-pointer',
         )}
       >
-        Sign In
+        {isConnectingWallet ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Connecting...
+          </>
+        ) : (
+          'Sign In'
+        )}
       </button>
 
       <SignInModal open={isSignInModalOpen} onOpenChange={setSignInModalOpen} />

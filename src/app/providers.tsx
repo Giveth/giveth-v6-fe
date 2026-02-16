@@ -4,14 +4,28 @@ import { type ReactNode, useState } from 'react'
 import { Theme } from '@radix-ui/themes'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { ThirdwebProvider } from 'thirdweb/react'
+import { ThirdwebProvider, useAutoConnect } from 'thirdweb/react'
 import { AuthProvider } from '@/context/AuthContext'
 import { useThemeSync } from '@/hooks/use-theme-sync'
 import { env } from '@/lib/env'
 import { getQueryClient } from '@/lib/react-query/query-client'
+import {
+  aaInAppWallet,
+  supportedWallets,
+  thirdwebClient,
+} from '@/lib/thirdweb/client'
 
 type ProvidersProps = {
   children: ReactNode
+}
+
+function ThirdwebAutoConnect() {
+  useAutoConnect({
+    client: thirdwebClient,
+    wallets: [aaInAppWallet, ...supportedWallets],
+  })
+
+  return null
 }
 
 export function Providers({ children }: ProvidersProps) {
@@ -21,6 +35,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThirdwebProvider>
+        <ThirdwebAutoConnect />
         <AuthProvider>
           <Theme accentColor="iris" grayColor="sand" radius="large">
             {children}
