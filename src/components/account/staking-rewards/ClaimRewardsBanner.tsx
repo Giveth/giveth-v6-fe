@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { useActiveAccount } from 'thirdweb/react'
 import { formatUnits } from 'viem'
+import RewardsClaimModal from '@/components/account/staking-rewards/RewardsClaimModal'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { getTokenPriceInUSDByCoingeckoId } from '@/lib/helpers/cartHelper'
 import { fetchUserOverview } from '@/lib/helpers/stakeHelper'
@@ -19,6 +20,7 @@ export const ClaimRewardsBanner = ({
   const [isLoading, _setIsLoading] = useState(false)
   const [error, _setError] = useState<string | null>(null)
   const [tokenPriceUsd, setTokenPriceUsd] = useState(0)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const account = useActiveAccount()
 
@@ -67,6 +69,10 @@ export const ClaimRewardsBanner = ({
   const givbacksEffective =
     locksClaimable > givbacksClaimable ? locksClaimable : givbacksClaimable
   const totalClaimable = givbacksEffective + stakingClaimable
+  const givstreamAmount = givbacksEffective
+  const givfarmAmount = stakingClaimable
+  const givstreamRate = data?.givbacks?.streaming ?? 0n
+  const givfarmRate = data?.staking?.streaming ?? 0n
 
   // Convert once to human units
   const totalClaimableGiv = parseFloat(formatUnits(totalClaimable, 18))
@@ -81,6 +87,18 @@ export const ClaimRewardsBanner = ({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(totalClaimableUsd)
+
+  const formatGiv = (value: bigint) =>
+    new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(parseFloat(formatUnits(value, 18)))
+
+  const formatGivRate = (value: bigint) =>
+    `${new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(parseFloat(formatUnits(value, 18)))} GIV/week`
 
   return (
     <div
@@ -102,6 +120,7 @@ export const ClaimRewardsBanner = ({
 
       <button
         type="button"
+        onClick={() => setIsModalOpen(true)}
         className={clsx(
           'w-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
           'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
@@ -109,6 +128,18 @@ export const ClaimRewardsBanner = ({
       >
         Claim Rewards
       </button>
+
+      <RewardsClaimModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        totalGiv={totalClaimableLabel}
+        totalUsd={`$${totalUsdLabel}`}
+        streamRate={formatGivRate(givstreamRate + givfarmRate)}
+        givstreamAmount={`${formatGiv(givstreamAmount)} GIV`}
+        givstreamRate={formatGivRate(givstreamRate)}
+        givfarmAmount={`${formatGiv(givfarmAmount)} GIV`}
+        givfarmRate={`+${formatGivRate(givfarmRate)}`}
+      />
     </div>
   )
 }
