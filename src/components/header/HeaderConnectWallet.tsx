@@ -17,7 +17,6 @@ import { ChainIcon } from '@/components/ChainIcon'
 import { CryptoWalletIcon } from '@/components/CryptoWalletIcon'
 import { DepositModal } from '@/components/modals/DepositModal'
 import { SignInModal } from '@/components/modals/SignInModal'
-import { AAWalletBalance } from '@/components/wallet/AAWalletBalance'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
 import { useProfile } from '@/hooks/useAccount'
@@ -90,66 +89,70 @@ export function HeaderConnectWallet() {
 
   // If wallet is connected, show the wallet badge
   if (account) {
-    // AA wallet connected - show balance + deposit variant
-    if (isAAWallet) {
-      return (
-        <>
-          <div className="relative" ref={dropdownRef}>
-            <div className="flex items-center gap-2">
-              <AAWalletBalance />
+    // Connected wallet behavior (shared across AA and browser wallets)
+    return (
+      <>
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={clsx(
+              'flex items-center gap-1 md:gap-3 px-2 md:px-4 py-[6px] md:py-[10px] lg:py-3 bg-white rounded-md',
+              'hover:opacity-85 transition-all duration-200',
+              'border border-giv-brand-100 cursor-pointer',
+              'text-xs lg:text-sm text-giv-brand-600! font-bold',
+            )}
+          >
+            {/* Wallet Icon */}
+            {wallet && <CryptoWalletIcon walletId={wallet?.id || ''} />}
 
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={clsx(
-                  'flex items-center gap-1 px-3 py-2 bg-white rounded-lg',
-                  'hover:opacity-85 transition-all duration-200',
-                  'border border-giv-neutral-200 cursor-pointer',
-                  'text-xs lg:text-sm text-giv-neutral-700 font-medium',
-                )}
-              >
-                <div className="w-6 h-6 rounded-full bg-giv-brand-100 flex items-center justify-center">
-                  <span className="text-xs font-bold text-giv-brand-600">
-                    {account.address.slice(2, 4).toUpperCase()}
-                  </span>
-                </div>
-                <ChevronDown className="w-4 h-4 text-giv-neutral-500" />
-              </button>
+            {/* Cain Icon */}
+            <ChainIcon networkId={chain?.id || 0} />
+
+            {/* Address and Network Info */}
+            <div className="hidden md:flex flex-col items-start">
+              {(user && getUserName(user)) || (
+                <EnsName
+                  address={account.address as Address as `0x${string}`}
+                />
+              )}
             </div>
 
-            {/* Dropdown Menu for AA Wallet */}
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
-                <div className="p-4 border-b border-gray-100">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-giv-brand-100 flex items-center justify-center">
-                      <span className="text-sm font-bold text-giv-brand-600">
-                        {account.address.slice(2, 4).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">
-                        My Account
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formattedBalance} USD
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setDepositModalOpen(true)
-                      setIsOpen(false)
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-giv-brand-300 rounded-lg hover:bg-giv-brand-400 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Deposit Funds
-                  </button>
-                </div>
+            <ChevronDown className="w-5 h-5 text-giv-brand-600" />
+          </button>
 
+          {/* Dropdown Menu */}
+          {isOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+              <div className="p-4 border-b border-gray-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center`}
+                  >
+                    <Image
+                      src={user?.avatar || '/images/user/default-avatar.png'}
+                      alt="Avatar"
+                      width={24}
+                      height={24}
+                      className="object-cover rounded-full"
+                    />
+                    <span className="text-white text-lg font-bold">
+                      {account.address.slice(2, 4).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      <EnsName
+                        address={account.address as Address as `0x${string}`}
+                      />
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {chain?.name || 'Unknown Network'}
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={handleCopyAddress}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   {copied ? (
                     <>
@@ -163,119 +166,32 @@ export function HeaderConnectWallet() {
                     </>
                   )}
                 </button>
-
-                <Link
-                  href="/account"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-                >
-                  My Donations
-                </Link>
-
-                <Link
-                  href={supportLink.href as Route}
-                  onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-                >
-                  {supportLink.label}
-                </Link>
-
-                <button
-                  onClick={handleDisconnect}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </button>
               </div>
-            )}
-          </div>
 
-          <DepositModal
-            open={isDepositModalOpen}
-            onOpenChange={setDepositModalOpen}
-          />
-        </>
-      )
-    }
-
-    // Regular wallet connected - existing behavior
-    return (
-      <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={clsx(
-            'flex items-center gap-1 md:gap-3 px-2 md:px-4 py-[6px] md:py-[10px] lg:py-3 bg-white rounded-md',
-            'hover:opacity-85 transition-all duration-200',
-            'border border-giv-brand-100 cursor-pointer',
-            'text-xs lg:text-sm text-giv-brand-600! font-bold',
-          )}
-        >
-          {/* Wallet Icon */}
-          {wallet && <CryptoWalletIcon walletId={wallet?.id || ''} />}
-
-          {/* Cain Icon */}
-          <ChainIcon networkId={chain?.id || 0} />
-
-          {/* Address and Network Info */}
-          <div className="hidden md:flex flex-col items-start">
-            {(user && getUserName(user)) || (
-              <EnsName address={account.address as Address as `0x${string}`} />
-            )}
-          </div>
-
-          <ChevronDown className="w-5 h-5 text-giv-brand-600" />
-        </button>
-
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center`}
-                >
-                  <Image
-                    src={user?.avatar || '/images/user/default-avatar.png'}
-                    alt="Avatar"
-                    width={24}
-                    height={24}
-                    className="object-cover rounded-full"
-                  />
-                  <span className="text-white text-lg font-bold">
-                    {account.address.slice(2, 4).toUpperCase()}
-                  </span>
+              {isAAWallet && (
+                <div className="p-4 border-b border-gray-100">
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-900">
+                      My Account
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formattedBalance} USD
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setDepositModalOpen(true)
+                      setIsOpen(false)
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-giv-brand-300 rounded-lg hover:bg-giv-brand-400 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Deposit Funds
+                  </button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    <EnsName
-                      address={account.address as Address as `0x${string}`}
-                    />
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {chain?.name || 'Unknown Network'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleCopyAddress}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-green-600">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>Copy Address</span>
-                  </>
-                )}
-              </button>
-            </div>
+              )}
 
-            {/* <Link
+              {/* <Link
               href="/account"
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
@@ -283,15 +199,15 @@ export function HeaderConnectWallet() {
               My Account
             </Link> */}
 
-            <Link
-              href={myProjectsLink.href as Route}
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              {myProjectsLink.label}
-            </Link>
+              <Link
+                href={myProjectsLink.href as Route}
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                {myProjectsLink.label}
+              </Link>
 
-            {/* <Link
+              {/* <Link
               href={myCausesLink.href as Route}
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
@@ -299,15 +215,15 @@ export function HeaderConnectWallet() {
               {myCausesLink.label}
             </Link> */}
 
-            <Link
-              href="/account"
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              My Donations
-            </Link>
+              <Link
+                href="/account"
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                My Donations
+              </Link>
 
-            {/* <Link
+              {/* <Link
               href={myGIVPowerLink.href as Route}
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
@@ -315,41 +231,47 @@ export function HeaderConnectWallet() {
               {myGIVPowerLink.label}
             </Link> */}
 
-            <Link
-              href={createProjectLink.href as Route}
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              {createProjectLink.label}
-            </Link>
+              <Link
+                href={createProjectLink.href as Route}
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                {createProjectLink.label}
+              </Link>
 
-            <Link
-              href={reportBugLink.href as unknown as Route}
-              target={reportBugLink.target}
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              {reportBugLink.label}
-            </Link>
+              <Link
+                href={reportBugLink.href as unknown as Route}
+                target={reportBugLink.target}
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                {reportBugLink.label}
+              </Link>
 
-            <Link
-              href={supportLink.href as Route}
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              {supportLink.label}
-            </Link>
+              <Link
+                href={supportLink.href as Route}
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                {supportLink.label}
+              </Link>
 
-            <button
-              onClick={handleDisconnect}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Disconnect
-            </button>
-          </div>
-        )}
-      </div>
+              <button
+                onClick={handleDisconnect}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Disconnect
+              </button>
+            </div>
+          )}
+        </div>
+
+        <DepositModal
+          open={isDepositModalOpen}
+          onOpenChange={setDepositModalOpen}
+        />
+      </>
     )
   }
 

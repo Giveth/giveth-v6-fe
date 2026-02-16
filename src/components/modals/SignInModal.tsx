@@ -172,7 +172,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
         </Dialog.Description>
 
         {/* Header */}
-        <Flex align="center" justify="between" className="px-6 pt-6 pb-2">
+        <Flex align="center" justify="between" className="pt-6 pb-2">
           <Text size="5" weight="bold" className="text-giv-neutral-900">
             Sign In
           </Text>
@@ -187,7 +187,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
           </Dialog.Close>
         </Flex>
 
-        <div className="px-6 pb-6 space-y-5">
+        <div className="pb-6 space-y-5">
           {view === 'main' && (
             <>
               {/* Browser Wallet Option */}
