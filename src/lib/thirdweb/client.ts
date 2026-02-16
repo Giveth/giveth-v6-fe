@@ -62,6 +62,7 @@ export const aaInAppWallet = inAppWallet({
   smartAccount: {
     chain: optimism,
     sponsorGas: true,
+    factoryAddress: undefined, // add a factor address later
   },
 })
 
