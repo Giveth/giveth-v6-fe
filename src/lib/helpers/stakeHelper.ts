@@ -1,4 +1,11 @@
-import { defineChain, getContract, readContract } from 'thirdweb'
+import {
+  defineChain,
+  getContract,
+  prepareContractCall,
+  readContract,
+  sendTransaction,
+} from 'thirdweb'
+import { type Account } from 'thirdweb/wallets'
 import { type Address } from 'viem'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
@@ -494,4 +501,49 @@ export async function fetchUserOverview(user: Address, chainId: number) {
 
     givbacks,
   }
+}
+
+/**
+ * Claim all rewards from the token distro
+ *
+ * @param account - The account to claim from
+ * @param chainId - The chain ID
+ * @param tokenDistroAddress - The token distro address
+ * @returns The transaction hash
+ */
+export async function claimAll(
+  account: Account,
+  chainId: number,
+  tokenDistroAddress: Address,
+) {
+  // Get TokenDistro contract
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: tokenDistroAddress,
+    abi: [
+      {
+        type: 'function',
+        name: 'claim',
+        stateMutability: 'nonpayable',
+        inputs: [],
+        outputs: [],
+      },
+    ],
+  })
+
+  // Prepare transaction
+  const transaction = prepareContractCall({
+    contract,
+    method: 'claim',
+    params: [],
+  })
+
+  // Send transaction
+  const { transactionHash } = await sendTransaction({
+    account,
+    transaction,
+  })
+
+  return transactionHash
 }

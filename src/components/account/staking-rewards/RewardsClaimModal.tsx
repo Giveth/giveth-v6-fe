@@ -68,7 +68,7 @@ export default function RewardsClaimModal({
             >
               ~ {totalUsd}
             </Text>
-            <div className="mt-6 flex items-center justify-between text-lg text-giv-neutral-700">
+            <div className="mt-6 flex flex-col md:flex-row items-center justify-between text-lg text-giv-neutral-700">
               <span>Your new GIVstream flowrate</span>
               <span className="font-medium text-giv-neutral-900">
                 {streamRate}
@@ -82,33 +82,60 @@ export default function RewardsClaimModal({
             Below is the breakdown of rewards you will get when you claim.
           </div>
 
-          <div className="grid grid-cols-[1fr_1.5fr_2fr] gap-y-4 gap-x-6 rounded-2xl border border-giv-brand-100 p-6 text-lg text-giv-neutral-900 font-medium">
+          <div
+            className={clsx(
+              'flex flex-wrap flex-col md:grid md:grid-cols-[1fr_1.5fr_2fr] gap-y-4 gap-x-6 mb-6',
+              'rounded-2xl border border-giv-brand-100 p-6 text-lg text-giv-neutral-900 font-medium',
+            )}
+          >
             {/* GIVstream */}
             <span>GIVstream</span>
-            <span className="text-right">{givstreamAmount}</span>
-            <span className="text-giv-neutral-700 text-right">
-              {givstreamRate}
-            </span>
+
+            <div className="flex justify-end gap-2 md:contents">
+              <span className="font-semibold md:text-right text-base md:text-lg">
+                {givstreamAmount}
+              </span>
+              <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                {givstreamRate}
+              </span>
+            </div>
 
             {/* GIVbacks */}
             <span>GIVbacks</span>
-            <span className="text-right">{givbacksAmount}</span>
-            <span></span>
+
+            <div className="flex justify-end gap-2 md:contents">
+              <span className="font-semibold md:text-right text-base md:text-lg">
+                {givbacksAmount}
+              </span>
+              <span />
+            </div>
 
             {/* GIVfarm */}
             <span>GIVfarm</span>
-            <span className="text-right">{givfarmAmount}</span>
-            <span className="text-giv-neutral-700 text-right">
-              {givfarmRate}
-            </span>
+
+            <div className="flex justify-end gap-2 md:contents">
+              <span className="font-semibold md:text-right text-base md:text-lg">
+                {givfarmAmount}
+              </span>
+              <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                {givfarmRate}
+              </span>
+            </div>
 
             {/* Divider */}
-            <div className="col-span-3 border-t border-giv-neutral-300 my-2" />
+            <div className="col-span-2 md:col-span-3 border-t border-giv-neutral-300 my-2" />
 
             {/* Total */}
-            <span></span>
-            <span className="text-right">{totalGiv} GIV</span>
-            <span className="text-giv-neutral-700 text-right">{totalRate}</span>
+            <span />
+
+            <div className="flex justify-end gap-2 md:contents">
+              <span className="font-semibold md:text-right text-base md:text-lg">
+                {totalGiv} GIV
+              </span>
+              <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                {totalRate}
+              </span>
+            </div>
           </div>
 
           <button
