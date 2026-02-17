@@ -292,7 +292,7 @@ export function AiChatPanel({
       <div className="shrink-0 px-6 pb-6">
         <div className="mx-auto max-w-2xl">
           {!hasUserStartedChat && (
-            <div className="text-center text-2xl font-semibold text-[#4b5563]">
+            <div className="text-center text-2xl font-semibold text-[#4b5563] mb-4">
               {heading}
             </div>
           )}
