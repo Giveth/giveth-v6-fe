@@ -16,10 +16,12 @@ export function AiChatPanel({
   heading = 'Let’s create your Project',
   placeholder = 'My project is about...',
   showWelcomeBubble = true,
+  onAiFormUpdated,
 }: {
   heading?: string
   placeholder?: string
   showWelcomeBubble?: boolean
+  onAiFormUpdated?: () => void
 }) {
   const { token } = useSiweAuth()
   const draft = useCreateProjectDraftStore(s => s.draft)
@@ -152,6 +154,7 @@ export function AiChatPanel({
           patch?: Partial<CreateProjectDraft>
         }
         if (data.patch) applyPatch(data.patch)
+        if (data.patch) onAiFormUpdated?.()
         setMessages(prev =>
           prev.map(msg =>
             msg.id === assistantMessageId
@@ -202,7 +205,10 @@ export function AiChatPanel({
               )
               scrollToBottom()
             } else if (payload.type === 'patch') {
-              if (payload.patch) applyPatch(payload.patch)
+              if (payload.patch) {
+                applyPatch(payload.patch)
+                onAiFormUpdated?.()
+              }
             } else if (payload.type === 'error') {
               throw new Error(payload.message || 'AI stream failed')
             }
@@ -254,7 +260,7 @@ export function AiChatPanel({
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 min-h-0 overflow-hidden px-6">
         <div ref={listRef} className="mx-auto h-full max-w-2xl overflow-y-auto">
           <div className="mt-10 space-y-6">
             {messages.map(m => (
@@ -274,7 +280,7 @@ export function AiChatPanel({
         </div>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="shrink-0 px-6 pb-6">
         <div className="mx-auto max-w-2xl">
           {!hasUserStartedChat && (
             <div className="text-center text-2xl font-semibold text-[#4b5563]">
@@ -333,7 +339,7 @@ export function AiChatPanel({
               <button
                 type="button"
                 className={cn(
-                  'inline-flex h-11 w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
+                  'inline-flex h-[34px] w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
                 )}
                 aria-label="Attach"
                 disabled={isUploadingImage || isSending}
@@ -358,6 +364,8 @@ export function AiChatPanel({
 
               <textarea
                 ref={composerRef}
+                id="ai-chat-input"
+                name="ai-chat-input"
                 rows={1}
                 className="max-h-56 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-relaxed text-[#111827] outline-none placeholder:text-[#9ca3af] [scrollbar-width:thin]"
                 placeholder={placeholder}
@@ -382,7 +390,7 @@ export function AiChatPanel({
               <button
                 type="button"
                 className={cn(
-                  'inline-flex h-11 w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
+                  'inline-flex h-[34px] w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
                 )}
                 aria-label="Send"
                 disabled={isSending || isUploadingImage || !input.trim()}

@@ -8,11 +8,13 @@ import type { Route } from 'next'
 
 export function CreateProjectLayout({
   isSidebarOpen,
+  showAiUpdateCue,
   onToggleSidebar,
   sidebar,
   chat,
 }: {
   isSidebarOpen: boolean
+  showAiUpdateCue: boolean
   onToggleSidebar: () => void
   sidebar: React.ReactNode
   chat: React.ReactNode
@@ -32,8 +34,8 @@ export function CreateProjectLayout({
     <div className="bg-[#f7f8fc]">
       <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 xl:items-start xl:flex-row">
-          <main className="min-w-0 flex-1 overflow-hidden rounded-2xl border border-[#ececf4] bg-white shadow-[0_1px_0_rgba(15,23,42,0.03)]">
-            <div className="flex items-center justify-end gap-3 px-4 py-3 sm:px-5">
+          <main className="relative min-w-0 flex-1 flex flex-col overflow-hidden rounded-2xl border border-[#ececf4] bg-white shadow-[0_1px_0_rgba(15,23,42,0.03)] h-[calc(100vh-128px)]">
+            <div className="shrink-0 flex items-center justify-end gap-3 px-4 py-3 sm:px-5">
               {isPreviewEnabled ? (
                 <Link
                   href={'/project/preview' as Route}
@@ -73,12 +75,21 @@ export function CreateProjectLayout({
                 )}
               </button>
             </div>
-            <div className="min-h-[calc(100vh-220px)]">{chat}</div>
+            {!isSidebarOpen && showAiUpdateCue && (
+              <div className="pointer-events-none absolute right-6 top-[72px] z-10 rounded-full border border-[#ece8ff] bg-white px-3 py-1 text-sm font-semibold text-[#7c6af2] shadow-[0_6px_20px_rgba(124,106,242,0.18)]">
+                Updated! <span className="text-sm">✨</span>
+              </div>
+            )}
+
+            {showAiUpdateCue && (
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-4 bg-gradient-to-r from-transparent to-[rgba(139,120,255,0.55)]" />
+            )}
+            <div className="flex-1 min-h-0">{chat}</div>
           </main>
 
           <aside
             className={cn(
-              'min-w-0 overflow-hidden rounded-2xl bg-transparent transition-[width,opacity,transform] duration-300 ease-out',
+              'relative min-w-0 overflow-hidden rounded-2xl bg-transparent transition-[width,opacity,transform] duration-300 ease-out',
               'xl:block',
               'xl:sticky xl:top-24',
               isSidebarOpen

@@ -1,10 +1,12 @@
 'use client'
 
 import { ProjectPageView } from '@/components/project/ProjectPageView'
+import { useSiweAuth } from '@/context/AuthContext'
 import { type ChainType } from '@/lib/graphql/generated/graphql'
 import { useCreateProjectDraftStore } from '@/stores/createProjectDraft.store'
 
 export function ProjectDraftPreview() {
+  const { user, walletAddress } = useSiweAuth()
   const draft = useCreateProjectDraftStore(s => s.draft)
 
   return (
@@ -38,7 +40,14 @@ export function ProjectDraftPreview() {
           memo: a.memo || null,
         })),
         projectQfRounds: [],
-        adminUser: null,
+        adminUser: {
+          id: user?.id ? String(user.id) : 'preview-user',
+          name: user?.name || 'Current user',
+          firstName: null,
+          lastName: null,
+          avatar: user?.avatar || null,
+          wallets: walletAddress ? [{ address: walletAddress }] : [],
+        },
         impactLocation: draft.impactLocation || null,
       }}
     />

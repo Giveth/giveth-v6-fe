@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useActiveWalletConnectionStatus } from 'thirdweb/react'
 import { AiChatPanel } from '@/components/create-project/AiChatPanel'
@@ -14,6 +14,8 @@ export default function CreateProjectPage() {
   const connectionStatus = useActiveWalletConnectionStatus()
   const router = useRouter()
   const [isInitializing, setIsInitializing] = useState(false)
+  const [showAiUpdateCue, setShowAiUpdateCue] = useState(false)
+  const aiUpdateCueTimerRef = useRef<number | null>(null)
 
   // Default experience keeps manual edit visible on first load.
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -45,6 +47,25 @@ export default function CreateProjectPage() {
 
     initializePage()
   }, [isLoading, isAuthenticated, isConnected, signIn, router])
+
+  useEffect(() => {
+    return () => {
+      if (aiUpdateCueTimerRef.current) {
+        window.clearTimeout(aiUpdateCueTimerRef.current)
+      }
+    }
+  }, [])
+
+  const handleAiFormUpdated = () => {
+    setShowAiUpdateCue(true)
+    if (aiUpdateCueTimerRef.current) {
+      window.clearTimeout(aiUpdateCueTimerRef.current)
+    }
+    aiUpdateCueTimerRef.current = window.setTimeout(() => {
+      setShowAiUpdateCue(false)
+      aiUpdateCueTimerRef.current = null
+    }, 3000)
+  }
 
   if (isLoading || isInitializing) {
     return (
@@ -87,9 +108,10 @@ export default function CreateProjectPage() {
   return (
     <CreateProjectLayout
       isSidebarOpen={isSidebarOpen}
+      showAiUpdateCue={showAiUpdateCue}
       onToggleSidebar={() => setIsSidebarOpen(v => !v)}
       sidebar={<ManualSidebarForm />}
-      chat={<AiChatPanel />}
+      chat={<AiChatPanel onAiFormUpdated={handleAiFormUpdated} />}
     />
   )
 }
