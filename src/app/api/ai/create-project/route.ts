@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { CHAINS } from '@/lib/constants/chain'
 import { serverEnv } from '@/lib/env/server'
+import { createGraphQLClient } from '@/lib/graphql/client'
 import { ChainType } from '@/lib/graphql/generated/graphql'
+import { mainCategoriesQuery } from '@/lib/graphql/queries'
 
 type DraftChainType = ChainType
 
@@ -18,6 +21,12 @@ type Draft = {
     networkId: number
     address: string
   }[]
+}
+
+type CategoryOption = {
+  id: number
+  name: string
+  group?: string
 }
 
 const requestSchema = z.object({
@@ -42,6 +51,7 @@ const patchSchema = z
     description: z.string().nullable(),
     image: z.string().nullable(),
     impactLocation: z.string().nullable(),
+    categoryIds: z.array(z.number().int()).max(MAX_CATEGORIES).nullable(),
     socialMedia: z
       .array(z.object({ type: z.string(), link: z.string() }))
       .nullable(),
@@ -74,6 +84,7 @@ type PatchOut = {
   description?: string
   image?: string
   impactLocation?: string
+  categoryIds?: number[]
   socialMedia?: { type: string; link: string }[]
   recipientAddresses?: {
     chainType: Draft['recipientAddresses'][number]['chainType']
@@ -116,6 +127,8 @@ export async function POST(req: Request) {
     // Exclude non-EVM chain ids that are present in CHAINS for other parts of the app.
     .filter(id => id !== 101 && id !== 1500 && id !== 3000)
     .sort((a, b) => a - b)
+  const categoryOptions = await getCategoryOptions().catch(() => [])
+  const allowedCategoryIds = new Set(categoryOptions.map(c => c.id))
 
   const schema = {
     name: 'CreateProjectAssistantExtraction',
@@ -136,6 +149,11 @@ export async function POST(req: Request) {
                 description: { type: ['string', 'null'] },
                 image: { type: ['string', 'null'] },
                 impactLocation: { type: ['string', 'null'] },
+                categoryIds: {
+                  type: ['array', 'null'],
+                  items: { type: 'integer' },
+                  maxItems: MAX_CATEGORIES,
+                },
                 socialMedia: {
                   type: ['array', 'null'],
                   items: {
@@ -170,6 +188,7 @@ export async function POST(req: Request) {
                 'description',
                 'image',
                 'impactLocation',
+                'categoryIds',
                 'socialMedia',
                 'recipientAddresses',
               ],
@@ -200,7 +219,8 @@ export async function POST(req: Request) {
     'You must output JSON only and it must match the provided JSON schema.',
     'Because the schema is strict, you MUST return null for any field you are NOT patching.',
     '',
-    'DEFAULT behavior: extract explicit user-provided facts into form fields.',
+    'DEFAULT behavior: extract facts into form fields from BOTH the user message AND the ASSISTANT_MESSAGE.',
+    'This includes values the assistant recommended, selected, or generated on behalf of the user.',
     'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
     '',
     'assistantMessage behavior (this is what the user will see in chat):',
@@ -238,8 +258,17 @@ export async function POST(req: Request) {
     '- description',
     '- image (URL only, if explicitly provided)',
     '- impactLocation',
+    '- categoryIds: array of category IDs',
     '- socialMedia: array of {type, link}',
     '- recipientAddresses: array of {chainType, networkId, address}.',
+    '',
+    'Category behavior:',
+    '- You will receive CATEGORY_OPTIONS_JSON in the prompt (id/name/group).',
+    '- If the user OR the ASSISTANT_MESSAGE mentions, recommends, or selects category names, map them to IDs and set categoryIds.',
+    '- When the user asks the assistant to choose/pick/suggest categories, the ASSISTANT_MESSAGE will contain the chosen categories — you MUST extract those into categoryIds.',
+    '- categoryIds must only include IDs from CATEGORY_OPTIONS_JSON.',
+    `- categoryIds must include at most ${MAX_CATEGORIES} IDs.`,
+    '- If no category clearly matches user intent, leave categoryIds as null and ask one concise follow-up.',
     '',
     'Attachments:',
     '- If the user attached an image, you will receive ATTACHED_IMAGE_URL in the prompt.',
@@ -255,6 +284,9 @@ export async function POST(req: Request) {
     '',
     'ATTACHED_IMAGE_URL:',
     attachmentImageUrl ?? '(none)',
+    '',
+    'CATEGORY_OPTIONS_JSON:',
+    JSON.stringify(categoryOptions),
     '',
     'RECENT_CHAT_HISTORY:',
     history
@@ -274,10 +306,15 @@ export async function POST(req: Request) {
     extractionSystem,
     userContext,
     schema,
+    allowedCategoryIds,
+    categoryOptions,
   })
 }
 
-function normalizePatch(patch: z.infer<typeof patchSchema>): PatchOut {
+function normalizePatch(
+  patch: z.infer<typeof patchSchema>,
+  allowedCategoryIds: Set<number>,
+): PatchOut {
   const out: PatchOut = {}
 
   if (typeof patch.title === 'string') out.title = patch.title
@@ -285,6 +322,16 @@ function normalizePatch(patch: z.infer<typeof patchSchema>): PatchOut {
   if (typeof patch.image === 'string') out.image = patch.image
   if (typeof patch.impactLocation === 'string')
     out.impactLocation = patch.impactLocation
+  if (Array.isArray(patch.categoryIds)) {
+    const unique = Array.from(
+      new Set(
+        patch.categoryIds
+          .map(id => Number(id))
+          .filter(id => Number.isInteger(id) && allowedCategoryIds.has(id)),
+      ),
+    )
+    out.categoryIds = unique.map(id => Number(id)).slice(0, MAX_CATEGORIES)
+  }
 
   if (Array.isArray(patch.socialMedia)) out.socialMedia = patch.socialMedia
 
@@ -355,6 +402,77 @@ function safeJsonParse(text: string): unknown | null {
   }
 }
 
+/**
+ * When the conversational model outputs a raw JSON object that matches the
+ * draft / patch shape, we can skip the extraction API call entirely and build
+ * the patch directly.
+ */
+function tryParseAssistantJsonAsPatch(
+  text: string,
+  allowedCategoryIds: Set<number>,
+): PatchOut | undefined {
+  const raw = safeJsonParse(text.trim())
+  if (!isRecord(raw)) return undefined
+
+  const out: PatchOut = {}
+
+  if (typeof raw.title === 'string' && raw.title) out.title = raw.title
+  if (typeof raw.description === 'string' && raw.description)
+    out.description = raw.description
+  if (typeof raw.image === 'string') out.image = raw.image
+  if (typeof raw.impactLocation === 'string' && raw.impactLocation)
+    out.impactLocation = raw.impactLocation
+
+  if (Array.isArray(raw.categoryIds)) {
+    const ids = raw.categoryIds
+      .map((id: unknown) => Number(id))
+      .filter(
+        (id: number) =>
+          Number.isInteger(id) &&
+          (allowedCategoryIds.size === 0 || allowedCategoryIds.has(id)),
+      )
+    if (ids.length) {
+      out.categoryIds = Array.from(new Set(ids)).slice(0, MAX_CATEGORIES)
+    }
+  }
+
+  if (Array.isArray(raw.socialMedia)) {
+    const valid = raw.socialMedia.filter(
+      (s: unknown) =>
+        isRecord(s) && typeof s.type === 'string' && typeof s.link === 'string',
+    ) as { type: string; link: string }[]
+    if (valid.length) out.socialMedia = valid
+  }
+
+  if (Array.isArray(raw.recipientAddresses)) {
+    const valid = raw.recipientAddresses
+      .filter(
+        (a: unknown) =>
+          isRecord(a) &&
+          typeof a.address === 'string' &&
+          typeof a.networkId === 'number',
+      )
+      .map((a: Record<string, unknown>) => {
+        const ct = String(a.chainType ?? '').toUpperCase()
+        const chainType: DraftChainType =
+          ct === 'SOLANA'
+            ? ChainType.Solana
+            : ct === 'STELLAR'
+              ? ChainType.Stellar
+              : ChainType.Evm
+        return {
+          chainType,
+          networkId: Number(a.networkId),
+          address: String(a.address),
+        }
+      })
+    if (valid.length) out.recipientAddresses = valid
+  }
+
+  // Only return if we actually extracted something meaningful.
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
 function extractFirstJsonText(payload: unknown): string | null {
   // OpenAI Responses API usually returns: { output: [{ content: [{ type: "output_text", text: "..." }] }] }
   if (!isRecord(payload)) return null
@@ -384,6 +502,30 @@ function toStringOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
 }
 
+async function getCategoryOptions(): Promise<CategoryOption[]> {
+  const client = createGraphQLClient()
+  const data = await client.request(mainCategoriesQuery)
+  const mainCategories = Array.isArray(data.mainCategories)
+    ? data.mainCategories
+    : []
+
+  const options: CategoryOption[] = []
+  for (const main of mainCategories) {
+    const group = toStringOrEmpty(main?.title)
+    const categories = Array.isArray(main?.categories) ? main.categories : []
+
+    for (const cat of categories) {
+      if (!cat?.canUseOnFrontend || !cat?.isActive) continue
+      const id = Number(cat.id)
+      const name = toStringOrEmpty(cat.name)
+      if (!Number.isInteger(id) || !name) continue
+      options.push({ id, name, group })
+    }
+  }
+
+  return options
+}
+
 function createOpenAiBackedEventStreamResponse({
   apiKey,
   model,
@@ -392,6 +534,8 @@ function createOpenAiBackedEventStreamResponse({
   extractionSystem,
   userContext,
   schema,
+  allowedCategoryIds,
+  categoryOptions,
 }: {
   apiKey: string
   model: string
@@ -404,6 +548,8 @@ function createOpenAiBackedEventStreamResponse({
     strict: true
     schema: Record<string, unknown>
   }
+  allowedCategoryIds: Set<number>
+  categoryOptions: CategoryOption[]
 }) {
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
@@ -473,19 +619,47 @@ function createOpenAiBackedEventStreamResponse({
             }
           }
 
-          const patch = await extractPatchFromOpenAi({
-            apiKey,
-            model,
-            baseUrl,
-            extractionSystem,
-            userContext: `${userContext}\n\nASSISTANT_MESSAGE:\n${assistantMessage}`,
-            schema,
-          })
+          // Try to parse the assistant message directly as JSON (the model
+          // sometimes outputs a raw JSON draft instead of conversational text).
+          const directPatch = tryParseAssistantJsonAsPatch(
+            assistantMessage,
+            allowedCategoryIds,
+          )
 
-          if (patch) {
+          // Fall back to a second extraction API call when the message is
+          // conversational text rather than raw JSON.
+          const extractedPatch =
+            directPatch ??
+            (await extractPatchFromOpenAi({
+              apiKey,
+              model,
+              baseUrl,
+              extractionSystem,
+              userContext: `${userContext}\n\nASSISTANT_MESSAGE:\n${assistantMessage}`,
+              schema,
+              allowedCategoryIds,
+            }))
+
+          // If categories are still missing, attempt regex / name-based extraction.
+          const fallbackCategoryIds = !extractedPatch?.categoryIds?.length
+            ? extractCategoryIdsFromText(
+                assistantMessage,
+                allowedCategoryIds,
+                categoryOptions,
+              )
+            : null
+          const finalPatch: PatchOut | undefined = extractedPatch
+            ? fallbackCategoryIds
+              ? { ...extractedPatch, categoryIds: fallbackCategoryIds }
+              : extractedPatch
+            : fallbackCategoryIds
+              ? { categoryIds: fallbackCategoryIds }
+              : undefined
+
+          if (finalPatch) {
             controller.enqueue(
               encoder.encode(
-                `data: ${JSON.stringify({ type: 'patch', patch })}\n\n`,
+                `data: ${JSON.stringify({ type: 'patch', patch: finalPatch })}\n\n`,
               ),
             )
           }
@@ -524,6 +698,7 @@ async function extractPatchFromOpenAi({
   extractionSystem,
   userContext,
   schema,
+  allowedCategoryIds,
 }: {
   apiKey: string
   model: string
@@ -535,6 +710,7 @@ async function extractPatchFromOpenAi({
     strict: true
     schema: Record<string, unknown>
   }
+  allowedCategoryIds: Set<number>
 }): Promise<PatchOut | undefined> {
   const url = new URL('/v1/responses', baseUrl).toString()
   const res = await fetch(url, {
@@ -570,7 +746,7 @@ async function extractPatchFromOpenAi({
   const parsed = modelResponseSchema.safeParse(safeJsonParse(jsonText) ?? null)
   if (!parsed.success) return undefined
   const patchRaw = parsed.data.patch
-  return patchRaw ? normalizePatch(patchRaw) : undefined
+  return patchRaw ? normalizePatch(patchRaw, allowedCategoryIds) : undefined
 }
 
 function parseSseData(rawEvent: string): string | null {
@@ -582,4 +758,40 @@ function parseSseData(rawEvent: string): string | null {
 
   if (!lines.length) return null
   return lines.join('\n')
+}
+
+function extractCategoryIdsFromText(
+  text: string,
+  allowedCategoryIds: Set<number>,
+  categoryOptions?: CategoryOption[],
+): number[] | null {
+  // Strategy 1: Look for a JSON-style "categoryIds":[...] pattern in the text.
+  const jsonMatch = text.match(/"?categoryIds"?\s*:\s*\[([^\]]*)\]/i)
+  if (jsonMatch?.[1]) {
+    const ids = jsonMatch[1]
+      .split(',')
+      .map(part => Number(part.trim().replace(/['"]/g, '')))
+      .filter(id => Number.isInteger(id) && allowedCategoryIds.has(id))
+
+    if (ids.length) {
+      return Array.from(new Set(ids)).slice(0, MAX_CATEGORIES)
+    }
+  }
+
+  // Strategy 2: Match known category names mentioned in the text.
+  if (categoryOptions?.length) {
+    const lowerText = text.toLowerCase()
+    const matched = categoryOptions.filter(opt =>
+      lowerText.includes(opt.name.toLowerCase()),
+    )
+    if (matched.length) {
+      const ids = Array.from(new Set(matched.map(opt => opt.id))).slice(
+        0,
+        MAX_CATEGORIES,
+      )
+      return ids
+    }
+  }
+
+  return null
 }

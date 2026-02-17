@@ -170,12 +170,8 @@ export function AiChatPanel({
         const decoder = new TextDecoder()
         let buffer = ''
 
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-
-          const chunks = buffer.split('\n\n')
+        const processSseChunks = (raw: string) => {
+          const chunks = raw.split('\n\n')
           buffer = chunks.pop() ?? ''
 
           for (const chunk of chunks) {
@@ -214,6 +210,18 @@ export function AiChatPanel({
               throw new Error(payload.message || 'AI stream failed')
             }
           }
+        }
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          processSseChunks(buffer)
+        }
+
+        // Flush any remaining data left in the buffer after the stream ends.
+        if (buffer.trim()) {
+          processSseChunks(buffer + '\n\n')
         }
       }
     } catch (e) {

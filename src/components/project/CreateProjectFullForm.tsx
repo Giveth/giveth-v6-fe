@@ -111,7 +111,7 @@ const PRESET_COLORS = [
 
 const MIN_DESCRIPTION_CHARS = 200
 const MIN_TITLE_CHARS = 3
-const MAX_CATEGORIES = 5
+export const MAX_CATEGORIES = 5
 
 type Category = CategoriesQuery['categories'][number]
 type MainCategory = MainCategoriesQuery['mainCategories'][number]

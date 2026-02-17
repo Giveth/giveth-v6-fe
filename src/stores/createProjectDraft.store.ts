@@ -4,6 +4,7 @@ import { isAddress } from 'viem'
 import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
 
@@ -209,6 +210,13 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
             }))
           }
 
+          if (patch.categoryIds) {
+            next.categoryIds = patch.categoryIds
+              .map(id => Number(id))
+              .filter(id => Number.isInteger(id))
+              .slice(0, MAX_CATEGORIES)
+          }
+
           return { draft: next }
         }),
 
@@ -219,7 +227,15 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
       setImpactLocation: impactLocation =>
         set(state => ({ draft: { ...state.draft, impactLocation } })),
       setCategoryIds: categoryIds =>
-        set(state => ({ draft: { ...state.draft, categoryIds } })),
+        set(state => ({
+          draft: {
+            ...state.draft,
+            categoryIds: categoryIds
+              .map(id => Number(id))
+              .filter(id => Number.isInteger(id))
+              .slice(0, MAX_CATEGORIES),
+          },
+        })),
 
       setSocialLink: (type, link) =>
         set(state => ({

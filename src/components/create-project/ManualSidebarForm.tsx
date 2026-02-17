@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useSiweAuth } from '@/context/AuthContext'
@@ -44,7 +45,6 @@ const socialSections: {
   { key: 'linkedin', label: 'LinkedIn', placeholder: 'Enter LinkedIn link' },
 ]
 
-const MAX_CATEGORIES = 5
 const MANUAL_FIELD_BASE_CLASSES =
   'rounded-[12px] border-[#D7DDEA] bg-white shadow-none focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 const MANUAL_TEXTAREA_CLASSES =
