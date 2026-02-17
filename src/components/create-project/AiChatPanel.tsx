@@ -11,6 +11,7 @@ import {
   useCreateProjectDraftStore,
   type CreateProjectDraft,
 } from '@/stores/createProjectDraft.store'
+import { EtherealOrb } from './EtherealOrb'
 
 export function AiChatPanel({
   heading = 'Let’s create your Project',
@@ -334,7 +335,7 @@ export function AiChatPanel({
             </div>
           )}
 
-          <div className="mt-6 rounded-xl border border-[#eef0f7] bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-xl border border-[#D7DDEA] bg-white px-3 py-2 shadow-none transition-[border-color,box-shadow] focus-within:border-[#B9A7FF] focus-within:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]">
             <div className="flex items-end gap-2">
               <button
                 type="button"
@@ -468,17 +469,8 @@ function ChatMessage({
 
   return (
     <div className="flex items-start gap-4">
-      <div className="relative mt-1 size-12 shrink-0">
-        {showAssistantIcon ? (
-          <Image
-            alt="AI assistant"
-            src="/images/create-project/agent-icon.png"
-            fill
-            className="rounded-full object-cover"
-            sizes="48px"
-            priority
-          />
-        ) : null}
+      <div className="relative mt-1 ml-2 size-12 shrink-0">
+        {showAssistantIcon ? <EtherealOrb size={48} /> : null}
       </div>
       <div className="max-w-[85%] whitespace-pre-wrap rounded-[34px] rounded-tl-[14px] border border-[#eef0f7] bg-white px-5 py-4 text-sm leading-relaxed text-[#4b5563] shadow-sm">
         {content}
