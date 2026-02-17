@@ -13,10 +13,7 @@ import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 import { type ITokenDistroBalance } from '@/lib/types/subgraph'
 
-/* ============================================================================
-  Types
-============================================================================ */
-
+/* Types */
 type SubgraphResponse<T> = {
   data?: T
   errors?: { message?: string }[]
@@ -74,9 +71,7 @@ const LM_ABI = [
   },
 ] as const
 
-/* ============================================================================
-  Core Query
-============================================================================ */
+/* Core Query Functions */
 
 /**
  * Query the subgraph for a user
@@ -116,9 +111,7 @@ async function querySubgraph<T>(chainId: number, query: string): Promise<T> {
   return json.data as T
 }
 
-/* ============================================================================
-  Query Builders
-============================================================================ */
+/* Query Builders */
 
 /**
  * Query the staking data for a user
@@ -223,7 +216,7 @@ export async function fetchStaking(user: Address, chainId: number) {
   const rewardRate = BigInt(data.unipool.rewardRate)
   const periodFinish = Number(data.unipool.periodFinish)
 
-  // ✅ ADD THIS: Calculate FRESH rewardPerToken
+  // Calculate FRESH rewardPerToken
   let freshRewardPerToken = rewardPerTokenStored
   if (totalSupply > 0n) {
     const now = Math.floor(Date.now() / 1000)
@@ -247,7 +240,7 @@ export async function fetchStaking(user: Address, chainId: number) {
     (staked * rewardPerTokenDelta) / 1_000_000_000_000_000_000n
   let earned = baseRewards + accruedRewards
 
-  // ✅ KEEP THIS: Your on-chain fallback is good!
+  // On-chain fallback
   if (earned === 0n) {
     try {
       const contract = getContract({
@@ -318,9 +311,7 @@ export async function fetchStaking(user: Address, chainId: number) {
     apr,
   }
 }
-/* ============================================================================
-  Wallet Balance
-============================================================================ */
+/* Wallet Balance */
 
 /**
  * Fetch the wallet balance for a user
@@ -340,9 +331,7 @@ export async function fetchWalletBalance(user: Address, chainId: number) {
   return BigInt(data.tokenBalance?.balance || '0')
 }
 
-/* ============================================================================
-  GIVbacks (TokenDistro)
-============================================================================ */
+/* GIVbacks (TokenDistro) */
 
 /**
  * Fetch the GIVbacks for a user
@@ -363,6 +352,7 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
     }
   }
 
+  // Fetch both token distro and token locks data in parallel
   const [distroData, locksData] = await Promise.all([
     querySubgraph<TokenDistroData>(
       chainId,
@@ -386,6 +376,7 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
   const distro = distroData.tokenDistro
   const balance = distroData.tokenDistroBalance
 
+  // Create TokenDistroHelper for calculations
   const helper = new TokenDistroHelper({
     contractAddress: cfg.TOKEN_DISTRO_ADDRESS as `0x${string}`,
     initialAmount: distro.initialAmount,
@@ -396,6 +387,7 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
     endTime: (Number(distro.startTime) + Number(distro.duration)) * 1000,
   })
 
+  // Calculate claimable locked tokens
   const nowSeconds = Math.floor(Date.now() / 1000)
   const claimableLocked = (locksData.tokenLocks ?? []).reduce((acc, lock) => {
     const unlockableAt = Number(lock.unlockableAt || 0)
@@ -408,7 +400,9 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
     (acc, lock) => acc + BigInt(lock.amount || '0'),
     0n,
   )
+  // Calculate claimable from locked tokens
   const claimableFromLocks = claimableLocked
+  // Calculate streaming from locked tokens
   const streamingFromLocks =
     claimableLocked > 0n ? helper.getStreamPartTokenPerWeek(totalLocked) : 0n
 
@@ -418,13 +412,16 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
     claimableFromLocks: claimableFromLocks.toString(),
   })
 
+  // Calculate GIVback values
   const liquidPart = BigInt(balance.givbackLiquidPart || '0')
   const givbackTotal = BigInt(balance.givback || '0')
   const helperClaimable = helper.getUserClaimableNow(
     balance as unknown as ITokenDistroBalance,
   )
+  // Calculate streamable amount
   const streamableAmount =
     helperClaimable > liquidPart ? helperClaimable - liquidPart : 0n
+  // Calculate GIVback stream
   const givbackStream = helper.getStreamPartTokenPerWeek(givbackTotal)
 
   return {
@@ -444,9 +441,7 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
   }
 }
 
-/* ============================================================================
-  User Overview (Main API)
-============================================================================ */
+/* User Overview (Main API) */
 
 /**
  * Fetch the user overview for a user
