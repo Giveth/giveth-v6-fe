@@ -24,7 +24,7 @@ export function CreateProjectLayout({
     Boolean(draft.title.trim()) && Boolean(draft.description.trim())
 
   const actionButtonClasses =
-    'inline-flex h-12 items-center gap-2 rounded-[8px] border border-[#d8d8f0] bg-[#f1f0fb] px-6 text-lg font-semibold leading-none shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors'
+    'inline-flex h-12 items-center gap-2 rounded-[8px] border border-[#d8d8f0] bg-[#f1f0fb] px-6 text-[14px] font-bold leading-none shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors'
   const actionButtonEnabledClasses =
     '!text-[rgb(39,38,137)] hover:bg-[#eceafe] visited:!text-[rgb(39,38,137)]'
   const actionButtonDisabledClasses =
@@ -35,7 +35,7 @@ export function CreateProjectLayout({
       <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 xl:items-start xl:flex-row">
           <main className="relative min-w-0 flex-1 flex flex-col overflow-hidden rounded-2xl border border-[#ececf4] bg-white shadow-[0_1px_0_rgba(15,23,42,0.03)] h-[calc(100vh-128px)]">
-            <div className="shrink-0 flex items-center justify-end gap-3 px-4 py-3 sm:px-5">
+            <div className="shrink-0 flex items-center justify-end gap-3 px-4 pt-3 sm:px-5 z-10">
               {isPreviewEnabled ? (
                 <Link
                   href={'/project/preview' as Route}
@@ -84,7 +84,7 @@ export function CreateProjectLayout({
             {showAiUpdateCue && (
               <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-4 bg-gradient-to-r from-transparent to-[rgba(139,120,255,0.55)]" />
             )}
-            <div className="flex-1 min-h-0">{chat}</div>
+            <div className="flex-1 min-h-0 mt-[-60px]">{chat}</div>
           </main>
 
           <aside

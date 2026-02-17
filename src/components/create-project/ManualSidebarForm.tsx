@@ -45,6 +45,12 @@ const socialSections: {
 ]
 
 const MAX_CATEGORIES = 5
+const MANUAL_FIELD_BASE_CLASSES =
+  'rounded-[12px] border-[#D7DDEA] bg-white shadow-none focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
+const MANUAL_TEXTAREA_CLASSES =
+  'min-h-28 w-full resize-none rounded-[12px] border border-[#D7DDEA] bg-white px-3 py-2 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-[#9ca3af] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
+const MANUAL_SELECT_CLASSES =
+  'h-10 w-full rounded-[12px] border border-[#D7DDEA] bg-white px-3 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 
 export function ManualSidebarForm() {
   const router = useRouter()
@@ -160,6 +166,7 @@ export function ManualSidebarForm() {
                 onChange={e => setTitle(e.target.value)}
                 placeholder="Enter project name"
                 aria-invalid={Boolean(errors.title)}
+                className={MANUAL_FIELD_BASE_CLASSES}
               />
               <p className="text-xs text-[#9ca3af]">Max 60 letters</p>
               {errors.title && (
@@ -174,7 +181,7 @@ export function ManualSidebarForm() {
                 Project description
               </label>
               <textarea
-                className="min-h-28 w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-[#111827] shadow-xs outline-none placeholder:text-[#9ca3af] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                className={MANUAL_TEXTAREA_CLASSES}
                 placeholder="Enter a description..."
                 value={draft.description}
                 onChange={e => setDescription(e.target.value)}
@@ -222,7 +229,8 @@ export function ManualSidebarForm() {
                             type="checkbox"
                             checked={checked}
                             disabled={atLimit}
-                            className="size-4 rounded border-gray-300 text-[#7c6af2] focus:ring-[#7c6af2]"
+                            className="size-4 rounded border border-gray-300 bg-white accent-[#7c6af2] focus:ring-[#7c6af2]"
+                            style={{ colorScheme: 'light' }}
                             onChange={() => {
                               if (checked) {
                                 setCategoryIds(
@@ -271,6 +279,7 @@ export function ManualSidebarForm() {
                     onChange={e => setSocialLink(item.key, e.target.value)}
                     placeholder={item.placeholder}
                     aria-invalid={Boolean(errors[`socialMedia.${item.key}`])}
+                    className={MANUAL_FIELD_BASE_CLASSES}
                   />
                   {errors[`socialMedia.${item.key}`] && (
                     <p className="text-xs font-medium text-red-600">
@@ -290,7 +299,7 @@ export function ManualSidebarForm() {
             onToggle={() => toggleSection('location')}
           >
             <select
-              className="h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm text-[#111827] shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+              className={MANUAL_SELECT_CLASSES}
               value={draft.impactLocation}
               onChange={e => setImpactLocation(e.target.value)}
             >
@@ -319,6 +328,7 @@ export function ManualSidebarForm() {
                   onChange={e => setImage(e.target.value)}
                   placeholder="https://..."
                   aria-invalid={Boolean(errors.image)}
+                  className={MANUAL_FIELD_BASE_CLASSES}
                 />
                 <input
                   ref={imageFileInputRef}
@@ -405,7 +415,7 @@ export function ManualSidebarForm() {
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <select
-                            className="h-9 rounded-lg border border-input bg-transparent px-2 text-xs text-[#111827]"
+                            className="h-9 rounded-[12px] border border-[#D7DDEA] bg-white px-2 text-xs text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]"
                             value={addr.chainType}
                             onChange={e =>
                               updateRecipientAddress(addr.id, {
@@ -419,7 +429,10 @@ export function ManualSidebarForm() {
                             <option value="STELLAR">Stellar</option>
                           </select>
                           <Input
-                            className="h-9 w-24 text-xs"
+                            className={cn(
+                              MANUAL_FIELD_BASE_CLASSES,
+                              'h-9 w-24 text-xs',
+                            )}
                             inputMode="numeric"
                             value={String(addr.networkId)}
                             onChange={e =>
@@ -442,6 +455,7 @@ export function ManualSidebarForm() {
 
                       <div className="mt-2 space-y-2">
                         <Input
+                          className={MANUAL_FIELD_BASE_CLASSES}
                           value={addr.address}
                           onChange={e =>
                             updateRecipientAddress(addr.id, {
@@ -458,6 +472,7 @@ export function ManualSidebarForm() {
                         />
                         {addr.chainType === 'STELLAR' && (
                           <Input
+                            className={MANUAL_FIELD_BASE_CLASSES}
                             value={addr.memo || ''}
                             onChange={e =>
                               updateRecipientAddress(addr.id, {
@@ -483,7 +498,7 @@ export function ManualSidebarForm() {
         </div>
       </div>
 
-      <div className="border-t border-[#f0f1f7] p-6">
+      <div className="p-6">
         {submitError && (
           <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
             {submitError}
