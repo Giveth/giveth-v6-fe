@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { type Route } from 'next/types'
 import { IconX } from '@/components/icons/IconX'
 import { IconDiscord } from '@/components/icons/socials-networks/IconDiscord'
@@ -30,6 +33,9 @@ import {
 } from '@/lib/constants/menu-links'
 
 export function Footer() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/create/project')) return null
+
   return (
     <footer className="bg-giv-neutral-200 pt-16 pb-8">
       <div className="px-4 md:px-16">

@@ -24,14 +24,14 @@ export function ProjectHero({ project }: ProjectHeroProps) {
   const adminAddress = project.adminUser?.wallets?.[0]?.address
 
   return (
-    <div className="relative rounded-2xl overflow-hidden h-[400px] lg:h-full">
+    <div className="relative h-[400px] overflow-hidden rounded-2xl lg:h-[520px]">
       {/* Background Image with Gradient Overlay */}
       <div
         className="absolute bg-cover bg-center inset-0 bg-linear-to-br from-giv-brand-800 via-giv-brand-800 to-giv-brand-800"
         style={{
           backgroundImage: project.image
             ? `url(${project.image})`
-            : `url('/abstract-purple-cosmic-waves.jpg')`,
+            : `url('/images/defaultProjectImages/3.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

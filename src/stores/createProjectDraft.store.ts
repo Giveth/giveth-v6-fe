@@ -4,8 +4,12 @@ import { isAddress } from 'viem'
 import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
+
+export const CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY =
+  'giveth-create-project-chat-history'
 
 export type CreateProjectSocialType = 'website' | 'facebook' | 'x' | 'linkedin'
 
@@ -206,6 +210,13 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
             }))
           }
 
+          if (patch.categoryIds) {
+            next.categoryIds = patch.categoryIds
+              .map(id => Number(id))
+              .filter(id => Number.isInteger(id))
+              .slice(0, MAX_CATEGORIES)
+          }
+
           return { draft: next }
         }),
 
@@ -216,7 +227,15 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
       setImpactLocation: impactLocation =>
         set(state => ({ draft: { ...state.draft, impactLocation } })),
       setCategoryIds: categoryIds =>
-        set(state => ({ draft: { ...state.draft, categoryIds } })),
+        set(state => ({
+          draft: {
+            ...state.draft,
+            categoryIds: categoryIds
+              .map(id => Number(id))
+              .filter(id => Number.isInteger(id))
+              .slice(0, MAX_CATEGORIES),
+          },
+        })),
 
       setSocialLink: (type, link) =>
         set(state => ({
@@ -342,6 +361,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
           // After successful publish, clear the draft
           localStorage.removeItem('giveth-create-project-draft')
+          localStorage.removeItem(CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY)
           set({
             draft: { ...initialDraft },
             errors: {},
