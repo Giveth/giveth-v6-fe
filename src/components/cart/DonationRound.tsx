@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TriangleAlert } from 'lucide-react'
 import { AmountInput } from '@/components/cart/AmountInput'
 import { ChainDropdown } from '@/components/cart/ChainDropdown'
 import { ProjectCartCard } from '@/components/cart/ProjectCartCard'
 import { TokenDropdown } from '@/components/cart/TokenDropdown'
 import { MatchingEligible } from '@/components/icons/MatchingEligible'
+import { useSiweAuth } from '@/context/AuthContext'
 import type { ProjectCartItem } from '@/context/CartContext'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import {
@@ -30,6 +31,7 @@ export function DonationRound({
   projects,
   showMissingAmountErrors,
 }: DonationRoundProps) {
+  const { isAAWallet } = useSiweAuth()
   const [roundSelectedToken, setRoundSelectedToken] = useState<
     WalletTokenWithBalance | undefined
   >(undefined)
@@ -41,7 +43,11 @@ export function DonationRound({
   // Value to show in the amount input (0 for amount, 1 for dollars)
   // If user clicks on the arrow button, the value will be toggled between entering amount or the selected token's price in USD
   const [selectedAmountVsDollars, setSelectedAmountVsDollars] =
-    useState<number>(0)
+    useState<number>(isAAWallet ? 1 : 0)
+
+  useEffect(() => {
+    setSelectedAmountVsDollars(isAAWallet ? 1 : 0)
+  }, [isAAWallet])
 
   return (
     <div className="bg-white p-4 rounded-2xl border-4 border-giv-neutral-500 overflow-hidden">
@@ -56,32 +62,33 @@ export function DonationRound({
         )}
       </div>
 
-      {/* Token Selection Row */}
-      <div className="py-6 flex max-[480px]:flex-wrap items-center justify-between">
-        <div className="max-[480px]:w-full max-[480px]:mb-3 md:w-auto">
-          <ChainDropdown
-            roundId={cartRoundData.roundId}
-            selectedChainId={cartRoundData.selectedChainId}
-            eligibleNetworks={roundData.eligibleNetworks}
-          />
-        </div>
+      {!isAAWallet && (
+        <div className="py-6 flex max-[480px]:flex-wrap items-center justify-between">
+          <div className="max-[480px]:w-full max-[480px]:mb-3 md:w-auto">
+            <ChainDropdown
+              roundId={cartRoundData.roundId}
+              selectedChainId={cartRoundData.selectedChainId}
+              eligibleNetworks={roundData.eligibleNetworks}
+            />
+          </div>
 
-        {/* Right Side - Token, Amount, Apply */}
-        <div className="flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto md:ml-auto">
-          <TokenDropdown
-            selectedChainId={cartRoundData.selectedChainId}
-            setRoundSelectedToken={setRoundSelectedToken}
-            roundId={Number(roundData.id) ?? 0}
-          />
+          {/* Right Side - Token, Amount, Apply */}
+          <div className="flex-wrap max-[480px]:justify-between flex items-center gap-3 xs:w-full md:w-auto md:ml-auto">
+            <TokenDropdown
+              selectedChainId={cartRoundData.selectedChainId}
+              setRoundSelectedToken={setRoundSelectedToken}
+              roundId={Number(roundData.id) ?? 0}
+            />
 
-          <AmountInput
-            roundId={cartRoundData.roundId}
-            selectedToken={roundSelectedToken}
-            cartItems={cartRoundData.projects}
-            setSelectedAmountVsDollars={setSelectedAmountVsDollars}
-          />
+            <AmountInput
+              roundId={cartRoundData.roundId}
+              selectedToken={roundSelectedToken}
+              cartItems={cartRoundData.projects}
+              setSelectedAmountVsDollars={setSelectedAmountVsDollars}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Projects List */}
       <div>

@@ -10,7 +10,12 @@ import {
   polygon,
   type Chain,
 } from 'thirdweb/chains'
-import { createWallet, walletConnect, type Wallet } from 'thirdweb/wallets'
+import {
+  createWallet,
+  inAppWallet,
+  walletConnect,
+  type Wallet,
+} from 'thirdweb/wallets'
 import { env } from '@/lib/env'
 
 const celoAlfajores = defineChain(44787)
@@ -44,6 +49,29 @@ const walletConnectWallet = env.WALLETCONNECT_PROJECT_ID
 export const supportedWallets = walletConnectWallet
   ? [...baseWallets, walletConnectWallet]
   : baseWallets
+
+/**
+ * In-app wallet for AA (Account Abstraction) flow.
+ * Supports email and Google sign-in with a smart account on Optimism.
+ * This gives non-crypto users a "Donate with dollars" experience.
+ */
+export const aaInAppWallet = inAppWallet({
+  auth: {
+    options: ['email', 'google'],
+  },
+  smartAccount: {
+    chain: optimism,
+    sponsorGas: true,
+    factoryAddress: undefined, // add a factor address later
+  },
+})
+
+/** USDC contract address on Optimism */
+export const OPTIMISM_USDC_ADDRESS =
+  '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'
+
+/** Optimism chain ID */
+export const OPTIMISM_CHAIN_ID = 10
 
 export const thirdwebClient = createThirdwebClient({
   clientId: env.THIRDWEB_CLIENT_ID,
