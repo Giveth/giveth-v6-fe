@@ -7,6 +7,9 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
 
+export const CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY =
+  'giveth-create-project-chat-history'
+
 export type CreateProjectSocialType = 'website' | 'facebook' | 'x' | 'linkedin'
 
 export type CreateProjectChainType = 'EVM' | 'SOLANA' | 'STELLAR'
@@ -342,6 +345,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
           // After successful publish, clear the draft
           localStorage.removeItem('giveth-create-project-draft')
+          localStorage.removeItem(CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY)
           set({
             draft: { ...initialDraft },
             errors: {},

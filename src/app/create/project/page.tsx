@@ -15,8 +15,8 @@ export default function CreateProjectPage() {
   const router = useRouter()
   const [isInitializing, setIsInitializing] = useState(false)
 
-  // Default experience: AI chat (form hidden).
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // Default experience keeps manual edit visible on first load.
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const isConnected = connectionStatus === 'connected'
 

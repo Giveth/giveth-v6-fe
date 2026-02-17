@@ -86,6 +86,7 @@ export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
   const apiKey = serverEnv.OPENAI_API_KEY
+  const openAiBaseUrl = serverEnv.OPENAI_BASE_URL || 'https://api.openai.com'
   if (!apiKey?.trim()) {
     return NextResponse.json(
       {
@@ -184,7 +185,16 @@ export async function POST(req: Request) {
     },
   } as const
 
-  const system = [
+  const chatSystem = [
+    'You are an AI assistant helping a user create a Giveth project.',
+    'Be conversational and supportive, not a rigid form checker.',
+    'Ask at most one short follow-up question if absolutely needed.',
+    'Avoid asking for multiple form fields in one message.',
+    'Do not mention internal rules or schemas.',
+    'Do not invent unverifiable facts.',
+  ].join('\n')
+
+  const extractionSystem = [
     'You are an AI assistant helping a user create a Giveth project.',
     '',
     'You must output JSON only and it must match the provided JSON schema.',
@@ -194,9 +204,11 @@ export async function POST(req: Request) {
     'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
     '',
     'assistantMessage behavior (this is what the user will see in chat):',
-    '- Write a natural, helpful reply focused ONLY on completing the form.',
+    '- Write a natural, supportive reply, not a checklist.',
+    '- Guide the user conversationally instead of requesting many form fields at once.',
     '- If you applied any patch fields, briefly confirm what changed (no need to list everything).',
-    '- If anything important is missing/ambiguous, ask 1–2 specific questions.',
+    '- Ask at most ONE short follow-up question, and only when truly necessary.',
+    '- Prefer helping with wording, structure, and next best step over raw field prompts.',
     '- Do NOT mention JSON, schemas, or internal rules.',
     '- Do NOT claim you updated something unless it is present in the patch.',
     '',
@@ -237,7 +249,7 @@ export async function POST(req: Request) {
   const history = Array.isArray(parsedReq.data.history)
     ? parsedReq.data.history
     : []
-  const user = [
+  const userContext = [
     'CURRENT_DRAFT_JSON:',
     JSON.stringify(draft),
     '',
@@ -254,63 +266,15 @@ export async function POST(req: Request) {
     message,
   ].join('\n')
 
-  const openAiUrl = new URL(
-    '/v1/responses',
-    serverEnv.OPENAI_BASE_URL,
-  ).toString()
-  const openAiRes = await fetch(openAiUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: serverEnv.OPENAI_MODEL || 'gpt-5-mini',
-      input: [
-        { role: 'system', content: [{ type: 'input_text', text: system }] },
-        { role: 'user', content: [{ type: 'input_text', text: user }] },
-      ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: schema.name,
-          schema: schema.schema,
-          strict: schema.strict,
-        },
-      },
-    }),
+  return createOpenAiBackedEventStreamResponse({
+    apiKey,
+    model: serverEnv.OPENAI_MODEL || 'gpt-5-mini',
+    baseUrl: openAiBaseUrl,
+    chatSystem,
+    extractionSystem,
+    userContext,
+    schema,
   })
-
-  if (!openAiRes.ok) {
-    const t = await openAiRes.text().catch(() => '')
-    return NextResponse.json(
-      { error: t || 'OpenAI request failed' },
-      { status: 500 },
-    )
-  }
-
-  const payload = (await openAiRes.json().catch(() => null)) as unknown
-  const jsonText = extractFirstJsonText(payload)
-  if (!jsonText) {
-    return NextResponse.json(
-      { error: 'AI response did not include JSON content' },
-      { status: 500 },
-    )
-  }
-
-  const parsed = modelResponseSchema.safeParse(safeJsonParse(jsonText) ?? null)
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'AI response did not match expected format' },
-      { status: 500 },
-    )
-  }
-
-  const patchRaw = parsed.data.patch
-  const patch = patchRaw ? normalizePatch(patchRaw) : undefined
-  const assistantMessage = parsed.data.assistantMessage
-
-  return NextResponse.json({ assistantMessage, patch })
 }
 
 function normalizePatch(patch: z.infer<typeof patchSchema>): PatchOut {
@@ -418,4 +382,204 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function toStringOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
+}
+
+function createOpenAiBackedEventStreamResponse({
+  apiKey,
+  model,
+  baseUrl,
+  chatSystem,
+  extractionSystem,
+  userContext,
+  schema,
+}: {
+  apiKey: string
+  model: string
+  baseUrl: string
+  chatSystem: string
+  extractionSystem: string
+  userContext: string
+  schema: {
+    name: string
+    strict: true
+    schema: Record<string, unknown>
+  }
+}) {
+  const encoder = new TextEncoder()
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      void (async () => {
+        try {
+          const conversationUrl = new URL('/v1/responses', baseUrl).toString()
+          const conversationRes = await fetch(conversationUrl, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model,
+              stream: true,
+              input: [
+                {
+                  role: 'system',
+                  content: [{ type: 'input_text', text: chatSystem }],
+                },
+                {
+                  role: 'user',
+                  content: [{ type: 'input_text', text: userContext }],
+                },
+              ],
+            }),
+          })
+
+          if (!conversationRes.ok || !conversationRes.body) {
+            const t = await conversationRes.text().catch(() => '')
+            throw new Error(t || 'OpenAI streaming request failed')
+          }
+
+          const reader = conversationRes.body.getReader()
+          const decoder = new TextDecoder()
+          let buffer = ''
+          let assistantMessage = ''
+
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+            const events = buffer.split('\n\n')
+            buffer = events.pop() ?? ''
+
+            for (const event of events) {
+              const data = parseSseData(event)
+              if (!data || data === '[DONE]') continue
+              const payload = safeJsonParse(data)
+              if (!isRecord(payload)) continue
+
+              const delta =
+                payload.type === 'response.output_text.delta' &&
+                typeof payload.delta === 'string'
+                  ? payload.delta
+                  : null
+              if (!delta) continue
+
+              assistantMessage += delta
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'assistant_delta', delta })}\n\n`,
+                ),
+              )
+            }
+          }
+
+          const patch = await extractPatchFromOpenAi({
+            apiKey,
+            model,
+            baseUrl,
+            extractionSystem,
+            userContext: `${userContext}\n\nASSISTANT_MESSAGE:\n${assistantMessage}`,
+            schema,
+          })
+
+          if (patch) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: 'patch', patch })}\n\n`,
+              ),
+            )
+          }
+
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`),
+          )
+          controller.close()
+        } catch (e) {
+          const message =
+            e instanceof Error ? e.message : 'Streaming response failed'
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: 'error', message })}\n\n`,
+            ),
+          )
+          controller.close()
+        }
+      })()
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    },
+  })
+}
+
+async function extractPatchFromOpenAi({
+  apiKey,
+  model,
+  baseUrl,
+  extractionSystem,
+  userContext,
+  schema,
+}: {
+  apiKey: string
+  model: string
+  baseUrl: string
+  extractionSystem: string
+  userContext: string
+  schema: {
+    name: string
+    strict: true
+    schema: Record<string, unknown>
+  }
+}): Promise<PatchOut | undefined> {
+  const url = new URL('/v1/responses', baseUrl).toString()
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      input: [
+        {
+          role: 'system',
+          content: [{ type: 'input_text', text: extractionSystem }],
+        },
+        { role: 'user', content: [{ type: 'input_text', text: userContext }] },
+      ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: schema.name,
+          schema: schema.schema,
+          strict: schema.strict,
+        },
+      },
+    }),
+  })
+
+  if (!res.ok) return undefined
+  const payload = (await res.json().catch(() => null)) as unknown
+  const jsonText = extractFirstJsonText(payload)
+  if (!jsonText) return undefined
+  const parsed = modelResponseSchema.safeParse(safeJsonParse(jsonText) ?? null)
+  if (!parsed.success) return undefined
+  const patchRaw = parsed.data.patch
+  return patchRaw ? normalizePatch(patchRaw) : undefined
+}
+
+function parseSseData(rawEvent: string): string | null {
+  const lines = rawEvent
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('data:'))
+    .map(line => line.slice(5).trim())
+
+  if (!lines.length) return null
+  return lines.join('\n')
 }
