@@ -57,7 +57,7 @@ export function DepositModal({ open, onOpenChange }: DepositModalProps) {
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Content
         size="3"
-        className="w-[92vw] max-w-[480px] rounded-3xl p-0 overflow-hidden"
+        className="w-[92vw] max-w-[481px] rounded-3xl p-0 overflow-hidden"
       >
         <Dialog.Title className="sr-only">Deposit Funds</Dialog.Title>
         <Dialog.Description className="sr-only">
