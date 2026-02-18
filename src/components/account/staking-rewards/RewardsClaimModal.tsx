@@ -132,103 +132,111 @@ export default function RewardsClaimModal({
         </div>
 
         <div className="mt-6 flex h-[calc(100%-48px)] flex-col">
-          <div className="rounded-xl border border-giv-brand-100 p-6 mb-6">
-            <Text as="div" className="text-2xl font-bold text-giv-neutral-900">
-              {totalGiv} GIV
-            </Text>
-            <Text
-              as="div"
-              className="mt-1 text-base text-giv-neutral-900 font-medium"
-            >
-              ~ {totalUsd}
-            </Text>
-            <div className="mt-6 flex flex-col md:flex-row items-center justify-between text-lg text-giv-neutral-700">
-              <span>Your new GIVstream flowrate</span>
-              <span className="font-medium text-giv-neutral-900">
-                {streamRate}
-              </span>
-            </div>
-          </div>
+          {!claimTxHash && (
+            <>
+              <div className="rounded-xl border border-giv-brand-100 p-6 mb-6">
+                <Text
+                  as="div"
+                  className="text-2xl font-bold text-giv-neutral-900"
+                >
+                  {totalGiv} GIV
+                </Text>
+                <Text
+                  as="div"
+                  className="mt-1 text-base text-giv-neutral-900 font-medium"
+                >
+                  ~ {totalUsd}
+                </Text>
+                <div className="mt-6 flex flex-col md:flex-row items-center justify-between text-lg text-giv-neutral-700">
+                  <span>Your new GIVstream flowrate</span>
+                  <span className="font-medium text-giv-neutral-900">
+                    {streamRate}
+                  </span>
+                </div>
+              </div>
 
-          <div className="rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-base text-giv-neutral-700 mb-6">
-            When you claim GIV, all liquid GIV allocated to you on that chain is
-            sent to your wallet. Your GIVstream flowrate may also increase.
-            Below is the breakdown of rewards you will get when you claim.
-          </div>
+              <div className="rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-base text-giv-neutral-700 mb-6">
+                When you claim GIV, all liquid GIV allocated to you on that
+                chain is sent to your wallet. Your GIVstream flowrate may also
+                increase. Below is the breakdown of rewards you will get when
+                you claim.
+              </div>
 
-          <div
-            className={clsx(
-              'flex flex-wrap flex-col md:grid md:grid-cols-[1fr_1.5fr_2fr] gap-y-4 gap-x-6 mb-6',
-              'rounded-2xl border border-giv-brand-100 p-6 text-lg text-giv-neutral-900 font-medium',
-            )}
-          >
-            {/* GIVstream */}
-            <span>GIVstream</span>
+              <div
+                className={clsx(
+                  'flex flex-wrap flex-col md:grid md:grid-cols-[1fr_1.5fr_2fr] gap-y-4 gap-x-6 mb-6',
+                  'rounded-2xl border border-giv-brand-100 p-6 text-lg text-giv-neutral-900 font-medium',
+                )}
+              >
+                {/* GIVstream */}
+                <span>GIVstream</span>
 
-            <div className="flex justify-end gap-2 md:contents">
-              <span className="font-semibold md:text-right text-base md:text-lg">
-                {givstreamAmount}
-              </span>
-              <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
-                {givstreamRate}
-              </span>
-            </div>
-
-            {/* GIVbacks */}
-            {Number(givbacksAmount) > 0 && (
-              <>
-                <span>GIVbacks</span>
                 <div className="flex justify-end gap-2 md:contents">
                   <span className="font-semibold md:text-right text-base md:text-lg">
-                    {givbacksAmount}
+                    {givstreamAmount}
                   </span>
-                  <span />
+                  <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                    {givstreamRate}
+                  </span>
                 </div>
-              </>
-            )}
 
-            {/* GIVpower */}
-            <span>GIVpower</span>
+                {/* GIVbacks */}
+                {Number(givbacksAmount) > 0 && (
+                  <>
+                    <span>GIVbacks</span>
+                    <div className="flex justify-end gap-2 md:contents">
+                      <span className="font-semibold md:text-right text-base md:text-lg">
+                        {givbacksAmount}
+                      </span>
+                      <span />
+                    </div>
+                  </>
+                )}
 
-            <div className="flex justify-end gap-2 md:contents">
-              <span className="font-semibold md:text-right text-base md:text-lg">
-                {givfarmAmount}
-              </span>
-              <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
-                {givfarmRate}
-              </span>
-            </div>
+                {/* GIVpower */}
+                <span>GIVpower</span>
 
-            {/* Divider */}
-            <div className="col-span-2 md:col-span-3 border-t border-giv-neutral-300 my-2" />
+                <div className="flex justify-end gap-2 md:contents">
+                  <span className="font-semibold md:text-right text-base md:text-lg">
+                    {givfarmAmount}
+                  </span>
+                  <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                    {givfarmRate}
+                  </span>
+                </div>
 
-            {/* Total */}
-            <span />
+                {/* Divider */}
+                <div className="col-span-2 md:col-span-3 border-t border-giv-neutral-300 my-2" />
 
-            <div className="flex justify-end gap-2 md:contents">
-              <span className="font-semibold md:text-right text-base md:text-lg">
-                {totalGiv} GIV
-              </span>
-              <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
-                {totalRate}
-              </span>
-            </div>
-          </div>
+                {/* Total */}
+                <span />
 
-          <button
-            type="button"
-            onClick={handleClaim}
-            disabled={isClaimDisabled}
-            className={clsx(
-              'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
-              'border-none! focus:outline-none!',
-              'flex items-center justify-center gap-2 transition-colors cursor-pointer',
-              !isClaimDisabled && 'hover:bg-giv-brand-400!',
-              isClaimDisabled && 'opacity-60 cursor-not-allowed',
-            )}
-          >
-            {isClaiming ? 'Claiming...' : 'Claim Rewards'}
-          </button>
+                <div className="flex justify-end gap-2 md:contents">
+                  <span className="font-semibold md:text-right text-base md:text-lg">
+                    {totalGiv} GIV
+                  </span>
+                  <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                    {totalRate}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleClaim}
+                disabled={isClaimDisabled}
+                className={clsx(
+                  'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                  'border-none! focus:outline-none!',
+                  'flex items-center justify-center gap-2 transition-colors cursor-pointer',
+                  !isClaimDisabled && 'hover:bg-giv-brand-400!',
+                  isClaimDisabled && 'opacity-60 cursor-not-allowed',
+                )}
+              >
+                {isClaiming ? 'Claiming...' : 'Claim Rewards'}
+              </button>
+            </>
+          )}
+
           {isClaiming && (
             <div className="mt-2 text-center text-xs text-giv-neutral-600">
               Check your wallet to confirm the network switch and claim.
