@@ -4,16 +4,15 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AuthGate } from '@/components/account/AuthGate'
 import { CtaSection } from '@/components/account/CtaGivBacks'
-import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
-import { ProfileSection } from '@/components/account/ProfileSection'
-import { StakingRewards } from '@/components/account/staking-rewards/StakingRewards'
+import { StakingTab } from '@/components/account/staking-rewards/StakingTab'
+import { StakingTabs } from '@/components/account/staking-rewards/StakingTabs'
 
-export default function AccountPageClient() {
+export default function StakePageClient({ id }: { id: string }) {
   const searchParams = useSearchParams()
 
   const allowedTabs = useMemo(
-    () => ['donations', 'staking', 'boosted', 'projects'] as const,
+    () => ['stake', 'multiple-rewards', 'unstake'] as const,
     [],
   )
   type AllowedTab = (typeof allowedTabs)[number]
@@ -23,19 +22,17 @@ export default function AccountPageClient() {
     tabFromUrl ?? '',
   )
     ? (tabFromUrl as AllowedTab)
-    : 'donations'
+    : 'stake'
 
   return (
     <AuthGate>
       <div className="min-h-screen bg-giv-neutral-200">
         <main className="max-w-7xl mx-auto px-4 py-8">
-          <ProfileSection />
-          <DashboardTabs activeTab={activeTab} />
+          <StakingTabs activeTab={activeTab} />
 
-          {activeTab === 'staking' && <StakingRewards />}
-          {activeTab === 'donations' && <DonationsTable />}
-          {activeTab === 'boosted' && <DonationsTable />}
-          {activeTab === 'projects' && <DonationsTable />}
+          {activeTab === 'stake' && <StakingTab id={id} />}
+          {activeTab === 'multiple-rewards' && <DonationsTable />}
+          {activeTab === 'unstake' && <DonationsTable />}
         </main>
         <CtaSection />
       </div>
