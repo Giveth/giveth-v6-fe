@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ClaimRewardsBanner } from '@/components/account/staking-rewards/ClaimRewardsBanner'
 import { DropdownStakeNetworks } from '@/components/account/staking-rewards/DropdownStakeNetworks'
+import { StakeSection } from '@/components/account/staking-rewards/StakeSection'
 import { STAKING_CHAINS } from '@/lib/constants/staking-power-constants'
 
 export const StakingRewards = () => {
@@ -21,6 +22,10 @@ export const StakingRewards = () => {
       <ClaimRewardsBanner
         selectedChain={selectedChain}
         chainLabel={chainLabel}
+      />
+      <StakeSection
+        selectedChain={selectedChain}
+        onSelectChain={setSelectedChain}
       />
     </div>
   )

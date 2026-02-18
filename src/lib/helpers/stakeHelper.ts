@@ -7,7 +7,7 @@ import {
   waitForReceipt,
 } from 'thirdweb'
 import { type Account } from 'thirdweb/wallets'
-import { type Address } from 'viem'
+import { type Address, formatUnits, parseUnits } from 'viem'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
@@ -40,6 +40,12 @@ type TokenBalanceData = {
   }
 }
 
+type GIVpowerUserData = {
+  user?: {
+    givLocked?: string
+  }
+}
+
 type TokenDistroData = {
   tokenDistro?: {
     initialAmount: string
@@ -67,6 +73,20 @@ const LM_ABI = [
     name: 'earned',
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    type: 'function',
+    name: 'depositTokenBalance',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'address' }],
     outputs: [{ type: 'uint256' }],
   },
 ] as const
@@ -206,7 +226,7 @@ export async function fetchStaking(user: Address, chainId: number) {
 
   if (!data.unipool) throw new Error('Pool not found')
 
-  const staked = BigInt(data.unipoolBalance?.balance || '0')
+  let staked = BigInt(data.unipoolBalance?.balance || '0')
   const baseRewards = BigInt(data.unipoolBalance?.rewards || '0')
   const rewardPerTokenPaid = BigInt(
     data.unipoolBalance?.rewardPerTokenPaid || '0',
@@ -241,32 +261,56 @@ export async function fetchStaking(user: Address, chainId: number) {
   let earned = baseRewards + accruedRewards
 
   // On-chain fallback
-  if (earned === 0n) {
-    try {
-      const contract = getContract({
-        client: thirdwebClient,
-        chain: defineChain(chainId),
-        address: cfg.GIVPOWER.LM_ADDRESS as Address,
-        abi: LM_ABI,
-      })
+  try {
+    const contract = getContract({
+      client: thirdwebClient,
+      chain: defineChain(chainId),
+      address: cfg.GIVPOWER.LM_ADDRESS as Address,
+      abi: LM_ABI,
+    })
+    if (earned === 0n) {
       const onchainEarned = (await readContract({
         contract,
         method: 'earned',
         params: [user],
       })) as bigint
       earned = onchainEarned
-    } catch (error) {
-      console.warn('Failed to read on-chain earned:', error)
     }
+    if (staked === 0n) {
+      const onchainStaked = (await readContract({
+        contract,
+        method: 'balanceOf',
+        params: [user],
+      })) as bigint
+      staked = onchainStaked
+    }
+  } catch (error) {
+    console.warn('Failed to read on-chain staking data:', error)
   }
-  // Calculate APR
+  // Calculate APR (BigInt-safe)
   const now = Math.floor(Date.now() / 1000)
   const poolActive = periodFinish > now
+  const SECONDS_PER_YEAR = 31_536_000n
+  const APR_SCALE = 1_000_000n
 
   const apr =
     poolActive && totalSupply > 0n
-      ? (Number(rewardRate) / Number(totalSupply)) * 31_536_000 * 100
+      ? Number(
+          (rewardRate * SECONDS_PER_YEAR * 100n * APR_SCALE) / totalSupply,
+        ) / Number(APR_SCALE)
       : 0
+
+  if (poolActive) {
+    console.warn('[GIVpower APR]', {
+      rewardRate: formatUnits(rewardRate, 18),
+      totalSupply: formatUnits(totalSupply, 18),
+      apr,
+    })
+  }
+
+  const locked = await fetchGIVpowerLocked(user, chainId)
+  const boostMultiplier = locked > 0n ? Number(staked) / Number(locked) : 1
+  const boostedAPR = locked > 0n ? apr * boostMultiplier : apr
 
   // Calculate streaming/claimable split
   if (cfg.TOKEN_DISTRO_ADDRESS && earned > 0n) {
@@ -298,6 +342,9 @@ export async function fetchStaking(user: Address, chainId: number) {
         claimable,
         streaming,
         apr,
+        baseAPR: apr,
+        boostedAPR,
+        boostMultiplier,
       }
     }
   }
@@ -309,6 +356,69 @@ export async function fetchStaking(user: Address, chainId: number) {
     claimable: earned,
     streaming: 0n,
     apr,
+    baseAPR: apr,
+    boostedAPR,
+    boostMultiplier,
+  }
+}
+
+/**
+ * Fetch the locked GIVpower amount for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The locked amount
+ */
+export async function fetchGIVpowerLocked(user: Address, chainId: number) {
+  const data = await querySubgraph<GIVpowerUserData>(
+    chainId,
+    `{
+      user(id: "${user.toLowerCase()}") {
+        givLocked
+      }
+    }`,
+  )
+
+  const rawLocked = data.user?.givLocked
+  if (!rawLocked) return 0n
+  return rawLocked.includes('.') ? parseUnits(rawLocked, 18) : BigInt(rawLocked)
+}
+
+/**
+ * Fetch the actual deposited GIV amount (not shares) for GIVpower
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The deposited GIV amount
+ */
+export async function fetchGIVpowerDepositBalance(
+  user: Address,
+  chainId: number,
+): Promise<bigint> {
+  const cfg = STAKING_POOLS[chainId]
+
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    return 0n
+  }
+
+  try {
+    const contract = getContract({
+      client: thirdwebClient,
+      chain: defineChain(chainId),
+      address: cfg.GIVPOWER.LM_ADDRESS as Address,
+      abi: LM_ABI,
+    })
+
+    const depositBalance = (await readContract({
+      contract,
+      method: 'depositTokenBalance',
+      params: [user],
+    })) as bigint
+
+    return depositBalance
+  } catch (error) {
+    console.warn('Failed to read depositTokenBalance:', error)
+    return 0n
   }
 }
 /* Wallet Balance */
@@ -594,3 +704,53 @@ export async function harvestRewards(
 
   return claimAll(account, chainId, tokenDistroAddress)
 }
+
+/**
+ * Calculate available amount to lock for GIVpower
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns Object with staked, locked, and available amounts
+ */
+export async function fetchAvailableToLock(
+  user: Address,
+  chainId: number,
+): Promise<{
+  totalDeposited: bigint
+  alreadyLocked: bigint
+  availableToLock: bigint
+}> {
+  const cfg = STAKING_POOLS[chainId]
+
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  // Fetch both in parallel - use depositTokenBalance, NOT balanceOf
+  const [depositBalance, lockedAmount] = await Promise.all([
+    fetchGIVpowerDepositBalance(user, chainId),
+    fetchGIVpowerLocked(user, chainId),
+  ])
+
+  const availableToLock =
+    depositBalance > lockedAmount ? depositBalance - lockedAmount : 0n
+
+  return {
+    totalDeposited: depositBalance,
+    alreadyLocked: lockedAmount,
+    availableToLock,
+  }
+}
+
+/**
+ * Format a token amount to a human readable string
+ *
+ * @param value - The token amount
+ * @param tokenDecimals - The token decimals
+ * @returns The formatted token amount
+ */
+export const formatToken = (value: bigint, tokenDecimals: number) =>
+  new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(parseFloat(formatUnits(value, tokenDecimals)))

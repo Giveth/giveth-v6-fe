@@ -5,7 +5,7 @@ import { type Address, formatUnits } from 'viem'
 import RewardsClaimModal from '@/components/account/staking-rewards/RewardsClaimModal'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { getTokenPriceInUSDByCoingeckoId } from '@/lib/helpers/cartHelper'
-import { fetchUserOverview } from '@/lib/helpers/stakeHelper'
+import { fetchUserOverview, formatToken } from '@/lib/helpers/stakeHelper'
 
 export const ClaimRewardsBanner = ({
   selectedChain,
@@ -63,6 +63,8 @@ export const ClaimRewardsBanner = ({
     console.error(error)
   }
 
+  const tokenDecimals = STAKING_POOLS[selectedChain]?.GIVPOWER?.decimals ?? 18
+  const tokenSymbol = STAKING_POOLS[selectedChain]?.GIVPOWER?.unit ?? 'GIV'
   const stakingClaimable = data?.staking?.claimable ?? 0n
   const givbacksLiquid = data?.givbacks?.givbackLiquidPart ?? 0n
   const givfarmAmount = stakingClaimable
@@ -73,7 +75,9 @@ export const ClaimRewardsBanner = ({
   const givfarmRate = data?.staking?.streaming ?? 0n
 
   // Convert once to human units
-  const totalClaimableGiv = parseFloat(formatUnits(totalClaimable, 18))
+  const totalClaimableGiv = parseFloat(
+    formatUnits(totalClaimable, tokenDecimals),
+  )
   const totalClaimableUsd = totalClaimableGiv * tokenPriceUsd
 
   const totalClaimableLabel = new Intl.NumberFormat(undefined, {
@@ -86,17 +90,13 @@ export const ClaimRewardsBanner = ({
     maximumFractionDigits: 2,
   }).format(totalClaimableUsd)
 
-  const formatGiv = (value: bigint) =>
-    new Intl.NumberFormat(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(parseFloat(formatUnits(value, 18)))
-
-  const formatGivRate = (value: bigint) =>
+  const formatTokenRate = (value: bigint) =>
     `${new Intl.NumberFormat(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(parseFloat(formatUnits(value, 18)))} GIV/week`
+    }).format(
+      parseFloat(formatUnits(value, tokenDecimals)),
+    )} ${STAKING_POOLS[selectedChain]?.GIVPOWER?.unit}/week`
 
   const tokenDistroAddress = STAKING_POOLS[selectedChain]?.TOKEN_DISTRO_ADDRESS
   const givpowerLmAddress = STAKING_POOLS[selectedChain]?.GIVPOWER?.LM_ADDRESS
@@ -141,13 +141,13 @@ export const ClaimRewardsBanner = ({
         stakedAmount={stakedAmount}
         totalGiv={totalClaimableLabel}
         totalUsd={`$${totalUsdLabel}`}
-        streamRate={formatGivRate(givstreamRate + givfarmRate)}
-        givstreamAmount={`${formatGiv(givstreamAmount)} GIV`}
-        givstreamRate={formatGivRate(givstreamRate)}
-        givbacksAmount={`${formatGiv(givbacksAmount)} GIV`}
-        givfarmAmount={`${formatGiv(givfarmAmount)} GIV`}
-        givfarmRate={`+${formatGivRate(givfarmRate)}`}
-        totalRate={formatGivRate(givstreamRate + givfarmRate)}
+        streamRate={formatTokenRate(givstreamRate + givfarmRate)}
+        givstreamAmount={`${formatToken(givstreamAmount, tokenDecimals)} ${tokenSymbol}`}
+        givstreamRate={formatTokenRate(givstreamRate)}
+        givbacksAmount={`${formatToken(givbacksAmount, tokenDecimals)} ${tokenSymbol}`}
+        givfarmAmount={`${formatToken(givfarmAmount, tokenDecimals)} ${tokenSymbol}`}
+        givfarmRate={`+${formatTokenRate(givfarmRate)}`}
+        totalRate={formatTokenRate(givstreamRate + givfarmRate)}
       />
     </div>
   )

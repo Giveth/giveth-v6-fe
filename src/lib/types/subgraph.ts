@@ -73,6 +73,26 @@ export interface IGIVpower {
   nextRoundDate: string
 }
 
+export type StakingPoolConfig = {
+  GIVPOWER: {
+    network: number
+    LM_ADDRESS: string
+    POOL_ADDRESS: string
+    GARDEN_ADDRESS?: string
+    type: string
+    platform: string
+    title: string
+    description: string
+    unit: string
+    coingeckoId: string
+    decimals: number
+  }
+  TOKEN_DISTRO_ADDRESS: string
+  GIV_TOKEN_ADDRESS: string
+  gGIV_TOKEN_ADDRESS?: string
+  subgraphUrl: string
+}
+
 export interface ISubgraphState {
   [key: string]:
     | IUnipool
