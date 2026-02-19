@@ -8,7 +8,6 @@ type StakePageProps = {
 }
 
 export default function StakePage({ params }: StakePageProps) {
-  console.log(params.id)
   return (
     <Suspense
       fallback={

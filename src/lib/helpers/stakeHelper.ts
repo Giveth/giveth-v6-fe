@@ -89,6 +89,36 @@ const LM_ABI = [
     inputs: [{ name: '', type: 'address' }],
     outputs: [{ type: 'uint256' }],
   },
+  {
+    type: 'function',
+    name: 'stake',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
+] as const
+
+const ERC20_ABI = [
+  {
+    type: 'function',
+    name: 'approve',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ type: 'bool' }],
+  },
+  {
+    type: 'function',
+    name: 'allowance',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+    ],
+    outputs: [{ type: 'uint256' }],
+  },
 ] as const
 
 /* Core Query Functions */
@@ -740,6 +770,68 @@ export async function fetchAvailableToLock(
     alreadyLocked: lockedAmount,
     availableToLock,
   }
+}
+
+/**
+ * Approve GIV token spend for GIVpower staking
+ */
+export async function approveGIVpowerStake(
+  account: Account,
+  chainId: number,
+  amount: bigint,
+) {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS || !cfg?.GIV_TOKEN_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  const tokenContract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIV_TOKEN_ADDRESS as Address,
+    abi: ERC20_ABI,
+  })
+
+  const transaction = prepareContractCall({
+    contract: tokenContract,
+    method: 'approve',
+    params: [cfg.GIVPOWER.LM_ADDRESS as Address, amount],
+  })
+
+  const receipt = await sendTransaction({ account, transaction })
+  const finalReceipt = await waitForReceipt(receipt)
+  return finalReceipt.transactionHash
+}
+
+/**
+ * Stake GIV into GIVpower pool
+ */
+export async function stakeGIVpower(
+  account: Account,
+  chainId: number,
+  amount: bigint,
+) {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: LM_ABI,
+  })
+
+  const transaction = prepareContractCall({
+    contract,
+    method: 'stake',
+    params: [amount],
+  })
+
+  const receipt = await sendTransaction({ account, transaction })
+  const finalReceipt = await waitForReceipt(receipt)
+  return finalReceipt.transactionHash
 }
 
 /**

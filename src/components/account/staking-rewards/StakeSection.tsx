@@ -289,7 +289,8 @@ export const StakeSection = ({
               </span>
             </span>
             <span className="font-medium text-giv-neutral-800">
-              {availableToLockLabel} GIV
+              {availableToLockLabel}{' '}
+              {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
             </span>
           </div>
 
@@ -329,7 +330,8 @@ export const StakeSection = ({
                 Stake
               </button>
               <div className="font-medium text-giv-neutral-800">
-                {walletAmountLabel} GIV
+                {walletAmountLabel}{' '}
+                {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
               </div>
             </div>
             <div className="w-1/2 flex flex-col items-center gap-2">

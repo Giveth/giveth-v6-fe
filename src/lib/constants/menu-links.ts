@@ -236,3 +236,9 @@ export const PassportLink = {
   href: 'https://app.passport.xyz/',
   target: '_blank',
 }
+
+export const BuyBridgeGIVLink = {
+  label: 'Buy / Bridge your GIV',
+  href: 'https://linktr.ee/givtoken',
+  target: '_blank',
+}
