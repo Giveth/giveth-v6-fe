@@ -1,24 +1,52 @@
-export function StakingTab({ id: _id }: { id: string }) {
+import { ChainIcon } from '@/components/ChainIcon'
+import { HelpTooltip } from '@/components/HelpTooltip'
+import { IconStars } from '@/components/icons/IconStars'
+import { TokenIcon } from '@/components/TokenIcon'
+
+export function StakingTab({ id }: { id: string }) {
+  // Get pools data
+  const pool = STAKING_POOLS[id]
+
   return (
     <div className="bg-white rounded-tl-2xl rounded-b-xl p-8 overflow-hidden">
       <h1 className="text-2xl font-bold text-giv-neutral-900 mb-4">
         Stake GIV
       </h1>
+
       <div className="grid gap-6 lg:grid-cols-[1fr_1.6fr]">
         <div className="space-y-4">
-          <div className="rounded-2xl border border-giv-neutral-200 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-giv-brand-100 p-5 pr-16">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-giv-brand-050" />
-                <div>
-                  <div className="text-sm font-semibold text-giv-neutral-900">
-                    GIV Staking
+                <div className="relative h-10 w-10">
+                  <TokenIcon
+                    width={40}
+                    height={40}
+                    tokenSymbol="GIV"
+                    networkId={10}
+                  />
+                  <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
+                    <ChainIcon networkId={10} />
                   </div>
-                  <div className="text-xs text-giv-neutral-600">On Gnosis</div>
+                </div>
+                <div className="flex flex-col gap-1 ml-1 text-sm font-medium text-giv-neutral-900">
+                  <div>GIV Staking</div>
+                  <div className="font-bold">On Gnosis</div>
                 </div>
               </div>
-              <div className="text-sm font-semibold text-giv-neutral-900">
-                APR ✨ 16.6%
+              <div className="flex flex-col gap-1 text-sm font-medium text-giv-neutral-900">
+                <div className="flex items-center gap-2">
+                  <IconStars width={24} height={24} />
+                  <span className="text-lg font-bold text-giv-neutral-900">
+                    APR
+                  </span>
+                </div>
+                <div className="inline-flex items-center gap-2">
+                  <span className="text-lg font-bold text-giv-neutral-900">
+                    16.6%
+                  </span>
+                  <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
+                </div>
               </div>
             </div>
           </div>
