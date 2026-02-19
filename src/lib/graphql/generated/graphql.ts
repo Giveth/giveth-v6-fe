@@ -432,6 +432,22 @@ export type ManagingFundsInput = {
   relatedAddresses?: InputMaybe<Array<FormRelatedAddressInput>>;
 };
 
+export type MatchingFundDetails = {
+  __typename?: 'MatchingFundDetails';
+  /** Amount in native token */
+  amount?: Maybe<Scalars['Float']['output']>;
+  /** Amount in USD */
+  amountUsd: Scalars['Float']['output'];
+  /** Currency/token symbol */
+  currency?: Maybe<Scalars['String']['output']>;
+  /** Network/chain ID */
+  networkId?: Maybe<Scalars['Int']['output']>;
+  /** Transaction date */
+  txDate?: Maybe<Scalars['DateTime']['output']>;
+  /** Transaction hash on blockchain */
+  txHash?: Maybe<Scalars['String']['output']>;
+};
+
 export type MilestonesEntity = {
   __typename?: 'MilestonesEntity';
   achievedMilestones?: Maybe<Scalars['String']['output']>;
@@ -1045,6 +1061,19 @@ export type QfRoundEntity = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type QfRoundHistoryEntity = {
+  __typename?: 'QfRoundHistoryEntity';
+  /** Actual distributed matching funds - null until funds are distributed on-chain */
+  distributedFund?: Maybe<MatchingFundDetails>;
+  donationsCount?: Maybe<Scalars['Int']['output']>;
+  /** Estimated matching calculated by QF algorithm - available after matching calculation */
+  estimatedMatching?: Maybe<MatchingFundDetails>;
+  projectId: Scalars['Int']['output'];
+  qfRoundId: Scalars['Int']['output'];
+  raisedFundInUsd?: Maybe<Scalars['Float']['output']>;
+  uniqueDonors?: Maybe<Scalars['Int']['output']>;
+};
+
 export type QfRoundMatchingEntity = {
   __typename?: 'QfRoundMatchingEntity';
   calculatedAt: Scalars['DateTime']['output'];
@@ -1120,6 +1149,7 @@ export type Query = {
   getPassportEligibility?: Maybe<PassportEligibilityEntity>;
   getPowerBoosting: GivPowersEntity;
   getProjectReactions: Array<ReactionEntity>;
+  getQfRoundHistory?: Maybe<QfRoundHistoryEntity>;
   getTopPowerRank: Scalars['Float']['output'];
   globalConfiguration?: Maybe<GlobalConfigurationEntity>;
   globalConfigurations: Array<GlobalConfigurationEntity>;
@@ -1278,6 +1308,12 @@ export type QueryGetPowerBoostingArgs = {
 
 export type QueryGetProjectReactionsArgs = {
   projectId: Scalars['Int']['input'];
+};
+
+
+export type QueryGetQfRoundHistoryArgs = {
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
 };
 
 
@@ -1927,6 +1963,14 @@ export type DonationsByUserQueryVariables = Exact<{
 
 
 export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId?: string | null, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+
+export type GetQfRoundHistoryQueryVariables = Exact<{
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
+}>;
+
+
+export type GetQfRoundHistoryQuery = { __typename?: 'Query', getQfRoundHistory?: { __typename?: 'QfRoundHistoryEntity', projectId: number, qfRoundId: number, uniqueDonors?: number | null, donationsCount?: number | null, raisedFundInUsd?: number | null, estimatedMatching?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null } | null, distributedFund?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null, currency?: string | null, txHash?: string | null, networkId?: number | null, txDate?: any | null } | null } | null };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2715,3 +2759,26 @@ export const DonationsByUserDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<DonationsByUserQuery, DonationsByUserQueryVariables>;
+export const GetQfRoundHistoryDocument = new TypedDocumentString(`
+    query GetQfRoundHistory($projectId: Int!, $qfRoundId: Int!) {
+  getQfRoundHistory(projectId: $projectId, qfRoundId: $qfRoundId) {
+    projectId
+    qfRoundId
+    uniqueDonors
+    donationsCount
+    raisedFundInUsd
+    estimatedMatching {
+      amountUsd
+      amount
+    }
+    distributedFund {
+      amountUsd
+      amount
+      currency
+      txHash
+      networkId
+      txDate
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<GetQfRoundHistoryQuery, GetQfRoundHistoryQueryVariables>;

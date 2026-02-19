@@ -1,13 +1,17 @@
 import { useState } from 'react'
-import { Check, Copy } from 'lucide-react'
+import Link from 'next/link'
+import { Check, Copy, ExternalLink } from 'lucide-react'
 import { type Address } from 'thirdweb'
 import { EnsName } from '@/components/account/EnsName'
 import { ChainIcon } from '@/components/ChainIcon'
+import { getTransactionExplorerUrl } from '@/lib/constants/chain'
 import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
+import { useProjectQfRoundHistory } from '@/lib/helpers/projectHelper'
 
 interface QFRoundSidebarProps {
   project: {
+    id: string
     totalDonations: number
     countUniqueDonors?: number | null | undefined
     addresses?: Array<{
@@ -48,6 +52,18 @@ export function QFRoundSidebar({
   const countUniqueDonors =
     (selectedRound?.countUniqueDonors ?? project.countUniqueDonors) || 0
 
+  const { data: qfRoundHistory } = useProjectQfRoundHistory(
+    Number(project.id ?? 0),
+    Number(selectedRound?.qfRound?.id ?? 0),
+  )
+
+  console.log(selectedRound)
+
+  const notDistributedFund =
+    !qfRoundHistory?.distributedFund &&
+    qfRoundHistory?.distributedFund?.amount !== 0 &&
+    !selectedRound?.qfRound?.isActive
+
   return (
     <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
       <h3 className="text-base font-medium text-giv-neutral-900 border-b border-giv-neutral-300 pb-2 mb-4">
@@ -72,6 +88,63 @@ export function QFRoundSidebar({
           contributors
         </p>
       </div>
+
+      {notDistributedFund && (
+        <div className="mb-2">
+          <div className="flex bg-gray-200 py-4 px-2.5 rounded-xl mt-2">
+            <div className="flex flex-col gap-2">
+              <h6 className="font-bold text-base">
+                Matching funds coming soon...
+              </h6>
+              <div className="border-t border-gray-300 pt-2">
+                <span className="inline-block font-bold text-gray-900 whitespace-nowrap">
+                  {selectedRound?.qfRound?.name}&nbsp;
+                </span>
+                <p className="inline text-gray-900">
+                  funds have not yet been sent. Please check back later.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!notDistributedFund && (
+        <div className="flex flex-col bg-gray-200 py-4 pb-1 px-2 rounded-xl mt-2">
+          <div className="flex justify-between">
+            <h5 className="text-green-600 font-bold text-xl">
+              +{' '}
+              {formatNumber(qfRoundHistory?.estimatedMatching?.amountUsd ?? 0, {
+                minDecimals: 2,
+                maxDecimals: 2,
+              })}{' '}
+              {qfRoundHistory?.distributedFund?.currency}
+            </h5>
+            <span className="text-green-600 font-semibold text-sm max-w-[80px] leading-tight">
+              Matching Funds
+            </span>
+          </div>
+
+          {qfRoundHistory?.distributedFund?.txHash && (
+            <div className="mt-2 pt-2 border-t border-gray-300">
+              <Link
+                href={{
+                  pathname: getTransactionExplorerUrl(
+                    Number(qfRoundHistory.distributedFund?.networkId),
+                    qfRoundHistory.distributedFund?.txHash,
+                  ),
+                }}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center w-full text-giv-pink-400! hover:text-giv-brand-700! transition-colors"
+              >
+                View transaction &nbsp;
+                <ExternalLink className="w-3.5 h-3.5 text-current" />
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="pt-4">
         <p className="text-base text-giv-neutral-700 mb-3">
