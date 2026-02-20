@@ -119,6 +119,23 @@ const ERC20_ABI = [
     ],
     outputs: [{ type: 'uint256' }],
   },
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+] as const
+
+const TOKEN_MANAGER_ABI = [
+  {
+    type: 'function',
+    name: 'wrap',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
 ] as const
 
 /* Core Query Functions */
@@ -314,6 +331,12 @@ export async function fetchStaking(user: Address, chainId: number) {
       })) as bigint
       staked = onchainStaked
     }
+    if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM') {
+      const depositBalance = await fetchGIVpowerDepositBalance(user, chainId)
+      if (depositBalance > 0n) {
+        staked = depositBalance
+      }
+    }
   } catch (error) {
     console.warn('Failed to read on-chain staking data:', error)
   }
@@ -432,6 +455,21 @@ export async function fetchGIVpowerDepositBalance(
   }
 
   try {
+    if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM' && cfg.gGIV_TOKEN_ADDRESS) {
+      const gGivContract = getContract({
+        client: thirdwebClient,
+        chain: defineChain(chainId),
+        address: cfg.gGIV_TOKEN_ADDRESS as Address,
+        abi: ERC20_ABI,
+      })
+      const gGivBalance = (await readContract({
+        contract: gGivContract,
+        method: 'balanceOf',
+        params: [user],
+      })) as bigint
+      return gGivBalance
+    }
+
     const contract = getContract({
       client: thirdwebClient,
       chain: defineChain(chainId),
@@ -785,6 +823,14 @@ export async function approveGIVpowerStake(
     throw new Error(`GIVpower not configured for chain ${chainId}`)
   }
 
+  const spenderAddress =
+    cfg.GIVPOWER.type === 'GIV_GARDEN_LM'
+      ? cfg.GIVPOWER.GARDEN_ADDRESS
+      : cfg.GIVPOWER.LM_ADDRESS
+  if (!spenderAddress) {
+    throw new Error(`Spender address not configured for chain ${chainId}`)
+  }
+
   const tokenContract = getContract({
     client: thirdwebClient,
     chain: defineChain(chainId),
@@ -795,7 +841,7 @@ export async function approveGIVpowerStake(
   const transaction = prepareContractCall({
     contract: tokenContract,
     method: 'approve',
-    params: [cfg.GIVPOWER.LM_ADDRESS as Address, amount],
+    params: [spenderAddress as Address, amount],
   })
 
   const receipt = await sendTransaction({ account, transaction })
@@ -814,6 +860,29 @@ export async function stakeGIVpower(
   const cfg = STAKING_POOLS[chainId]
   if (!cfg?.GIVPOWER?.LM_ADDRESS) {
     throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM') {
+    if (!cfg.GIVPOWER.GARDEN_ADDRESS) {
+      throw new Error(`GARDEN_ADDRESS not configured for chain ${chainId}`)
+    }
+
+    const tokenManagerContract = getContract({
+      client: thirdwebClient,
+      chain: defineChain(chainId),
+      address: cfg.GIVPOWER.GARDEN_ADDRESS as Address,
+      abi: TOKEN_MANAGER_ABI,
+    })
+
+    const wrapTx = prepareContractCall({
+      contract: tokenManagerContract,
+      method: 'wrap',
+      params: [amount],
+    })
+
+    const wrapReceipt = await sendTransaction({ account, transaction: wrapTx })
+    const finalWrapReceipt = await waitForReceipt(wrapReceipt)
+    return finalWrapReceipt.transactionHash
   }
 
   const contract = getContract({

@@ -1,5 +1,8 @@
+'use client'
+
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import { useActiveAccount } from 'thirdweb/react'
 import { type Address } from 'viem'
@@ -40,6 +43,7 @@ export const StakeSection = ({
   selectedChain,
   onSelectChain,
 }: StakeSectionProps) => {
+  const router = useRouter()
   const account = useActiveAccount()
   const [stakingByChain, setStakingByChain] = useState<
     Record<number, ChainStakeInfo>
@@ -319,6 +323,9 @@ export const StakeSection = ({
               <button
                 type="button"
                 disabled={!canStake}
+                onClick={() => {
+                  router.push(`/account/stake/${selectedChain}` as never)
+                }}
                 className={clsx(
                   'w-full px-4 py-3',
                   'rounded-xl border text-sm font-bold',

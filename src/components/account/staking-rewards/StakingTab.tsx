@@ -7,7 +7,12 @@ import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowRightIcon, LockKeyhole } from 'lucide-react'
 import ReactCanvasConfetti from 'react-canvas-confetti'
-import { useActiveAccount } from 'thirdweb/react'
+import { defineChain } from 'thirdweb'
+import {
+  useActiveAccount,
+  useActiveWalletChain,
+  useSwitchActiveWalletChain,
+} from 'thirdweb/react'
 import { formatUnits, parseUnits, type Address } from 'viem'
 import { ChainIcon } from '@/components/ChainIcon'
 import { HelpTooltip } from '@/components/HelpTooltip'
@@ -48,7 +53,11 @@ type ConfettiInstance = (options: Record<string, unknown>) => void
 export function StakingTab({ id }: { id: string }) {
   // Get pools data
   const pool = STAKING_POOLS[Number(id)]
+
   const account = useActiveAccount()
+  const activeChain = useActiveWalletChain()
+  const switchChain = useSwitchActiveWalletChain()
+
   const [_stakedAmount, setStakedAmount] = useState<bigint>(0n)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [amountToStake, setAmountToStake] = useState<string>('0')
@@ -161,6 +170,10 @@ export function StakingTab({ id }: { id: string }) {
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
     setFlowStep('approving')
     try {
+      // Change user network to the chainId
+      if (activeChain?.id !== pool.GIVPOWER.network) {
+        await switchChain(defineChain(pool.GIVPOWER.network))
+      }
       await approveGIVpowerStake(
         account,
         pool.GIVPOWER.network,
@@ -185,6 +198,10 @@ export function StakingTab({ id }: { id: string }) {
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
     setFlowStep('staking')
     try {
+      // Change user network to the chainId
+      if (activeChain?.id !== pool.GIVPOWER.network) {
+        await switchChain(defineChain(pool.GIVPOWER.network))
+      }
       await stakeGIVpower(account, pool.GIVPOWER.network, amountInBaseUnits)
       setFlowStep('staked')
     } catch (error) {
