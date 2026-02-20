@@ -62,8 +62,14 @@ type TokenDistroData = {
     givbackLiquidPart?: string
   }
   tokenLocks?: Array<{
+    id?: string
+    user?: string
     amount: string
+    rounds?: string
+    untilRound?: string
     unlockableAt?: string
+    unlockedAt?: string
+    unlocked?: boolean
   }>
 }
 
@@ -251,10 +257,44 @@ function tokenDistroQuery(user: Address, distro: Address) {
 function tokenLocksQuery(user: Address, first = 100, skip = 0) {
   return `{
     tokenLocks(where:{user: "${user.toLowerCase()}", unlocked: false}, first: ${first}, skip: ${skip}, orderBy: unlockableAt){
+      id
+      user
       amount
+      rounds
+      untilRound
       unlockableAt
+      unlockedAt
+      unlocked
     }
   }`
+}
+
+export type TokenLock = {
+  id?: string
+  amount: bigint
+  rounds: number
+  untilRound?: number
+  unlockableAt?: number
+}
+
+export async function fetchTokenLocks(
+  user: Address,
+  chainId: number,
+  first = 100,
+  skip = 0,
+): Promise<TokenLock[]> {
+  const data = await querySubgraph<TokenDistroData>(
+    chainId,
+    tokenLocksQuery(user, first, skip),
+  )
+
+  return (data.tokenLocks ?? []).map(lock => ({
+    id: lock.id,
+    amount: BigInt(lock.amount || '0'),
+    rounds: lock.rounds ? Number(lock.rounds) : 0,
+    untilRound: lock.untilRound ? Number(lock.untilRound) : undefined,
+    unlockableAt: lock.unlockableAt ? Number(lock.unlockableAt) : undefined,
+  }))
 }
 
 /**

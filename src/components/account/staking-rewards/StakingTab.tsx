@@ -14,6 +14,7 @@ import {
   useSwitchActiveWalletChain,
 } from 'thirdweb/react'
 import { formatUnits, parseUnits, type Address } from 'viem'
+import LockedDetailsModal from '@/components/account/staking-rewards/LockedDetailsModal'
 import { ChainIcon } from '@/components/ChainIcon'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { IconReload } from '@/components/icons/IconReload'
@@ -58,6 +59,9 @@ export function StakingTab({ id }: { id: string }) {
   const account = useActiveAccount()
   const activeChain = useActiveWalletChain()
   const switchChain = useSwitchActiveWalletChain()
+
+  const [isLockedDetailsModalOpen, setIsLockedDetailsModalOpen] =
+    useState(false)
 
   const [_stakedAmount, setStakedAmount] = useState<bigint>(0n)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -334,312 +338,326 @@ export function StakingTab({ id }: { id: string }) {
   }
 
   return (
-    <div className="bg-white rounded-tl-2xl rounded-b-xl p-8 overflow-hidden">
-      <ReactCanvasConfetti
-        onInit={handleConfettiInit}
-        style={confettiCanvasStyles}
-      />
-      <h1 className="text-2xl font-bold text-giv-neutral-900 mb-4">
-        Stake GIV
-      </h1>
+    <>
+      <div className="bg-white rounded-tl-2xl rounded-b-xl p-8 overflow-hidden">
+        <ReactCanvasConfetti
+          onInit={handleConfettiInit}
+          style={confettiCanvasStyles}
+        />
+        <h1 className="text-2xl font-bold text-giv-neutral-900 mb-4">
+          Stake GIV
+        </h1>
 
-      <div className="flex flex-row flex-wrap md:no-wrap gap-5">
-        <div className="order-2 lg:order-1 w-[420px] shrink-0 space-y-4">
-          <div className="rounded-2xl border border-giv-brand-100 p-5 pr-16">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative h-10 w-10">
-                  <TokenIcon
-                    width={40}
-                    height={40}
-                    tokenSymbol={pool?.GIVPOWER.title}
-                    networkId={pool?.GIVPOWER?.network as number}
-                  />
-                  <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
-                    <ChainIcon networkId={pool?.GIVPOWER?.network as number} />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1 ml-1 text-sm font-medium text-giv-neutral-900">
-                  <div>{pool?.GIVPOWER.title} Staking</div>
-                  <div className="font-bold">
-                    On {getChainName(pool?.GIVPOWER?.network as number)}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 text-sm font-medium text-giv-neutral-900">
-                <div className="flex items-center gap-2">
-                  <IconStars width={24} height={24} />
-                  <span className="text-lg font-bold text-giv-neutral-900">
-                    APR
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-lg font-bold text-giv-neutral-900">
-                    {aprLabel}%
-                  </span>
-                  <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-giv-neutral-200 bg-white p-5">
-            <div className="flex flex-col justify-between border-b border-giv-neutral-200 p-4">
-              <div className="text-lg text-giv-neutral-700 font-medium flex items-center gap-2">
-                <IconStakeNumber width={24} height={24} />
-                <span>Staked</span>
-              </div>
-              <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
-                <span>{totalStakedAmountLabel}</span>
-                <span className="text-lg font-medium text-giv-neutral-800">
-                  {pool?.GIVPOWER.title}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col justify-between p-5">
-              <div className="text-lg text-giv-neutral-700 font-medium flex items-center gap-2">
-                <LockKeyhole width={24} height={24} />
-                <span>Locked</span>
-              </div>
-              <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
-                <span>{totalLockedAmountLabel}</span>
-                <span className="text-lg font-medium text-giv-neutral-800">
-                  {pool?.GIVPOWER.title}
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              className={clsx(
-                'flex items-center justify-center gap-2',
-                'mt-2 w-full rounded-xl border px-4 py-3',
-                'text-sm font-bold transition-colors',
-                'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
-              )}
-            >
-              Locked GIV details
-            </button>
-          </div>
-        </div>
-
-        <div className="order-1 lg:order-2 flex-1 min-w-0">
-          <div className="rounded-2xl border border-giv-brand-100 bg-white p-6">
-            <div className="flex items-center justify-between">
-              <div className="text-lg font-bold text-giv-neutral-900">
-                Amount to stake
-              </div>
-              <Link
-                href={BuyBridgeGIVLink.href as unknown as UrlObject}
-                target={BuyBridgeGIVLink.target}
-                className={clsx(
-                  'flex items-center gap-2 text-sm font-bold text-giv-brand-500! hover:text-giv-brand-800!',
-                  flowStep !== 'input' &&
-                    'pointer-events-none opacity-40 hover:text-giv-brand-500!',
-                )}
-              >
-                <span>{BuyBridgeGIVLink.label}</span>
-                <ArrowRightIcon className="w-5 h-5" />
-              </Link>
-            </div>
-
-            {flowStep === 'input' || flowStep === 'approving' ? (
-              <>
-                <div className="mt-4 rounded-xl border border-giv-neutral-300 bg-white">
-                  <div className="flex items-center justify-between">
-                    <div className="w-[160px] flex items-center gap-2 text-sm font-semibold text-giv-neutral-900 border-r border-giv-neutral-300 px-4 py-3">
-                      <TokenIcon
-                        width={24}
-                        height={24}
-                        tokenSymbol={pool?.GIVPOWER.title}
+        <div className="flex flex-row flex-wrap lg:no-wrap gap-5">
+          <div className="order-2 lg:order-1 w-full lg:w-[420px] shrink-0 space-y-4">
+            <div className="rounded-2xl border border-giv-brand-100 p-5 pr-16">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-10">
+                    <TokenIcon
+                      width={40}
+                      height={40}
+                      tokenSymbol={pool?.GIVPOWER.title}
+                      networkId={pool?.GIVPOWER?.network as number}
+                    />
+                    <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
+                      <ChainIcon
                         networkId={pool?.GIVPOWER?.network as number}
                       />
-                      <div>{pool?.GIVPOWER.title}</div>
                     </div>
-                    <input
-                      type="text"
-                      value={amountToStake}
-                      placeholder="0"
-                      onChange={e => {
-                        setErrorMessage(null)
-                        const normalized = normalizeStakeInput(e.target.value)
-                        setAmountToStake(normalized)
-                      }}
-                      autoComplete="off"
-                      disabled={flowStep === 'approving'}
-                      className={clsx(
-                        'w-full px-4',
-                        'text-base p-0',
-                        'font-medium text-left text-giv-neutral-900 focus:outline-none',
-                      )}
-                    />
-                    <div className="flex-inline items-center px-2 py-1 bg-giv-neutral-300 rounded-lg text-xs font-semibold text-giv-neutral-700 mr-2">
-                      <span>$</span>
-                      <span>
-                        {formatNumber(amountUsdValue, {
-                          minDecimals: 2,
-                          maxDecimals: 2,
-                        })}
-                      </span>
+                  </div>
+                  <div className="flex flex-col gap-1 ml-1 text-sm font-medium text-giv-neutral-900">
+                    <div>{pool?.GIVPOWER.title} Staking</div>
+                    <div className="font-bold">
+                      On {getChainName(pool?.GIVPOWER?.network as number)}
                     </div>
                   </div>
                 </div>
+                <div className="flex flex-col gap-1 text-sm font-medium text-giv-neutral-900">
+                  <div className="flex items-center gap-2">
+                    <IconStars width={24} height={24} />
+                    <span className="text-lg font-bold text-giv-neutral-900">
+                      APR
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center gap-2">
+                    <span className="text-lg font-bold text-giv-neutral-900">
+                      {aprLabel}%
+                    </span>
+                    <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex gap-2">
-                    {['5%', '10%', '15%', '20%'].map(label => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => {
-                          const percentage = Number(label.replace('%', ''))
-                          setAmountToStake(
-                            String(availableToStakeValue * (percentage / 100)),
-                          )
+            <div className="rounded-2xl border border-giv-neutral-200 bg-white p-5">
+              <div className="flex flex-col justify-between border-b border-giv-neutral-200 p-4">
+                <div className="text-lg text-giv-neutral-700 font-medium flex items-center gap-2">
+                  <IconStakeNumber width={24} height={24} />
+                  <span>Staked</span>
+                </div>
+                <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
+                  <span>{totalStakedAmountLabel}</span>
+                  <span className="text-lg font-medium text-giv-neutral-800">
+                    {pool?.GIVPOWER.title}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col justify-between p-5">
+                <div className="text-lg text-giv-neutral-700 font-medium flex items-center gap-2">
+                  <LockKeyhole width={24} height={24} />
+                  <span>Locked</span>
+                </div>
+                <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
+                  <span>{totalLockedAmountLabel}</span>
+                  <span className="text-lg font-medium text-giv-neutral-800">
+                    {pool?.GIVPOWER.title}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={clsx(
+                  'flex items-center justify-center gap-2',
+                  'mt-2 w-full rounded-xl border px-4 py-3',
+                  'text-sm font-bold transition-colors',
+                  'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
+                )}
+                disabled={Number(lockedAmount) === 0}
+                onClick={() => setIsLockedDetailsModalOpen(true)}
+              >
+                Locked GIV details
+              </button>
+            </div>
+          </div>
+
+          <div className="order-1 lg:order-2 flex-1 min-w-0">
+            <div className="rounded-2xl border border-giv-brand-100 bg-white p-6">
+              <div className="flex flex-wrap md:flex-nowrap items-center justify-between">
+                <div className="w-full md:w-auto mb-3 md:mb-0 text-lg font-bold text-giv-neutral-900">
+                  Amount to stake
+                </div>
+                <Link
+                  href={BuyBridgeGIVLink.href as unknown as UrlObject}
+                  target={BuyBridgeGIVLink.target}
+                  className={clsx(
+                    'flex w-full md:w-auto items-center gap-2 text-sm font-bold text-giv-brand-500! hover:text-giv-brand-800!',
+                    flowStep !== 'input' &&
+                      'pointer-events-none opacity-40 hover:text-giv-brand-500!',
+                  )}
+                >
+                  <span>{BuyBridgeGIVLink.label}</span>
+                  <ArrowRightIcon className="w-5 h-5" />
+                </Link>
+              </div>
+
+              {flowStep === 'input' || flowStep === 'approving' ? (
+                <>
+                  <div className="mt-4 rounded-xl border border-giv-neutral-300 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="w-[160px] flex items-center gap-2 text-sm font-semibold text-giv-neutral-900 border-r border-giv-neutral-300 px-4 py-3">
+                        <TokenIcon
+                          width={24}
+                          height={24}
+                          tokenSymbol={pool?.GIVPOWER.title}
+                          networkId={pool?.GIVPOWER?.network as number}
+                        />
+                        <div>{pool?.GIVPOWER.title}</div>
+                      </div>
+                      <input
+                        type="text"
+                        value={amountToStake}
+                        placeholder="0"
+                        onChange={e => {
+                          setErrorMessage(null)
+                          const normalized = normalizeStakeInput(e.target.value)
+                          setAmountToStake(normalized)
                         }}
+                        autoComplete="off"
                         disabled={flowStep === 'approving'}
                         className={clsx(
-                          'rounded-xl px-3 py-2 text-xs font-medium',
-                          'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
-                          'border border-giv-brand-100',
-                          flowStep === 'approving' &&
-                            'cursor-not-allowed opacity-50',
+                          'w-full px-4',
+                          'text-base p-0',
+                          'font-medium text-left text-giv-neutral-900 focus:outline-none',
                         )}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
-                    <span>Available:</span>
-                    <span>
-                      {availableToStakeLabel} {pool?.GIVPOWER.title}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleRefreshBalance}
-                      className="ml-1 cursor-pointer"
-                    >
-                      <IconReload
-                        width={24}
-                        height={24}
-                        fill="var(--giv-brand-500)"
                       />
-                    </button>
+                      <div className="flex-inline items-center px-2 py-1 bg-giv-neutral-300 rounded-lg text-xs font-semibold text-giv-neutral-700 mr-2">
+                        <span>$</span>
+                        <span>
+                          {formatNumber(amountUsdValue, {
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                          })}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <button
-                  type="button"
-                  className={clsx(
-                    'w-full py-4 bg-giv-brand-300! text-white! mt-8',
-                    'rounded-md text-sm font-bold flex items-center justify-center gap-2',
-                    'hover:bg-giv-brand-400! transition-colors cursor-pointer',
-                    (!isAmountValid || flowStep === 'approving') &&
-                      'opacity-60 cursor-not-allowed',
-                  )}
-                  disabled={!isAmountValid || flowStep === 'approving'}
-                  onClick={handleApprove}
-                >
-                  {flowStep === 'approving' ? (
-                    <>
-                      Approve Pending
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    </>
-                  ) : (
-                    'Approve'
-                  )}
-                </button>
-                {errorMessage && (
-                  <div className="mt-4 text-sm text-red-500 text-center">
-                    {errorMessage}
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex gap-2">
+                      {['5%', '10%', '15%', '20%'].map(label => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => {
+                            const percentage = Number(label.replace('%', ''))
+                            setAmountToStake(
+                              String(
+                                availableToStakeValue * (percentage / 100),
+                              ),
+                            )
+                          }}
+                          disabled={flowStep === 'approving'}
+                          className={clsx(
+                            'rounded-xl px-3 py-2 text-xs font-medium',
+                            'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                            'border border-giv-brand-100',
+                            flowStep === 'approving' &&
+                              'cursor-not-allowed opacity-50',
+                          )}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
+                      <span>Available:</span>
+                      <span>
+                        {availableToStakeLabel} {pool?.GIVPOWER.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRefreshBalance}
+                        className="ml-1 cursor-pointer"
+                      >
+                        <IconReload
+                          width={24}
+                          height={24}
+                          fill="var(--giv-brand-500)"
+                        />
+                      </button>
+                    </div>
                   </div>
-                )}
-              </>
-            ) : flowStep === 'approved' || flowStep === 'staking' ? (
-              <>
-                <div className="mt-6 rounded-xl border border-giv-neutral-300 bg-white p-6 py-8 text-center">
-                  <div className="text-2xl font-medium text-giv-neutral-900">
-                    You are staking
-                  </div>
-                  <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
-                    {amountLabel} {pool?.GIVPOWER.title}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className={clsx(
-                    'mt-6 w-full py-4 bg-giv-brand-300! text-white!',
-                    'rounded-md text-sm font-bold flex items-center justify-center gap-2',
-                    'hover:bg-giv-brand-400! transition-colors cursor-pointer',
-                    flowStep === 'staking' && 'opacity-60 cursor-not-allowed',
+
+                  <button
+                    type="button"
+                    className={clsx(
+                      'w-full py-4 bg-giv-brand-300! text-white! mt-8',
+                      'rounded-md text-sm font-bold flex items-center justify-center gap-2',
+                      'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      (!isAmountValid || flowStep === 'approving') &&
+                        'opacity-60 cursor-not-allowed',
+                    )}
+                    disabled={!isAmountValid || flowStep === 'approving'}
+                    onClick={handleApprove}
+                  >
+                    {flowStep === 'approving' ? (
+                      <>
+                        Approve Pending
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </>
+                    ) : (
+                      'Approve'
+                    )}
+                  </button>
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
                   )}
-                  disabled={flowStep === 'staking'}
-                  onClick={handleStake}
-                >
-                  {flowStep === 'staking' ? (
-                    <>
-                      Staking
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    </>
-                  ) : (
-                    'Stake'
-                  )}
-                </button>
-                {errorMessage && (
-                  <div className="mt-4 text-sm text-red-500 text-center">
-                    {errorMessage}
+                </>
+              ) : flowStep === 'approved' || flowStep === 'staking' ? (
+                <>
+                  <div className="mt-6 rounded-xl border border-giv-neutral-300 bg-white p-6 py-8 text-center">
+                    <div className="text-2xl font-medium text-giv-neutral-900">
+                      You are staking
+                    </div>
+                    <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
+                      {amountLabel} {pool?.GIVPOWER.title}
+                    </div>
                   </div>
-                )}
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className={clsx(
-                    'mt-3 w-full rounded-md border border-giv-brand-100 bg-giv-brand-050',
-                    'px-4 py-4 text-sm font-bold text-giv-brand-700 cursor-pointer',
-                    'hover:bg-giv-brand-100 transition-colors',
+                  <button
+                    type="button"
+                    className={clsx(
+                      'mt-6 w-full py-4 bg-giv-brand-300! text-white!',
+                      'rounded-md text-sm font-bold flex items-center justify-center gap-2',
+                      'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      flowStep === 'staking' && 'opacity-60 cursor-not-allowed',
+                    )}
+                    disabled={flowStep === 'staking'}
+                    onClick={handleStake}
+                  >
+                    {flowStep === 'staking' ? (
+                      <>
+                        Staking
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </>
+                    ) : (
+                      'Stake'
+                    )}
+                  </button>
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
                   )}
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="mt-6 rounded-xl border border-giv-neutral-300 bg-white p-6 text-center">
-                  <div className="text-base font-semibold text-giv-neutral-900">
-                    You have staked
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className={clsx(
+                      'mt-3 w-full rounded-md border border-giv-brand-100 bg-giv-brand-050',
+                      'px-4 py-4 text-sm font-bold text-giv-brand-700 cursor-pointer',
+                      'hover:bg-giv-brand-100 transition-colors',
+                    )}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="mt-6 rounded-xl border border-giv-neutral-300 bg-white p-6 text-center">
+                    <div className="text-base font-semibold text-giv-neutral-900">
+                      You have staked
+                    </div>
+                    <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
+                      {amountLabel} {pool?.GIVPOWER.title}
+                    </div>
                   </div>
-                  <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
-                    {amountLabel} {pool?.GIVPOWER.title}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className={clsx(
-                    'flex items-center justify-center gap-2',
-                    'mt-6 w-full rounded-md bg-giv-brand-300 px-4 py-4 text-sm font-bold text-white',
-                    'hover:bg-giv-brand-400 transition-colors cursor-pointer',
-                  )}
-                >
-                  <span>Increase Your Rewards Multiplier</span>
-                  <ArrowRightIcon className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className={clsx(
-                    'mt-3 w-full rounded-md border border-giv-brand-100 bg-giv-brand-050 px-4 py-4',
-                    'text-xs font-bold text-giv-brand-700',
-                    'hover:bg-giv-brand-100 transition-colors cursor-pointer',
-                  )}
-                >
-                  Stake More
-                </button>
-              </>
-            )}
+                  <button
+                    type="button"
+                    className={clsx(
+                      'flex items-center justify-center gap-2',
+                      'mt-6 w-full rounded-md bg-giv-brand-300 px-4 py-4 text-sm font-bold text-white',
+                      'hover:bg-giv-brand-400 transition-colors cursor-pointer',
+                    )}
+                  >
+                    <span>Increase Your Rewards Multiplier</span>
+                    <ArrowRightIcon className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className={clsx(
+                      'mt-3 w-full rounded-md border border-giv-brand-100 bg-giv-brand-050 px-4 py-4',
+                      'text-xs font-bold text-giv-brand-700',
+                      'hover:bg-giv-brand-100 transition-colors cursor-pointer',
+                    )}
+                  >
+                    Stake More
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <LockedDetailsModal
+        open={isLockedDetailsModalOpen}
+        onOpenChange={setIsLockedDetailsModalOpen}
+        chainId={Number(id)}
+        tokenSymbol={pool?.GIVPOWER.title}
+      />
+    </>
   )
 }

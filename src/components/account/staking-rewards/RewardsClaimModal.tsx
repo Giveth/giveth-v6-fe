@@ -121,7 +121,7 @@ export default function RewardsClaimModal({
       >
         <div className="flex items-center justify-between gap-3">
           <Dialog.Title className="text-2xl font-bold text-giv-neutral-900 m-0!">
-            Claim Rewards{chainId}
+            Claim Rewards
           </Dialog.Title>
           <Dialog.Close
             aria-label="Close"
@@ -271,7 +271,7 @@ export default function RewardsClaimModal({
               type="button"
               className={clsx(
                 'w-full mt-4 py-3 px-8 bg-giv-brand-050! text-giv-brand-700! rounded-md text-sm font-bold',
-                'border border-giv-brand-100! text-giv-neutral-900!',
+                'border border-giv-brand-100! text-giv-brand-700!',
                 'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
               )}
             >
