@@ -1063,6 +1063,8 @@ export type QfRoundEntity = {
 
 export type QfRoundHistoryEntity = {
   __typename?: 'QfRoundHistoryEntity';
+  /** Whether the QF round uses USD as preferred currency for allocated fund */
+  allocatedFundUSDPreferred?: Maybe<Scalars['Boolean']['output']>;
   /** Actual distributed matching funds - null until funds are distributed on-chain */
   distributedFund?: Maybe<MatchingFundDetails>;
   donationsCount?: Maybe<Scalars['Int']['output']>;
@@ -1970,7 +1972,7 @@ export type GetQfRoundHistoryQueryVariables = Exact<{
 }>;
 
 
-export type GetQfRoundHistoryQuery = { __typename?: 'Query', getQfRoundHistory?: { __typename?: 'QfRoundHistoryEntity', projectId: number, qfRoundId: number, uniqueDonors?: number | null, donationsCount?: number | null, raisedFundInUsd?: number | null, estimatedMatching?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null } | null, distributedFund?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null, currency?: string | null, txHash?: string | null, networkId?: number | null, txDate?: any | null } | null } | null };
+export type GetQfRoundHistoryQuery = { __typename?: 'Query', getQfRoundHistory?: { __typename?: 'QfRoundHistoryEntity', projectId: number, qfRoundId: number, uniqueDonors?: number | null, donationsCount?: number | null, raisedFundInUsd?: number | null, allocatedFundUSDPreferred?: boolean | null, estimatedMatching?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null } | null, distributedFund?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null, currency?: string | null, txHash?: string | null, networkId?: number | null, txDate?: any | null } | null } | null };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2767,6 +2769,7 @@ export const GetQfRoundHistoryDocument = new TypedDocumentString(`
     uniqueDonors
     donationsCount
     raisedFundInUsd
+    allocatedFundUSDPreferred
     estimatedMatching {
       amountUsd
       amount

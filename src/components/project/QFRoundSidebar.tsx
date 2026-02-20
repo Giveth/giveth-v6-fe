@@ -57,8 +57,6 @@ export function QFRoundSidebar({
     Number(selectedRound?.qfRound?.id ?? 0),
   )
 
-  console.log(selectedRound)
-
   const notDistributedFund =
     !qfRoundHistory?.distributedFund &&
     qfRoundHistory?.distributedFund?.amount !== 0 &&
@@ -89,7 +87,7 @@ export function QFRoundSidebar({
         </p>
       </div>
 
-      {notDistributedFund && (
+      {notDistributedFund && selectedRound && (
         <div className="mb-2">
           <div className="flex bg-gray-200 py-4 px-2.5 rounded-xl mt-2">
             <div className="flex flex-col gap-2">
@@ -109,16 +107,18 @@ export function QFRoundSidebar({
         </div>
       )}
 
-      {!notDistributedFund && (
+      {!notDistributedFund && selectedRound && (
         <div className="flex flex-col bg-gray-200 py-4 pb-1 px-2 rounded-xl mt-2">
           <div className="flex justify-between">
             <h5 className="text-green-600 font-bold text-xl">
-              +{' '}
+              {qfRoundHistory?.allocatedFundUSDPreferred ? '$' : ''}+{' '}
               {formatNumber(qfRoundHistory?.estimatedMatching?.amountUsd ?? 0, {
                 minDecimals: 2,
                 maxDecimals: 2,
               })}{' '}
-              {qfRoundHistory?.distributedFund?.currency}
+              {qfRoundHistory?.allocatedFundUSDPreferred
+                ? ''
+                : qfRoundHistory?.distributedFund?.currency}
             </h5>
             <span className="text-green-600 font-semibold text-sm max-w-[80px] leading-tight">
               Matching Funds

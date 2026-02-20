@@ -738,6 +738,7 @@ export const getQfRoundHistoryQuery = graphql(`
       uniqueDonors
       donationsCount
       raisedFundInUsd
+      allocatedFundUSDPreferred
 
       # Estimated matching from QF calculation
       estimatedMatching {
