@@ -49,11 +49,11 @@ export function StakingTab({ id }: { id: string }) {
   // Get pools data
   const pool = STAKING_POOLS[Number(id)]
   const account = useActiveAccount()
-  const [stakedAmount, setStakedAmount] = useState<bigint>(0n)
+  const [_stakedAmount, setStakedAmount] = useState<bigint>(0n)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [amountToStake, setAmountToStake] = useState<string>('0')
   const [lockedAmount, setLockedAmount] = useState<bigint>(0n)
-  const [_availableToLock, setAvailableToLock] = useState<bigint>(0n)
+  const [availableToLock, setAvailableToLock] = useState<bigint>(0n)
   const [walletBalance, setWalletBalance] = useState<bigint>(0n)
   const [aprValue, setAprValue] = useState<number>(0)
   const [tokenPriceInUSD, setTokenPriceInUSD] = useState<number>(0)
@@ -270,17 +270,17 @@ export function StakingTab({ id }: { id: string }) {
     fireSideCannons()
   }, [fireSideCannons, flowStep])
 
-  // Format staked amount
-  const stakedLabel = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(parseFloat(formatUnits(stakedAmount, 18)))
-
   // Format APR value
   const aprLabel = new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(aprValue)
+
+  // Total staked amount
+  const totalStakedAmountLabel = formatToken(
+    availableToLock + lockedAmount,
+    pool?.GIVPOWER?.decimals as number,
+  )
 
   // Format total locked amount
   const totalLockedAmountLabel = formatToken(
@@ -358,7 +358,7 @@ export function StakingTab({ id }: { id: string }) {
                 <span>Staked</span>
               </div>
               <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
-                <span>{stakedLabel}</span>
+                <span>{totalStakedAmountLabel}</span>
                 <span className="text-lg font-medium text-giv-neutral-800">
                   {pool?.GIVPOWER.title}
                 </span>
