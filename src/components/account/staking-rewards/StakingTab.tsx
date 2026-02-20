@@ -16,6 +16,7 @@ import {
 import { formatUnits, parseUnits, type Address } from 'viem'
 import { ChainIcon } from '@/components/ChainIcon'
 import { HelpTooltip } from '@/components/HelpTooltip'
+import { IconReload } from '@/components/icons/IconReload'
 import { IconStakeNumber } from '@/components/icons/IconStakeNumber'
 import { IconStars } from '@/components/icons/IconStars'
 import { TokenIcon } from '@/components/TokenIcon'
@@ -318,6 +319,20 @@ export function StakingTab({ id }: { id: string }) {
     formatUnits(walletBalance, tokenDecimals),
   )
 
+  // Refresh wallet balance, only refresh if the account and pool are valid
+  const handleRefreshBalance = async () => {
+    if (!account?.address || !pool?.GIVPOWER?.network) return
+    try {
+      const balance = await fetchWalletBalance(
+        account.address as Address,
+        pool.GIVPOWER.network,
+      )
+      setWalletBalance(balance)
+    } catch (error) {
+      console.error('Failed to refresh wallet balance:', error)
+    }
+  }
+
   return (
     <div className="bg-white rounded-tl-2xl rounded-b-xl p-8 overflow-hidden">
       <ReactCanvasConfetti
@@ -495,11 +510,22 @@ export function StakingTab({ id }: { id: string }) {
                       </button>
                     ))}
                   </div>
-                  <div className="text-sm text-giv-neutral-600">
-                    Available:{' '}
-                    <span className="font-semibold">
+                  <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
+                    <span>Available:</span>
+                    <span>
                       {availableToStakeLabel} {pool?.GIVPOWER.title}
                     </span>
+                    <button
+                      type="button"
+                      onClick={handleRefreshBalance}
+                      className="ml-1 cursor-pointer"
+                    >
+                      <IconReload
+                        width={24}
+                        height={24}
+                        fill="var(--giv-brand-500)"
+                      />
+                    </button>
                   </div>
                 </div>
 
