@@ -5,7 +5,8 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { Dialog, Flex, Text } from '@radix-ui/themes'
 import { Loader2, Mail, Wallet } from 'lucide-react'
 import { useConnect, useConnectModal } from 'thirdweb/react'
-import { preAuthenticate } from 'thirdweb/wallets/in-app'
+import { getUserEmail, preAuthenticate } from 'thirdweb/wallets/in-app'
+import { useSiweAuth } from '@/context/AuthContext'
 import {
   aaInAppWallet,
   primaryWallets,
@@ -37,7 +38,34 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
   const { connect } = useConnect()
   const { connect: openConnectModal } = useConnectModal()
-  const { setIsAAWallet } = useAAWalletStore()
+  const { setIsAAWallet, setAuthenticatedEmail } = useAAWalletStore()
+  const { isAuthenticated, signIn } = useSiweAuth()
+
+  /**
+   * Reusable helper to handle backend auth and email sync
+   * after Thirdweb wallet is successfully connected.
+   */
+  const handlePostWalletConnection = async () => {
+    setIsAAWallet(true)
+    // 1. Authenticate with backend (SIWE)
+    if (!isAuthenticated) {
+      await signIn()
+    }
+
+    // 2. Fetch and sync email to global store
+    try {
+      const providerEmail = await getUserEmail({ client: thirdwebClient })
+      if (providerEmail) {
+        setAuthenticatedEmail(providerEmail.trim())
+      }
+    } catch (err) {
+      console.error('Non-fatal: Failed to read in-app wallet email:', err)
+      // Non-fatal: user is already authenticated.
+    }
+
+    // 3. Update AA store and close modal
+    handleOpenChange(false)
+  }
 
   const resetState = () => {
     setView('main')
@@ -58,6 +86,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
    */
   const handleConnectWallet = async () => {
     setIsAAWallet(false)
+    setAuthenticatedEmail(undefined)
     handleOpenChange(false)
     // Open the standard Thirdweb wallet connect modal
     try {
@@ -87,8 +116,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
         })
         return aaInAppWallet
       })
-      setIsAAWallet(true)
-      handleOpenChange(false)
+      await handlePostWalletConnection()
     } catch (err) {
       console.error('Google sign-in failed:', err)
       setError(err instanceof Error ? err.message : 'Google sign-in failed')
@@ -149,8 +177,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
         })
         return aaInAppWallet
       })
-      setIsAAWallet(true)
-      handleOpenChange(false)
+      await handlePostWalletConnection()
     } catch (err) {
       console.error('Email verification failed:', err)
       setError(err instanceof Error ? err.message : 'Verification failed')

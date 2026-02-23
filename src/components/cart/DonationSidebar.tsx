@@ -9,7 +9,7 @@ import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
 import { IconWalletApproved } from '@/components/icons/IconWalletApproved'
 import { InsufficientFund } from '@/components/modals/InsufficientFund'
-import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
+import { SignInModal } from '@/components/modals/SignInModal'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
@@ -38,7 +38,8 @@ export function DonationSidebar({
   const { signIn, isAuthenticated, token, walletAddress, isAAWallet } =
     useSiweAuth()
   const { setShowMissingAmountErrors } = useCart()
-  const { setIsAAWallet } = useAAWalletStore()
+  const { setIsAAWallet, isSignInModalOpen, setSignInModalOpen } =
+    useAAWalletStore()
   const { reset } = useMultiRoundCheckout()
   const { balanceNumber: aaBalanceUsd } = useAAWalletBalance()
   const account = useActiveAccount()
@@ -251,7 +252,17 @@ export function DonationSidebar({
             <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Connect your wallet to begin
             </div>
-            <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
+            <button
+              type="button"
+              onClick={() => setSignInModalOpen(true)}
+              className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8668fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80 inline-flex items-center gap-2"
+            >
+              Connect Wallet
+            </button>
+            <SignInModal
+              open={isSignInModalOpen}
+              onOpenChange={setSignInModalOpen}
+            />
           </div>
         )}
         {!isAuthenticated && walletAddress && (
