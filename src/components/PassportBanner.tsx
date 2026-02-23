@@ -170,7 +170,11 @@ export function PassportBanner() {
       {/* If the user's MBD score is below the threshold for MBD and their passport score is below the threshold for Passport */}
       {account && data && !isUserEligible && (
         <div className="bg-giv-brand-100 py-2.5 px-4 flex flex-wrap md:flex-nowrap items-center justify-center gap-2 text-base">
-          <IconWarning width={24} height={24} />
+          <IconWarning
+            width={24}
+            height={24}
+            className="text-giv-warning-700"
+          />
           <Link
             href={PassportLink.href as unknown as Route}
             target={PassportLink.target as HTMLAttributeAnchorTarget}

@@ -4,9 +4,10 @@ import { useMemo } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { AuthGate } from '@/components/account/AuthGate'
 import { CtaSection } from '@/components/account/CtaGivBacks'
-import { DonationsTable } from '@/components/account/DonationsTable'
+import { IncreaseRewardTab } from '@/components/account/staking-rewards/IncreaseRewatdTab'
 import { StakingTab } from '@/components/account/staking-rewards/StakingTab'
 import { StakingTabs } from '@/components/account/staking-rewards/StakingTabs'
+import { UnstakeTab } from '@/components/account/staking-rewards/UnstakeTab'
 
 export default function StakePageClient({ id }: { id: string }) {
   const params = useParams()
@@ -43,8 +44,10 @@ export default function StakePageClient({ id }: { id: string }) {
           <StakingTabs activeTab={activeTab} />
 
           {activeTab === 'stake' && <StakingTab id={routeId} />}
-          {activeTab === 'multiple-rewards' && <DonationsTable />}
-          {activeTab === 'unstake' && <DonationsTable />}
+          {activeTab === 'multiple-rewards' && (
+            <IncreaseRewardTab id={routeId} />
+          )}
+          {activeTab === 'unstake' && <UnstakeTab id={routeId} />}
         </main>
         <CtaSection />
       </div>

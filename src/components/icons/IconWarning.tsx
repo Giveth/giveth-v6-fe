@@ -8,7 +8,7 @@ interface IconWarningProps {
 export function IconWarning({
   width = 16,
   height = 16,
-  fill = '#5326EC',
+  fill = 'currentColor',
   className,
 }: IconWarningProps) {
   return (

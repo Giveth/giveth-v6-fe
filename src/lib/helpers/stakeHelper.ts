@@ -40,6 +40,13 @@ type TokenBalanceData = {
   }
 }
 
+type GIVpowerInfoData = {
+  givpower?: {
+    initialDate?: string
+    roundDuration?: string
+  }
+}
+
 type GIVpowerUserData = {
   user?: {
     givLocked?: string
@@ -131,6 +138,40 @@ const ERC20_ABI = [
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
     outputs: [{ type: 'uint256' }],
+  },
+] as const
+
+const GIVPOWER_ABI = [
+  {
+    type: 'function',
+    name: 'lock',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'amount', type: 'uint256' },
+      { name: 'rounds', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'unlock',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'index', type: 'uint256' }],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'depositTokenBalance',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    type: 'function',
+    name: 'userLocks',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'address' }],
+    outputs: [{ name: 'totalAmountLocked', type: 'uint256' }],
   },
 ] as const
 
@@ -269,6 +310,15 @@ function tokenLocksQuery(user: Address, first = 100, skip = 0) {
   }`
 }
 
+function givpowerInfoQuery(lmAddress: Address) {
+  return `{
+    givpower(id: "${lmAddress.toLowerCase()}") {
+      initialDate
+      roundDuration
+    }
+  }`
+}
+
 export type TokenLock = {
   id?: string
   amount: bigint
@@ -295,6 +345,129 @@ export async function fetchTokenLocks(
     untilRound: lock.untilRound ? Number(lock.untilRound) : undefined,
     unlockableAt: lock.unlockableAt ? Number(lock.unlockableAt) : undefined,
   }))
+}
+
+export const LOCK_CONSTANTS = {
+  MIN_ROUNDS: 1,
+  MAX_ROUNDS: 26,
+}
+
+export function calculateMultiplier(rounds: number): number {
+  return Math.sqrt(1 + rounds)
+}
+
+export function calculateBoostedAPR(baseAPR: number, rounds: number): number {
+  return baseAPR * calculateMultiplier(rounds)
+}
+
+export function calculateGIVpower(amount: bigint, rounds: number): bigint {
+  const multiplier = calculateMultiplier(rounds)
+  const multiplierFixed = BigInt(Math.floor(multiplier * 1e18))
+  return (amount * multiplierFixed) / 1_000_000_000_000_000_000n
+}
+
+export async function getCurrentRoundInfo(chainId: number): Promise<{
+  currentRound: number
+  nextRoundDate: Date
+  roundDuration: number
+}> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+  const data = await querySubgraph<GIVpowerInfoData>(
+    chainId,
+    givpowerInfoQuery(cfg.GIVPOWER.LM_ADDRESS as Address),
+  )
+  const initialDate = Number(data.givpower?.initialDate || 0)
+  const roundDuration = Number(data.givpower?.roundDuration || 0)
+  if (!initialDate || !roundDuration) {
+    throw new Error('GIVpower round info not available')
+  }
+  const now = Math.floor(Date.now() / 1000)
+  const currentRound = Math.floor((now - initialDate) / roundDuration)
+  const nextRoundTimestamp = initialDate + roundDuration * (currentRound + 1)
+  return {
+    currentRound,
+    nextRoundDate: new Date(nextRoundTimestamp * 1000),
+    roundDuration,
+  }
+}
+
+export function calculateUnlockDate(
+  nextRoundDate: Date,
+  roundDuration: number,
+  rounds: number,
+): Date {
+  const unlockTimestamp =
+    nextRoundDate.getTime() + rounds * roundDuration * 1000
+  return new Date(unlockTimestamp)
+}
+
+export async function lockGIVpower(
+  account: Account,
+  chainId: number,
+  amount: bigint,
+  rounds: number,
+): Promise<string> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+  if (rounds < LOCK_CONSTANTS.MIN_ROUNDS) {
+    throw new Error('Rounds must be at least 1')
+  }
+  if (rounds > LOCK_CONSTANTS.MAX_ROUNDS) {
+    throw new Error('Rounds must be at most 26')
+  }
+  if (amount <= 0n) {
+    throw new Error('Amount must be greater than 0')
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: GIVPOWER_ABI,
+  })
+
+  const transaction = prepareContractCall({
+    contract,
+    method: 'lock',
+    params: [amount, BigInt(rounds)],
+  })
+
+  const receipt = await sendTransaction({ account, transaction })
+  const finalReceipt = await waitForReceipt(receipt)
+  return finalReceipt.transactionHash
+}
+
+export async function unlockGIVpower(
+  account: Account,
+  chainId: number,
+  lockIndex: number,
+): Promise<string> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: GIVPOWER_ABI,
+  })
+
+  const transaction = prepareContractCall({
+    contract,
+    method: 'unlock',
+    params: [BigInt(lockIndex)],
+  })
+
+  const receipt = await sendTransaction({ account, transaction })
+  const finalReceipt = await waitForReceipt(receipt)
+  return finalReceipt.transactionHash
 }
 
 /**

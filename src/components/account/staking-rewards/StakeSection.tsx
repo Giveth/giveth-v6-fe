@@ -301,6 +301,11 @@ export const StakeSection = ({
           <button
             type="button"
             disabled={!canLock}
+            onClick={() => {
+              router.push(
+                `/account/stake/${selectedChain}?tab=multiple-rewards` as never,
+              )
+            }}
             className={clsx(
               'flex items-center justify-center gap-2',
               'mt-2 w-full rounded-xl border px-4 py-3',
@@ -345,6 +350,11 @@ export const StakeSection = ({
               <button
                 type="button"
                 disabled={!canUnstake}
+                onClick={() => {
+                  router.push(
+                    `/account/stake/${selectedChain}?tab=unstake` as never,
+                  )
+                }}
                 className={clsx(
                   'w-full px-4 py-3',
                   'rounded-xl border text-sm font-bold',
