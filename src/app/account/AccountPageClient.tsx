@@ -6,13 +6,15 @@ import { CtaSection } from '@/components/account/CtaGivBacks'
 import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
 import { ProfileSection } from '@/components/account/ProfileSection'
+import { SignInModal } from '@/components/modals/SignInModal'
 import { Button } from '@/components/ui/button'
-import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
+import { useAAWalletStore } from '@/store/aa-wallet'
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, error, signIn, isConnected } =
     useSiweAuth()
+  const { isSignInModalOpen, setSignInModalOpen } = useAAWalletStore()
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -54,7 +56,17 @@ function AuthGate({ children }: { children: React.ReactNode }) {
               Connect your wallet to access your account dashboard
             </p>
           </div>
-          <ConnectWalletButton />
+          <button
+            type="button"
+            onClick={() => setSignInModalOpen(true)}
+            className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8668fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80"
+          >
+            Connect Wallet
+          </button>
+          <SignInModal
+            open={isSignInModalOpen}
+            onOpenChange={setSignInModalOpen}
+          />
         </div>
       </div>
     )

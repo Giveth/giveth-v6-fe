@@ -11,12 +11,14 @@ import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile, useUserStats } from '@/hooks/useAccount'
 import { formatNumber } from '@/lib/helpers/cartHelper'
+import { useAAWalletStore } from '@/store/aa-wallet'
 import type { Address } from 'thirdweb'
 
 export function ProfileSection() {
   const [copied, setCopied] = useState(false)
   const copyTimerRef = useRef<number | null>(null)
   const { token, walletAddress } = useSiweAuth()
+  const { authenticatedEmail, isAAWallet } = useAAWalletStore()
   const { data: profileData, isLoading: isProfileLoading } = useProfile(
     token || undefined,
   )
@@ -50,7 +52,8 @@ export function ProfileSection() {
 
   // Fallbacks
   const displayName = user?.name || user?.firstName || 'Anonymous User'
-  const displayEmail = user?.email || 'No email'
+  const displayEmail =
+    user?.email || (isAAWallet ? authenticatedEmail : undefined) || 'No email'
   const addressToCopy =
     user?.wallets?.[0]?.address || walletAddress || 'No address'
 
