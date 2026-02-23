@@ -144,6 +144,13 @@ const ERC20_ABI = [
 export const GIVPOWER_ABI = [
   {
     type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    type: 'function',
     name: 'lock',
     stateMutability: 'nonpayable',
     inputs: [
@@ -468,6 +475,85 @@ export async function unlockGIVpower(
   const receipt = await sendTransaction({ account, transaction })
   const finalReceipt = await waitForReceipt(receipt)
   return finalReceipt.transactionHash
+}
+
+export async function fetchUserGIVpower(
+  user: Address,
+  chainId: number,
+): Promise<bigint> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: ERC20_ABI,
+  })
+
+  const givpower = (await readContract({
+    contract,
+    method: 'balanceOf',
+    params: [user],
+  })) as bigint
+
+  return givpower
+}
+
+export async function fetchGIVpowerSingleChain(
+  user: Address,
+  chainId: number,
+): Promise<bigint> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    return 0n
+  }
+
+  try {
+    const contract = getContract({
+      client: thirdwebClient,
+      chain: defineChain(chainId),
+      address: cfg.GIVPOWER.LM_ADDRESS as Address,
+      abi: GIVPOWER_ABI,
+    })
+
+    const givpower = (await readContract({
+      contract,
+      method: 'balanceOf',
+      params: [user],
+    })) as bigint
+
+    return givpower
+  } catch (error) {
+    console.warn(`Failed to fetch GIVpower on chain ${chainId}:`, error)
+    return 0n
+  }
+}
+
+export async function fetchTotalGIVpower(user: Address): Promise<{
+  total: bigint
+  byChain: Array<{
+    chainId: number
+    chainName: string
+    givpower: bigint
+  }>
+}> {
+  const [optimismGIVpower, gnosisGIVpower] = await Promise.all([
+    fetchGIVpowerSingleChain(user, 10),
+    fetchGIVpowerSingleChain(user, 100),
+  ])
+
+  const total = optimismGIVpower + gnosisGIVpower
+
+  return {
+    total,
+    byChain: [
+      { chainId: 10, chainName: 'Optimism', givpower: optimismGIVpower },
+      { chainId: 100, chainName: 'Gnosis', givpower: gnosisGIVpower },
+    ],
+  }
 }
 
 /**

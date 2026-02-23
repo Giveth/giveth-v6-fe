@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
+import Link from 'next/link'
 import clsx from 'clsx'
 import { LockKeyhole, PencilLine } from 'lucide-react'
+import { type Route } from 'next'
 import ReactCanvasConfetti from 'react-canvas-confetti'
 import { defineChain, getContract, prepareContractCall } from 'thirdweb'
 import { useActiveAccount, useSendTransaction } from 'thirdweb/react'
@@ -11,10 +13,12 @@ import { formatUnits, parseUnits, type Address } from 'viem'
 import LockedDetailsModal from '@/components/account/staking-rewards/LockedDetailsModal'
 import { ChainIcon } from '@/components/ChainIcon'
 import { HelpTooltip } from '@/components/HelpTooltip'
+import { IconGIVPower } from '@/components/icons/IconGIVPower'
 import { IconReload } from '@/components/icons/IconReload'
 import { IconStars } from '@/components/icons/IconStars'
 import { IconWarning } from '@/components/icons/IconWarning'
 import { TokenIcon } from '@/components/TokenIcon'
+import { projectsLink } from '@/lib/constants/menu-links'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import {
   formatNumber,
@@ -29,6 +33,7 @@ import {
   calculateMultiplier,
   calculateUnlockDate,
   fetchAvailableToLock,
+  fetchTotalGIVpower,
   fetchStaking,
   getCurrentRoundInfo,
   formatToken,
@@ -73,6 +78,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     nextRoundDate: Date
     roundDuration: number
   } | null>(null)
+  const [totalGivpower, setTotalGivpower] = useState<bigint | null>(null)
   const [flowStep, setFlowStep] = useState<'input' | 'review' | 'locked'>(
     'input',
   )
@@ -230,6 +236,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
       await sendTx(transaction)
       await new Promise(resolve => setTimeout(resolve, 1000))
       await handleRefreshAvailable()
+      const updatedGivpower = await fetchTotalGIVpower(
+        account.address as Address,
+      )
+      setTotalGivpower(updatedGivpower.total)
       setFlowStep('locked')
     } catch (error) {
       console.error('Lock failed:', error)
@@ -259,20 +269,23 @@ export function IncreaseRewardTab({ id }: { id: string }) {
 
     const fetchData = async () => {
       try {
-        const [staking, available, roundData] = await Promise.all([
-          fetchStaking(account.address as Address, pool.GIVPOWER.network),
-          fetchAvailableToLock(
-            account.address as Address,
-            pool.GIVPOWER.network,
-          ),
-          getCurrentRoundInfo(pool.GIVPOWER.network),
-        ])
+        const [staking, available, roundData, givpowerValue] =
+          await Promise.all([
+            fetchStaking(account.address as Address, pool.GIVPOWER.network),
+            fetchAvailableToLock(
+              account.address as Address,
+              pool.GIVPOWER.network,
+            ),
+            getCurrentRoundInfo(pool.GIVPOWER.network),
+            fetchTotalGIVpower(account.address as Address),
+          ])
         if (!cancelled) {
           setStakedAmount(staking.staked)
           setBaseApr(staking.baseAPR ?? staking.apr ?? 0)
           setLockedAmount(available.alreadyLocked)
           setAvailableToLock(available.availableToLock)
           setRoundInfo(roundData)
+          setTotalGivpower(givpowerValue.total)
         }
       } catch (error) {
         console.error('Failed to fetch staking data:', error)
@@ -699,37 +712,66 @@ export function IncreaseRewardTab({ id }: { id: string }) {
 
               {flowStep === 'locked' && (
                 <>
-                  <div className="rounded-xl border border-giv-neutral-200 bg-white p-8 text-center">
-                    <div className="text-base font-semibold text-giv-neutral-900">
+                  <h3 className="text-lg font-bold text-giv-neutral-900">
+                    Amount to Lock
+                  </h3>
+                  <div className="mt-8 rounded-xl border border-giv-neutral-300 bg-white p-10 text-center">
+                    <div className="text-2xl font-medium text-giv-neutral-900">
                       You locked
                     </div>
-                    <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
+                    <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
                       {amountLabel} {pool?.GIVPOWER.title}
                     </div>
-                    <div className="mt-2 text-base text-giv-neutral-700">
+                    <div className="mt-3 text-2xl font-medium text-giv-neutral-900">
                       until {unlockDateLabel}
                     </div>
                   </div>
-                  <div className="mt-6 rounded-xl border border-giv-neutral-200 bg-giv-neutral-100 p-5 text-center">
-                    <div className="text-sm text-giv-neutral-600">You have</div>
-                    <div className="mt-2 text-2xl font-bold text-giv-neutral-900">
-                      {formatUnits(givpower, tokenDecimals)} GIVpower
+                  <div className="mt-6 rounded-xl border border-giv-neutral-200 bg-giv-neutral-100 p-4 px-6 text-center">
+                    <div className="text-xl font-medium text-giv-neutral-700">
+                      You have
                     </div>
-                    <div className="mt-3 text-sm text-giv-neutral-600">
+                    <div className="flex items-center justify-center gap-2 mt-3 text-2xl font-medium text-giv-neutral-900">
+                      <IconGIVPower width={24} height={24} />
+                      <span>
+                        {formatNumber(
+                          formatUnits(totalGivpower ?? givpower, tokenDecimals),
+                          {
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                          },
+                        )}
+                      </span>
+                      <span className="text-lg font-semibold text-giv-neutral-700">
+                        GIVpower
+                      </span>
+                    </div>
+                    <div className="mt-4 text-lg font-regular text-giv-neutral-700 text-left">
                       Use your GIVpower to boost verified projects on Giveth
                       while earning rewards.
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="w-full mt-6 py-4 bg-giv-brand-300! text-white! rounded-md text-sm font-bold hover:bg-giv-brand-400! transition-colors"
+                  <Link
+                    href={projectsLink.href as unknown as Route}
+                    target="_blank"
+                    className={clsx(
+                      'w-full mt-6 py-4 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                      'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      'flex items-center justify-center gap-2',
+                      'cursor-pointer',
+                    )}
                   >
                     Boost Projects
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="w-full mt-3 py-4 bg-giv-brand-050! text-giv-brand-700! rounded-md text-sm font-bold border border-giv-brand-100 hover:bg-giv-brand-100 transition-colors"
+                    className={clsx(
+                      'w-full mt-3 py-4 bg-giv-brand-050! rounded-md',
+                      'flex items-center justify-center gap-2',
+                      'text-sm font-bold text-giv-brand-700!',
+                      'border border-giv-brand-100 hover:bg-giv-brand-100 transition-colors',
+                      'cursor-pointer',
+                    )}
                   >
                     Lock more GIV
                   </button>
