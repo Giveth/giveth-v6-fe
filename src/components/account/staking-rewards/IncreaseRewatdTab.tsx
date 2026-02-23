@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import clsx from 'clsx'
-import { LockKeyhole } from 'lucide-react'
+import { LockKeyhole, PencilLine } from 'lucide-react'
 import ReactCanvasConfetti from 'react-canvas-confetti'
-import { useActiveAccount } from 'thirdweb/react'
+import { defineChain, getContract, prepareContractCall } from 'thirdweb'
+import { useActiveAccount, useSendTransaction } from 'thirdweb/react'
 import { formatUnits, parseUnits, type Address } from 'viem'
 import LockedDetailsModal from '@/components/account/staking-rewards/LockedDetailsModal'
 import { ChainIcon } from '@/components/ChainIcon'
@@ -21,6 +22,7 @@ import {
 } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import {
+  GIVPOWER_ABI,
   LOCK_CONSTANTS,
   calculateBoostedAPR,
   calculateGIVpower,
@@ -29,9 +31,9 @@ import {
   fetchAvailableToLock,
   fetchStaking,
   getCurrentRoundInfo,
-  lockGIVpower,
   formatToken,
 } from '@/lib/helpers/stakeHelper'
+import { thirdwebClient } from '@/lib/thirdweb/client'
 
 // Confetti colors
 const confettiColors = ['#a786ff', '#fd8bbc', '#eca184', '#f8deb1']
@@ -53,6 +55,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   const pool = STAKING_POOLS[Number(id)]
 
   const account = useActiveAccount()
+  const { mutateAsync: sendTx } = useSendTransaction()
 
   const [isLockedDetailsModalOpen, setIsLockedDetailsModalOpen] =
     useState(false)
@@ -70,9 +73,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     nextRoundDate: Date
     roundDuration: number
   } | null>(null)
-  const [flowStep, setFlowStep] = useState<
-    'input' | 'review' | 'locking' | 'locked'
-  >('input')
+  const [flowStep, setFlowStep] = useState<'input' | 'review' | 'locked'>(
+    'input',
+  )
+  const [isLocking, setIsLocking] = useState(false)
   const confettiRef = useRef<ConfettiInstance | null>(null)
   const hasFiredRef = useRef(false)
   const roundsRangeRef = useRef<HTMLInputElement | null>(null)
@@ -195,18 +199,48 @@ export function IncreaseRewardTab({ id }: { id: string }) {
 
   const handleLock = async () => {
     if (!account || !pool?.GIVPOWER?.network || !isLockValid) return
-    setFlowStep('locking')
+    setIsLocking(true)
+    setErrorMessage(null)
     try {
-      await lockGIVpower(
-        account,
-        pool.GIVPOWER.network,
-        amountInBaseUnits,
-        roundsToLock,
-      )
+      const [staking, available] = await Promise.all([
+        fetchStaking(account.address as Address, pool.GIVPOWER.network),
+        fetchAvailableToLock(account.address as Address, pool.GIVPOWER.network),
+      ])
+      if (staking.staked === 0n) {
+        throw new Error('No tokens staked. Please stake tokens first.')
+      }
+      if (amountInBaseUnits > available.availableToLock) {
+        throw new Error(
+          `Insufficient available balance. Available: ${formatUnits(available.availableToLock, tokenDecimals)} ${pool?.GIVPOWER.title}`,
+        )
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const contract = getContract({
+        client: thirdwebClient,
+        chain: defineChain(pool.GIVPOWER.network),
+        address: pool.GIVPOWER.LM_ADDRESS as Address,
+        abi: GIVPOWER_ABI,
+      })
+      const transaction = prepareContractCall({
+        contract,
+        method: 'lock',
+        params: [amountInBaseUnits, BigInt(roundsToLock)],
+      })
+      await sendTx(transaction)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      await handleRefreshAvailable()
       setFlowStep('locked')
     } catch (error) {
       console.error('Lock failed:', error)
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Lock failed. Please try again.'
+      setErrorMessage(message)
       setFlowStep('review')
+    } finally {
+      setIsLocking(false)
     }
   }
 
@@ -215,6 +249,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     setAmountToLock('0')
     setRoundsToLock(0)
     setErrorMessage(null)
+    setIsLocking(false)
   }
 
   // Fetch staking data, only fetch if the account and pool are valid
@@ -601,33 +636,56 @@ export function IncreaseRewardTab({ id }: { id: string }) {
 
               {flowStep === 'review' && (
                 <>
-                  <div className="rounded-xl border border-giv-neutral-200 bg-white p-8 text-center">
-                    <div className="text-base font-semibold text-giv-neutral-900">
+                  <h3 className="text-lg font-bold text-giv-neutral-900">
+                    Amount to Lock
+                  </h3>
+                  <div className="mt-8 rounded-xl border border-giv-neutral-300 bg-white p-10 text-center">
+                    <div className="text-2xl font-medium text-giv-neutral-900">
                       You are locking
                     </div>
-                    <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
+                    <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
                       {amountLabel} {pool?.GIVPOWER.title}
                     </div>
-                    <div className="mt-2 text-base text-giv-neutral-700">
-                      until {unlockDate?.toLocaleDateString() ?? '-'}
+                    <div className="mt-3 text-2xl font-medium text-giv-neutral-900">
+                      until {unlockDateLabel}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFlowStep('input')}
-                      className="mt-6 rounded-md border border-giv-brand-100 bg-giv-brand-050 px-4 py-3 text-sm font-bold text-giv-brand-700 hover:bg-giv-brand-100 transition-colors"
-                    >
-                      Edit lock duration
-                    </button>
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setFlowStep('input')}
+                        className={clsx(
+                          'inline-flex items-center justify-center gap-2 px-10 py-3',
+                          'rounded-md border border-giv-brand-100 bg-giv-brand-050',
+                          'text-sm font-bold text-giv-brand-700 hover:bg-giv-brand-100 transition-colors',
+                          'cursor-pointer',
+                          !isLockValid && 'opacity-60 cursor-not-allowed',
+                        )}
+                        disabled={!isLockValid}
+                      >
+                        Edit lock duration
+                        <PencilLine className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={handleLock}
+                    disabled={isLocking}
                     className={clsx(
                       'w-full mt-6 py-4 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                      'flex items-center justify-center gap-2',
                       'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      isLocking && 'opacity-60 cursor-not-allowed',
                     )}
                   >
-                    Lock your tokens
+                    {isLocking ? (
+                      <>
+                        Locking
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </>
+                    ) : (
+                      'Lock your tokens'
+                    )}
                   </button>
 
                   <RewardCard
@@ -637,17 +695,6 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                     tokenDecimals={tokenDecimals}
                   />
                 </>
-              )}
-
-              {flowStep === 'locking' && (
-                <div className="rounded-xl border border-giv-neutral-200 bg-white p-8 text-center">
-                  <div className="text-base font-semibold text-giv-neutral-900">
-                    Locking your tokens
-                  </div>
-                  <div className="mt-4 flex items-center justify-center">
-                    <span className="w-6 h-6 border-2 border-giv-brand-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                </div>
               )}
 
               {flowStep === 'locked' && (
@@ -660,7 +707,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                       {amountLabel} {pool?.GIVPOWER.title}
                     </div>
                     <div className="mt-2 text-base text-giv-neutral-700">
-                      until {unlockDate?.toLocaleDateString() ?? '-'}
+                      until {unlockDateLabel}
                     </div>
                   </div>
                   <div className="mt-6 rounded-xl border border-giv-neutral-200 bg-giv-neutral-100 p-5 text-center">

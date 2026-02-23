@@ -141,7 +141,7 @@ const ERC20_ABI = [
   },
 ] as const
 
-const GIVPOWER_ABI = [
+export const GIVPOWER_ABI = [
   {
     type: 'function',
     name: 'lock',
