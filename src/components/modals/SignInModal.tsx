@@ -17,6 +17,7 @@ import { useAAWalletStore } from '@/store/aa-wallet'
 type SignInModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  purpose?: 'donation' | 'projectOwner'
 }
 
 type SignInView = 'main' | 'email' | 'verification' | 'connecting'
@@ -28,7 +29,11 @@ type SignInView = 'main' | 'email' | 'verification' | 'connecting'
  * 1. "Connect Wallet" - Opens Thirdweb wallet connect (existing WAGMI-like flow)
  * 2. "Donate with dollars" - Creates an AA wallet via email/Google sign-in
  */
-export function SignInModal({ open, onOpenChange }: SignInModalProps) {
+export function SignInModal({
+  open,
+  onOpenChange,
+  purpose = 'donation',
+}: SignInModalProps) {
   const [view, setView] = useState<SignInView>('main')
   const [email, setEmail] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
@@ -61,6 +66,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
     handleOpenChange(false)
   }
+  const isProjectOwnerFlow = purpose === 'projectOwner'
 
   const resetState = () => {
     setView('main')
@@ -190,7 +196,9 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
       >
         <Dialog.Title className="sr-only">Sign In</Dialog.Title>
         <Dialog.Description className="sr-only">
-          Connect your wallet or sign in with email to donate
+          {isProjectOwnerFlow
+            ? 'Connect your wallet or sign in with email to create a project'
+            : 'Connect your wallet or sign in with email to donate'}
         </Dialog.Description>
 
         {/* Header */}
@@ -237,11 +245,13 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
               <div>
                 <div className="bg-giv-brand-05 border border-giv-brand-100 rounded-xl p-3 mb-3">
                   <Text size="2" weight="medium" className="text-giv-brand-600">
-                    New to crypto? Donate with dollars
+                    {isProjectOwnerFlow
+                      ? 'New to crypto? We can set up your wallet'
+                      : 'New to crypto? Donate with dollars'}
                   </Text>
                   <Text size="1" className="text-giv-neutral-600 mt-1 block">
-                    Sign in with your email or Google account. We'll set up a
-                    wallet for you automatically.
+                    Sign in with your email or Google account. We&apos;ll set up
+                    a wallet for you automatically.
                   </Text>
                 </div>
 
