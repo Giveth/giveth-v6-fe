@@ -5,7 +5,7 @@ import { useActiveWalletConnectionStatus } from 'thirdweb/react'
 import { AiChatPanel } from '@/components/create-project/AiChatPanel'
 import { CreateProjectLayout } from '@/components/create-project/CreateProjectLayout'
 import { ManualSidebarForm } from '@/components/create-project/ManualSidebarForm'
-import { SignInModal } from '@/components/modals/SignInModal'
+import { ProjectOwnerSignInButton } from '@/components/create-project/ProjectOwnerSignInButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useAAWalletStore } from '@/store/aa-wallet'
 
@@ -20,16 +20,18 @@ export default function CreateProjectPage() {
 
   // Default experience: AI chat (form hidden).
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const { isSignInModalOpen, setSignInModalOpen } = useAAWalletStore()
+  const isAAWallet = useAAWalletStore(s => s.isAAWallet)
 
   const isConnected = connectionStatus === 'connected'
+  const isConnectedWithNonAAWallet = isConnected && !isAAWallet
+  const isProjectOwnerConnected = isConnected && isAAWallet
 
   useEffect(() => {
     const initializePage = async () => {
       if (isLoading) return
       setIsInitializing(true)
 
-      if (!isConnected) {
+      if (!isProjectOwnerConnected) {
         setAuthError(null)
         setIsInitializing(false)
         return
@@ -51,7 +53,7 @@ export default function CreateProjectPage() {
     }
 
     initializePage()
-  }, [isLoading, isAuthenticated, isConnected, signIn])
+  }, [isLoading, isAuthenticated, isProjectOwnerConnected, signIn])
 
   useEffect(() => {
     return () => {
@@ -83,36 +85,27 @@ export default function CreateProjectPage() {
     )
   }
 
-  if (!isConnected) {
+  if (!isProjectOwnerConnected) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-[#f7f8fc] flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Sign in with Thirdweb
           </h1>
           <p className="text-gray-600 mb-8">
-            You must sign in before creating a project. Continue with Email,
-            Google, or a browser wallet.
+            Continue with Thirdweb to create your project-owner smart wallet.
+            Browser wallets act as signers for the Thirdweb smart wallet.
           </p>
-          <button
-            type="button"
-            onClick={() => setSignInModalOpen(true)}
-            className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8668fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80"
-          >
-            Connect Wallet
-          </button>
-          {isSignInModalOpen && (
-            <SignInModal
-              open={true}
-              onOpenChange={open => setSignInModalOpen(open)}
-            />
+          {isConnectedWithNonAAWallet ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              You are currently connected with a non-AA wallet (donor flow).
+              Disconnect it first, then sign in with the project-owner AA wallet
+              to continue.
+            </div>
+          ) : (
+            <ProjectOwnerSignInButton />
           )}
         </div>
-        <SignInModal
-          open={isSignInModalOpen}
-          onOpenChange={setSignInModalOpen}
-          purpose="projectOwner"
-        />
       </div>
     )
   }
