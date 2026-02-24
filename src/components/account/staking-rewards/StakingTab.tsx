@@ -4,6 +4,7 @@ import { type UrlObject } from 'url'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import { ArrowRightIcon, LockKeyhole } from 'lucide-react'
 import ReactCanvasConfetti from 'react-canvas-confetti'
@@ -55,6 +56,8 @@ type ConfettiInstance = (options: Record<string, unknown>) => void
 export function StakingTab({ id }: { id: string }) {
   // Get pools data
   const pool = STAKING_POOLS[Number(id)]
+
+  const router = useRouter()
 
   const account = useActiveAccount()
   const activeChain = useActiveWalletChain()
@@ -529,7 +532,7 @@ export function StakingTab({ id }: { id: string }) {
                     </div>
                     <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
                       <span>Available:</span>
-                      <span>
+                      <span className="ml-1">
                         {availableToStakeLabel} {pool?.GIVPOWER.title}
                       </span>
                       <button
@@ -632,6 +635,11 @@ export function StakingTab({ id }: { id: string }) {
                   </div>
                   <button
                     type="button"
+                    onClick={() => {
+                      router.push(
+                        `/account/stake/${id}?tab=multiple-rewards` as never,
+                      )
+                    }}
                     className={clsx(
                       'flex items-center justify-center gap-2',
                       'mt-6 w-full rounded-md bg-giv-brand-300 px-4 py-4 text-sm font-bold text-white',
