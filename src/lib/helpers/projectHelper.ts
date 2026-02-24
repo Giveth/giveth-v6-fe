@@ -1,7 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
+import { graphQLClient } from '@/lib/graphql/client'
 import {
+  type GetQfRoundHistoryQuery,
   type ProjectBySlugQuery,
   type ProjectEntity,
 } from '@/lib/graphql/generated/graphql'
+import { getQfRoundHistoryQuery } from '@/lib/graphql/queries'
 
 type ProjectCategory = NonNullable<
   NonNullable<ProjectBySlugQuery['projectBySlug']['categories']>[number]
@@ -103,4 +107,29 @@ export function groupByMainCategory(
   }
 
   return Array.from(map.values())
+}
+
+/**
+ * Get the QF round history for a project
+ *
+ * @param projectId - The id of the project
+ * @param qfRoundId - The id of the qf round
+ *
+ * @returns The QF round history for the project
+ */
+export const useProjectQfRoundHistory = (
+  projectId: number,
+  qfRoundId: number,
+): ReturnType<typeof useQuery<GetQfRoundHistoryQuery['getQfRoundHistory']>> => {
+  return useQuery({
+    queryKey: ['projectQfRoundHistory', projectId, qfRoundId],
+    queryFn: async () => {
+      const data = await graphQLClient.request(getQfRoundHistoryQuery, {
+        projectId,
+        qfRoundId,
+      })
+      return data.getQfRoundHistory
+    },
+    enabled: !!projectId && !!qfRoundId,
+  })
 }

@@ -729,3 +729,32 @@ export const donationsByUserQuery = graphql(`
     }
   }
 `)
+
+export const getQfRoundHistoryQuery = graphql(`
+  query GetQfRoundHistory($projectId: Int!, $qfRoundId: Int!) {
+    getQfRoundHistory(projectId: $projectId, qfRoundId: $qfRoundId) {
+      projectId
+      qfRoundId
+      uniqueDonors
+      donationsCount
+      raisedFundInUsd
+      allocatedFundUSDPreferred
+
+      # Estimated matching from QF calculation
+      estimatedMatching {
+        amountUsd # USD value from QF algorithm
+        amount # Amount in native token
+      }
+
+      # Actual distributed matching (null until funds are distributed)
+      distributedFund {
+        amountUsd # USD value of distributed funds
+        amount # Amount in native token
+        currency # Token symbol (USDGLO, GIV, etc)
+        txHash # Transaction hash for "View transaction" link
+        networkId # Chain ID (100 = Gnosis, 1 = Mainnet, etc)
+        txDate # Distribution timestamp
+      }
+    }
+  }
+`)
