@@ -57,10 +57,10 @@ export function QFRoundSidebar({
     Number(selectedRound?.qfRound?.id ?? 0),
   )
 
-  const notDistributedFund =
-    !qfRoundHistory?.distributedFund &&
-    qfRoundHistory?.distributedFund?.amount !== 0 &&
-    !selectedRound?.qfRound?.isActive
+  const isRoundInactive = selectedRound?.qfRound?.isActive
+  const hasDistributedFund = qfRoundHistory?.distributedFund?.amount != null
+  const notDistributedFund = !hasDistributedFund && !isRoundInactive
+  const showMatchingFunds = isRoundInactive && hasDistributedFund
 
   return (
     <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
@@ -107,15 +107,24 @@ export function QFRoundSidebar({
         </div>
       )}
 
-      {!notDistributedFund && selectedRound && (
+      {showMatchingFunds && selectedRound && (
         <div className="flex flex-col bg-gray-200 py-4 pb-1 px-2 rounded-xl mt-2">
           <div className="flex justify-between">
             <h5 className="text-green-600 font-bold text-xl">
-              {qfRoundHistory?.allocatedFundUSDPreferred ? '$' : ''}+{' '}
-              {formatNumber(qfRoundHistory?.estimatedMatching?.amountUsd ?? 0, {
-                minDecimals: 2,
-                maxDecimals: 2,
-              })}{' '}
+              {qfRoundHistory?.allocatedFundUSDPreferred
+                ? '$' +
+                  formatNumber(
+                    qfRoundHistory?.estimatedMatching?.amountUsd ?? 0,
+                    {
+                      minDecimals: 2,
+                      maxDecimals: 2,
+                    },
+                  )
+                : formatNumber(qfRoundHistory?.estimatedMatching?.amount ?? 0, {
+                    minDecimals: 2,
+                    maxDecimals: 2,
+                  })}
+              +{' '}
               {qfRoundHistory?.allocatedFundUSDPreferred
                 ? ''
                 : qfRoundHistory?.distributedFund?.currency}
