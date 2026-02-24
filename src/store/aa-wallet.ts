@@ -29,6 +29,10 @@ interface AAWalletState {
   isSignInModalOpen: boolean
   /** Open/close the sign-in modal */
   setSignInModalOpen: (open: boolean) => void
+  /** Authenticated email from in-app wallet (if available) */
+  authenticatedEmail?: string
+  /** Set/clear authenticated email */
+  setAuthenticatedEmail: (email?: string) => void
   /** Reset all AA wallet state (on disconnect) */
   resetAAWallet: () => void
 }
@@ -42,19 +46,26 @@ export const useAAWalletStore = create<AAWalletState>()(
       setDepositModalOpen: (open: boolean) => set({ isDepositModalOpen: open }),
       isSignInModalOpen: false,
       setSignInModalOpen: (open: boolean) => set({ isSignInModalOpen: open }),
+      authenticatedEmail: undefined,
+      setAuthenticatedEmail: (email?: string) =>
+        set({ authenticatedEmail: email }),
       resetAAWallet: () =>
         set({
           isAAWallet: false,
           isDepositModalOpen: false,
           isSignInModalOpen: false,
+          authenticatedEmail: undefined,
         }),
     }),
     {
       name: 'giveth-aa-wallet',
       storage: createJSONStorage(() => localStorage),
       version: 1,
-      // Only persist isAAWallet, not modal states
-      partialize: state => ({ isAAWallet: state.isAAWallet }),
+      // Only persist user identity state, not modal states
+      partialize: state => ({
+        isAAWallet: state.isAAWallet,
+        authenticatedEmail: state.authenticatedEmail,
+      }),
     },
   ),
 )
