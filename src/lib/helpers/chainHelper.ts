@@ -33,7 +33,11 @@ export function getBlockExplorerUrl(chainId: number): string {
   return chain?.blockExplorerUrl || ''
 }
 
-export function getTransactionUrl(chainId: number, txHash: string): string {
+export function getTransactionUrl(
+  chainId: number,
+  txHash?: string | null,
+): string {
+  if (!txHash) return ''
   const explorerUrl = getBlockExplorerUrl(chainId)
   return explorerUrl ? `${explorerUrl}/tx/${txHash}` : ''
 }

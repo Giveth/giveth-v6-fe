@@ -1,24 +1,28 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { ArrowRight, Paperclip, X } from 'lucide-react'
 import { useSiweAuth } from '@/context/AuthContext'
 import { uploadImageFile } from '@/lib/graphql/upload'
 import { cn } from '@/lib/utils'
 import {
+  CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY,
   useCreateProjectDraftStore,
   type CreateProjectDraft,
 } from '@/stores/createProjectDraft.store'
+import { EtherealOrb } from './EtherealOrb'
 
 export function AiChatPanel({
   heading = 'Let’s create your Project',
   placeholder = 'My project is about...',
   showWelcomeBubble = true,
+  onAiFormUpdated,
 }: {
   heading?: string
   placeholder?: string
   showWelcomeBubble?: boolean
+  onAiFormUpdated?: () => void
 }) {
   const { token } = useSiweAuth()
   const draft = useCreateProjectDraftStore(s => s.draft)
@@ -47,8 +51,29 @@ export function AiChatPanel({
 
   const [messages, setMessages] = useState<
     { id: string; role: 'assistant' | 'user'; content: string }[]
-  >(() =>
-    showWelcomeBubble
+  >(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = window.localStorage.getItem(
+          CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY,
+        )
+        if (raw) {
+          const parsed = JSON.parse(raw) as unknown
+          if (Array.isArray(parsed)) {
+            return parsed.filter(
+              item =>
+                typeof item === 'object' &&
+                item !== null &&
+                ('role' in item || 'content' in item),
+            ) as { id: string; role: 'assistant' | 'user'; content: string }[]
+          }
+        }
+      } catch {
+        // Ignore malformed local storage and use default welcome message.
+      }
+    }
+
+    return showWelcomeBubble
       ? [
           {
             id: 'welcome',
@@ -56,8 +81,12 @@ export function AiChatPanel({
             content: `${welcome.title}\n\n${welcome.body.join('\n')}`,
           },
         ]
-      : [],
-  )
+      : []
+  })
+  const hasUserStartedChat = messages.some(m => m.role === 'user')
+  const lastAssistantMessageId = [...messages]
+    .reverse()
+    .find(m => m.role === 'assistant')?.id
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -67,6 +96,17 @@ export function AiChatPanel({
       })
     })
   }
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY,
+        JSON.stringify(messages),
+      )
+    } catch {
+      // Ignore storage errors.
+    }
+  }, [messages])
 
   const send = async () => {
     const raw = input
@@ -82,10 +122,12 @@ export function AiChatPanel({
     // (This is an attachment only; it should not auto-fill the sidebar image field.)
     setAttachedImageUrl(null)
     resetComposerHeight(composerRef.current)
+    const assistantMessageId = cryptoId()
     setMessages(prev => [
       ...prev,
       // Preserve the exact input for chat history (including newlines).
       { id: cryptoId(), role: 'user', content: raw },
+      { id: assistantMessageId, role: 'assistant', content: '' },
     ])
     scrollToBottom()
 
@@ -106,28 +148,95 @@ export function AiChatPanel({
         throw new Error(msg || `AI request failed (${res.status})`)
       }
 
-      const data = (await res.json()) as {
-        assistantMessage: string
-        patch?: Partial<CreateProjectDraft>
-      }
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('text/event-stream')) {
+        const data = (await res.json()) as {
+          assistantMessage: string
+          patch?: Partial<CreateProjectDraft>
+        }
+        if (data.patch) applyPatch(data.patch)
+        if (data.patch) onAiFormUpdated?.()
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: data.assistantMessage }
+              : msg,
+          ),
+        )
+        scrollToBottom()
+      } else {
+        const reader = res.body?.getReader()
+        if (!reader) throw new Error('Unable to read AI stream')
+        const decoder = new TextDecoder()
+        let buffer = ''
 
-      if (data.patch) applyPatch(data.patch)
-      setMessages(prev => [
-        ...prev,
-        { id: cryptoId(), role: 'assistant', content: data.assistantMessage },
-      ])
-      scrollToBottom()
+        const processSseChunks = (raw: string) => {
+          const chunks = raw.split('\n\n')
+          buffer = chunks.pop() ?? ''
+
+          for (const chunk of chunks) {
+            const line = chunk
+              .split('\n')
+              .find(l => l.toLowerCase().startsWith('data:'))
+            if (!line) continue
+            const payloadText = line.slice(5).trim()
+            if (!payloadText) continue
+
+            const payload = safeJsonParse(payloadText) as {
+              type?: 'assistant_delta' | 'patch' | 'done' | 'error' | string
+              delta?: string
+              patch?: Partial<CreateProjectDraft>
+              message?: string
+            } | null
+            if (!payload?.type) continue
+
+            if (payload.type === 'assistant_delta') {
+              const delta = payload.delta || ''
+              if (!delta) continue
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: msg.content + delta }
+                    : msg,
+                ),
+              )
+              scrollToBottom()
+            } else if (payload.type === 'patch') {
+              if (payload.patch) {
+                applyPatch(payload.patch)
+                onAiFormUpdated?.()
+              }
+            } else if (payload.type === 'error') {
+              throw new Error(payload.message || 'AI stream failed')
+            }
+          }
+        }
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          processSseChunks(buffer)
+        }
+
+        // Flush any remaining data left in the buffer after the stream ends.
+        if (buffer.trim()) {
+          processSseChunks(buffer + '\n\n')
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to send message')
-      setMessages(prev => [
-        ...prev,
-        {
-          id: cryptoId(),
-          role: 'assistant',
-          content:
-            'I couldn’t process that message right now. Please try again.',
-        },
-      ])
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content:
+                  'I couldn’t process that message right now. Please try again.',
+              }
+            : msg,
+        ),
+      )
       scrollToBottom()
     } finally {
       setIsSending(false)
@@ -160,11 +269,18 @@ export function AiChatPanel({
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 min-h-0 overflow-hidden px-6">
         <div ref={listRef} className="mx-auto h-full max-w-2xl overflow-y-auto">
           <div className="mt-10 space-y-6">
             {messages.map(m => (
-              <ChatMessage key={m.id} role={m.role} content={m.content} />
+              <ChatMessage
+                key={m.id}
+                role={m.role}
+                content={m.content}
+                showAssistantIcon={
+                  m.role === 'assistant' && m.id === lastAssistantMessageId
+                }
+              />
             ))}
             {isSending && (
               <div className="text-sm text-[#9ca3af]">Thinking…</div>
@@ -173,11 +289,13 @@ export function AiChatPanel({
         </div>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="shrink-0 px-6 pb-6">
         <div className="mx-auto max-w-2xl">
-          <div className="text-center text-2xl font-semibold text-[#4b5563]">
-            {heading}
-          </div>
+          {!hasUserStartedChat && (
+            <div className="text-center text-2xl font-semibold text-[#4b5563] mb-4">
+              {heading}
+            </div>
+          )}
 
           {(isUploadingImage || attachedImageUrl) && (
             <div className="mt-5">
@@ -225,12 +343,12 @@ export function AiChatPanel({
             </div>
           )}
 
-          <div className="mt-6 rounded-xl border border-[#eef0f7] bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-xl border border-[#D7DDEA] bg-white px-3 py-2 shadow-none transition-[border-color,box-shadow] focus-within:border-[#B9A7FF] focus-within:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]">
             <div className="flex items-end gap-2">
               <button
                 type="button"
                 className={cn(
-                  'inline-flex size-10 items-center justify-center rounded-lg bg-[#f3f2ff] text-[#5f4cf0] transition hover:bg-[#ebe9ff]',
+                  'inline-flex h-[34px] w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
                 )}
                 aria-label="Attach"
                 disabled={isUploadingImage || isSending}
@@ -255,6 +373,8 @@ export function AiChatPanel({
 
               <textarea
                 ref={composerRef}
+                id="ai-chat-input"
+                name="ai-chat-input"
                 rows={1}
                 className="max-h-56 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-relaxed text-[#111827] outline-none placeholder:text-[#9ca3af] [scrollbar-width:thin]"
                 placeholder={placeholder}
@@ -279,7 +399,7 @@ export function AiChatPanel({
               <button
                 type="button"
                 className={cn(
-                  'inline-flex size-10 items-center justify-center rounded-lg bg-[#f3f2ff] text-[#5f4cf0] transition hover:bg-[#ebe9ff]',
+                  'inline-flex h-[34px] w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
                 )}
                 aria-label="Send"
                 disabled={isSending || isUploadingImage || !input.trim()}
@@ -339,14 +459,16 @@ function resetComposerHeight(el: HTMLTextAreaElement | null) {
 function ChatMessage({
   role,
   content,
+  showAssistantIcon,
 }: {
   role: 'assistant' | 'user'
   content: string
+  showAssistantIcon?: boolean
 }) {
   if (role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl bg-[#f3f2ff] px-5 py-3 text-sm text-[#111827]">
+        <div className="max-w-[85%] whitespace-pre-wrap rounded-[34px] rounded-br-[14px] border border-[#e3e2fb] bg-[#f3f2ff] px-5 py-3 text-sm text-[#111827]">
           {content}
         </div>
       </div>
@@ -355,19 +477,20 @@ function ChatMessage({
 
   return (
     <div className="flex items-start gap-4">
-      <div className="relative mt-1 size-12 shrink-0">
-        <Image
-          alt="AI assistant"
-          src="/images/create-project/agent-icon.png"
-          fill
-          className="rounded-full object-cover"
-          sizes="48px"
-          priority
-        />
+      <div className="relative mt-1 ml-2 size-12 shrink-0">
+        {showAssistantIcon ? <EtherealOrb size={48} /> : null}
       </div>
-      <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl border border-[#eef0f7] bg-white px-5 py-4 text-sm leading-relaxed text-[#4b5563] shadow-sm">
+      <div className="max-w-[85%] whitespace-pre-wrap rounded-[34px] rounded-tl-[14px] border border-[#eef0f7] bg-white px-5 py-4 text-sm leading-relaxed text-[#4b5563] shadow-sm">
         {content}
       </div>
     </div>
   )
+}
+
+function safeJsonParse(text: string): unknown | null {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
 }

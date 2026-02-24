@@ -36,6 +36,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.ipfs.w3s.link' },
       { protocol: 'https', hostname: 'giveth.mypinata.cloud' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'api.qrserver.com' },
     ],
   },
   logging: {
