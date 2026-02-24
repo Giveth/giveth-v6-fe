@@ -1,3 +1,564 @@
-export const UnstakeTab = ({ id }: { id: string }) => {
-  return <div>UnstakeTab {id}</div>
+'use client'
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
+import clsx from 'clsx'
+import { ArrowUpRight } from 'lucide-react'
+import ReactCanvasConfetti from 'react-canvas-confetti'
+import { useActiveAccount } from 'thirdweb/react'
+import { formatUnits, parseUnits } from 'viem'
+import LockedDetailsModal from '@/components/account/staking-rewards/LockedDetailsModal'
+import { ChainIcon } from '@/components/ChainIcon'
+import { HelpTooltip } from '@/components/HelpTooltip'
+import { IconReload } from '@/components/icons/IconReload'
+import { IconStars } from '@/components/icons/IconStars'
+import { TokenIcon } from '@/components/TokenIcon'
+import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
+import {
+  formatNumber,
+  getTokenPriceInUSDByCoingeckoId,
+} from '@/lib/helpers/cartHelper'
+import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
+import {
+  fetchStaking,
+  formatToken,
+  getAvailableToUnstake,
+  unstakeGIV,
+} from '@/lib/helpers/stakeHelper'
+
+const confettiColors = ['#a786ff', '#fd8bbc', '#eca184', '#f8deb1']
+const confettiCanvasStyles: CSSProperties = {
+  position: 'fixed',
+  pointerEvents: 'none',
+  width: '100vw',
+  height: '100vh',
+  inset: 0,
+  zIndex: 40,
+}
+
+type ConfettiInstance = (options: Record<string, unknown>) => void
+
+export function UnstakeTab({ id }: { id: string }) {
+  const pool = STAKING_POOLS[Number(id)]
+  const account = useActiveAccount()
+
+  const [isLockedDetailsModalOpen, setIsLockedDetailsModalOpen] =
+    useState(false)
+  const [amountToUnstake, setAmountToUnstake] = useState('0')
+  const [availableToUnstake, setAvailableToUnstake] = useState<bigint>(0n)
+  const [totalStaked, setTotalStaked] = useState<bigint>(0n)
+  const [lockedAmount, setLockedAmount] = useState<bigint>(0n)
+  const [baseApr, setBaseApr] = useState(0)
+  const [tokenPriceInUSD, setTokenPriceInUSD] = useState(0)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [flowStep, setFlowStep] = useState<'input' | 'pending' | 'confirmed'>(
+    'input',
+  )
+  const [txHash, setTxHash] = useState<string | null>(null)
+  const confettiRef = useRef<ConfettiInstance | null>(null)
+  const hasFiredRef = useRef(false)
+
+  const tokenDecimals = pool?.GIVPOWER?.decimals ?? 18
+
+  const amountInBaseUnits = useMemo(() => {
+    if (!amountToUnstake || Number(amountToUnstake) <= 0) return 0n
+    try {
+      return parseUnits(amountToUnstake, tokenDecimals)
+    } catch {
+      return 0n
+    }
+  }, [amountToUnstake, tokenDecimals])
+
+  const amountUsdValue = Number.isFinite(Number(amountToUnstake))
+    ? tokenPriceInUSD * Number(amountToUnstake)
+    : 0
+
+  const hasEnough = amountInBaseUnits <= availableToUnstake
+  const isAmountValid = amountInBaseUnits > 0n
+  const canSubmit = isAmountValid && hasEnough
+
+  const availableLabel = formatToken(availableToUnstake, tokenDecimals)
+  const totalStakedLabel = formatToken(totalStaked, tokenDecimals)
+  const aprLabel = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(baseApr)
+
+  const handleConfettiInit = useCallback(
+    ({ confetti }: { confetti: ConfettiInstance }) => {
+      confettiRef.current = confetti
+    },
+    [],
+  )
+
+  const fireSideCannons = useCallback(() => {
+    const end = Date.now() + 3 * 1000
+    const frame = () => {
+      if (!confettiRef.current) return
+      if (Date.now() > end) return
+      confettiRef.current({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 0, y: 0.5 },
+        colors: confettiColors,
+      })
+      confettiRef.current({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 1, y: 0.5 },
+        colors: confettiColors,
+      })
+      requestAnimationFrame(frame)
+    }
+    frame()
+  }, [])
+
+  useEffect(() => {
+    if (flowStep !== 'confirmed') {
+      hasFiredRef.current = false
+      return
+    }
+    if (hasFiredRef.current) return
+    hasFiredRef.current = true
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    fireSideCannons()
+  }, [fireSideCannons, flowStep])
+
+  const handleRefresh = async () => {
+    if (!account?.address || !pool?.GIVPOWER?.network) return
+    try {
+      const available = await getAvailableToUnstake(
+        account.address as `0x${string}`,
+        pool.GIVPOWER.network,
+      )
+      setAvailableToUnstake(available.availableToUnstake)
+      setTotalStaked(available.totalStaked)
+      setLockedAmount(available.locked)
+    } catch (error) {
+      console.error('Failed to refresh unstake data:', error)
+    }
+  }
+
+  const formatAmountToSixDecimals = (value: number) => {
+    const fixed = value.toFixed(6)
+    return fixed.replace(/\.?0+$/, '')
+  }
+
+  const handleUnstake = async () => {
+    if (!account || !pool?.GIVPOWER?.network || !canSubmit) return
+    setErrorMessage(null)
+    setFlowStep('pending')
+    try {
+      const tx = await unstakeGIV(
+        account,
+        pool.GIVPOWER.network,
+        amountInBaseUnits,
+      )
+      setTxHash(tx)
+      setFlowStep('confirmed')
+      await handleRefresh()
+    } catch (error) {
+      console.error('Unstake failed:', error)
+      const message =
+        error instanceof Error ? error.message : 'Unstake failed. Try again.'
+      setErrorMessage(message)
+      setFlowStep('input')
+      setTxHash(null)
+    } finally {
+    }
+  }
+
+  const handleReset = () => {
+    setFlowStep('input')
+    setAmountToUnstake('0')
+    setErrorMessage(null)
+    setTxHash(null)
+  }
+
+  useEffect(() => {
+    if (!account?.address || !pool?.GIVPOWER?.network) return
+    let cancelled = false
+
+    const fetchData = async () => {
+      try {
+        const [staking, available] = await Promise.all([
+          fetchStaking(account.address as `0x${string}`, pool.GIVPOWER.network),
+          getAvailableToUnstake(
+            account.address as `0x${string}`,
+            pool.GIVPOWER.network,
+          ),
+        ])
+        if (!cancelled) {
+          setBaseApr(staking.baseAPR ?? staking.apr ?? 0)
+          setAvailableToUnstake(available.availableToUnstake)
+          setTotalStaked(available.totalStaked)
+          setLockedAmount(available.locked)
+        }
+      } catch (error) {
+        console.error('Failed to fetch unstake data:', error)
+      }
+    }
+
+    fetchData()
+    return () => {
+      cancelled = true
+    }
+  }, [account?.address, pool?.GIVPOWER?.network])
+
+  useEffect(() => {
+    const coingeckoId = pool?.GIVPOWER?.coingeckoId
+    if (!coingeckoId) {
+      setTokenPriceInUSD(0)
+      return
+    }
+    let cancelled = false
+    const fetchPrice = async () => {
+      const price = await getTokenPriceInUSDByCoingeckoId(coingeckoId)
+      if (!cancelled) {
+        setTokenPriceInUSD(price || 0)
+      }
+    }
+    fetchPrice()
+    return () => {
+      cancelled = true
+    }
+  }, [pool?.GIVPOWER?.coingeckoId])
+
+  return (
+    <>
+      <div className="bg-white rounded-tl-2xl rounded-b-xl p-8">
+        <ReactCanvasConfetti
+          onInit={handleConfettiInit}
+          style={confettiCanvasStyles}
+        />
+        <h1 className="text-2xl font-bold text-giv-neutral-900 mb-6">
+          Unstake {pool?.GIVPOWER?.title}
+        </h1>
+
+        <div className="flex flex-row flex-wrap lg:no-wrap gap-5">
+          <div className="order-2 lg:order-1 w-full lg:w-[420px] shrink-0 space-y-4">
+            <div className="rounded-2xl border border-giv-brand-100 p-5 pr-16">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-10">
+                    <TokenIcon
+                      width={40}
+                      height={40}
+                      tokenSymbol={pool?.GIVPOWER.title}
+                      networkId={pool?.GIVPOWER?.network as number}
+                    />
+                    <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
+                      <ChainIcon
+                        networkId={pool?.GIVPOWER?.network as number}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 ml-1 text-sm font-medium text-giv-neutral-900">
+                    <div>{pool?.GIVPOWER.title} Staking</div>
+                    <div className="font-bold">
+                      On {getChainName(pool?.GIVPOWER?.network as number)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 text-sm font-medium text-giv-neutral-900">
+                  <div className="flex items-center gap-2">
+                    <IconStars width={20} height={20} />
+                    <span className="text-lg font-bold text-giv-neutral-900">
+                      APR
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center gap-2">
+                    <span className="text-lg font-bold text-giv-neutral-900">
+                      {aprLabel}%
+                    </span>
+                    <HelpTooltip
+                      text="This is the weighted average APR for your staked (and locked) GIV."
+                      className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                      width={1}
+                      height={1}
+                      fontSize="text-[9px]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-giv-neutral-200 bg-white p-5">
+              <div className="flex flex-col gap-5 p-5">
+                <div>
+                  <div className="text-sm text-giv-neutral-700 font-medium">
+                    Available
+                  </div>
+                  <div className="mt-2 text-xl font-bold text-giv-neutral-900">
+                    {availableLabel}{' '}
+                    <span className="text-sm font-semibold">
+                      {pool?.GIVPOWER.title}
+                    </span>
+                  </div>
+                </div>
+                <div className="border-t border-giv-neutral-200 pt-5">
+                  <div className="text-sm text-giv-neutral-700 font-medium">
+                    Staked
+                  </div>
+                  <div className="mt-2 text-xl font-bold text-giv-neutral-900">
+                    {totalStakedLabel}{' '}
+                    <span className="text-sm font-semibold">
+                      {pool?.GIVPOWER.title}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className={clsx(
+                    'mt-2 w-full rounded-xl border px-4 py-3',
+                    'text-sm font-bold transition-colors',
+                    'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
+                  )}
+                  disabled={Number(lockedAmount) === 0}
+                  onClick={() => setIsLockedDetailsModalOpen(true)}
+                >
+                  Locked {pool?.GIVPOWER.title} details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="order-1 lg:order-2 flex-1 min-w-0">
+            <div className="rounded-2xl border border-giv-brand-100 bg-white p-6">
+              {flowStep === 'input' && (
+                <>
+                  <div className="text-lg font-bold text-giv-neutral-900">
+                    Amount to unstake
+                  </div>
+                  <div className="mt-4 rounded-xl border border-giv-neutral-300 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="w-[160px] flex items-center gap-2 text-sm font-semibold text-giv-neutral-900 border-r border-giv-neutral-300 px-4 py-3">
+                        <TokenIcon
+                          width={24}
+                          height={24}
+                          tokenSymbol={pool?.GIVPOWER.title}
+                          networkId={pool?.GIVPOWER?.network as number}
+                        />
+                        <div>{pool?.GIVPOWER.title}</div>
+                      </div>
+                      <input
+                        type="text"
+                        value={amountToUnstake}
+                        placeholder="0"
+                        onChange={e => {
+                          setErrorMessage(null)
+                          setAmountToUnstake(e.target.value.replace(/,/g, '.'))
+                        }}
+                        autoComplete="off"
+                        className={clsx(
+                          'w-full px-4',
+                          'text-base p-0',
+                          'font-medium text-left text-giv-neutral-900 focus:outline-none',
+                        )}
+                      />
+                      <div className="flex-inline items-center px-2 py-1 bg-giv-neutral-300 rounded-lg text-xs font-semibold text-giv-neutral-700 mr-2">
+                        <span>$</span>
+                        <span>
+                          {formatNumber(amountUsdValue, {
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex gap-2">
+                      {['5%', '10%', '15%', '20%'].map(label => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => {
+                            const percentage = Number(label.replace('%', ''))
+                            const availableValue = parseFloat(
+                              formatUnits(availableToUnstake, tokenDecimals),
+                            )
+                            setAmountToUnstake(
+                              formatAmountToSixDecimals(
+                                availableValue * (percentage / 100),
+                              ),
+                            )
+                          }}
+                          className={clsx(
+                            'rounded-xl px-3 py-2 text-xs font-medium',
+                            'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                            'border border-giv-brand-100',
+                          )}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAmountToUnstake(
+                            formatAmountToSixDecimals(
+                              parseFloat(
+                                formatUnits(availableToUnstake, tokenDecimals),
+                              ),
+                            ),
+                          )
+                        }
+                        className={clsx(
+                          'rounded-xl px-3 py-2 text-xs font-medium',
+                          'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                          'border border-giv-brand-100',
+                        )}
+                      >
+                        Max
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
+                      <span>Available to unstake:</span>
+                      <span className="ml-1">
+                        {availableLabel} {pool?.GIVPOWER.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRefresh}
+                        className="ml-1 cursor-pointer"
+                      >
+                        <IconReload
+                          width={20}
+                          height={20}
+                          fill="var(--giv-brand-500)"
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={clsx(
+                      'w-full py-4 bg-giv-brand-300! text-white! mt-8',
+                      'rounded-md text-sm font-bold flex items-center justify-center gap-2',
+                      'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      !canSubmit && 'opacity-60 cursor-not-allowed',
+                    )}
+                    disabled={!canSubmit}
+                    onClick={handleUnstake}
+                  >
+                    Approve
+                  </button>
+
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {flowStep === 'pending' && (
+                <>
+                  <div className="text-lg font-bold text-giv-neutral-900">
+                    Amount to unstake
+                  </div>
+                  <div className="mt-6 rounded-xl border border-giv-neutral-300 bg-white p-10 text-center">
+                    <div className="text-2xl font-medium text-giv-neutral-900">
+                      You are unstaking
+                    </div>
+                    <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
+                      {amountToUnstake} {pool?.GIVPOWER.title}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled
+                    className={clsx(
+                      'w-full mt-6 py-4 bg-giv-brand-100! text-giv-brand-700! rounded-md text-sm font-bold',
+                      'flex items-center justify-center gap-2 cursor-not-allowed',
+                    )}
+                  >
+                    Approve Pending
+                    <span className="w-4 h-4 border-2 border-giv-brand-700 border-t-transparent rounded-full animate-spin" />
+                  </button>
+                  {txHash && (
+                    <a
+                      href={getTransactionUrl(
+                        pool?.GIVPOWER?.network as number,
+                        txHash,
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center justify-center gap-2 w-full text-sm font-bold text-giv-brand-700 hover:opacity-80"
+                    >
+                      View on Blockscout
+                      <ArrowUpRight className="h-4 w-4" />
+                    </a>
+                  )}
+                </>
+              )}
+
+              {flowStep === 'confirmed' && (
+                <>
+                  <div className="text-lg font-bold text-giv-neutral-900">
+                    Amount to unstake
+                  </div>
+                  <div className="mt-6 rounded-xl border border-giv-neutral-300 bg-white p-10 text-center">
+                    <div className="text-2xl font-medium text-giv-neutral-900">
+                      You have unstaked
+                    </div>
+                    <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
+                      {amountToUnstake} {pool?.GIVPOWER.title}
+                    </div>
+                  </div>
+                  <div className="mt-6 rounded-xl border border-giv-brand-100 bg-giv-brand-050 p-4 text-sm text-giv-neutral-700">
+                    <div className="font-bold text-giv-neutral-900">
+                      Transaction confirmed!
+                    </div>
+                    It can take a few minutes for the changes to appear.
+                  </div>
+                  {txHash && (
+                    <a
+                      href={getTransactionUrl(
+                        pool?.GIVPOWER?.network as number,
+                        txHash,
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center justify-center gap-2 w-full text-sm font-bold text-giv-brand-700 hover:opacity-80"
+                    >
+                      View on Blockscout
+                      <ArrowUpRight className="h-4 w-4" />
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className={clsx(
+                      'w-full mt-6 py-4 bg-giv-brand-050! rounded-md',
+                      'flex items-center justify-center gap-2',
+                      'text-sm font-bold text-giv-brand-700!',
+                      'border border-giv-brand-100 hover:bg-giv-brand-100 transition-colors',
+                      'cursor-pointer',
+                    )}
+                  >
+                    Got it
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <LockedDetailsModal
+        open={isLockedDetailsModalOpen}
+        onOpenChange={setIsLockedDetailsModalOpen}
+        chainId={Number(id)}
+        tokenSymbol={pool?.GIVPOWER.title}
+      />
+    </>
+  )
 }

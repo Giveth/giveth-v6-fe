@@ -194,10 +194,27 @@ export const GIVPOWER_ABI = [
   },
 ] as const
 
+const UNIPOOL_ABI_WITHDRAW = [
+  {
+    type: 'function',
+    name: 'withdraw',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
+] as const
+
 const TOKEN_MANAGER_ABI = [
   {
     type: 'function',
     name: 'wrap',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'unwrap',
     stateMutability: 'nonpayable',
     inputs: [{ name: 'amount', type: 'uint256' }],
     outputs: [],
@@ -1147,6 +1164,107 @@ export async function fetchGIVstream(user: Address, chainId: number) {
     percentComplete: helper.GlobalReleasePercentage,
     timeRemaining: helper.remain,
   }
+}
+
+export async function getAvailableToUnstake(
+  user: Address,
+  chainId: number,
+): Promise<{
+  totalStaked: bigint
+  locked: bigint
+  availableToUnstake: bigint
+}> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: GIVPOWER_ABI,
+  })
+
+  const [depositBalance, userLocksRaw] = await Promise.all([
+    readContract({
+      contract,
+      method: 'depositTokenBalance',
+      params: [user],
+    }) as Promise<bigint>,
+    readContract({
+      contract,
+      method: 'userLocks',
+      params: [user],
+    }) as Promise<unknown>,
+  ])
+
+  const locked = (userLocksRaw as { totalAmountLocked: bigint })
+    .totalAmountLocked
+  const availableToUnstake =
+    depositBalance > locked ? depositBalance - locked : 0n
+
+  return {
+    totalStaked: depositBalance,
+    locked,
+    availableToUnstake,
+  }
+}
+
+export async function unstakeGIV(
+  account: Account,
+  chainId: number,
+  amount: bigint,
+): Promise<string> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+  if (amount === 0n) {
+    throw new Error('Amount must be greater than 0')
+  }
+
+  const available = await getAvailableToUnstake(
+    account.address as Address,
+    chainId,
+  )
+  if (amount > available.availableToUnstake) {
+    throw new Error(
+      `Insufficient available balance. Available: ${available.availableToUnstake}`,
+    )
+  }
+
+  if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM' && cfg.GIVPOWER.GARDEN_ADDRESS) {
+    const contract = getContract({
+      client: thirdwebClient,
+      chain: defineChain(chainId),
+      address: cfg.GIVPOWER.GARDEN_ADDRESS as Address,
+      abi: TOKEN_MANAGER_ABI,
+    })
+    const transaction = prepareContractCall({
+      contract,
+      method: 'unwrap',
+      params: [amount],
+    })
+    const receipt = await sendTransaction({ account, transaction })
+    const finalReceipt = await waitForReceipt(receipt)
+    return finalReceipt.transactionHash
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: UNIPOOL_ABI_WITHDRAW,
+  })
+  const transaction = prepareContractCall({
+    contract,
+    method: 'withdraw',
+    params: [amount],
+  })
+  const receipt = await sendTransaction({ account, transaction })
+  const finalReceipt = await waitForReceipt(receipt)
+  return finalReceipt.transactionHash
 }
 
 export async function fetchGIVstreamHistory(
