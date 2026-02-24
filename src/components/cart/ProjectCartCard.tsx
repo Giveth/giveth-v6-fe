@@ -28,6 +28,7 @@ export const ProjectCartCard = ({
   const hasMissingAmount = Number(project.donationAmount) <= 0
   const shouldShowMissingAmount = showMissingAmountErrors && hasMissingAmount
   const [usdInputValue, setUsdInputValue] = useState('')
+  const [isUsdInputFocused, setIsUsdInputFocused] = useState(false)
   const isUsdEntry = isAAWallet || selectedAmountVsDollars === 1
   const normalizeAmount = (value: number, decimals = 18) => {
     if (!Number.isFinite(value)) return '0'
@@ -42,11 +43,12 @@ export const ProjectCartCard = ({
   }
 
   useEffect(() => {
-    if (!isUsdEntry) return
+    if (!isUsdEntry || isUsdInputFocused) return
     setUsdInputValue(formatUsdInputValue())
   }, [
     isAAWallet,
     isUsdEntry,
+    isUsdInputFocused,
     project.donationAmount,
     project.selectedToken?.priceInUSD,
   ])
@@ -152,6 +154,8 @@ export const ProjectCartCard = ({
               <input
                 type="text"
                 value={usdInputValue}
+                onFocus={() => setIsUsdInputFocused(true)}
+                onBlur={() => setIsUsdInputFocused(false)}
                 onChange={e => {
                   const normalized = normalizeDecimalInput(e.target.value)
                   setUsdInputValue(normalized)
