@@ -1651,8 +1651,11 @@ export async function stakeGIVpower(
  * @param tokenDecimals - The token decimals
  * @returns The formatted token amount
  */
-export const formatToken = (value: bigint, tokenDecimals: number) =>
+export const formatToken = (
+  value: bigint | null | undefined,
+  tokenDecimals: number,
+) =>
   new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(parseFloat(formatUnits(value, tokenDecimals)))
+  }).format(parseFloat(formatUnits(value ?? 0n, tokenDecimals)))

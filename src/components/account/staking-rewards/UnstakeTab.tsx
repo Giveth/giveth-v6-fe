@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import clsx from 'clsx'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, LockKeyhole } from 'lucide-react'
 import ReactCanvasConfetti from 'react-canvas-confetti'
 import { useActiveAccount } from 'thirdweb/react'
-import { formatUnits, parseUnits } from 'viem'
+import { type Address, formatUnits, parseUnits } from 'viem'
 import LockedDetailsModal from '@/components/account/staking-rewards/LockedDetailsModal'
 import { ChainIcon } from '@/components/ChainIcon'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { IconReload } from '@/components/icons/IconReload'
+import { IconStakeNumber } from '@/components/icons/IconStakeNumber'
 import { IconStars } from '@/components/icons/IconStars'
 import { TokenIcon } from '@/components/TokenIcon'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
@@ -20,6 +21,7 @@ import {
 } from '@/lib/helpers/cartHelper'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import {
+  fetchAvailableToLock,
   fetchStaking,
   formatToken,
   getAvailableToUnstake,
@@ -78,10 +80,17 @@ export function UnstakeTab({ id }: { id: string }) {
   const canSubmit = isAmountValid && hasEnough
 
   const availableLabel = formatToken(availableToUnstake, tokenDecimals)
-  const totalStakedLabel = formatToken(totalStaked, tokenDecimals)
+  const totalStakedAmountLabel = formatToken(totalStaked, tokenDecimals)
+
+  // Format total locked amount
+  const totalLockedAmountLabel = formatToken(
+    lockedAmount,
+    pool?.GIVPOWER?.decimals as number,
+  )
+
   const aprLabel = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(baseApr)
 
   const handleConfettiInit = useCallback(
@@ -132,13 +141,22 @@ export function UnstakeTab({ id }: { id: string }) {
   const handleRefresh = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
     try {
-      const available = await getAvailableToUnstake(
-        account.address as `0x${string}`,
-        pool.GIVPOWER.network,
-      )
-      setAvailableToUnstake(available.availableToUnstake)
-      setTotalStaked(available.totalStaked)
-      setLockedAmount(available.locked)
+      const [staking, available, lockInfo] = await Promise.all([
+        fetchStaking(account.address as Address, pool.GIVPOWER.network),
+        getAvailableToUnstake(
+          account.address as Address,
+          pool.GIVPOWER.network,
+        ),
+        fetchAvailableToLock(account.address as Address, pool.GIVPOWER.network),
+      ])
+      setBaseApr(staking.boostedAPR ?? staking.apr ?? 0)
+      const totalStakedValue = available.totalStaked
+      const lockedValue = lockInfo.alreadyLocked
+      const availableValue =
+        totalStakedValue > lockedValue ? totalStakedValue - lockedValue : 0n
+      setTotalStaked(totalStakedValue)
+      setLockedAmount(lockedValue)
+      setAvailableToUnstake(availableValue)
     } catch (error) {
       console.error('Failed to refresh unstake data:', error)
     }
@@ -186,18 +204,26 @@ export function UnstakeTab({ id }: { id: string }) {
 
     const fetchData = async () => {
       try {
-        const [staking, available] = await Promise.all([
-          fetchStaking(account.address as `0x${string}`, pool.GIVPOWER.network),
+        const [staking, available, lockInfo] = await Promise.all([
+          fetchStaking(account.address as Address, pool.GIVPOWER.network),
           getAvailableToUnstake(
-            account.address as `0x${string}`,
+            account.address as Address,
+            pool.GIVPOWER.network,
+          ),
+          fetchAvailableToLock(
+            account.address as Address,
             pool.GIVPOWER.network,
           ),
         ])
         if (!cancelled) {
-          setBaseApr(staking.baseAPR ?? staking.apr ?? 0)
-          setAvailableToUnstake(available.availableToUnstake)
-          setTotalStaked(available.totalStaked)
-          setLockedAmount(available.locked)
+          setBaseApr(staking.boostedAPR ?? staking.apr ?? 0)
+          const totalStakedValue = available.totalStaked
+          const lockedValue = lockInfo.alreadyLocked
+          const availableValue =
+            totalStakedValue > lockedValue ? totalStakedValue - lockedValue : 0n
+          setTotalStaked(totalStakedValue)
+          setLockedAmount(lockedValue)
+          setAvailableToUnstake(availableValue)
         }
       } catch (error) {
         console.error('Failed to fetch unstake data:', error)
@@ -289,42 +315,44 @@ export function UnstakeTab({ id }: { id: string }) {
             </div>
 
             <div className="rounded-2xl border border-giv-neutral-200 bg-white p-5">
-              <div className="flex flex-col gap-5 p-5">
-                <div>
-                  <div className="text-sm text-giv-neutral-700 font-medium">
-                    Available
-                  </div>
-                  <div className="mt-2 text-xl font-bold text-giv-neutral-900">
-                    {availableLabel}{' '}
-                    <span className="text-sm font-semibold">
-                      {pool?.GIVPOWER.title}
-                    </span>
-                  </div>
+              <div className="flex flex-col justify-between border-b border-giv-neutral-200 p-4">
+                <div className="text-lg text-giv-neutral-700 font-medium flex items-center gap-2">
+                  <IconStakeNumber width={24} height={24} />
+                  <span>Staked</span>
                 </div>
-                <div className="border-t border-giv-neutral-200 pt-5">
-                  <div className="text-sm text-giv-neutral-700 font-medium">
-                    Staked
-                  </div>
-                  <div className="mt-2 text-xl font-bold text-giv-neutral-900">
-                    {totalStakedLabel}{' '}
-                    <span className="text-sm font-semibold">
-                      {pool?.GIVPOWER.title}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
+                  <span>{totalStakedAmountLabel}</span>
+                  <span className="text-lg font-medium text-giv-neutral-800">
+                    {pool?.GIVPOWER.title}
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  className={clsx(
-                    'mt-2 w-full rounded-xl border px-4 py-3',
-                    'text-sm font-bold transition-colors',
-                    'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
-                  )}
-                  disabled={Number(lockedAmount) === 0}
-                  onClick={() => setIsLockedDetailsModalOpen(true)}
-                >
-                  Locked {pool?.GIVPOWER.title} details
-                </button>
               </div>
+
+              <div className="flex flex-col justify-between p-5">
+                <div className="text-lg text-giv-neutral-700 font-medium flex items-center gap-2">
+                  <LockKeyhole width={24} height={24} />
+                  <span>Locked</span>
+                </div>
+                <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900 mt-3">
+                  <span>{totalLockedAmountLabel}</span>
+                  <span className="text-lg font-medium text-giv-neutral-800">
+                    {pool?.GIVPOWER.title}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={clsx(
+                  'flex items-center justify-center gap-2',
+                  'mt-2 w-full rounded-xl border px-4 py-3',
+                  'text-sm font-bold transition-colors',
+                  'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
+                )}
+                disabled={Number(lockedAmount) === 0}
+                onClick={() => setIsLockedDetailsModalOpen(true)}
+              >
+                Locked GIV details
+              </button>
             </div>
           </div>
 
