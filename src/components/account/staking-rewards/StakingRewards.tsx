@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { GIVStreamSection } from '@/components/account/GIVStreamSection'
 import { ClaimRewardsBanner } from '@/components/account/staking-rewards/ClaimRewardsBanner'
 import { DropdownStakeNetworks } from '@/components/account/staking-rewards/DropdownStakeNetworks'
 import { StakeSection } from '@/components/account/staking-rewards/StakeSection'
+import { UserGivbacksBanner } from '@/components/user/UserGivbacksBanner'
 import { STAKING_CHAINS } from '@/lib/constants/staking-power-constants'
 
 export const StakingRewards = () => {
@@ -27,6 +29,10 @@ export const StakingRewards = () => {
         selectedChain={selectedChain}
         onSelectChain={setSelectedChain}
       />
+      <GIVStreamSection />
+      <div className="mt-12">
+        <UserGivbacksBanner />
+      </div>
     </div>
   )
 }

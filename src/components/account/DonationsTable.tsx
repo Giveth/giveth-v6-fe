@@ -21,11 +21,11 @@ export function DonationsTable() {
   }, [activeTab, router])
   return (
     <div className="bg-white rounded-tr-2xl rounded-b-xl p-8 overflow-hidden">
-      <div className="mb-12">
-        <UserGivbacksBanner />
+      <div className="mb-6">
+        <EligibilityBanner />
       </div>
       <div className="mb-12">
-        <EligibilityBanner />
+        <UserGivbacksBanner />
       </div>
       <DonationTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="relative">

@@ -317,6 +317,12 @@ function tokenLocksQuery(user: Address, first = 100, skip = 0) {
   }`
 }
 
+/**
+ * Query the GIVpower info for a GIVpower
+ *
+ * @param lmAddress - The GIVpower LM address
+ * @returns The GIVpower info query
+ */
 function givpowerInfoQuery(lmAddress: Address) {
   return `{
     givpower(id: "${lmAddress.toLowerCase()}") {
@@ -326,6 +332,16 @@ function givpowerInfoQuery(lmAddress: Address) {
   }`
 }
 
+/**
+ * Type for a token lock
+ *
+ * @param id - The lock ID
+ * @param amount - The amount of the lock
+ * @param rounds - The number of rounds to lock for
+ * @param untilRound - The round number to unlock at
+ * @param unlockableAt - The timestamp to unlock at
+ * @returns The token lock
+ */
 export type TokenLock = {
   id?: string
   amount: bigint
@@ -334,6 +350,15 @@ export type TokenLock = {
   unlockableAt?: number
 }
 
+/**
+ * Fetch the token locks for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @param first - The number of locks to return (default: 100)
+ * @param skip - The number of locks to skip (default: 0)
+ * @returns The token locks
+ */
 export async function fetchTokenLocks(
   user: Address,
   chainId: number,
@@ -359,20 +384,46 @@ export const LOCK_CONSTANTS = {
   MAX_ROUNDS: 26,
 }
 
+/**
+ * Calculate the multiplier for a GIVpower
+ *
+ * @param rounds - The number of rounds to calculate for
+ * @returns The multiplier
+ */
 export function calculateMultiplier(rounds: number): number {
   return Math.sqrt(1 + rounds)
 }
 
+/**
+ * Calculate the boosted APR for a GIVpower
+ *
+ * @param baseAPR - The base APR
+ * @param rounds - The number of rounds to calculate for
+ * @returns The boosted APR
+ */
 export function calculateBoostedAPR(baseAPR: number, rounds: number): number {
   return baseAPR * calculateMultiplier(rounds)
 }
 
+/**
+ * Calculate the GIVpower for a user
+ *
+ * @param amount - The amount of GIVpower to calculate
+ * @param rounds - The number of rounds to calculate for
+ * @returns The GIVpower
+ */
 export function calculateGIVpower(amount: bigint, rounds: number): bigint {
   const multiplier = calculateMultiplier(rounds)
   const multiplierFixed = BigInt(Math.floor(multiplier * 1e18))
   return (amount * multiplierFixed) / 1_000_000_000_000_000_000n
 }
 
+/**
+ * Get the current round info for a GIVpower
+ *
+ * @param chainId - The chain ID
+ * @returns The current round info
+ */
 export async function getCurrentRoundInfo(chainId: number): Promise<{
   currentRound: number
   nextRoundDate: Date
@@ -382,18 +433,27 @@ export async function getCurrentRoundInfo(chainId: number): Promise<{
   if (!cfg?.GIVPOWER?.LM_ADDRESS) {
     throw new Error(`GIVpower not configured for chain ${chainId}`)
   }
+
+  // Get the GIVpower info from the subgraph, this is used to get the current round info
   const data = await querySubgraph<GIVpowerInfoData>(
     chainId,
     givpowerInfoQuery(cfg.GIVPOWER.LM_ADDRESS as Address),
   )
+
+  // Get the initial date and round duration from the GIVpower info
   const initialDate = Number(data.givpower?.initialDate || 0)
   const roundDuration = Number(data.givpower?.roundDuration || 0)
+
+  // If the initial date or round duration is not available, throw an error
   if (!initialDate || !roundDuration) {
     throw new Error('GIVpower round info not available')
   }
+
+  // Calculate the current round and the next round date
   const now = Math.floor(Date.now() / 1000)
   const currentRound = Math.floor((now - initialDate) / roundDuration)
   const nextRoundTimestamp = initialDate + roundDuration * (currentRound + 1)
+
   return {
     currentRound,
     nextRoundDate: new Date(nextRoundTimestamp * 1000),
@@ -401,6 +461,14 @@ export async function getCurrentRoundInfo(chainId: number): Promise<{
   }
 }
 
+/**
+ * Calculate the unlock date for a GIVpower lock
+ *
+ * @param nextRoundDate - The date of the next round
+ * @param roundDuration - The duration of a round
+ * @param rounds - The number of rounds to lock for
+ * @returns The unlock date
+ */
 export function calculateUnlockDate(
   nextRoundDate: Date,
   roundDuration: number,
@@ -411,6 +479,15 @@ export function calculateUnlockDate(
   return new Date(unlockTimestamp)
 }
 
+/**
+ * Lock GIVpower for a user
+ *
+ * @param account - The user's account
+ * @param chainId - The chain ID
+ * @param amount - The amount of GIVpower to lock
+ * @param rounds - The number of rounds to lock for
+ * @returns The transaction hash
+ */
 export async function lockGIVpower(
   account: Account,
   chainId: number,
@@ -449,6 +526,14 @@ export async function lockGIVpower(
   return finalReceipt.transactionHash
 }
 
+/**
+ * Unlock GIVpower for a user
+ *
+ * @param account - The user's account
+ * @param chainId - The chain ID
+ * @param lockIndex - The index of the lock to unlock
+ * @returns The transaction hash
+ */
 export async function unlockGIVpower(
   account: Account,
   chainId: number,
@@ -477,6 +562,13 @@ export async function unlockGIVpower(
   return finalReceipt.transactionHash
 }
 
+/**
+ * Fetch the GIVpower for a user on a single chain
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The GIVpower
+ */
 export async function fetchUserGIVpower(
   user: Address,
   chainId: number,
@@ -486,6 +578,7 @@ export async function fetchUserGIVpower(
     throw new Error(`GIVpower not configured for chain ${chainId}`)
   }
 
+  // Get the GIVpower contract, this is used to get the user's GIVpower balance
   const contract = getContract({
     client: thirdwebClient,
     chain: defineChain(chainId),
@@ -502,6 +595,13 @@ export async function fetchUserGIVpower(
   return givpower
 }
 
+/**
+ * Fetch the GIVpower for a user on a single chain
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The GIVpower
+ */
 export async function fetchGIVpowerSingleChain(
   user: Address,
   chainId: number,
@@ -532,6 +632,12 @@ export async function fetchGIVpowerSingleChain(
   }
 }
 
+/**
+ * Fetch the total GIVpower for a user
+ *
+ * @param user - The user's address
+ * @returns The total GIVpower
+ */
 export async function fetchTotalGIVpower(user: Address): Promise<{
   total: bigint
   byChain: Array<{
@@ -645,6 +751,7 @@ export async function fetchStaking(user: Address, chainId: number) {
   const SECONDS_PER_YEAR = 31_536_000n
   const APR_SCALE = 1_000_000n
 
+  // Calculate APR (BigInt-safe), this is used to calculate the APR
   const apr =
     poolActive && totalSupply > 0n
       ? Number(
@@ -671,6 +778,7 @@ export async function fetchStaking(user: Address, chainId: number) {
       tokenDistroQuery(user, cfg.TOKEN_DISTRO_ADDRESS as Address),
     )
 
+    // Create TokenDistroHelper for calculations, this is used to calculate the GIVstream
     if (distroData.tokenDistro) {
       const helper = new TokenDistroHelper({
         contractAddress: cfg.TOKEN_DISTRO_ADDRESS as Address,
@@ -753,8 +861,11 @@ export async function fetchGIVpowerDepositBalance(
     return 0n
   }
 
+  // Try to get the GIVpower balance from the GIVpower contract, this is used to get the user's GIVpower balance
   try {
+    // If the GIVpower type is GIV_GARDEN_LM, get the GIV balance from the GIV contract
     if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM' && cfg.gGIV_TOKEN_ADDRESS) {
+      // Get the GIV contract, this is used to get the user's GIV balance
       const gGivContract = getContract({
         client: thirdwebClient,
         chain: defineChain(chainId),
@@ -769,6 +880,7 @@ export async function fetchGIVpowerDepositBalance(
       return gGivBalance
     }
 
+    // Get the GIVpower contract, this is used to get the user's GIVpower balance
     const contract = getContract({
       client: thirdwebClient,
       chain: defineChain(chainId),
@@ -800,6 +912,7 @@ export async function fetchGIVpowerDepositBalance(
 export async function fetchWalletBalance(user: Address, chainId: number) {
   const cfg = STAKING_POOLS[chainId]
 
+  // Fetch the token balance data from the subgraph, this is used to get the user's GIV balance
   const data = await querySubgraph<TokenBalanceData>(
     chainId,
     tokenBalanceQuery(user, cfg.GIV_TOKEN_ADDRESS as `0x${string}`),
@@ -918,6 +1031,77 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
   }
 }
 
+/**
+ * Fetch the GIVstream for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The GIVstream
+ */
+export async function fetchGIVstream(user: Address, chainId: number) {
+  const cfg = STAKING_POOLS[chainId]
+
+  if (!cfg.TOKEN_DISTRO_ADDRESS) {
+    return {
+      claimableNow: 0n,
+      flowRatePerWeek: 0n,
+      totalAllocated: 0n,
+      totalClaimed: 0n,
+      percentComplete: 0,
+      timeRemaining: 0,
+    }
+  }
+
+  // Fetch the token distro data, including the balance
+  const distroData = await querySubgraph<TokenDistroData>(
+    chainId,
+    tokenDistroQuery(user, cfg.TOKEN_DISTRO_ADDRESS as `0x${string}`),
+  )
+
+  if (!distroData.tokenDistro || !distroData.tokenDistroBalance) {
+    return {
+      claimableNow: 0n,
+      flowRatePerWeek: 0n,
+      totalAllocated: 0n,
+      totalClaimed: 0n,
+      percentComplete: 0,
+      timeRemaining: 0,
+    }
+  }
+
+  const distro = distroData.tokenDistro
+  const balance = distroData.tokenDistroBalance
+
+  // Create TokenDistroHelper for calculations, this is used to calculate the GIVstream
+  const helper = new TokenDistroHelper({
+    contractAddress: cfg.TOKEN_DISTRO_ADDRESS as `0x${string}`,
+    initialAmount: distro.initialAmount,
+    lockedAmount: distro.lockedAmount,
+    totalTokens: distro.totalTokens,
+    startTime: Number(distro.startTime) * 1000,
+    cliffTime: Number(distro.cliffTime) * 1000,
+    endTime: (Number(distro.startTime) + Number(distro.duration)) * 1000,
+  })
+
+  const allocatedTokens = BigInt(balance.allocatedTokens)
+  const givback = BigInt(balance.givback || '0')
+  const claimed = BigInt(balance.claimed)
+  const streamableAmount = allocatedTokens - givback
+
+  const rawClaimable =
+    helper.getLiquidPart(streamableAmount) - BigInt(balance.claimed)
+  const claimableNow = rawClaimable > 0n ? rawClaimable : 0n
+
+  return {
+    claimableNow,
+    flowRatePerWeek: helper.getStreamPartTokenPerWeek(streamableAmount),
+    totalAllocated: allocatedTokens,
+    totalClaimed: claimed,
+    percentComplete: helper.GlobalReleasePercentage,
+    timeRemaining: helper.remain,
+  }
+}
+
 /* User Overview (Main API) */
 
 /**
@@ -1023,6 +1207,9 @@ export async function claimAll(
   return finalReceipt.transactionHash
 }
 
+/**
+ * ABI for the GIVpower Unipool contract
+ */
 const UNIPOOL_ABI = [
   {
     type: 'function',
@@ -1184,6 +1371,7 @@ export async function stakeGIVpower(
     return finalWrapReceipt.transactionHash
   }
 
+  // Get the GIVpower contract, this is used to stake the GIVpower
   const contract = getContract({
     client: thirdwebClient,
     chain: defineChain(chainId),
@@ -1191,14 +1379,19 @@ export async function stakeGIVpower(
     abi: LM_ABI,
   })
 
+  // Prepare the transaction to stake the GIVpower
   const transaction = prepareContractCall({
     contract,
     method: 'stake',
     params: [amount],
   })
 
+  // Send the transaction to stake the GIVpower
   const receipt = await sendTransaction({ account, transaction })
+
+  // Wait for the transaction to be mined
   const finalReceipt = await waitForReceipt(receipt)
+
   return finalReceipt.transactionHash
 }
 
