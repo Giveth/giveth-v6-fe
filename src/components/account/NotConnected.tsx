@@ -1,4 +1,4 @@
-import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
+import { HeaderConnectWallet } from '@/components/header/HeaderConnectWallet'
 
 export function NotConnected() {
   return (
@@ -27,7 +27,7 @@ export function NotConnected() {
             Connect your wallet to access your account dashboard
           </p>
         </div>
-        <ConnectWalletButton />
+        <HeaderConnectWallet />
       </div>
     </div>
   )
