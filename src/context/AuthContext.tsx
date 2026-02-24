@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const siweService = useMemo(() => new SiweService(), [])
   const lastWalletAddressRef = useRef<string | undefined>(undefined)
   const lastImpactGraphSyncRef = useRef<string | undefined>(undefined)
+  const autoSignInAttemptedRef = useRef<string | undefined>(undefined)
   const initRef = useRef(false)
 
   const setSignedOutState = useCallback((error: string | null = null) => {
@@ -120,12 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       walletAddress !== lastWalletAddressRef.current
     ) {
       localStorage.removeItem('giveth_token')
+      autoSignInAttemptedRef.current = undefined
       setSignedOutState(null)
     }
 
     lastWalletAddressRef.current = walletAddress
 
-    if (!isConnected) return
+    if (!isConnected) {
+      autoSignInAttemptedRef.current = undefined
+      return
+    }
 
     const syncImpactGraphUser = async () => {
       if (!walletAddress) return
@@ -233,6 +238,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSignedOutState(null)
     localStorage.removeItem('giveth_token')
   }, [setSignedOutState])
+
+  // Auto-sign-in for AA (in-app) wallets once React has re-rendered with a
+  // fresh `account`. Browser-wallet users still click "Sign Message" manually.
+  useEffect(() => {
+    if (
+      connectionStatus === 'connected' &&
+      account?.address &&
+      !authState.isAuthenticated &&
+      !authState.isLoading &&
+      isAAWallet &&
+      autoSignInAttemptedRef.current !== account.address
+    ) {
+      autoSignInAttemptedRef.current = account.address
+      signIn().catch(() => {})
+    }
+  }, [
+    connectionStatus,
+    account?.address,
+    authState.isAuthenticated,
+    authState.isLoading,
+    isAAWallet,
+    signIn,
+  ])
 
   const value: AuthContextValue = {
     ...authState,
