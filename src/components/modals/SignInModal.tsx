@@ -6,7 +6,6 @@ import { Dialog, Flex, Text } from '@radix-ui/themes'
 import { Loader2, Mail, Wallet } from 'lucide-react'
 import { useConnect, useConnectModal } from 'thirdweb/react'
 import { getUserEmail, preAuthenticate } from 'thirdweb/wallets/in-app'
-import { useSiweAuth } from '@/context/AuthContext'
 import {
   aaInAppWallet,
   primaryWallets,
@@ -39,7 +38,6 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const { connect } = useConnect()
   const { connect: openConnectModal } = useConnectModal()
   const { setIsAAWallet, setAuthenticatedEmail } = useAAWalletStore()
-  const { isAuthenticated, signIn } = useSiweAuth()
 
   /**
    * Reusable helper to handle backend auth and email sync
@@ -47,12 +45,10 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
    */
   const handlePostWalletConnection = async () => {
     setIsAAWallet(true)
-    // 1. Authenticate with backend (SIWE)
-    if (!isAuthenticated) {
-      await signIn()
-    }
+    // SIWE sign-in is handled automatically by AuthContext's auto-signIn effect
+    // once React re-renders with the fresh account from the new connection.
 
-    // 2. Fetch and sync email to global store
+    // Fetch and sync email to global store
     try {
       const providerEmail = await getUserEmail({ client: thirdwebClient })
       if (providerEmail) {
@@ -63,7 +59,6 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
       // Non-fatal: user is already authenticated.
     }
 
-    // 3. Update AA store and close modal
     handleOpenChange(false)
   }
 
