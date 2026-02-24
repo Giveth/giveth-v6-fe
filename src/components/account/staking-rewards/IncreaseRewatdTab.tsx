@@ -447,7 +447,13 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                     <span className="text-lg font-bold text-giv-neutral-900">
                       {aprLabel}%
                     </span>
-                    <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
+                    <HelpTooltip
+                      text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
+                      className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                      width={1}
+                      height={1}
+                      fontSize="text-[9px]"
+                    />
                   </div>
                 </div>
               </div>
@@ -814,7 +820,13 @@ const RewardCard = ({
         <div>
           <div className="flex items-center gap-2">
             <span>Your multiplier</span>
-            <HelpTooltip text="The longer you lock your GIV, the greater your APR & GIVpower." />
+            <HelpTooltip
+              text="The longer you lock your GIV, the greater your APR & GIVpower."
+              className="py-0.5! px-1.5! bg-giv-neutral-700!"
+              width={1}
+              height={1}
+              fontSize="text-[9px]"
+            />
           </div>
           <div className="mt-4 text-2xl font-bold text-giv-neutral-900">
             {multiplier.toFixed(2)}x
@@ -823,7 +835,13 @@ const RewardCard = ({
         <div>
           <div className="flex items-center gap-2">
             <span>APR</span>
-            <HelpTooltip text="This is your rate of return for this set of GIV tokens." />
+            <HelpTooltip
+              text="This is your rate of return for this set of GIV tokens."
+              className="py-0.5! px-1.5! bg-giv-neutral-700!"
+              width={1}
+              height={1}
+              fontSize="text-[9px]"
+            />
           </div>
           <div className="mt-4 text-2xl font-bold text-giv-neutral-900">
             {new Intl.NumberFormat(undefined, {
@@ -836,7 +854,13 @@ const RewardCard = ({
         <div>
           <div className="flex items-center gap-2">
             <span>GIVpower</span>
-            <HelpTooltip text="GIVpower allows you to support verified projects on Giveth while earning rewards." />
+            <HelpTooltip
+              text="GIVpower allows you to support verified projects on Giveth while earning rewards."
+              className="py-0.5! px-1.5! bg-giv-neutral-700!"
+              width={1}
+              height={1}
+              fontSize="text-[9px]"
+            />
           </div>
           <div className="mt-4 text-2xl font-bold text-giv-neutral-900">
             {formatNumber(formatUnits(givpower, tokenDecimals), {

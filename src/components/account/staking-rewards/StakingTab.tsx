@@ -384,7 +384,13 @@ export function StakingTab({ id }: { id: string }) {
                     <span className="text-lg font-bold text-giv-neutral-900">
                       {aprLabel}%
                     </span>
-                    <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
+                    <HelpTooltip
+                      text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
+                      className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                      width={1}
+                      height={1}
+                      fontSize="text-[9px]"
+                    />
                   </div>
                 </div>
               </div>

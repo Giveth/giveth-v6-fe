@@ -236,7 +236,13 @@ export const StakeSection = ({
                       <IconStars width={24} height={24} />
                     </span>
                     <span>
-                      <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
+                      <HelpTooltip
+                        text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
+                        className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                        width={1}
+                        height={1}
+                        fontSize="text-[9px]"
+                      />
                     </span>
                     <span className="w-20 text-lg font-bold text-giv-neutral-900">
                       {formatApr(chainInfo?.boostedAPR ?? chainInfo?.apr ?? 0)}
@@ -281,7 +287,13 @@ export const StakeSection = ({
               <span className="ml-3 text-lg font-bold text-giv-neutral-900">
                 {formatApr(selectedStake.boostedAPR || selectedStake.apr)}
               </span>
-              <HelpTooltip text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards." />
+              <HelpTooltip
+                text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
+                className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                width={1}
+                height={1}
+                fontSize="text-[9px]"
+              />
             </div>
           </div>
 
@@ -366,8 +378,17 @@ export const StakeSection = ({
                 Unstake
               </button>
               <div className="inline-flex items-center gap-1 font-medium text-giv-neutral-800">
-                <span>{totalLockedAmountLabel} GIV</span>
-                <HelpTooltip text="Total locked GIV for this pool." />
+                <span>
+                  {totalLockedAmountLabel}{' '}
+                  {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
+                </span>
+                <HelpTooltip
+                  text="Total locked GIV for this pool."
+                  className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                  width={1}
+                  height={1}
+                  fontSize="text-[9px]"
+                />
               </div>
             </div>
           </div>

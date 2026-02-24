@@ -161,7 +161,13 @@ export default function LockedDetailsModal({
               <span className="inline-flex items-center gap-2 text-lg font-medium text-giv-neutral-900">
                 <span className="font-bold">{aprLabel}%</span>
                 <span className="ml-1">APR</span>
-                <HelpTooltip text="The minimum APR for staked (not locked) GIV. Lock your GIV to increase your rewards." />
+                <HelpTooltip
+                  text="The minimum APR for staked (not locked) GIV. Lock your GIV to increase your rewards."
+                  className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                  width={1}
+                  height={1}
+                  fontSize="text-[9px]"
+                />
               </span>
             </div>
           </div>
@@ -214,6 +220,10 @@ export default function LockedDetailsModal({
                 <span>Total Staked {tokenSymbol}</span>
                 <HelpTooltip
                   text={`All your staked ${tokenSymbol}, including ${tokenSymbol} that is locked.`}
+                  className="py-0.5! px-1.5! bg-giv-neutral-700!"
+                  width={1}
+                  height={1}
+                  fontSize="text-[9px]"
                 />
               </div>
             </div>
