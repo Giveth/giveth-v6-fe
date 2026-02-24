@@ -66,7 +66,7 @@ export const StakingTabs = ({ activeTab, onTabChange }: StakingTabsProps) => {
   return (
     <div className="mt-8">
       {/* Tabs */}
-      <div className="relative flex flex-wrap items-end justify-end gap-4">
+      <div className="relative flex flex-wrap flex-col lg:flex-row lg:items-end lg:justify-end gap-4">
         <Link
           href="/account?tab=staking"
           className="flex items-center gap-2 py-3 text-sm! font-bold! text-giv-brand-500! hover:text-giv-brand-600! mr-auto"

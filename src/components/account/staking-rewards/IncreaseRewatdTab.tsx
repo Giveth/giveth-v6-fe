@@ -816,7 +816,7 @@ const RewardCard = ({
         <IconStars width={24} height={24} fill="var(--giv-neutral-800)" />
         <span>Rewards</span>
       </div>
-      <div className="mt-6 grid grid-cols-3 gap-4 text-base font-medium text-giv-neutral-700">
+      <div className="mt-6 grid md:grid-cols-3 gap-4 text-base font-medium text-giv-neutral-700">
         <div>
           <div className="flex items-center gap-2">
             <span>Your multiplier</span>
