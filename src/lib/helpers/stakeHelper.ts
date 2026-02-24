@@ -80,6 +80,18 @@ type TokenDistroData = {
   }>
 }
 
+export type TokenAllocationEvent = {
+  recipient: string
+  amount: string
+  timestamp: string
+  txHash: string
+  distributor: string
+}
+
+type TokenAllocationData = TokenDistroData & {
+  tokenAllocations?: TokenAllocationEvent[]
+}
+
 const LM_ABI = [
   {
     type: 'function',
@@ -290,6 +302,41 @@ function tokenDistroQuery(user: Address, distro: Address) {
       claimed
       givback
       givbackLiquidPart
+    }
+  }`
+}
+
+function tokenAllocationsQuery(
+  user: Address,
+  distro: Address,
+  skip = 0,
+  first = 10,
+) {
+  return `{
+    tokenDistro(id: "${distro.toLowerCase()}") {
+      initialAmount
+      lockedAmount
+      totalTokens
+      startTime
+      duration
+      cliffTime
+    }
+
+    tokenAllocations(
+      skip: ${skip}
+      first: ${first}
+      orderBy: timestamp
+      orderDirection: desc
+      where: {
+        recipient: "${user.toLowerCase()}"
+        tokenDistroAddress: "${distro.toLowerCase()}"
+      }
+    ) {
+      recipient
+      amount
+      timestamp
+      txHash
+      distributor
     }
   }`
 }
@@ -1100,6 +1147,90 @@ export async function fetchGIVstream(user: Address, chainId: number) {
     percentComplete: helper.GlobalReleasePercentage,
     timeRemaining: helper.remain,
   }
+}
+
+export async function fetchGIVstreamHistory(
+  user: Address,
+  chainId: number,
+  skip = 0,
+  first = 6,
+): Promise<{
+  events: TokenAllocationEvent[]
+  helper: TokenDistroHelper | null
+}> {
+  const cfg = STAKING_POOLS[chainId]
+
+  if (!cfg.TOKEN_DISTRO_ADDRESS) {
+    return { events: [], helper: null }
+  }
+
+  const data = await querySubgraph<TokenAllocationData>(
+    chainId,
+    tokenAllocationsQuery(
+      user,
+      cfg.TOKEN_DISTRO_ADDRESS as `0x${string}`,
+      skip,
+      first,
+    ),
+  )
+
+  if (!data.tokenDistro) {
+    return { events: data.tokenAllocations ?? [], helper: null }
+  }
+
+  const helper = new TokenDistroHelper({
+    contractAddress: cfg.TOKEN_DISTRO_ADDRESS as `0x${string}`,
+    initialAmount: data.tokenDistro.initialAmount,
+    lockedAmount: data.tokenDistro.lockedAmount,
+    totalTokens: data.tokenDistro.totalTokens,
+    startTime: Number(data.tokenDistro.startTime) * 1000,
+    cliffTime: Number(data.tokenDistro.cliffTime) * 1000,
+    endTime:
+      (Number(data.tokenDistro.startTime) + Number(data.tokenDistro.duration)) *
+      1000,
+  })
+
+  return {
+    events: data.tokenAllocations ?? [],
+    helper,
+  }
+}
+
+export function calculateFlowrateChange(
+  amount: bigint,
+  helper: TokenDistroHelper,
+): bigint {
+  return helper.getStreamPartTokenPerWeek(amount)
+}
+
+export function getSourceLabel(distributor: string): string {
+  switch (distributor.toLowerCase()) {
+    case 'givback':
+      return 'GIVbacks'
+    case 'unipool':
+    case 'uniswapv3':
+      return 'GIVfarm'
+    case 'givdrop':
+      return 'GIVdrop'
+    case 'balancer':
+      return 'Balancer'
+    default:
+      return distributor || 'Unknown'
+  }
+}
+
+export function formatHistoryDate(timestamp: string): string {
+  const date = new Date(Number(timestamp) * 1000)
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    year: 'numeric',
+    month: 'short',
+  })
+}
+
+export function shortenTxHash(txHash: string): string {
+  if (!txHash || txHash.length < 10) return txHash
+  return `${txHash.slice(0, 6)}...${txHash.slice(-4)}`
 }
 
 /* User Overview (Main API) */

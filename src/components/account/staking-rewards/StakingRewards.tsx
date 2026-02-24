@@ -29,7 +29,9 @@ export const StakingRewards = () => {
         selectedChain={selectedChain}
         onSelectChain={setSelectedChain}
       />
-      <GIVStreamSection />
+      <div className="mt-12">
+        <GIVStreamSection />
+      </div>
       <div className="mt-12">
         <UserGivbacksBanner />
       </div>

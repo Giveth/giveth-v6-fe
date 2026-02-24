@@ -2,39 +2,41 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import clsx from 'clsx'
-import { ArrowRight, Zap } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useActiveAccount } from 'thirdweb/react'
 import { formatUnits } from 'viem'
+import { GIVStreamHistoryModal } from '@/components/account/GIVStreamHistoryModal'
 import { DropdownStakeNetworks } from '@/components/account/staking-rewards/DropdownStakeNetworks'
-import { STAKING_CHAINS } from '@/lib/constants/staking-power-constants'
+import { IconFlash } from '@/components/icons/IconFlash'
+import {
+  STAKING_CHAINS,
+  STAKING_POOLS,
+} from '@/lib/constants/staking-power-constants'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { fetchGIVstream } from '@/lib/helpers/stakeHelper'
 
-// The number of milliseconds in a day
-const MS_IN_DAY = 86_400_000
+const formatTimeRemaining = (ms: number, length = 3) => {
+  if (!ms || ms <= 0) return '0 s'
 
-/**
- * Format the time remaining for a GIVstream
- *
- * @param ms - The time remaining in milliseconds
- * @returns The formatted time remaining
- */
-const formatTimeRemaining = (ms: number) => {
-  if (!ms || ms <= 0) return '0 days'
+  const baseTime = new Date(0)
+  const duration = new Date(ms)
 
-  const totalDays = Math.floor(ms / MS_IN_DAY)
-  const years = Math.floor(totalDays / 365)
-  const months = Math.floor((totalDays % 365) / 30)
-  const days = totalDays % 30
+  const years = duration.getUTCFullYear() - baseTime.getUTCFullYear()
+  const months = duration.getUTCMonth() - baseTime.getUTCMonth()
+  const days = duration.getUTCDate() - baseTime.getUTCDate()
+  const hours = duration.getUTCHours() - baseTime.getUTCHours()
+  const minutes = duration.getUTCMinutes() - baseTime.getUTCMinutes()
+  const seconds = duration.getUTCSeconds() - baseTime.getUTCSeconds()
 
   const parts: string[] = []
-  if (years > 0) parts.push(`${years} year${years === 1 ? '' : 's'}`)
-  if (months > 0) parts.push(`${months} month${months === 1 ? '' : 's'}`)
-  if (days > 0 || parts.length === 0) {
-    parts.push(`${days} day${days === 1 ? '' : 's'}`)
-  }
+  if (years) parts.push(`${years} y`)
+  if (months) parts.push(`${months} m`)
+  if (days) parts.push(`${days} d`)
+  if (hours) parts.push(`${hours} h`)
+  if (minutes) parts.push(`${minutes} min`)
+  if (seconds) parts.push(`${seconds} s`)
 
-  return parts.join(', ')
+  return parts.slice(0, length).join(' ') || '0 s'
 }
 
 export const GIVStreamSection = () => {
@@ -46,6 +48,9 @@ export const GIVStreamSection = () => {
     percentComplete: 0,
     timeRemaining: 0,
   })
+
+  const [isGIVStreamHistoryModalOpen, setIsGIVStreamHistoryModalOpen] =
+    useState(false)
 
   useEffect(() => {
     if (!account?.address || !selectedChain) {
@@ -100,63 +105,70 @@ export const GIVStreamSection = () => {
   const percentLabel = `${Math.round(percent)}%`
   const timeRemainingLabel = formatTimeRemaining(streamData.timeRemaining)
 
+  const tokenSymbol = STAKING_POOLS[selectedChain]?.GIVPOWER?.unit ?? 'GIV'
+
   return (
-    <div className="mt-8 rounded-2xl border border-giv-neutral-200 bg-white px-6 py-5">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-2 text-giv-neutral-900 font-semibold">
-          <Zap className="h-5 w-5 text-giv-neutral-900" />
-          <span>GIVstream</span>
-        </div>
-        <DropdownStakeNetworks
-          selectedChain={selectedChain}
-          chains={STAKING_CHAINS}
-          onSelectChain={setSelectedChain}
-        />
-      </div>
-
-      <div className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <div className="text-sm text-giv-neutral-700">Your Flowrate</div>
-          <div className="flex items-end gap-2">
-            <span className="text-3xl font-bold text-giv-neutral-900">
-              {flowRateLabel}
-            </span>
-            <span className="text-sm text-giv-neutral-700 pb-1">GIV/week</span>
+    <>
+      <div className="mt-8 rounded-2xl border border-giv-brand-100 px-6 py-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-2 text-lg text-giv-neutral-900 font-bold">
+            <IconFlash className="h-5 w-5" fill="var(--giv-brand-900)" />
+            <span>GIVstream</span>
           </div>
-        </div>
-        <div>
-          <div className="text-sm text-giv-neutral-700">Time remaining</div>
-          <div className="text-base font-semibold text-giv-neutral-900">
-            {timeRemainingLabel}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5">
-        <div className="h-2 rounded-full bg-giv-neutral-200">
-          <div
-            className="h-2 rounded-full bg-giv-brand-400"
-            style={{ width: `${percent}%` }}
+          <DropdownStakeNetworks
+            selectedChain={selectedChain}
+            chains={STAKING_CHAINS}
+            onSelectChain={setSelectedChain}
           />
         </div>
-        <div className="mt-2 flex justify-between text-xs text-giv-neutral-700">
-          <span>{percentLabel}</span>
-          <span>100%</span>
+
+        <div className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="flex justify-between items-center gap-1 text-giv-neutral-900">
+            <div className="text-base">Your Flowrate</div>
+            <span className="ml-3 text-2xl font-bold">{flowRateLabel}</span>
+            <span className="text-sm font-regular">{tokenSymbol}/week</span>
+          </div>
+          <div className="flex justify-between items-center gap-1 text-giv-neutral-900 font-medium">
+            <div className="text-sm">Time remaining</div>
+            <div className="ml-2 text-lg">{timeRemainingLabel}</div>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <div className="h-2 rounded-full bg-giv-neutral-200">
+            <div
+              className="h-2 rounded-full"
+              style={{
+                width: `${percent}%`,
+                background: 'linear-gradient(90deg, #8668FC 0%, #211985 100%)',
+              }}
+            />
+          </div>
+          <div className="mt-2 flex justify-between text-sm text-giv-neutral-900">
+            <span>{percentLabel}</span>
+            <span>100%</span>
+          </div>
         </div>
       </div>
-
       <div className="mt-4 flex justify-end">
         <button
           type="button"
+          onClick={() => setIsGIVStreamHistoryModalOpen(true)}
           className={clsx(
-            'flex items-center gap-2 text-sm font-semibold',
+            'flex items-center gap-2 text-sm font-bold',
             'text-giv-brand-700 hover:opacity-80 transition-opacity',
+            'cursor-pointer',
           )}
         >
           GIVstream history
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-6 w-6" />
         </button>
       </div>
-    </div>
+      <GIVStreamHistoryModal
+        open={isGIVStreamHistoryModalOpen}
+        onOpenChange={setIsGIVStreamHistoryModalOpen}
+        chainId={selectedChain}
+      />
+    </>
   )
 }
