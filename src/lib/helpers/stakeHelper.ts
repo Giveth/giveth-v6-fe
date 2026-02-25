@@ -1174,40 +1174,12 @@ export async function getAvailableToUnstake(
   locked: bigint
   availableToUnstake: bigint
 }> {
-  const cfg = STAKING_POOLS[chainId]
-  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
-    throw new Error(`GIVpower not configured for chain ${chainId}`)
-  }
-
-  const contract = getContract({
-    client: thirdwebClient,
-    chain: defineChain(chainId),
-    address: cfg.GIVPOWER.LM_ADDRESS as Address,
-    abi: GIVPOWER_ABI,
-  })
-
-  const [depositBalance, userLocksRaw] = await Promise.all([
-    readContract({
-      contract,
-      method: 'depositTokenBalance',
-      params: [user],
-    }) as Promise<bigint>,
-    readContract({
-      contract,
-      method: 'userLocks',
-      params: [user],
-    }) as Promise<unknown>,
-  ])
-
-  const locked = (userLocksRaw as { totalAmountLocked: bigint })
-    .totalAmountLocked
-  const availableToUnstake =
-    depositBalance > locked ? depositBalance - locked : 0n
+  const lockInfo = await fetchAvailableToLock(user, chainId)
 
   return {
-    totalStaked: depositBalance,
-    locked,
-    availableToUnstake,
+    totalStaked: lockInfo.totalDeposited,
+    locked: lockInfo.alreadyLocked,
+    availableToUnstake: lockInfo.availableToLock,
   }
 }
 

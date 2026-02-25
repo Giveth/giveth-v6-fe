@@ -2,10 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
+import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowUpRight, LockKeyhole } from 'lucide-react'
+import { type Route } from 'next'
 import ReactCanvasConfetti from 'react-canvas-confetti'
-import { useActiveAccount } from 'thirdweb/react'
+import { defineChain } from 'thirdweb'
+import {
+  useActiveAccount,
+  useActiveWalletChain,
+  useSwitchActiveWalletChain,
+} from 'thirdweb/react'
 import { type Address, formatUnits, parseUnits } from 'viem'
 import LockedDetailsModal from '@/components/account/staking-rewards/LockedDetailsModal'
 import { ChainIcon } from '@/components/ChainIcon'
@@ -42,7 +49,10 @@ type ConfettiInstance = (options: Record<string, unknown>) => void
 
 export function UnstakeTab({ id }: { id: string }) {
   const pool = STAKING_POOLS[Number(id)]
+
   const account = useActiveAccount()
+  const activeChain = useActiveWalletChain()
+  const switchChain = useSwitchActiveWalletChain()
 
   const [isLockedDetailsModalOpen, setIsLockedDetailsModalOpen] =
     useState(false)
@@ -62,6 +72,7 @@ export function UnstakeTab({ id }: { id: string }) {
 
   const tokenDecimals = pool?.GIVPOWER?.decimals ?? 18
 
+  // Convert amount to base units, used for the unstake amount
   const amountInBaseUnits = useMemo(() => {
     if (!amountToUnstake || Number(amountToUnstake) <= 0) return 0n
     try {
@@ -93,6 +104,7 @@ export function UnstakeTab({ id }: { id: string }) {
     maximumFractionDigits: 2,
   }).format(baseApr)
 
+  // Initialize confetti, only initialize once
   const handleConfettiInit = useCallback(
     ({ confetti }: { confetti: ConfettiInstance }) => {
       confettiRef.current = confetti
@@ -100,6 +112,7 @@ export function UnstakeTab({ id }: { id: string }) {
     [],
   )
 
+  // Fire side cannons, only fire if the unstaking is successful, only fire once
   const fireSideCannons = useCallback(() => {
     const end = Date.now() + 3 * 1000
     const frame = () => {
@@ -126,6 +139,7 @@ export function UnstakeTab({ id }: { id: string }) {
     frame()
   }, [])
 
+  // Fire side cannons, only fire if the unstaking is successful, only fire once
   useEffect(() => {
     if (flowStep !== 'confirmed') {
       hasFiredRef.current = false
@@ -138,6 +152,7 @@ export function UnstakeTab({ id }: { id: string }) {
     fireSideCannons()
   }, [fireSideCannons, flowStep])
 
+  // Refresh the unstake data, used to refresh the unstake data when the user clicks the refresh button
   const handleRefresh = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
     try {
@@ -162,16 +177,23 @@ export function UnstakeTab({ id }: { id: string }) {
     }
   }
 
+  // Format amount to six decimals, used for the unstake amount
   const formatAmountToSixDecimals = (value: number) => {
     const fixed = value.toFixed(6)
     return fixed.replace(/\.?0+$/, '')
   }
 
+  // Handle unstake, used to unstake the GIV power
   const handleUnstake = async () => {
     if (!account || !pool?.GIVPOWER?.network || !canSubmit) return
     setErrorMessage(null)
     setFlowStep('pending')
     try {
+      // Change user network to the chainId
+      if (activeChain?.id !== pool.GIVPOWER.network) {
+        await switchChain(defineChain(pool.GIVPOWER.network))
+      }
+
       const tx = await unstakeGIV(
         account,
         pool.GIVPOWER.network,
@@ -191,6 +213,7 @@ export function UnstakeTab({ id }: { id: string }) {
     }
   }
 
+  // Handle reset, used to reset the unstake data
   const handleReset = () => {
     setFlowStep('input')
     setAmountToUnstake('0')
@@ -198,6 +221,7 @@ export function UnstakeTab({ id }: { id: string }) {
     setTxHash(null)
   }
 
+  // Fetch the unstake data, used to fetch the unstake data when the user clicks the refresh button
   useEffect(() => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
     let cancelled = false
@@ -236,6 +260,7 @@ export function UnstakeTab({ id }: { id: string }) {
     }
   }, [account?.address, pool?.GIVPOWER?.network])
 
+  // Fetch the token price, used to fetch the token price when the user clicks the refresh button
   useEffect(() => {
     const coingeckoId = pool?.GIVPOWER?.coingeckoId
     if (!coingeckoId) {
@@ -505,12 +530,12 @@ export function UnstakeTab({ id }: { id: string }) {
                     type="button"
                     disabled
                     className={clsx(
-                      'w-full mt-6 py-4 bg-giv-brand-100! text-giv-brand-700! rounded-md text-sm font-bold',
+                      'w-full mt-6 py-4 bg-giv-brand-100! text-white! rounded-md text-sm font-bold',
                       'flex items-center justify-center gap-2 cursor-not-allowed',
                     )}
                   >
                     Approve Pending
-                    <span className="w-4 h-4 border-2 border-giv-brand-700 border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </button>
                   {txHash && (
                     <a
@@ -542,25 +567,27 @@ export function UnstakeTab({ id }: { id: string }) {
                       {amountToUnstake} {pool?.GIVPOWER.title}
                     </div>
                   </div>
-                  <div className="mt-6 rounded-xl border border-giv-brand-100 bg-giv-brand-050 p-4 text-sm text-giv-neutral-700">
-                    <div className="font-bold text-giv-neutral-900">
+                  <div className="mt-6 rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-4 text-sm text-giv-neutral-700">
+                    <div className="font-bold text-giv-neutral-700 mb-1.5">
                       Transaction confirmed!
                     </div>
                     It can take a few minutes for the changes to appear.
                   </div>
                   {txHash && (
-                    <a
-                      href={getTransactionUrl(
-                        pool?.GIVPOWER?.network as number,
-                        txHash,
-                      )}
+                    <Link
+                      href={
+                        getTransactionUrl(
+                          pool?.GIVPOWER?.network as number,
+                          txHash,
+                        ) as Route
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-4 inline-flex items-center justify-center gap-2 w-full text-sm font-bold text-giv-brand-700 hover:opacity-80"
+                      className="mt-10 inline-flex items-center justify-center gap-2 w-full text-sm! font-bold! text-giv-brand-700! hover:opacity-80"
                     >
                       View on Blockscout
-                      <ArrowUpRight className="h-4 w-4" />
-                    </a>
+                      <ArrowUpRight className="h-5 w-5" />
+                    </Link>
                   )}
                   <button
                     type="button"
