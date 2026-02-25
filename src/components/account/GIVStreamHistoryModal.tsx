@@ -15,9 +15,9 @@ import {
   formatHistoryDate,
   getSourceLabel,
   shortenTxHash,
-  type TokenAllocationEvent,
 } from '@/lib/helpers/stakeHelper'
 import type { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
+import type { TokenAllocationEvent } from '@/lib/types/staking'
 
 type GIVStreamHistoryModalProps = {
   open: boolean
