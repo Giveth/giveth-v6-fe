@@ -142,3 +142,21 @@ export const UNIPOOL_ABI = [
     outputs: [],
   },
 ] as const
+
+// ABI for the GIVpower Unipool contract, this is used to get the total supply and reward rate
+export const UNIPOOL_APR_ABI = [
+  {
+    type: 'function',
+    name: 'totalSupply',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    type: 'function',
+    name: 'rewardRate',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+  },
+] as const

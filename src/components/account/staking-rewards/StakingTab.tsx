@@ -34,6 +34,7 @@ import {
   approveGIVpowerStake,
   fetchWalletBalance,
   fetchStaking,
+  fetchGIVpowerAPRRange,
   formatToken,
   stakeGIVpower,
 } from '@/lib/helpers/stakeHelper'
@@ -73,6 +74,10 @@ export function StakingTab({ id }: { id: string }) {
   const [availableToLock, setAvailableToLock] = useState<bigint>(0n)
   const [walletBalance, setWalletBalance] = useState<bigint>(0n)
   const [aprValue, setAprValue] = useState<number>(0)
+  const [aprRange, setAprRange] = useState<{
+    baseApr: number
+    maxApr: number
+  } | null>(null)
   const [tokenPriceInUSD, setTokenPriceInUSD] = useState<number>(0)
   const [flowStep, setFlowStep] = useState<
     'input' | 'approving' | 'approved' | 'staking' | 'staked'
@@ -255,6 +260,27 @@ export function StakingTab({ id }: { id: string }) {
     }
   }, [account?.address, pool?.GIVPOWER?.network])
 
+  useEffect(() => {
+    if (!pool?.GIVPOWER?.network) return
+    let cancelled = false
+
+    const fetchRange = async () => {
+      try {
+        const range = await fetchGIVpowerAPRRange(pool.GIVPOWER.network)
+        if (!cancelled) {
+          setAprRange(range)
+        }
+      } catch (error) {
+        console.error('Failed to fetch APR range:', error)
+      }
+    }
+
+    fetchRange()
+    return () => {
+      cancelled = true
+    }
+  }, [pool?.GIVPOWER?.network])
+
   // Fetch token price
   useEffect(() => {
     const coingeckoId = pool?.GIVPOWER?.coingeckoId
@@ -295,11 +321,18 @@ export function StakingTab({ id }: { id: string }) {
     fireSideCannons()
   }, [fireSideCannons, flowStep])
 
-  // Format APR value
-  const aprLabel = new Intl.NumberFormat(undefined, {
+  const hasStake = availableToLock + lockedAmount > 0n
+  const aprNumberLabel = new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(aprValue)
+  const aprRangeLabel = aprRange
+    ? `${aprRange.baseApr.toFixed(2)}%-${aprRange.maxApr.toFixed(2)}%`
+    : null
+  const aprLabel =
+    (!account?.address || !hasStake) && aprRangeLabel
+      ? aprRangeLabel
+      : aprNumberLabel
 
   // Total staked amount
   const totalStakedAmountLabel = formatToken(

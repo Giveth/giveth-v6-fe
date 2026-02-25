@@ -15,6 +15,7 @@ import {
   TOKEN_MANAGER_ABI,
   UNIPOOL_ABI,
   UNIPOOL_ABI_WITHDRAW,
+  UNIPOOL_APR_ABI,
 } from '@/lib/abis/staking'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
@@ -277,6 +278,49 @@ export function calculateMultiplier(rounds: number): number {
  */
 export function calculateBoostedAPR(baseAPR: number, rounds: number): number {
   return baseAPR * calculateMultiplier(rounds)
+}
+
+export async function fetchGIVpowerAPRRange(chainId: number): Promise<{
+  baseApr: number
+  maxApr: number
+}> {
+  const cfg = STAKING_POOLS[chainId]
+  if (!cfg?.GIVPOWER?.LM_ADDRESS) {
+    throw new Error(`GIVpower not configured for chain ${chainId}`)
+  }
+
+  const contract = getContract({
+    client: thirdwebClient,
+    chain: defineChain(chainId),
+    address: cfg.GIVPOWER.LM_ADDRESS as Address,
+    abi: UNIPOOL_APR_ABI,
+  })
+
+  const [totalSupply, rewardRate] = await Promise.all([
+    readContract({
+      contract,
+      method: 'totalSupply',
+      params: [],
+    }) as Promise<bigint>,
+    readContract({
+      contract,
+      method: 'rewardRate',
+      params: [],
+    }) as Promise<bigint>,
+  ])
+
+  const SECONDS_PER_YEAR = 31_536_000n
+  const APR_SCALE = 1_000_000n
+  const baseApr =
+    totalSupply > 0n
+      ? Number(
+          (rewardRate * SECONDS_PER_YEAR * 100n * APR_SCALE) / totalSupply,
+        ) / Number(APR_SCALE)
+      : 0
+
+  const maxApr = baseApr * calculateMultiplier(LOCK_CONSTANTS.MAX_ROUNDS)
+
+  return { baseApr, maxApr }
 }
 
 /**
