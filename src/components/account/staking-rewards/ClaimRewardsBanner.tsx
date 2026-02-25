@@ -43,7 +43,8 @@ export const ClaimRewardsBanner = ({
   // Fetch token price
   useEffect(() => {
     const fetchPrice = async () => {
-      const coingeckoId = STAKING_POOLS[selectedChain]?.GIVPOWER?.coingeckoId
+      const coingeckoId =
+        STAKING_POOLS[selectedChain]?.GIVPOWER?.coingeckoId ?? 'giveth'
       if (!coingeckoId) {
         setTokenPriceUsd(0)
         return
@@ -64,7 +65,7 @@ export const ClaimRewardsBanner = ({
   }
 
   const tokenDecimals = STAKING_POOLS[selectedChain]?.GIVPOWER?.decimals ?? 18
-  const tokenSymbol = STAKING_POOLS[selectedChain]?.GIVPOWER?.unit ?? 'GIV'
+  const tokenSymbol = STAKING_POOLS[selectedChain]?.GIVPOWER?.unit || 'GIV'
   const stakingClaimable = data?.staking?.claimable ?? 0n
   const givbacksLiquid = data?.givbacks?.givbackLiquidPart ?? 0n
   const givfarmAmount = stakingClaimable
@@ -99,7 +100,8 @@ export const ClaimRewardsBanner = ({
     )} ${STAKING_POOLS[selectedChain]?.GIVPOWER?.unit}/week`
 
   const tokenDistroAddress = STAKING_POOLS[selectedChain]?.TOKEN_DISTRO_ADDRESS
-  const givpowerLmAddress = STAKING_POOLS[selectedChain]?.GIVPOWER?.LM_ADDRESS
+  const givpowerLmAddress =
+    STAKING_POOLS[selectedChain]?.GIVPOWER?.LM_ADDRESS || undefined
   const stakedAmount = data?.staking?.staked ?? 0n
 
   return (

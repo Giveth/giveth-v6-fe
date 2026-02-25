@@ -591,7 +591,7 @@ export async function fetchStaking(user: Address, chainId: number) {
   const cfg = STAKING_POOLS[chainId]
   const data = await querySubgraph<StakingData>(
     chainId,
-    stakingQuery(user, cfg.GIVPOWER.LM_ADDRESS as Address),
+    stakingQuery(user, cfg?.GIVPOWER?.LM_ADDRESS as Address),
   )
 
   if (!data.unipool) throw new Error('Pool not found')
@@ -630,12 +630,14 @@ export async function fetchStaking(user: Address, chainId: number) {
     (staked * rewardPerTokenDelta) / 1_000_000_000_000_000_000n
   let earned = baseRewards + accruedRewards
 
+  let stakedShares = staked
+
   // On-chain fallback
   try {
     const contract = getContract({
       client: thirdwebClient,
       chain: defineChain(chainId),
-      address: cfg.GIVPOWER.LM_ADDRESS as Address,
+      address: cfg?.GIVPOWER?.LM_ADDRESS as Address,
       abi: LM_ABI,
     })
     if (earned === 0n) {
@@ -653,12 +655,11 @@ export async function fetchStaking(user: Address, chainId: number) {
         params: [user],
       })) as bigint
       staked = onchainStaked
+      stakedShares = onchainStaked
     }
-    if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM') {
-      const depositBalance = await fetchGIVpowerDepositBalance(user, chainId)
-      if (depositBalance > 0n) {
-        staked = depositBalance
-      }
+    const depositBalance = await fetchGIVpowerDepositBalance(user, chainId)
+    if (depositBalance > 0n) {
+      staked = depositBalance
     }
   } catch (error) {
     console.warn('Failed to read on-chain staking data:', error)
@@ -685,9 +686,17 @@ export async function fetchStaking(user: Address, chainId: number) {
     })
   }
 
-  const locked = await fetchGIVpowerLocked(user, chainId)
-  const boostMultiplier = locked > 0n ? Number(staked) / Number(locked) : 1
-  const boostedAPR = locked > 0n ? apr * boostMultiplier : apr
+  let boostMultiplier = 1
+  let boostedAPR = apr
+  if (staked > 0n) {
+    const shares = stakedShares > 0n ? stakedShares : staked
+    const stakedFloat = Number(formatUnits(staked, 18))
+    const sharesFloat = Number(formatUnits(shares, 18))
+    if (stakedFloat > 0 && sharesFloat > 0) {
+      boostMultiplier = sharesFloat / stakedFloat
+      boostedAPR = apr * boostMultiplier
+    }
+  }
 
   // Calculate streaming/claimable split
   if (cfg.TOKEN_DISTRO_ADDRESS && earned > 0n) {
