@@ -440,7 +440,7 @@ export const EXPLORER_BY_CHAIN_ID: Record<number, string> = {
   11155111: 'https://eth-sepolia.blockscout.com/',
 
   // Optimism
-  10: 'https://optimistic.blockscout.com/',
+  10: 'https://explorer.optimism.io/',
   11155420: 'https://optimism-sepolia.blockscout.com/',
 
   // Gnosis
