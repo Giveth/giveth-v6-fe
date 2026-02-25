@@ -1,25 +1,20 @@
 import { defineChain } from 'thirdweb'
 import { smartWallet, type Account, type Wallet } from 'thirdweb/wallets'
+import { CHAINS } from '@/lib/constants/chain'
 import { thirdwebClient } from '@/lib/thirdweb/client'
 
 export const PROJECT_OWNER_EVM_NETWORK_IDS = [
-  1, // Ethereum
-  10, // Optimism
-  100, // Gnosis
-  137, // Polygon
-  42161, // Arbitrum One
-  42220, // Celo
-  8453, // Base
+  CHAINS[1].id, // Ethereum
+  CHAINS[10].id, // Optimism
+  CHAINS[100].id, // Gnosis Chain
+  CHAINS[137].id, // Polygon
+  CHAINS[42161].id, // Arbitrum One
+  CHAINS[42220].id, // Celo
+  CHAINS[8453].id, // Base
 ] as const
 
-const CHAIN_LABELS: Record<number, string> = {
-  1: 'Ethereum',
-  10: 'Optimism',
-  100: 'Gnosis',
-  137: 'Polygon',
-  42161: 'Arbitrum',
-  42220: 'Celo',
-  8453: 'Base',
+const getRecipientTitle = (networkId: number): string => {
+  return `${CHAINS[networkId]?.name ?? `Chain ${networkId}`} recipient`
 }
 
 export type ProjectOwnerRecipientAddress = {
@@ -31,9 +26,9 @@ export type ProjectOwnerRecipientAddress = {
 
 export function resolveProjectOwnerAdminAccount(
   wallet: Wallet | undefined,
-  activeAccount: Account | undefined,
+  fallbackAccount: Account | undefined,
 ): Account | null {
-  return wallet?.getAdminAccount?.() ?? activeAccount ?? null
+  return wallet?.getAdminAccount?.() ?? fallbackAccount ?? null
 }
 
 export function createProjectAccountSalt(
@@ -70,7 +65,7 @@ export async function deriveProjectOwnerRecipientAddresses(args: {
           chainType: 'EVM' as const,
           networkId,
           address: account.address,
-          title: `${CHAIN_LABELS[networkId] || `Chain ${networkId}`} recipient`,
+          title: getRecipientTitle(networkId),
         }
       } catch (error) {
         console.error(
@@ -82,7 +77,7 @@ export async function deriveProjectOwnerRecipientAddresses(args: {
           chainType: 'EVM' as const,
           networkId,
           address: adminAccount.address,
-          title: `${CHAIN_LABELS[networkId] || `Chain ${networkId}`} recipient`,
+          title: getRecipientTitle(networkId),
         }
       } finally {
         await wallet.disconnect().catch(() => undefined)
