@@ -18,6 +18,7 @@ import { IconReload } from '@/components/icons/IconReload'
 import { IconStars } from '@/components/icons/IconStars'
 import { IconWarning } from '@/components/icons/IconWarning'
 import { TokenIcon } from '@/components/TokenIcon'
+import { GIVPOWER_ABI } from '@/lib/abis/staking'
 import { projectsLink } from '@/lib/constants/menu-links'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import {
@@ -26,7 +27,6 @@ import {
 } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
 import {
-  GIVPOWER_ABI,
   LOCK_CONSTANTS,
   calculateBoostedAPR,
   calculateGIVpower,
