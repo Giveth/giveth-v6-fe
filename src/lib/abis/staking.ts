@@ -1,3 +1,4 @@
+// ABI for the LM contract, this is used to get the staking data
 export const LM_ABI = [
   {
     type: 'function',
@@ -29,6 +30,7 @@ export const LM_ABI = [
   },
 ] as const
 
+// ABI for the ERC20 contract, this is used to get the token balance and allowance
 export const ERC20_ABI = [
   {
     type: 'function',
@@ -59,6 +61,7 @@ export const ERC20_ABI = [
   },
 ] as const
 
+// ABI for the GIVpower contract, this is used to get the GIVpower balance and lock/unlock functions
 export const GIVPOWER_ABI = [
   {
     type: 'function',
@@ -100,6 +103,7 @@ export const GIVPOWER_ABI = [
   },
 ] as const
 
+// ABI for the GIVpower Unipool contract, this is used to withdraw the GIVpower
 export const UNIPOOL_ABI_WITHDRAW = [
   {
     type: 'function',
@@ -110,6 +114,7 @@ export const UNIPOOL_ABI_WITHDRAW = [
   },
 ] as const
 
+// ABI for the Token Manager contract, this is used to wrap/unwrap the GIV token
 export const TOKEN_MANAGER_ABI = [
   {
     type: 'function',
@@ -123,6 +128,17 @@ export const TOKEN_MANAGER_ABI = [
     name: 'unwrap',
     stateMutability: 'nonpayable',
     inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
+] as const
+
+// ABI for the GIVpower Unipool contract, this is used to get the reward
+export const UNIPOOL_ABI = [
+  {
+    type: 'function',
+    name: 'getReward',
+    stateMutability: 'nonpayable',
+    inputs: [],
     outputs: [],
   },
 ] as const

@@ -13,6 +13,7 @@ import {
   GIVPOWER_ABI,
   LM_ABI,
   TOKEN_MANAGER_ABI,
+  UNIPOOL_ABI,
   UNIPOOL_ABI_WITHDRAW,
 } from '@/lib/abis/staking'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
@@ -1295,19 +1296,6 @@ export async function claimAll(
 
   return finalReceipt.transactionHash
 }
-
-/**
- * ABI for the GIVpower Unipool contract
- */
-const UNIPOOL_ABI = [
-  {
-    type: 'function',
-    name: 'getReward',
-    stateMutability: 'nonpayable',
-    inputs: [],
-    outputs: [],
-  },
-] as const
 
 /**
  * Harvest rewards based on whether the user is staking GIVpower
