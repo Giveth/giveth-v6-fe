@@ -964,6 +964,7 @@ export async function fetchGIVpowerDepositBalance(
     return 0n
   }
 }
+
 /* Wallet Balance */
 
 /**
@@ -1166,6 +1167,13 @@ export async function fetchGIVstream(user: Address, chainId: number) {
   }
 }
 
+/**
+ * Fetch the available to unstake amount for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @returns The available to unstake amount
+ */
 export async function getAvailableToUnstake(
   user: Address,
   chainId: number,
@@ -1183,6 +1191,14 @@ export async function getAvailableToUnstake(
   }
 }
 
+/**
+ * Unstake GIV for a user
+ *
+ * @param account - The user's account
+ * @param chainId - The chain ID
+ * @param amount - The amount to unstake
+ * @returns The transaction hash
+ */
 export async function unstakeGIV(
   account: Account,
   chainId: number,
@@ -1196,16 +1212,20 @@ export async function unstakeGIV(
     throw new Error('Amount must be greater than 0')
   }
 
+  // Fetch the available to unstake amount for the user
   const available = await getAvailableToUnstake(
     account.address as Address,
     chainId,
   )
+
+  // Check if the amount is greater than the available to unstake amount
   if (amount > available.availableToUnstake) {
     throw new Error(
       `Insufficient available balance. Available: ${available.availableToUnstake}`,
     )
   }
 
+  // If the GIVpower type is GIV_GARDEN_LM, unwrap the GIVpower
   if (cfg.GIVPOWER.type === 'GIV_GARDEN_LM' && cfg.GIVPOWER.GARDEN_ADDRESS) {
     const contract = getContract({
       client: thirdwebClient,
@@ -1223,22 +1243,35 @@ export async function unstakeGIV(
     return finalReceipt.transactionHash
   }
 
+  // If the GIVpower type is not GIV_GARDEN_LM, withdraw the GIVpower
   const contract = getContract({
     client: thirdwebClient,
     chain: defineChain(chainId),
     address: cfg.GIVPOWER.LM_ADDRESS as Address,
     abi: UNIPOOL_ABI_WITHDRAW,
   })
+
+  // Prepare the transaction to withdraw the GIVpower
   const transaction = prepareContractCall({
     contract,
     method: 'withdraw',
     params: [amount],
   })
+
   const receipt = await sendTransaction({ account, transaction })
   const finalReceipt = await waitForReceipt(receipt)
   return finalReceipt.transactionHash
 }
 
+/**
+ * Fetch the GIVstream history for a user
+ *
+ * @param user - The user's address
+ * @param chainId - The chain ID
+ * @param skip - The number of events to skip
+ * @param first - The number of events to fetch
+ * @returns The GIVstream history
+ */
 export async function fetchGIVstreamHistory(
   user: Address,
   chainId: number,
@@ -1254,6 +1287,7 @@ export async function fetchGIVstreamHistory(
     return { events: [], helper: null }
   }
 
+  // Fetch the GIVstream history from the subgraph
   const data = await querySubgraph<TokenAllocationData>(
     chainId,
     tokenAllocationsQuery(
@@ -1286,6 +1320,13 @@ export async function fetchGIVstreamHistory(
   }
 }
 
+/**
+ * Calculate the flowrate change for a given amount
+ *
+ * @param amount - The amount to calculate the flowrate change for
+ * @param helper - The TokenDistroHelper
+ * @returns The flowrate change
+ */
 export function calculateFlowrateChange(
   amount: bigint,
   helper: TokenDistroHelper,
@@ -1293,6 +1334,12 @@ export function calculateFlowrateChange(
   return helper.getStreamPartTokenPerWeek(amount)
 }
 
+/**
+ * Get the source label for a given distributor
+ *
+ * @param distributor - The distributor
+ * @returns The source label
+ */
 export function getSourceLabel(distributor: string): string {
   switch (distributor.toLowerCase()) {
     case 'givback':
@@ -1309,6 +1356,12 @@ export function getSourceLabel(distributor: string): string {
   }
 }
 
+/**
+ * Format the history date for a given timestamp
+ *
+ * @param timestamp - The timestamp to format
+ * @returns The formatted date
+ */
 export function formatHistoryDate(timestamp: string): string {
   const date = new Date(Number(timestamp) * 1000)
   return date.toLocaleDateString('en-US', {
@@ -1318,6 +1371,12 @@ export function formatHistoryDate(timestamp: string): string {
   })
 }
 
+/**
+ * Shorten the transaction hash for a given transaction hash
+ *
+ * @param txHash - The transaction hash to shorten
+ * @returns The shortened transaction hash
+ */
 export function shortenTxHash(txHash: string): string {
   if (!txHash || txHash.length < 10) return txHash
   return `${txHash.slice(0, 6)}...${txHash.slice(-4)}`
@@ -1519,6 +1578,11 @@ export async function fetchAvailableToLock(
 
 /**
  * Approve GIV token spend for GIVpower staking
+ *
+ * @param account - The account to approve
+ * @param chainId - The chain ID
+ * @param amount - The amount to approve
+ * @returns The transaction hash
  */
 export async function approveGIVpowerStake(
   account: Account,
@@ -1538,6 +1602,7 @@ export async function approveGIVpowerStake(
     throw new Error(`Spender address not configured for chain ${chainId}`)
   }
 
+  // Get the GIV token contract, this is used to approve the GIV token spend
   const tokenContract = getContract({
     client: thirdwebClient,
     chain: defineChain(chainId),
@@ -1545,19 +1610,29 @@ export async function approveGIVpowerStake(
     abi: ERC20_ABI,
   })
 
+  // Prepare the transaction to approve the GIV token spend, this is used to approve the GIV token spend
   const transaction = prepareContractCall({
     contract: tokenContract,
     method: 'approve',
     params: [spenderAddress as Address, amount],
   })
 
+  // Send the transaction to approve the GIV token spend
   const receipt = await sendTransaction({ account, transaction })
+
+  // Wait for the transaction to be mined
   const finalReceipt = await waitForReceipt(receipt)
+
   return finalReceipt.transactionHash
 }
 
 /**
  * Stake GIV into GIVpower pool
+ *
+ * @param account - The account to stake from
+ * @param chainId - The chain ID
+ * @param amount - The amount to stake
+ * @returns The transaction hash
  */
 export async function stakeGIVpower(
   account: Account,
@@ -1574,6 +1649,7 @@ export async function stakeGIVpower(
       throw new Error(`GARDEN_ADDRESS not configured for chain ${chainId}`)
     }
 
+    // Get the GIV token manager contract, this is used to wrap the GIV token
     const tokenManagerContract = getContract({
       client: thirdwebClient,
       chain: defineChain(chainId),
@@ -1581,14 +1657,19 @@ export async function stakeGIVpower(
       abi: TOKEN_MANAGER_ABI,
     })
 
+    // Prepare the transaction to wrap the GIV token
     const wrapTx = prepareContractCall({
       contract: tokenManagerContract,
       method: 'wrap',
       params: [amount],
     })
 
+    // Send the transaction to wrap the GIV token
     const wrapReceipt = await sendTransaction({ account, transaction: wrapTx })
+
+    // Wait for the transaction to be mined
     const finalWrapReceipt = await waitForReceipt(wrapReceipt)
+
     return finalWrapReceipt.transactionHash
   }
 
