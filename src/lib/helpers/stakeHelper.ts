@@ -8,218 +8,27 @@ import {
 } from 'thirdweb'
 import { type Account } from 'thirdweb/wallets'
 import { type Address, formatUnits, parseUnits } from 'viem'
+import {
+  ERC20_ABI,
+  GIVPOWER_ABI,
+  LM_ABI,
+  TOKEN_MANAGER_ABI,
+  UNIPOOL_ABI_WITHDRAW,
+} from '@/lib/abis/staking'
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { TokenDistroHelper } from '@/lib/helpers/tokenDistroHelper'
 import { thirdwebClient } from '@/lib/thirdweb/client'
+import {
+  type GIVpowerInfoData,
+  type GIVpowerUserData,
+  type StakingData,
+  type SubgraphResponse,
+  type TokenAllocationEvent,
+  type TokenBalanceData,
+  type TokenAllocationData,
+  type TokenDistroData,
+} from '@/lib/types/staking'
 import { type ITokenDistroBalance } from '@/lib/types/subgraph'
-
-/* Types */
-type SubgraphResponse<T> = {
-  data?: T
-  errors?: { message?: string }[]
-}
-
-type StakingData = {
-  unipool?: {
-    totalSupply: string
-    rewardRate: string
-    periodFinish: string
-    lastUpdateTime?: string
-    rewardPerTokenStored?: string
-  }
-  unipoolBalance?: {
-    balance?: string
-    rewards?: string
-    rewardPerTokenPaid?: string
-  }
-}
-
-type TokenBalanceData = {
-  tokenBalance?: {
-    balance?: string
-  }
-}
-
-type GIVpowerInfoData = {
-  givpower?: {
-    initialDate?: string
-    roundDuration?: string
-  }
-}
-
-type GIVpowerUserData = {
-  user?: {
-    givLocked?: string
-  }
-}
-
-type TokenDistroData = {
-  tokenDistro?: {
-    initialAmount: string
-    lockedAmount: string
-    totalTokens: string
-    startTime: string
-    duration: string
-    cliffTime: string
-  }
-  tokenDistroBalance?: {
-    allocatedTokens: string
-    claimed: string
-    givback?: string
-    givbackLiquidPart?: string
-  }
-  tokenLocks?: Array<{
-    id?: string
-    user?: string
-    amount: string
-    rounds?: string
-    untilRound?: string
-    unlockableAt?: string
-    unlockedAt?: string
-    unlocked?: boolean
-  }>
-}
-
-export type TokenAllocationEvent = {
-  recipient: string
-  amount: string
-  timestamp: string
-  txHash: string
-  distributor: string
-}
-
-type TokenAllocationData = TokenDistroData & {
-  tokenAllocations?: TokenAllocationEvent[]
-}
-
-const LM_ABI = [
-  {
-    type: 'function',
-    name: 'earned',
-    stateMutability: 'view',
-    inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    type: 'function',
-    name: 'balanceOf',
-    stateMutability: 'view',
-    inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    type: 'function',
-    name: 'depositTokenBalance',
-    stateMutability: 'view',
-    inputs: [{ name: '', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    type: 'function',
-    name: 'stake',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'amount', type: 'uint256' }],
-    outputs: [],
-  },
-] as const
-
-const ERC20_ABI = [
-  {
-    type: 'function',
-    name: 'approve',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'spender', type: 'address' },
-      { name: 'amount', type: 'uint256' },
-    ],
-    outputs: [{ type: 'bool' }],
-  },
-  {
-    type: 'function',
-    name: 'allowance',
-    stateMutability: 'view',
-    inputs: [
-      { name: 'owner', type: 'address' },
-      { name: 'spender', type: 'address' },
-    ],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    type: 'function',
-    name: 'balanceOf',
-    stateMutability: 'view',
-    inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-] as const
-
-export const GIVPOWER_ABI = [
-  {
-    type: 'function',
-    name: 'balanceOf',
-    stateMutability: 'view',
-    inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    type: 'function',
-    name: 'lock',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'amount', type: 'uint256' },
-      { name: 'rounds', type: 'uint256' },
-    ],
-    outputs: [],
-  },
-  {
-    type: 'function',
-    name: 'unlock',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'index', type: 'uint256' }],
-    outputs: [],
-  },
-  {
-    type: 'function',
-    name: 'depositTokenBalance',
-    stateMutability: 'view',
-    inputs: [{ name: '', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    type: 'function',
-    name: 'userLocks',
-    stateMutability: 'view',
-    inputs: [{ name: '', type: 'address' }],
-    outputs: [{ name: 'totalAmountLocked', type: 'uint256' }],
-  },
-] as const
-
-const UNIPOOL_ABI_WITHDRAW = [
-  {
-    type: 'function',
-    name: 'withdraw',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'amount', type: 'uint256' }],
-    outputs: [],
-  },
-] as const
-
-const TOKEN_MANAGER_ABI = [
-  {
-    type: 'function',
-    name: 'wrap',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'amount', type: 'uint256' }],
-    outputs: [],
-  },
-  {
-    type: 'function',
-    name: 'unwrap',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'amount', type: 'uint256' }],
-    outputs: [],
-  },
-] as const
 
 /* Core Query Functions */
 
