@@ -293,6 +293,7 @@ export function DonationSidebar({
 
               const totalGroupAmount = Number(group.totalAmount)
               const totalGroupAmountUsd = Number(group.totalUsdValue)
+              const givethAmount = (totalGroupAmount * givethPercentage) / 100
 
               const totalGroupAmountWithGiveth =
                 totalGroupAmount + (totalGroupAmount * givethPercentage) / 100
@@ -303,17 +304,38 @@ export function DonationSidebar({
                   className="p-3 rounded-lg border border-giv-neutral-300"
                 >
                   {isAAWallet ? (
-                    <p className="text-base text-giv-neutral-900 font-medium">
-                      ${' '}
-                      {formatNumber(totalGroupAmountWithGiveth, {
-                        minDecimals: 2,
-                        maxDecimals: 2,
-                      })}{' '}
-                      <span className="font-normal">to</span>{' '}
-                      {numberOfProjectsWithAmount} project
-                      {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
-                      <span className="font-normal">in</span> {group.roundName}
-                    </p>
+                    <>
+                      <p className="text-base text-giv-neutral-900 font-medium">
+                        ${' '}
+                        {formatNumber(totalGroupAmountWithGiveth, {
+                          minDecimals: 2,
+                          maxDecimals: 2,
+                        })}{' '}
+                        <span className="font-normal">to</span>{' '}
+                        {numberOfProjectsWithAmount} project
+                        {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
+                        <span className="font-normal">in</span>{' '}
+                        {group.roundName}
+                        {givethPercentage > 0 && (
+                          <>
+                            <span className="font-normal"> and </span>
+                            <span className="font-medium">Giveth</span>{' '}
+                            <span className="font-normal">on</span>{' '}
+                            {getChainName(group.selectedChainId)}
+                          </>
+                        )}
+                      </p>
+                      {givethPercentage > 0 && (
+                        <p className="text-sm text-giv-neutral-700 mt-0.5">
+                          ${' '}
+                          {formatNumber(givethAmount, {
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                          })}{' '}
+                          to Giveth
+                        </p>
+                      )}
+                    </>
                   ) : (
                     <>
                       <p className="text-base text-giv-neutral-900 font-medium">
