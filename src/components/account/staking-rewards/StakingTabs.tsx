@@ -1,56 +1,43 @@
 'use client'
 
 import { cloneElement, isValidElement } from 'react'
+import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeftIcon } from 'lucide-react'
 import { type Route } from 'next'
-import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
-// import { IconRocket } from '@/components/icons/IconRocket'
-import { IconSparks } from '@/components/icons/IconSparks'
-// import { IconStake } from '@/components/icons/IconStake'
-// import {
-//   givBacksLink,
-//   myGIVPowerLink,
-//   myProjectsLink,
-// } from '@/lib/constants/menu-links'
+import { IconStakeNumber } from '@/components/icons/IconStakeNumber'
+import { IconStarsSecond } from '@/components/icons/IconStarsSecond'
+import { IconUnstakeDonate } from '@/components/icons/IconUnstakeDonate'
 
-interface DashboardTabsProps {
+interface StakingTabsProps {
   activeTab: string
   onTabChange?: (tab: string) => void
 }
 
-export const DashboardTabs = ({
-  activeTab,
-  onTabChange,
-}: DashboardTabsProps) => {
+export const StakingTabs = ({ activeTab, onTabChange }: StakingTabsProps) => {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const tabs = [
     {
-      id: 'staking',
-      label: 'Staking & Rewards',
-      icon: <IconSparks width={24} height={24} />,
+      id: 'stake',
+      label: 'Stake',
+      icon: <IconStakeNumber width={24} height={24} />,
       href: null,
     },
     {
-      id: 'donations',
-      label: 'My Donations',
-      icon: <IconPraiseHandBold width={24} height={24} />,
+      id: 'multiple-rewards',
+      label: 'Multiple Rewards',
+      icon: <IconStarsSecond width={24} height={24} />,
       href: null,
     },
-    // {
-    //   id: 'boosted',
-    //   label: 'Boosted Projects',
-    //   icon: <IconRocket width={24} height={24} />,
-    //   href: myGIVPowerLink.href as unknown as Route,
-    // },
-    // {
-    //   id: 'projects',
-    //   label: 'My projects',
-    //   icon: <IconStake width={24} height={24} />,
-    //   href: myProjectsLink.href as unknown as Route,
-    // },
+    {
+      id: 'unstake',
+      label: 'Unstake',
+      icon: <IconUnstakeDonate width={24} height={24} />,
+      href: null,
+    },
   ]
 
   const handleTabClick = (tabId: string) => {
@@ -79,7 +66,14 @@ export const DashboardTabs = ({
   return (
     <div className="mt-8">
       {/* Tabs */}
-      <div className="relative flex flex-wrap items-end gap-4">
+      <div className="relative flex flex-wrap flex-col lg:flex-row lg:items-end lg:justify-end gap-4">
+        <Link
+          href="/account?tab=staking"
+          className="flex items-center gap-2 py-3 text-sm! font-bold! text-giv-brand-500! hover:text-giv-brand-600! mr-auto"
+        >
+          <ArrowLeftIcon className="w-6 h-6" />
+          <span>Go Back</span>
+        </Link>
         {tabs.map((tab, index) => (
           <button
             key={tab.id}

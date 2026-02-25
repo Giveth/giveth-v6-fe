@@ -31,7 +31,7 @@ export const CHAINS: Record<number, ChainInfo> = {
     id: 10,
     name: 'Optimism',
     shortName: 'OP',
-    blockExplorerUrl: 'https://optimistic.etherscan.io/',
+    blockExplorerUrl: 'https://explorer.optimism.io/',
     iconKey: 'optimism',
     isTestnet: false,
     nativeCurrency: {

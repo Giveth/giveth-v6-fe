@@ -6,6 +6,7 @@ import { type Route } from 'next'
 import { DonationTableOneTime } from '@/components/account/DonationTableOneTime'
 import { DonationTabs } from '@/components/account/DonationTabs'
 import { EligibilityBanner } from '@/components/eligibility/EligibilityBanner'
+import { UserGivbacksBanner } from '@/components/user/UserGivbacksBanner'
 import { myRecurringDonationsLink } from '@/lib/constants/menu-links'
 
 export function DonationsTable() {
@@ -20,8 +21,11 @@ export function DonationsTable() {
   }, [activeTab, router])
   return (
     <div className="bg-white rounded-tr-2xl rounded-b-xl p-8 overflow-hidden">
-      <div className="mb-12">
+      <div className="mb-6">
         <EligibilityBanner />
+      </div>
+      <div className="mb-12">
+        <UserGivbacksBanner />
       </div>
       <DonationTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="relative">
