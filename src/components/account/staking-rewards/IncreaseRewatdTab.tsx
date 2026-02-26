@@ -83,6 +83,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     'input',
   )
   const [isLocking, setIsLocking] = useState(false)
+  const [isRefreshingAvailable, setIsRefreshingAvailable] = useState(false)
   const confettiRef = useRef<ConfettiInstance | null>(null)
   const hasFiredRef = useRef(false)
   const roundsRangeRef = useRef<HTMLInputElement | null>(null)
@@ -388,6 +389,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   // Refresh available to lock
   const handleRefreshAvailable = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
+    setIsRefreshingAvailable(true)
     try {
       const available = await fetchAvailableToLock(
         account.address as Address,
@@ -397,6 +399,8 @@ export function IncreaseRewardTab({ id }: { id: string }) {
       setAvailableToLock(available.availableToLock)
     } catch (error) {
       console.error('Failed to refresh lock data:', error)
+    } finally {
+      setIsRefreshingAvailable(false)
     }
   }
 
@@ -536,7 +540,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex gap-2">
-                      {['5%', '10%', '15%', '20%'].map(label => (
+                      {['25%', '50%', '75%'].map(label => (
                         <button
                           key={label}
                           type="button"
@@ -557,21 +561,47 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                           {label}
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAmountToLock(availableToLockValue.toString())
+                        }
+                        className={clsx(
+                          'rounded-xl px-3 py-2 text-xs font-medium',
+                          'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                          'border border-giv-brand-100',
+                        )}
+                      >
+                        Max
+                      </button>
                     </div>
                     <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
                       <span>Available to lock:</span>
-                      <span className="ml-1">
+                      <button
+                        type="button"
+                        className="ml-1 cursor-pointer hover:underline"
+                        onClick={() =>
+                          setAmountToLock(availableToLockValue.toString())
+                        }
+                        title="Lock max"
+                      >
                         {availableToLockLabel} {pool?.GIVPOWER.title}
-                      </span>
+                      </button>
                       <button
                         type="button"
                         onClick={handleRefreshAvailable}
                         className="ml-1 cursor-pointer"
+                        disabled={isRefreshingAvailable}
+                        title="Refresh balance"
                       >
                         <IconReload
                           width={24}
                           height={24}
                           fill="var(--giv-brand-500)"
+                          className={clsx(
+                            'transition-transform duration-200',
+                            isRefreshingAvailable ? 'animate-spin' : null,
+                          )}
                         />
                       </button>
                     </div>
