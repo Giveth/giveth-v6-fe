@@ -73,6 +73,7 @@ export function StakingTab({ id }: { id: string }) {
   const [lockedAmount, setLockedAmount] = useState<bigint>(0n)
   const [availableToLock, setAvailableToLock] = useState<bigint>(0n)
   const [walletBalance, setWalletBalance] = useState<bigint>(0n)
+  const [isRefreshingBalance, setIsRefreshingBalance] = useState(false)
   const [aprValue, setAprValue] = useState<number>(0)
   const [aprRange, setAprRange] = useState<{
     baseApr: number
@@ -362,6 +363,7 @@ export function StakingTab({ id }: { id: string }) {
   // Refresh wallet balance, only refresh if the account and pool are valid
   const handleRefreshBalance = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
+    setIsRefreshingBalance(true)
     try {
       const balance = await fetchWalletBalance(
         account.address as Address,
@@ -370,6 +372,8 @@ export function StakingTab({ id }: { id: string }) {
       setWalletBalance(balance)
     } catch (error) {
       console.error('Failed to refresh wallet balance:', error)
+    } finally {
+      setIsRefreshingBalance(false)
     }
   }
 
@@ -538,7 +542,7 @@ export function StakingTab({ id }: { id: string }) {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex gap-2">
-                      {['5%', '10%', '15%', '20%'].map(label => (
+                      {['25%', '50%', '75%'].map(label => (
                         <button
                           key={label}
                           type="button"
@@ -562,21 +566,47 @@ export function StakingTab({ id }: { id: string }) {
                           {label}
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAmountToStake(availableToStakeValue.toString())
+                        }
+                        className={clsx(
+                          'rounded-xl px-3 py-2 text-xs font-medium',
+                          'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                          'border border-giv-brand-100',
+                        )}
+                      >
+                        Max
+                      </button>
                     </div>
                     <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
                       <span>Available:</span>
-                      <span className="ml-1">
+                      <button
+                        type="button"
+                        className="ml-1 cursor-pointer hover:underline"
+                        onClick={() =>
+                          setAmountToStake(availableToStakeValue.toString())
+                        }
+                        title="Stake max"
+                      >
                         {availableToStakeLabel} {pool?.GIVPOWER.title}
-                      </span>
+                      </button>
                       <button
                         type="button"
                         onClick={handleRefreshBalance}
-                        className="ml-1 cursor-pointer"
+                        className="ml-1 cursor-pointer group"
+                        disabled={isRefreshingBalance}
+                        title="Refresh balance"
                       >
                         <IconReload
                           width={24}
                           height={24}
                           fill="var(--giv-brand-500)"
+                          className={clsx(
+                            'transition-transform duration-200',
+                            isRefreshingBalance ? 'animate-spin' : null,
+                          )}
                         />
                       </button>
                     </div>

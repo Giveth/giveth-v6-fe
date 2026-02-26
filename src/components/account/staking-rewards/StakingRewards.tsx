@@ -12,9 +12,36 @@ import {
 export const StakingRewards = () => {
   const [claimChain, setClaimChain] = useState(CLAIM_REWARDS_CHAINS[0].id)
   const [stakingChain, setStakingChain] = useState(STAKING_CHAINS[0].id)
+  const [givstreamChain, setGivstreamChain] = useState(STAKING_CHAINS[0].id)
   const chainLabel =
     CLAIM_REWARDS_CHAINS.find(chain => chain.id === claimChain)?.name ??
     'Select network'
+
+  const isStakingChain = (chainId: number) => chainId === 10 || chainId === 100
+
+  const handleClaimChainChange = (chainId: number) => {
+    setClaimChain(chainId)
+    if (isStakingChain(chainId)) {
+      setStakingChain(chainId)
+      setGivstreamChain(chainId)
+    }
+  }
+
+  const handleStakingChainChange = (chainId: number) => {
+    setStakingChain(chainId)
+    setGivstreamChain(chainId)
+    if (isStakingChain(claimChain)) {
+      setClaimChain(chainId)
+    }
+  }
+
+  const handleGivstreamChainChange = (chainId: number) => {
+    setGivstreamChain(chainId)
+    setStakingChain(chainId)
+    if (isStakingChain(claimChain)) {
+      setClaimChain(chainId)
+    }
+  }
 
   return (
     <div className="bg-white rounded-tr-2xl rounded-b-xl p-8 overflow-hidden">
@@ -22,16 +49,19 @@ export const StakingRewards = () => {
         <DropdownStakeNetworks
           selectedChain={claimChain}
           chains={CLAIM_REWARDS_CHAINS}
-          onSelectChain={setClaimChain}
+          onSelectChain={handleClaimChainChange}
         />
       </div>
       <ClaimRewardsBanner selectedChain={claimChain} chainLabel={chainLabel} />
       <StakeSection
         selectedChain={stakingChain}
-        onSelectChain={setStakingChain}
+        onSelectChain={handleStakingChainChange}
       />
       <div className="mt-12">
-        <GIVStreamSection />
+        <GIVStreamSection
+          selectedChain={givstreamChain}
+          onSelectChain={handleGivstreamChainChange}
+        />
       </div>
       <div className="mt-12">
         <UserGivbacksBanner />

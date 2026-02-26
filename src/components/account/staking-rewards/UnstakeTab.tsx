@@ -67,6 +67,7 @@ export function UnstakeTab({ id }: { id: string }) {
     'input',
   )
   const [txHash, setTxHash] = useState<string | null>(null)
+  const [isRefreshingAvailable, setIsRefreshingAvailable] = useState(false)
   const confettiRef = useRef<ConfettiInstance | null>(null)
   const hasFiredRef = useRef(false)
 
@@ -155,6 +156,7 @@ export function UnstakeTab({ id }: { id: string }) {
   // Refresh the unstake data, used to refresh the unstake data when the user clicks the refresh button
   const handleRefresh = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
+    setIsRefreshingAvailable(true)
     try {
       const [staking, available, lockInfo] = await Promise.all([
         fetchStaking(account.address as Address, pool.GIVPOWER.network),
@@ -174,6 +176,8 @@ export function UnstakeTab({ id }: { id: string }) {
       setAvailableToUnstake(availableValue)
     } catch (error) {
       console.error('Failed to refresh unstake data:', error)
+    } finally {
+      setIsRefreshingAvailable(false)
     }
   }
 
@@ -428,7 +432,7 @@ export function UnstakeTab({ id }: { id: string }) {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex gap-2">
-                      {['5%', '10%', '15%', '20%'].map(label => (
+                      {['25%', '50%', '75%'].map(label => (
                         <button
                           key={label}
                           type="button"
@@ -474,18 +478,29 @@ export function UnstakeTab({ id }: { id: string }) {
                     </div>
                     <div className="flex items-center justify-between text-sm text-giv-neutral-800 font-bold">
                       <span>Available to unstake:</span>
-                      <span className="ml-1">
+                      <button
+                        type="button"
+                        className="ml-1 cursor-pointer hover:underline"
+                        onClick={() => setAmountToUnstake(availableLabel)}
+                        title="Unstake max"
+                      >
                         {availableLabel} {pool?.GIVPOWER.title}
-                      </span>
+                      </button>
                       <button
                         type="button"
                         onClick={handleRefresh}
                         className="ml-1 cursor-pointer"
+                        disabled={isRefreshingAvailable}
+                        title="Refresh available to unstake"
                       >
                         <IconReload
-                          width={20}
-                          height={20}
+                          width={24}
+                          height={24}
                           fill="var(--giv-brand-500)"
+                          className={clsx(
+                            'transition-transform duration-200',
+                            isRefreshingAvailable ? 'animate-spin' : null,
+                          )}
                         />
                       </button>
                     </div>

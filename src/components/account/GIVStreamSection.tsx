@@ -39,9 +39,15 @@ const formatTimeRemaining = (ms: number, length = 3) => {
   return parts.slice(0, length).join(' ') || '0 s'
 }
 
-export const GIVStreamSection = () => {
+export const GIVStreamSection = ({
+  selectedChain,
+  onSelectChain,
+}: {
+  selectedChain?: number
+  onSelectChain?: (chainId: number) => void
+}) => {
   const account = useActiveAccount()
-  const [selectedChain, setSelectedChain] = useState(STAKING_CHAINS[0]?.id ?? 0)
+  const [localChain, setLocalChain] = useState(STAKING_CHAINS[0]?.id ?? 0)
   const [isLoading, setIsLoading] = useState(false)
   const [streamData, setStreamData] = useState({
     flowRatePerWeek: 0n,
@@ -52,8 +58,11 @@ export const GIVStreamSection = () => {
   const [isGIVStreamHistoryModalOpen, setIsGIVStreamHistoryModalOpen] =
     useState(false)
 
+  const activeChain = selectedChain ?? localChain
+  const handleSelectChain = onSelectChain ?? setLocalChain
+
   useEffect(() => {
-    if (!account?.address || !selectedChain) {
+    if (!account?.address || !activeChain) {
       setStreamData({
         flowRatePerWeek: 0n,
         percentComplete: 0,
@@ -67,7 +76,7 @@ export const GIVStreamSection = () => {
       try {
         const data = await fetchGIVstream(
           account.address as `0x${string}`,
-          selectedChain as number,
+          activeChain as number,
         )
         if (!cancelled) {
           setStreamData({
@@ -86,7 +95,7 @@ export const GIVStreamSection = () => {
     return () => {
       cancelled = true
     }
-  }, [account?.address, selectedChain])
+  }, [account?.address, activeChain])
 
   const flowRateLabel = useMemo(() => {
     if (!account?.address || isLoading) return '0.00'
@@ -116,9 +125,9 @@ export const GIVStreamSection = () => {
             <span>GIVstream</span>
           </div>
           <DropdownStakeNetworks
-            selectedChain={selectedChain}
+          selectedChain={activeChain}
             chains={STAKING_CHAINS}
-            onSelectChain={setSelectedChain}
+          onSelectChain={handleSelectChain}
           />
         </div>
 
