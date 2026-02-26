@@ -30,7 +30,7 @@ export const StakingRewards = () => {
   const handleStakingChainChange = (chainId: number) => {
     setStakingChain(chainId)
     setGivstreamChain(chainId)
-    if (isStakingChain(claimChain)) {
+    if (isStakingChain(chainId)) {
       setClaimChain(chainId)
     }
   }
@@ -38,7 +38,7 @@ export const StakingRewards = () => {
   const handleGivstreamChainChange = (chainId: number) => {
     setGivstreamChain(chainId)
     setStakingChain(chainId)
-    if (isStakingChain(claimChain)) {
+    if (isStakingChain(chainId)) {
       setClaimChain(chainId)
     }
   }
