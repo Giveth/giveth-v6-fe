@@ -286,9 +286,9 @@ export function HeaderConnectWallet() {
         disabled={isConnectingWallet}
         aria-busy={isConnectingWallet}
         className={clsx(
-          'rounded-full transition-all duration-200 shadow-sm',
+          'rounded-xl transition-all duration-200',
           'inline-flex items-center gap-2',
-          'bg-[#8668fc] text-white',
+          'bg-giv-brand-300 text-white',
           'px-5 py-3 text-sm font-semibold',
           isConnectingWallet
             ? 'opacity-80 cursor-not-allowed'
@@ -305,7 +305,14 @@ export function HeaderConnectWallet() {
         )}
       </button>
 
-      <SignInModal open={isSignInModalOpen} onOpenChange={setSignInModalOpen} />
+      {isSignInModalOpen && (
+        <SignInModal
+          open={true}
+          onOpenChange={open => {
+            setSignInModalOpen(open)
+          }}
+        />
+      )}
     </>
   )
 }

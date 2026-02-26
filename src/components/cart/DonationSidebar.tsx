@@ -259,10 +259,12 @@ export function DonationSidebar({
             >
               Connect Wallet
             </button>
-            <SignInModal
-              open={isSignInModalOpen}
-              onOpenChange={setSignInModalOpen}
-            />
+            {isSignInModalOpen && (
+              <SignInModal
+                open={true}
+                onOpenChange={open => setSignInModalOpen(open)}
+              />
+            )}
           </div>
         )}
         {!isAuthenticated && walletAddress && (
