@@ -176,7 +176,7 @@ export const GIVStreamSection = ({
       <GIVStreamHistoryModal
         open={isGIVStreamHistoryModalOpen}
         onOpenChange={setIsGIVStreamHistoryModalOpen}
-        chainId={selectedChain}
+        chainId={selectedChain ?? 0}
       />
     </>
   )
