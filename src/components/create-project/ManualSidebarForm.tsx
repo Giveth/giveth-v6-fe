@@ -123,60 +123,58 @@ export function ManualSidebarForm() {
   )
   const normalizedTitleForSalt = normalizeTitleForSalt(draft.title)
 
-  const autofillRecipientAddresses = useCallback(
-    async (saltOverride?: string) => {
-      if (!ownerAdminAccount) return
+  const autofillRecipientAddresses = useCallback(async () => {
+    if (!ownerAdminAccount) return
 
-      const salt =
-        saltOverride ??
-        createProjectAccountSalt(
-          `${ownerAdminAccount.address.toLowerCase()}:${normalizedTitleForSalt}`,
-        )
+    const salt = createProjectAccountSalt(
+      `${ownerAdminAccount.address.toLowerCase()}:${normalizedTitleForSalt}`,
+    )
 
-      if (
-        draft.recipientAddresses.length > 0 &&
-        isRecipientAddressesAutoFilled &&
-        pendingProjectSaltRef.current === salt
+    if (
+      draft.recipientAddresses.length > 0 &&
+      isRecipientAddressesAutoFilled &&
+      pendingProjectSaltRef.current === salt
+    )
+      return
+
+    pendingProjectSaltRef.current = salt
+    setIsAutofillingRecipients(true)
+    setRecipientSetupError(null)
+
+    try {
+      // This is provisional, I'll add a more robust solution later.
+      // (i.e., reserving the id for the auto-filled addresses and using the project identity as the salt
+      // so that the salt is both unique & constructed from the project identity for each project)
+      const addresses = await deriveProjectOwnerRecipientAddresses({
+        adminAccount: ownerAdminAccount,
+        accountSalt: salt,
+      })
+
+      setRecipientAddresses(
+        addresses.map(a => ({
+          id: `autofill-${a.networkId}`,
+          chainType: a.chainType,
+          networkId: a.networkId,
+          address: a.address,
+          title: a.title,
+        })),
+        { autoFilled: true },
       )
-        return
-
-      pendingProjectSaltRef.current = salt
-      setIsAutofillingRecipients(true)
-      setRecipientSetupError(null)
-
-      try {
-        const addresses = await deriveProjectOwnerRecipientAddresses({
-          adminAccount: ownerAdminAccount,
-          accountSalt: salt,
-        })
-
-        setRecipientAddresses(
-          addresses.map(a => ({
-            id: `autofill-${a.networkId}`,
-            chainType: a.chainType,
-            networkId: a.networkId,
-            address: a.address,
-            title: a.title,
-          })),
-          { autoFilled: true },
-        )
-      } catch (error) {
-        console.error('Recipient auto-fill failed:', error)
-        setRecipientSetupError(
-          'Could not auto-fill recipient addresses. You can enter them manually.',
-        )
-      } finally {
-        setIsAutofillingRecipients(false)
-      }
-    },
-    [
-      draft.recipientAddresses.length,
-      isRecipientAddressesAutoFilled,
-      normalizedTitleForSalt,
-      ownerAdminAccount,
-      setRecipientAddresses,
-    ],
-  )
+    } catch (error) {
+      console.error('Recipient auto-fill failed:', error)
+      setRecipientSetupError(
+        'Could not auto-fill recipient addresses. You can enter them manually.',
+      )
+    } finally {
+      setIsAutofillingRecipients(false)
+    }
+  }, [
+    draft.recipientAddresses.length,
+    isRecipientAddressesAutoFilled,
+    normalizedTitleForSalt,
+    ownerAdminAccount,
+    setRecipientAddresses,
+  ])
 
   useEffect(() => {
     // Only auto-fill when the user has not manually customized addresses.

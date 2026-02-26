@@ -40,10 +40,9 @@ export function createProjectAccountSalt(
 export async function deriveProjectOwnerRecipientAddresses(args: {
   adminAccount: Account
   accountSalt: string
-  networkIds?: readonly number[]
 }): Promise<ProjectOwnerRecipientAddress[]> {
   const { adminAccount, accountSalt } = args
-  const networkIds = args.networkIds ?? PROJECT_OWNER_EVM_NETWORK_IDS
+  const networkIds = PROJECT_OWNER_EVM_NETWORK_IDS
 
   const results = await Promise.all(
     networkIds.map(async networkId => {
@@ -68,17 +67,10 @@ export async function deriveProjectOwnerRecipientAddresses(args: {
           title: getRecipientTitle(networkId),
         }
       } catch (error) {
-        console.error(
+        throw new Error(
           `Failed to derive smart account on chain ${networkId}, falling back to admin account`,
-          error,
+          { cause: error },
         )
-
-        return {
-          chainType: 'EVM' as const,
-          networkId,
-          address: adminAccount.address,
-          title: getRecipientTitle(networkId),
-        }
       } finally {
         await wallet.disconnect().catch(() => undefined)
       }
