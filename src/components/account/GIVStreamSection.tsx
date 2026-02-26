@@ -114,7 +114,7 @@ export const GIVStreamSection = ({
   const percentLabel = `${Math.round(percent)}%`
   const timeRemainingLabel = formatTimeRemaining(streamData.timeRemaining)
 
-  const tokenSymbol = STAKING_POOLS[selectedChain]?.GIVPOWER?.unit ?? 'GIV'
+  const tokenSymbol = STAKING_POOLS[selectedChain ?? 0]?.GIVPOWER?.unit ?? 'GIV'
 
   return (
     <>
@@ -125,9 +125,9 @@ export const GIVStreamSection = ({
             <span>GIVstream</span>
           </div>
           <DropdownStakeNetworks
-          selectedChain={activeChain}
+            selectedChain={activeChain}
             chains={STAKING_CHAINS}
-          onSelectChain={handleSelectChain}
+            onSelectChain={handleSelectChain}
           />
         </div>
 
