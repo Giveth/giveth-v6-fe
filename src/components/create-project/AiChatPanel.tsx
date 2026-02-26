@@ -269,9 +269,10 @@ export function AiChatPanel({
 
   return (
     <div className="relative flex h-full flex-col">
+      <div className="pointer-events-none absolute left-0 right-0 top-0 z-[5] h-[100px] bg-gradient-to-b from-white to-transparent" />
       <div className="flex-1 min-h-0 overflow-hidden px-6">
         <div ref={listRef} className="mx-auto h-full max-w-2xl overflow-y-auto">
-          <div className="mt-10 space-y-6">
+          <div className="mt-10 mb-2 space-y-6">
             {messages.map(m => (
               <ChatMessage
                 key={m.id}
@@ -299,8 +300,8 @@ export function AiChatPanel({
 
           {(isUploadingImage || attachedImageUrl) && (
             <div className="mt-5">
-              <div className="flex items-center gap-3 rounded-xl border border-[#eef0f7] bg-white p-3 shadow-xs">
-                <div className="relative size-14 overflow-hidden rounded-lg bg-[#f3f4f6]">
+              <div className="flex items-center gap-3 rounded-md border border-[#eef0f7] bg-white p-3 shadow-none">
+                <div className="relative size-14 overflow-hidden rounded-md bg-[#f3f4f6]">
                   {attachedImageUrl ? (
                     <Image
                       alt="Uploaded"
@@ -328,7 +329,7 @@ export function AiChatPanel({
                 <button
                   type="button"
                   className={cn(
-                    'inline-flex size-9 items-center justify-center rounded-lg text-[#6b7280] transition hover:bg-[#f3f4f6] hover:text-[#111827]',
+                    'inline-flex size-9 items-center justify-center rounded-md text-[#6b7280] transition hover:bg-[#f3f4f6] hover:text-[#111827]',
                     isUploadingImage && 'opacity-50',
                   )}
                   aria-label="Remove image"
@@ -343,12 +344,12 @@ export function AiChatPanel({
             </div>
           )}
 
-          <div className="rounded-xl border border-[#D7DDEA] bg-white px-3 py-2 shadow-none transition-[border-color,box-shadow] focus-within:border-[#B9A7FF] focus-within:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]">
+          <div className="rounded-md border border-[#D7DDEA] bg-white px-3 py-2 shadow-none transition-[border-color,box-shadow] focus-within:border-[#B9A7FF] focus-within:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]">
             <div className="flex items-end gap-2">
               <button
                 type="button"
                 className={cn(
-                  'inline-flex h-[34px] w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
+                  'inline-flex h-[34px] w-14 items-center justify-center rounded-md border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
                 )}
                 aria-label="Attach"
                 disabled={isUploadingImage || isSending}
@@ -399,7 +400,7 @@ export function AiChatPanel({
               <button
                 type="button"
                 className={cn(
-                  'inline-flex h-[34px] w-14 items-center justify-center rounded-[20px] border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
+                  'inline-flex h-[34px] w-14 items-center justify-center rounded-md border border-[#dfe1ef] bg-[#f3f2ff] text-[#4f3de8] transition hover:bg-[#ebe9ff]',
                 )}
                 aria-label="Send"
                 disabled={isSending || isUploadingImage || !input.trim()}
@@ -468,7 +469,7 @@ function ChatMessage({
   if (role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] whitespace-pre-wrap rounded-[34px] rounded-br-[14px] border border-[#e3e2fb] bg-[#f3f2ff] px-5 py-3 text-sm text-[#111827]">
+        <div className="max-w-[85%] whitespace-pre-wrap rounded-md border border-[#e3e2fb] bg-[#f3f2ff] px-5 py-3 text-sm text-[#111827]">
           {content}
         </div>
       </div>
@@ -480,7 +481,7 @@ function ChatMessage({
       <div className="relative mt-1 ml-2 size-12 shrink-0">
         {showAssistantIcon ? <EtherealOrb size={48} /> : null}
       </div>
-      <div className="max-w-[85%] whitespace-pre-wrap rounded-[34px] rounded-tl-[14px] border border-[#eef0f7] bg-white px-5 py-4 text-sm leading-relaxed text-[#4b5563] shadow-sm">
+      <div className="max-w-[85%] whitespace-pre-wrap rounded-md border border-[#eef0f7] bg-white px-5 py-4 text-sm leading-relaxed text-[#4b5563] shadow-none">
         {content}
       </div>
     </div>
