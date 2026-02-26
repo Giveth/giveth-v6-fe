@@ -5,21 +5,12 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { Dialog, Flex, Text } from '@radix-ui/themes'
 import { Loader2, Mail, Wallet } from 'lucide-react'
 import { optimism } from 'thirdweb/chains'
-import { useConnect } from 'thirdweb/react'
-import { createWallet } from 'thirdweb/wallets'
+import { useConnect, useConnectModal } from 'thirdweb/react'
 import { getUserEmail, preAuthenticate } from 'thirdweb/wallets/in-app'
 import { aaInAppWallet, thirdwebClient } from '@/lib/thirdweb/client'
 import { useAAWalletStore } from '@/store/aa-wallet'
 
 type SignInView = 'main' | 'email' | 'verification' | 'connecting'
-
-const browserWalletOptions = [
-  { id: 'io.metamask', label: 'Continue with MetaMask' },
-  { id: 'com.coinbase.wallet', label: 'Continue with Coinbase Wallet' },
-  { id: 'com.trustwallet.app', label: 'Continue with Trust Wallet' },
-] as const
-
-type BrowserWalletId = (typeof browserWalletOptions)[number]['id']
 
 export function ProjectOwnerSignInButton() {
   const [open, setOpen] = useState(false)
@@ -30,6 +21,7 @@ export function ProjectOwnerSignInButton() {
   const [error, setError] = useState<string | null>(null)
 
   const { connect } = useConnect()
+  const { connect: openConnectModal } = useConnectModal()
   const { setIsAAWallet, setAuthenticatedEmail } = useAAWalletStore()
 
   const resetState = () => {
@@ -82,17 +74,25 @@ export function ProjectOwnerSignInButton() {
     }
   }
 
-  const handleConnectBrowserWallet = async (walletId: BrowserWalletId) => {
+  const handleConnectBrowserWallet = async () => {
     setIsLoading(true)
     setError(null)
     setView('connecting')
 
     try {
+      const signerWallet = await openConnectModal({
+        client: thirdwebClient,
+        chain: optimism,
+        setActive: false,
+        showAllWallets: true,
+        hiddenWallets: ['inApp', 'embedded', 'smart'],
+      })
+
       await connect(async () => {
         await aaInAppWallet.connect({
           client: thirdwebClient,
           strategy: 'wallet',
-          wallet: createWallet(walletId),
+          wallet: signerWallet,
           chain: optimism,
         })
         return aaInAppWallet
@@ -217,17 +217,14 @@ export function ProjectOwnerSignInButton() {
                   <Text size="2" className="text-giv-neutral-700 block">
                     Use a browser wallet as signer
                   </Text>
-                  {browserWalletOptions.map(option => (
-                    <button
-                      key={option.id}
-                      onClick={() => void handleConnectBrowserWallet(option.id)}
-                      disabled={isLoading}
-                      className="w-full px-4 py-3.5 rounded-xl border border-giv-neutral-300 hover:border-giv-brand-300 hover:bg-giv-brand-05 text-giv-neutral-900 text-sm font-semibold transition-all flex items-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Wallet className="w-5 h-5 text-giv-brand-500" />
-                      {option.label}
-                    </button>
-                  ))}
+                  <button
+                    onClick={() => void handleConnectBrowserWallet()}
+                    disabled={isLoading}
+                    className="w-full px-4 py-3.5 rounded-xl border border-giv-neutral-300 hover:border-giv-brand-300 hover:bg-giv-brand-05 text-giv-neutral-900 text-sm font-semibold transition-all flex items-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Wallet className="w-5 h-5 text-giv-brand-500" />
+                    Continue with Wallet (All Supported)
+                  </button>
                 </div>
 
                 <div className="relative flex items-center">
