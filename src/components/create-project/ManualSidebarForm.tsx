@@ -46,11 +46,11 @@ const socialSections: {
 ]
 
 const MANUAL_FIELD_BASE_CLASSES =
-  'rounded-[12px] border-[#D7DDEA] bg-white shadow-none focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
+  'rounded-md border-[#D7DDEA] bg-white shadow-none focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 const MANUAL_TEXTAREA_CLASSES =
-  'min-h-28 w-full resize-none rounded-[12px] border border-[#D7DDEA] bg-white px-3 py-2 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-[#9ca3af] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
+  'min-h-28 w-full resize-none rounded-md border border-[#D7DDEA] bg-white px-3 py-2 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-[#9ca3af] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 const MANUAL_SELECT_CLASSES =
-  'h-10 w-full rounded-[12px] border border-[#D7DDEA] bg-white px-3 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
+  'h-10 w-full rounded-md border border-[#D7DDEA] bg-white px-3 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 
 export function ManualSidebarForm() {
   const router = useRouter()
@@ -139,7 +139,7 @@ export function ManualSidebarForm() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-6 py-5">
+      <div className="px-2 py-5">
         <div className="text-[30px] font-semibold leading-tight text-[#374151]">
           Create a project
         </div>
@@ -148,7 +148,7 @@ export function ManualSidebarForm() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-2 py-4">
         <div className="space-y-3">
           <FormSection
             title="Project details"
@@ -206,7 +206,7 @@ export function ManualSidebarForm() {
             <div className="space-y-4">
               {groupedCategories.map(group => (
                 <div key={group.title} className="space-y-2">
-                  <div className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6b7280]">
+                  <div className="text-xs font-semibold tracking-[0.08em] text-[#6b7280]">
                     {group.title}
                   </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -218,7 +218,7 @@ export function ManualSidebarForm() {
                         <label
                           key={`${group.title}-${cat.id}`}
                           className={cn(
-                            'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm',
+                            'flex items-center gap-2 rounded-md border px-3 py-2 text-sm',
                             checked
                               ? 'border-[#7c6af2] bg-[#f5f3ff] text-[#2f2f46]'
                               : 'border-[#e5e7eb] bg-white text-[#4b5563]',
@@ -229,7 +229,7 @@ export function ManualSidebarForm() {
                             type="checkbox"
                             checked={checked}
                             disabled={atLimit}
-                            className="size-4 rounded border border-gray-300 bg-white accent-[#7c6af2] focus:ring-[#7c6af2]"
+                            className="size-4 rounded border border-gray-300 bg-white accent-[#7c6af2] focus:ring-[#7c6af2] flex-shrink-0"
                             style={{ colorScheme: 'light' }}
                             onChange={() => {
                               if (checked) {
@@ -367,7 +367,7 @@ export function ManualSidebarForm() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="h-10 shrink-0 rounded-lg bg-[#f3f2ff] px-3 text-xs font-semibold text-[#5f4cf0] hover:bg-[#ebe9ff]"
+                  className="h-10 shrink-0 rounded-md bg-[#f3f2ff] px-3 text-xs font-semibold text-[#5f4cf0] hover:bg-[#ebe9ff]"
                   disabled={isUploadingImage || isSubmitting}
                   onClick={() => imageFileInputRef.current?.click()}
                 >
@@ -402,7 +402,7 @@ export function ManualSidebarForm() {
               </div>
 
               {draft.recipientAddresses.length === 0 ? (
-                <div className="rounded-xl border border-[#eef0f7] bg-[#fbfbff] px-4 py-3 text-sm text-[#6b7280]">
+                <div className="rounded-md border border-[#eef0f7] bg-[#fbfbff] px-4 py-3 text-sm text-[#6b7280]">
                   Add at least one recipient address (EVM, Solana, or Stellar).
                 </div>
               ) : (
@@ -410,12 +410,12 @@ export function ManualSidebarForm() {
                   {draft.recipientAddresses.map(addr => (
                     <div
                       key={addr.id}
-                      className="rounded-xl border border-[#eef0f7] bg-white p-3"
+                      className="rounded-md border border-[#eef0f7] bg-white p-3"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <select
-                            className="h-9 rounded-[12px] border border-[#D7DDEA] bg-white px-2 text-xs text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]"
+                            className="h-9 rounded-md border border-[#D7DDEA] bg-white px-2 text-xs text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]"
                             value={addr.chainType}
                             onChange={e =>
                               updateRecipientAddress(addr.id, {
@@ -445,7 +445,7 @@ export function ManualSidebarForm() {
                         </div>
                         <button
                           type="button"
-                          className="inline-flex size-9 items-center justify-center rounded-lg border border-[#eef0f7] text-[#9ca3af] hover:text-red-600"
+                          className="inline-flex size-9 items-center justify-center rounded-md border border-[#eef0f7] text-[#9ca3af] hover:text-red-600"
                           onClick={() => removeRecipientAddress(addr.id)}
                           aria-label="Remove address"
                         >
@@ -500,7 +500,7 @@ export function ManualSidebarForm() {
 
       <div className="p-6">
         {submitError && (
-          <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
             {submitError}
           </div>
         )}
@@ -508,7 +508,7 @@ export function ManualSidebarForm() {
           type="button"
           variant="secondary"
           disabled={isSubmitting || !canPublish}
-          className="w-full rounded-xl bg-[#edeefe] text-[#3b2ed0] hover:bg-[#e4e6ff] disabled:bg-[#edeefe] disabled:text-[#9aa0bd] disabled:hover:bg-[#edeefe]"
+          className="w-full rounded-md bg-[#edeefe] text-[#3b2ed0] hover:bg-[#e4e6ff] disabled:bg-[#edeefe] disabled:text-[#9aa0bd] disabled:hover:bg-[#edeefe]"
           onClick={async () => {
             const ok = validate()
             if (!ok) return
@@ -539,7 +539,7 @@ function FormSection({
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-[#ececf4] bg-white">
+    <section className="rounded-md border border-[#ececf4] bg-white">
       <button
         type="button"
         onClick={onToggle}

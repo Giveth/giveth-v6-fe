@@ -24,7 +24,7 @@ export function CreateProjectLayout({
     Boolean(draft.title.trim()) && Boolean(draft.description.trim())
 
   const actionButtonClasses =
-    'inline-flex h-12 items-center gap-2 rounded-[8px] border border-[#d8d8f0] bg-[#f1f0fb] px-6 text-[14px] font-bold leading-none shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors'
+    'inline-flex h-12 items-center gap-2 rounded-md border border-[#d8d8f0] bg-[#f1f0fb] px-6 text-[14px] font-bold leading-none shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors'
   const actionButtonEnabledClasses =
     '!text-[rgb(39,38,137)] hover:bg-[#eceafe] visited:!text-[rgb(39,38,137)]'
   const actionButtonDisabledClasses =
@@ -32,9 +32,9 @@ export function CreateProjectLayout({
 
   return (
     <div className="bg-[#f7f8fc]">
-      <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1440px] px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 xl:items-start xl:flex-row">
-          <main className="relative min-w-0 flex-1 flex flex-col overflow-hidden rounded-2xl border border-[#ececf4] bg-white shadow-[0_1px_0_rgba(15,23,42,0.03)] h-[calc(100vh-128px)]">
+          <main className="relative min-w-0 flex-1 flex flex-col overflow-hidden rounded-md border border-[#ececf4] bg-white shadow-[0_1px_0_rgba(15,23,42,0.03)] h-[calc(100vh-128px)]">
             <div className="shrink-0 flex items-center justify-end gap-3 px-4 pt-3 sm:px-5 z-10">
               {isPreviewEnabled ? (
                 <Link
@@ -76,7 +76,7 @@ export function CreateProjectLayout({
               </button>
             </div>
             {!isSidebarOpen && showAiUpdateCue && (
-              <div className="pointer-events-none absolute right-6 top-[72px] z-10 rounded-full border border-[#ece8ff] bg-white px-3 py-1 text-sm font-semibold text-[#7c6af2] shadow-[0_6px_20px_rgba(124,106,242,0.18)]">
+              <div className="pointer-events-none absolute right-6 top-[72px] z-10 rounded-md border border-[#ece8ff] bg-white px-3 py-1 text-sm font-semibold text-[#7c6af2] shadow-[0_6px_20px_rgba(124,106,242,0.18)]">
                 Updated! <span className="text-sm">✨</span>
               </div>
             )}
@@ -89,7 +89,7 @@ export function CreateProjectLayout({
 
           <aside
             className={cn(
-              'relative min-w-0 overflow-hidden rounded-2xl bg-transparent transition-[width,opacity,transform] duration-300 ease-out',
+              'relative min-w-0 overflow-hidden rounded-md bg-transparent transition-[width,opacity,transform] duration-300 ease-out',
               'xl:block',
               'xl:sticky xl:top-24',
               isSidebarOpen
