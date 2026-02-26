@@ -11,11 +11,9 @@ import { Input } from '@/components/ui/input'
 import { useSiweAuth } from '@/context/AuthContext'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import {
-  ChainType,
   type CategoriesQuery,
   type MainCategoriesQuery,
 } from '@/lib/graphql/generated/graphql'
-import { updateProjectMutation } from '@/lib/graphql/mutations'
 import { mainCategoriesQuery } from '@/lib/graphql/queries'
 import { uploadImageFile } from '@/lib/graphql/upload'
 import {
@@ -60,6 +58,9 @@ const MANUAL_TEXTAREA_CLASSES =
 const MANUAL_SELECT_CLASSES =
   'h-10 w-full rounded-md border border-[#D7DDEA] bg-white px-3 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 
+const normalizeTitleForSalt = (title: string) =>
+  title.trim().toLowerCase().replace(/\s+/g, ' ')
+
 export function ManualSidebarForm() {
   const router = useRouter()
   const { token } = useSiweAuth()
@@ -77,7 +78,6 @@ export function ManualSidebarForm() {
   const activeWallet = useActiveWallet()
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isAutofillingRecipients, setIsAutofillingRecipients] = useState(false)
-  const [isFinalizingRecipients, setIsFinalizingRecipients] = useState(false)
   const [recipientSetupError, setRecipientSetupError] = useState<string | null>(
     null,
   )
@@ -121,6 +121,7 @@ export function ManualSidebarForm() {
     () => resolveProjectOwnerAdminAccount(activeWallet, activeAccount),
     [activeWallet, activeAccount],
   )
+  const normalizedTitleForSalt = normalizeTitleForSalt(draft.title)
 
   const autofillRecipientAddresses = useCallback(
     async (saltOverride?: string) => {
@@ -128,14 +129,16 @@ export function ManualSidebarForm() {
 
       const salt =
         saltOverride ??
-        pendingProjectSaltRef.current ??
         createProjectAccountSalt(
-          `pending-${
-            typeof crypto !== 'undefined' && 'randomUUID' in crypto
-              ? crypto.randomUUID()
-              : Date.now().toString(36)
-          }`,
+          `${ownerAdminAccount.address.toLowerCase()}:${normalizedTitleForSalt}`,
         )
+
+      if (
+        draft.recipientAddresses.length > 0 &&
+        isRecipientAddressesAutoFilled &&
+        pendingProjectSaltRef.current === salt
+      )
+        return
 
       pendingProjectSaltRef.current = salt
       setIsAutofillingRecipients(true)
@@ -166,21 +169,27 @@ export function ManualSidebarForm() {
         setIsAutofillingRecipients(false)
       }
     },
-    [ownerAdminAccount, setRecipientAddresses],
+    [
+      draft.recipientAddresses.length,
+      isRecipientAddressesAutoFilled,
+      normalizedTitleForSalt,
+      ownerAdminAccount,
+      setRecipientAddresses,
+    ],
   )
 
   useEffect(() => {
     // Only auto-fill when the user has not manually customized addresses.
     if (!ownerAdminAccount) return
+    if (!normalizedTitleForSalt) return
     if (draft.recipientAddresses.length > 0 && !isRecipientAddressesAutoFilled)
-      return
-    if (draft.recipientAddresses.length > 0 && isRecipientAddressesAutoFilled)
       return
     void autofillRecipientAddresses()
   }, [
     autofillRecipientAddresses,
     draft.recipientAddresses.length,
     isRecipientAddressesAutoFilled,
+    normalizedTitleForSalt,
     ownerAdminAccount,
   ])
 
@@ -618,65 +627,18 @@ export function ManualSidebarForm() {
         <Button
           type="button"
           variant="secondary"
-          disabled={
-            isSubmitting ||
-            isFinalizingRecipients ||
-            isAutofillingRecipients ||
-            !canPublish
-          }
+          disabled={isSubmitting || isAutofillingRecipients || !canPublish}
           className="w-full rounded-xl bg-[#edeefe] text-[#3b2ed0] hover:bg-[#e4e6ff] disabled:bg-[#edeefe] disabled:text-[#9aa0bd] disabled:hover:bg-[#edeefe]"
           onClick={async () => {
             const ok = validate()
             if (!ok) return
 
-            const { id, slug } = await submitCreateProject()
-
-            if (ownerAdminAccount && isRecipientAddressesAutoFilled) {
-              setIsFinalizingRecipients(true)
-              try {
-                const finalRecipients =
-                  await deriveProjectOwnerRecipientAddresses({
-                    adminAccount: ownerAdminAccount,
-                    accountSalt: createProjectAccountSalt(id),
-                  })
-
-                const projectId = Number(id)
-                if (Number.isFinite(projectId)) {
-                  const client = createGraphQLClient({
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                  })
-
-                  await client.request(updateProjectMutation, {
-                    projectId,
-                    input: {
-                      addresses: finalRecipients.map(a => ({
-                        address: a.address,
-                        networkId: a.networkId,
-                        chainType: ChainType.Evm,
-                        title: a.title,
-                      })),
-                    },
-                  })
-                }
-              } catch (error) {
-                // Non-blocking: project is already created with auto-filled recipient addresses.
-                console.error(
-                  'Finalizing project recipient addresses failed:',
-                  error,
-                )
-              } finally {
-                setIsFinalizingRecipients(false)
-              }
-            }
+            const { slug } = await submitCreateProject()
 
             router.push(`/project/${slug}`)
           }}
         >
-          {isSubmitting
-            ? 'Publishing…'
-            : isFinalizingRecipients
-              ? 'Finalizing recipient wallets…'
-              : 'Publish Project'}
+          {isSubmitting ? 'Publishing…' : 'Publish Project'}
         </Button>
       </div>
     </div>
