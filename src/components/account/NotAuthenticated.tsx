@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { Button } from '@/components/ui/button'
 
 export function NotAuthenticated({
@@ -41,7 +42,14 @@ export function NotAuthenticated({
         )}
         <Button
           onClick={signIn}
-          className="w-full bg-giv-brand-500 hover:bg-giv-brand-400 text-white py-3"
+          className={clsx(
+            'rounded-xl transition-all duration-200',
+            'inline-flex items-center gap-2',
+            'bg-giv-brand-300 text-white',
+            'px-8 py-6! text-sm font-semibold',
+            'hover:opacity-80 cursor-pointer',
+            'disabled:opacity-80 disabled:cursor-not-allowed',
+          )}
         >
           Sign Message
         </Button>

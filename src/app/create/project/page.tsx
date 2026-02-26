@@ -97,10 +97,12 @@ export default function CreateProjectPage() {
           >
             Connect Wallet
           </button>
-          <SignInModal
-            open={isSignInModalOpen}
-            onOpenChange={setSignInModalOpen}
-          />
+          {isSignInModalOpen && (
+            <SignInModal
+              open={true}
+              onOpenChange={open => setSignInModalOpen(open)}
+            />
+          )}
         </div>
       </div>
     )
