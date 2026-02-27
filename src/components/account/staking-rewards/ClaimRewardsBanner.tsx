@@ -30,6 +30,7 @@ export const ClaimRewardsBanner = ({
       try {
         const data = await fetchUserOverview(
           account.address as `0x${string}`,
+          // '0xD5db3F8B0a236176587460dC85F0fC5705D78477' as `0x${string}`,
           selectedChain,
         )
         setData(data)
@@ -73,6 +74,7 @@ export const ClaimRewardsBanner = ({
   const givstreamAmount = data?.givbacks?.streamableAmount ?? 0n
   const totalClaimable = givbacksAmount + givfarmAmount + givstreamAmount
   const givstreamRate = data?.givbacks?.streaming ?? 0n
+  const givbacksRate = data?.givbacks?.givbackStream ?? 0n
   const givfarmRate = data?.staking?.streaming ?? 0n
 
   // Convert once to human units
@@ -91,13 +93,16 @@ export const ClaimRewardsBanner = ({
     maximumFractionDigits: 2,
   }).format(totalClaimableUsd)
 
-  const formatTokenRate = (value: bigint) =>
-    `${new Intl.NumberFormat(undefined, {
+  const formatTokenRate = (value: bigint) => {
+    const numeric = parseFloat(formatUnits(value, tokenDecimals))
+    if (numeric > 0 && numeric < 0.0001) {
+      return `<0.0001 ${tokenSymbol}/week`
+    }
+    return `${new Intl.NumberFormat(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(
-      parseFloat(formatUnits(value, tokenDecimals)),
-    )} ${STAKING_POOLS[selectedChain]?.GIVPOWER?.unit}/week`
+    }).format(numeric)} ${tokenSymbol}/week`
+  }
 
   const tokenDistroAddress = STAKING_POOLS[selectedChain]?.TOKEN_DISTRO_ADDRESS
   const givpowerLmAddress =
@@ -147,6 +152,7 @@ export const ClaimRewardsBanner = ({
         givstreamAmount={`${formatToken(givstreamAmount, tokenDecimals)} ${tokenSymbol}`}
         givstreamRate={formatTokenRate(givstreamRate)}
         givbacksAmount={`${formatToken(givbacksAmount, tokenDecimals)} ${tokenSymbol}`}
+        givbacksRate={formatTokenRate(givbacksRate)}
         givfarmAmount={`${formatToken(givfarmAmount, tokenDecimals)} ${tokenSymbol}`}
         givfarmRate={`+${formatTokenRate(givfarmRate)}`}
         totalRate={formatTokenRate(givstreamRate + givfarmRate)}

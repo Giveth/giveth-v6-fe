@@ -28,6 +28,7 @@ type RewardsClaimModalProps = {
   givstreamAmount?: string
   givstreamRate?: string
   givbacksAmount?: string
+  givbacksRate?: string
   givfarmAmount?: string
   givfarmRate?: string
   totalRate?: string
@@ -47,6 +48,7 @@ export default function RewardsClaimModal({
   givstreamAmount = '0.00 GIV',
   givstreamRate = '0.00 GIV/week',
   givbacksAmount = '0.00 GIV',
+  givbacksRate = '0.00 GIV/week',
   givfarmAmount = '0.00 GIV',
   givfarmRate = '+0.00 GIV/week',
   totalRate = '0.00 GIV/week',
@@ -172,26 +174,36 @@ export default function RewardsClaimModal({
                 <span>GIVstream</span>
 
                 <div className="flex justify-end gap-2 md:contents">
-                  <span className="font-semibold md:text-right text-base md:text-lg">
-                    {givstreamAmount}
-                  </span>
-                  <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
-                    {givstreamRate}
-                  </span>
+                  <div className="flex flex-col gap-1 md:contents">
+                    <span className="font-semibold md:text-right text-base md:text-lg">
+                      {givstreamAmount}
+                    </span>
+                    {Number(givbacksRate) > 0 && (
+                      <span className="text-giv-neutral-600 md:text-right text-xs md:text-sm">
+                        Received from GIVbacks
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 md:contents">
+                    <span className="text-giv-neutral-700 md:text-right text-base md:text-lg">
+                      {givstreamRate}
+                    </span>
+                    {Number(givbacksRate) > 0 && (
+                      <span className="text-giv-neutral-600 md:text-right text-xs md:text-sm">
+                        {givbacksRate}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* GIVbacks */}
-                {Number(givbacksAmount) > 0 && (
-                  <>
-                    <span>GIVbacks</span>
-                    <div className="flex justify-end gap-2 md:contents">
-                      <span className="font-semibold md:text-right text-base md:text-lg">
-                        {givbacksAmount}
-                      </span>
-                      <span />
-                    </div>
-                  </>
-                )}
+                <span>GIVbacks</span>
+                <div className="flex justify-end gap-2 md:contents">
+                  <span className="font-semibold md:text-right text-base md:text-lg">
+                    {givbacksAmount}
+                  </span>
+                  <span />
+                </div>
 
                 {/* GIVpower */}
                 <span>GIVpower</span>
