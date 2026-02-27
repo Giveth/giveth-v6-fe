@@ -32,10 +32,12 @@ import { getChainName } from '@/lib/helpers/chainHelper'
 import {
   fetchAvailableToLock,
   approveGIVpowerStake,
+  calculateMultiplier,
   fetchWalletBalance,
   fetchStaking,
   fetchGIVpowerAPRRange,
   formatToken,
+  LOCK_CONSTANTS,
   stakeGIVpower,
 } from '@/lib/helpers/stakeHelper'
 
@@ -74,6 +76,7 @@ export function StakingTab({ id }: { id: string }) {
   const [availableToLock, setAvailableToLock] = useState<bigint>(0n)
   const [walletBalance, setWalletBalance] = useState<bigint>(0n)
   const [isRefreshingBalance, setIsRefreshingBalance] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [aprValue, setAprValue] = useState<number>(0)
   const [aprRange, setAprRange] = useState<{
     baseApr: number
@@ -170,6 +173,8 @@ export function StakingTab({ id }: { id: string }) {
   const amountUsdValue = Number.isFinite(amountToStakeValue)
     ? tokenPriceInUSD * amountToStakeValue
     : 0
+  const isControlsDisabled =
+    isLoadingData || isRefreshingBalance || !account?.address
 
   // Handle approve, only approve if the amount is valid
   const handleApprove = async () => {
@@ -230,10 +235,14 @@ export function StakingTab({ id }: { id: string }) {
 
   // Fetch staking data, only fetch if the account and pool are valid
   useEffect(() => {
-    if (!account?.address || !pool?.GIVPOWER?.network) return
+    if (!account?.address || !pool?.GIVPOWER?.network) {
+      setIsLoadingData(false)
+      return
+    }
     let cancelled = false
 
     const fetchData = async () => {
+      setIsLoadingData(true)
       try {
         const [staking, available, wallet] = await Promise.all([
           fetchStaking(account.address as Address, pool.GIVPOWER.network),
@@ -252,6 +261,10 @@ export function StakingTab({ id }: { id: string }) {
         }
       } catch (error) {
         console.error('Failed to fetch staking data:', error)
+      } finally {
+        if (!cancelled) {
+          setIsLoadingData(false)
+        }
       }
     }
 
@@ -323,15 +336,25 @@ export function StakingTab({ id }: { id: string }) {
   }, [fireSideCannons, flowStep])
 
   const hasStake = availableToLock + lockedAmount > 0n
-  const aprNumberLabel = new Intl.NumberFormat(undefined, {
+  const aprNumberLabel = `${new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(aprValue)
-  const aprRangeLabel = aprRange
-    ? `${aprRange.baseApr.toFixed(2)}%-${aprRange.maxApr.toFixed(2)}%`
-    : null
+  }).format(aprValue)}%`
+  const aprRangeBase =
+    aprRange?.baseApr ?? (Number.isFinite(aprValue) ? aprValue : 0)
+  const aprRangeMax =
+    aprRange?.maxApr ??
+    aprRangeBase * calculateMultiplier(LOCK_CONSTANTS.MAX_ROUNDS)
+  const aprRangeLabel =
+    aprRangeBase > 0
+      ? `${aprRangeBase.toFixed(2)}%-${aprRangeMax.toFixed(2)}%`
+      : null
   const aprLabel =
-    (!account?.address || !hasStake) && aprRangeLabel
+    (!account?.address ||
+      !hasStake ||
+      !Number.isFinite(aprValue) ||
+      aprValue <= 0) &&
+    aprRangeLabel
       ? aprRangeLabel
       : aprNumberLabel
 
@@ -364,6 +387,7 @@ export function StakingTab({ id }: { id: string }) {
   const handleRefreshBalance = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
     setIsRefreshingBalance(true)
+    setIsLoadingData(true)
     try {
       const balance = await fetchWalletBalance(
         account.address as Address,
@@ -374,6 +398,7 @@ export function StakingTab({ id }: { id: string }) {
       console.error('Failed to refresh wallet balance:', error)
     } finally {
       setIsRefreshingBalance(false)
+      setIsLoadingData(false)
     }
   }
 
@@ -422,7 +447,7 @@ export function StakingTab({ id }: { id: string }) {
                   </div>
                   <div className="inline-flex items-center gap-2">
                     <span className="text-lg font-bold text-giv-neutral-900">
-                      {aprLabel}%
+                      {aprLabel}
                     </span>
                     <HelpTooltip
                       text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
@@ -470,7 +495,7 @@ export function StakingTab({ id }: { id: string }) {
                   'text-sm font-bold transition-colors',
                   'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
                 )}
-                disabled={Number(lockedAmount) === 0}
+                disabled={Number(lockedAmount) === 0 || isControlsDisabled}
                 onClick={() => setIsLockedDetailsModalOpen(true)}
               >
                 Locked GIV details
@@ -546,6 +571,9 @@ export function StakingTab({ id }: { id: string }) {
                         <button
                           key={label}
                           type="button"
+                          disabled={
+                            flowStep === 'approving' || isControlsDisabled
+                          }
                           onClick={() => {
                             const percentage = Number(label.replace('%', ''))
                             setAmountToStake(
@@ -554,12 +582,14 @@ export function StakingTab({ id }: { id: string }) {
                               ),
                             )
                           }}
-                          disabled={flowStep === 'approving'}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
-                            'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                            'bg-giv-brand-050 text-giv-brand-700 transition-colors',
                             'border border-giv-brand-100',
-                            flowStep === 'approving' &&
+                            !isControlsDisabled &&
+                              flowStep !== 'approving' &&
+                              'hover:bg-giv-brand-200 cursor-pointer',
+                            (flowStep === 'approving' || isControlsDisabled) &&
                               'cursor-not-allowed opacity-50',
                           )}
                         >
@@ -568,13 +598,17 @@ export function StakingTab({ id }: { id: string }) {
                       ))}
                       <button
                         type="button"
+                        disabled={isControlsDisabled}
                         onClick={() =>
                           setAmountToStake(availableToStakeValue.toString())
                         }
                         className={clsx(
                           'rounded-xl px-3 py-2 text-xs font-medium',
-                          'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                          'bg-giv-brand-050 text-giv-brand-700 transition-colors',
                           'border border-giv-brand-100',
+                          !isControlsDisabled &&
+                            'hover:bg-giv-brand-200 cursor-pointer',
+                          isControlsDisabled && 'cursor-not-allowed opacity-50',
                         )}
                       >
                         Max
@@ -584,7 +618,13 @@ export function StakingTab({ id }: { id: string }) {
                       <span>Available:</span>
                       <button
                         type="button"
-                        className="ml-1 cursor-pointer hover:underline"
+                        disabled={isControlsDisabled}
+                        className={clsx(
+                          'ml-1',
+                          !isControlsDisabled &&
+                            'cursor-pointer hover:underline',
+                          isControlsDisabled && 'cursor-not-allowed opacity-50',
+                        )}
                         onClick={() =>
                           setAmountToStake(availableToStakeValue.toString())
                         }
@@ -595,8 +635,13 @@ export function StakingTab({ id }: { id: string }) {
                       <button
                         type="button"
                         onClick={handleRefreshBalance}
-                        className="ml-1 cursor-pointer group"
-                        disabled={isRefreshingBalance}
+                        className={clsx(
+                          'ml-1',
+                          isControlsDisabled
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'cursor-pointer group',
+                        )}
+                        disabled={isControlsDisabled}
                         title="Refresh balance"
                       >
                         <IconReload
@@ -617,11 +662,18 @@ export function StakingTab({ id }: { id: string }) {
                     className={clsx(
                       'w-full py-4 bg-giv-brand-300! text-white! mt-8',
                       'rounded-md text-sm font-bold flex items-center justify-center gap-2',
-                      'hover:bg-giv-brand-400! transition-colors cursor-pointer',
-                      (!isAmountValid || flowStep === 'approving') &&
+                      !isControlsDisabled &&
+                        'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      (!isAmountValid ||
+                        flowStep === 'approving' ||
+                        isControlsDisabled) &&
                         'opacity-60 cursor-not-allowed',
                     )}
-                    disabled={!isAmountValid || flowStep === 'approving'}
+                    disabled={
+                      !isAmountValid ||
+                      flowStep === 'approving' ||
+                      isControlsDisabled
+                    }
                     onClick={handleApprove}
                   >
                     {flowStep === 'approving' ? (

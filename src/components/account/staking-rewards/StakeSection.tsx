@@ -17,10 +17,13 @@ import {
   STAKING_POOLS,
 } from '@/lib/constants/staking-power-constants'
 import {
+  calculateMultiplier,
   fetchAvailableToLock,
+  fetchGIVpowerAPRRange,
   fetchStaking,
   fetchWalletBalance,
   formatToken,
+  LOCK_CONSTANTS,
 } from '@/lib/helpers/stakeHelper'
 
 type StakeSectionProps = {
@@ -47,6 +50,9 @@ export const StakeSection = ({
   const account = useActiveAccount()
   const [stakingByChain, setStakingByChain] = useState<
     Record<number, ChainStakeInfo>
+  >({})
+  const [aprRangeByChain, setAprRangeByChain] = useState<
+    Record<number, { baseApr: number; maxApr: number }>
   >({})
 
   const [isLockedDetailsModalOpen, setIsLockedDetailsModalOpen] =
@@ -147,6 +153,33 @@ export const StakeSection = ({
     }
   }, [account?.address, chains])
 
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchRanges = async () => {
+      const results = await Promise.allSettled(
+        chains.map(async chain => ({
+          chainId: chain.id,
+          range: await fetchGIVpowerAPRRange(chain.id),
+        })),
+      )
+      const next: Record<number, { baseApr: number; maxApr: number }> = {}
+      results.forEach(result => {
+        if (result.status === 'fulfilled') {
+          next[result.value.chainId] = result.value.range
+        }
+      })
+      if (!cancelled) {
+        setAprRangeByChain(next)
+      }
+    }
+
+    fetchRanges()
+    return () => {
+      cancelled = true
+    }
+  }, [chains])
+
   const selectedStake = stakingByChain[selectedChain] ?? {
     staked: 0n,
     apr: 0,
@@ -168,12 +201,48 @@ export const StakeSection = ({
       maximumFractionDigits: 2,
     }).format(value)}%`
 
+  const getAprLabel = (chainId: number, chainInfo?: ChainStakeInfo) => {
+    const info = chainInfo ?? {
+      staked: 0n,
+      apr: 0,
+      boostedAPR: 0,
+      baseAPR: 0,
+      boostMultiplier: 1,
+      locked: 0n,
+      wallet: 0n,
+      availableToLock: 0n,
+    }
+    const hasStake = info.availableToLock + info.locked > 0n
+    const range = aprRangeByChain[chainId]
+    const rangeBase =
+      range?.baseApr ?? (Number.isFinite(info.baseAPR) ? info.baseAPR : 0)
+    const rangeMax =
+      range?.maxApr ??
+      rangeBase * calculateMultiplier(LOCK_CONSTANTS.MAX_ROUNDS)
+    const rangeLabel =
+      rangeBase > 0 ? `${rangeBase.toFixed(2)}%-${rangeMax.toFixed(2)}%` : null
+    if (
+      (!account?.address ||
+        !hasStake ||
+        !Number.isFinite(info.boostedAPR) ||
+        info.boostedAPR <= 0) &&
+      rangeLabel
+    ) {
+      return rangeLabel
+    }
+    return formatApr(info.boostedAPR ?? info.apr ?? 0)
+  }
+
   const availableToLockLabel = formatToken(availableToLock, tokenDecimals)
   const totalLockedAmountLabel = formatToken(
     selectedStake.locked + availableToLock,
     tokenDecimals,
   )
   const walletAmountLabel = formatToken(selectedStake.wallet, tokenDecimals)
+  const walletDisplayLabel =
+    walletAmountLabel === '0.00' && selectedStake.wallet > 0n
+      ? '< 0.00'
+      : walletAmountLabel
 
   return (
     <>
@@ -248,10 +317,15 @@ export const StakeSection = ({
                           fontSize="text-[9px]"
                         />
                       </span>
-                      <span className="w-20 text-lg font-bold text-giv-neutral-900">
-                        {formatApr(
-                          chainInfo?.boostedAPR ?? chainInfo?.apr ?? 0,
+                      <span
+                        className={clsx(
+                          getAprLabel(chain.id, chainInfo).startsWith('<')
+                            ? 'w-20'
+                            : 'w-auto',
+                          'text-lg font-bold text-giv-neutral-900',
                         )}
+                      >
+                        {getAprLabel(chain.id, chainInfo)}
                       </span>
                     </div>
                   </button>
@@ -291,7 +365,7 @@ export const StakeSection = ({
                 </span>
                 <IconStars width={24} height={24} />
                 <span className="ml-3 text-lg font-bold text-giv-neutral-900">
-                  {formatApr(selectedStake.boostedAPR || selectedStake.apr)}
+                  {getAprLabel(selectedChain, selectedStake)}
                 </span>
                 <HelpTooltip
                   text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
@@ -360,7 +434,7 @@ export const StakeSection = ({
                   Stake
                 </button>
                 <div className="font-medium text-giv-neutral-800">
-                  {walletAmountLabel}{' '}
+                  {walletDisplayLabel}{' '}
                   {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
                 </div>
               </div>

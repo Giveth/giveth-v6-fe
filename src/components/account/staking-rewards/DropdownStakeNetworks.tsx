@@ -1,6 +1,11 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
+import { defineChain } from 'thirdweb/chains'
+import {
+  useActiveWalletChain,
+  useSwitchActiveWalletChain,
+} from 'thirdweb/react'
 import { ChainIcon } from '@/components/ChainIcon'
 
 export const DropdownStakeNetworks = ({
@@ -12,6 +17,9 @@ export const DropdownStakeNetworks = ({
   chains: { id: number; name: string }[]
   onSelectChain: (chainId: number) => void
 }) => {
+  const activeChain = useActiveWalletChain()
+  const switchChain = useSwitchActiveWalletChain()
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -40,7 +48,13 @@ export const DropdownStakeNetworks = ({
           {chains.map(chain => (
             <DropdownMenu.Item
               key={chain.id}
-              onSelect={() => onSelectChain(chain.id)}
+              onSelect={async () => {
+                // Change user network to the chainId
+                if (activeChain?.id !== chain.id) {
+                  await switchChain(defineChain(chain.id))
+                }
+                onSelectChain(chain.id)
+              }}
               className={clsx(
                 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-giv-neutral-900',
                 'outline-none hover:bg-giv-neutral-100 focus:bg-giv-neutral-100 cursor-pointer',

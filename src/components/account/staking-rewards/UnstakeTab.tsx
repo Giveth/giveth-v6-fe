@@ -28,10 +28,13 @@ import {
 } from '@/lib/helpers/cartHelper'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import {
+  calculateMultiplier,
   fetchAvailableToLock,
+  fetchGIVpowerAPRRange,
   fetchStaking,
   formatToken,
   getAvailableToUnstake,
+  LOCK_CONSTANTS,
   unstakeGIV,
 } from '@/lib/helpers/stakeHelper'
 
@@ -61,6 +64,10 @@ export function UnstakeTab({ id }: { id: string }) {
   const [totalStaked, setTotalStaked] = useState<bigint>(0n)
   const [lockedAmount, setLockedAmount] = useState<bigint>(0n)
   const [baseApr, setBaseApr] = useState(0)
+  const [aprRange, setAprRange] = useState<{
+    baseApr: number
+    maxApr: number
+  } | null>(null)
   const [tokenPriceInUSD, setTokenPriceInUSD] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [flowStep, setFlowStep] = useState<'input' | 'pending' | 'confirmed'>(
@@ -68,6 +75,7 @@ export function UnstakeTab({ id }: { id: string }) {
   )
   const [txHash, setTxHash] = useState<string | null>(null)
   const [isRefreshingAvailable, setIsRefreshingAvailable] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const confettiRef = useRef<ConfettiInstance | null>(null)
   const hasFiredRef = useRef(false)
 
@@ -90,6 +98,8 @@ export function UnstakeTab({ id }: { id: string }) {
   const hasEnough = amountInBaseUnits <= availableToUnstake
   const isAmountValid = amountInBaseUnits > 0n
   const canSubmit = isAmountValid && hasEnough
+  const isControlsDisabled =
+    isLoadingData || isRefreshingAvailable || !account?.address
 
   const availableLabel = formatToken(availableToUnstake, tokenDecimals)
   const totalStakedAmountLabel = formatToken(totalStaked, tokenDecimals)
@@ -100,10 +110,28 @@ export function UnstakeTab({ id }: { id: string }) {
     pool?.GIVPOWER?.decimals as number,
   )
 
-  const aprLabel = new Intl.NumberFormat(undefined, {
+  const hasStake = totalStaked > 0n || lockedAmount > 0n
+  const aprNumberLabel = `${new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(baseApr)
+  }).format(baseApr)}%`
+  const aprRangeBase =
+    aprRange?.baseApr ?? (Number.isFinite(baseApr) ? baseApr : 0)
+  const aprRangeMax =
+    aprRange?.maxApr ??
+    aprRangeBase * calculateMultiplier(LOCK_CONSTANTS.MAX_ROUNDS)
+  const aprRangeLabel =
+    aprRangeBase > 0
+      ? `${aprRangeBase.toFixed(2)}%-${aprRangeMax.toFixed(2)}%`
+      : null
+  const aprLabel =
+    (!account?.address ||
+      !hasStake ||
+      !Number.isFinite(baseApr) ||
+      baseApr <= 0) &&
+    aprRangeLabel
+      ? aprRangeLabel
+      : aprNumberLabel
 
   // Initialize confetti, only initialize once
   const handleConfettiInit = useCallback(
@@ -157,6 +185,7 @@ export function UnstakeTab({ id }: { id: string }) {
   const handleRefresh = async () => {
     if (!account?.address || !pool?.GIVPOWER?.network) return
     setIsRefreshingAvailable(true)
+    setIsLoadingData(true)
     try {
       const [staking, available, lockInfo] = await Promise.all([
         fetchStaking(account.address as Address, pool.GIVPOWER.network),
@@ -178,6 +207,7 @@ export function UnstakeTab({ id }: { id: string }) {
       console.error('Failed to refresh unstake data:', error)
     } finally {
       setIsRefreshingAvailable(false)
+      setIsLoadingData(false)
     }
   }
 
@@ -227,10 +257,14 @@ export function UnstakeTab({ id }: { id: string }) {
 
   // Fetch the unstake data, used to fetch the unstake data when the user clicks the refresh button
   useEffect(() => {
-    if (!account?.address || !pool?.GIVPOWER?.network) return
+    if (!account?.address || !pool?.GIVPOWER?.network) {
+      setIsLoadingData(false)
+      return
+    }
     let cancelled = false
 
     const fetchData = async () => {
+      setIsLoadingData(true)
       try {
         const [staking, available, lockInfo] = await Promise.all([
           fetchStaking(account.address as Address, pool.GIVPOWER.network),
@@ -255,6 +289,10 @@ export function UnstakeTab({ id }: { id: string }) {
         }
       } catch (error) {
         console.error('Failed to fetch unstake data:', error)
+      } finally {
+        if (!cancelled) {
+          setIsLoadingData(false)
+        }
       }
     }
 
@@ -263,6 +301,27 @@ export function UnstakeTab({ id }: { id: string }) {
       cancelled = true
     }
   }, [account?.address, pool?.GIVPOWER?.network])
+
+  useEffect(() => {
+    if (!pool?.GIVPOWER?.network) return
+    let cancelled = false
+
+    const fetchRange = async () => {
+      try {
+        const range = await fetchGIVpowerAPRRange(pool.GIVPOWER.network)
+        if (!cancelled) {
+          setAprRange(range)
+        }
+      } catch (error) {
+        console.error('Failed to fetch APR range:', error)
+      }
+    }
+
+    fetchRange()
+    return () => {
+      cancelled = true
+    }
+  }, [pool?.GIVPOWER?.network])
 
   // Fetch the token price, used to fetch the token price when the user clicks the refresh button
   useEffect(() => {
@@ -329,7 +388,7 @@ export function UnstakeTab({ id }: { id: string }) {
                   </div>
                   <div className="inline-flex items-center gap-2">
                     <span className="text-lg font-bold text-giv-neutral-900">
-                      {aprLabel}%
+                      {aprLabel}
                     </span>
                     <HelpTooltip
                       text="This is the weighted average APR for your staked (and locked) GIV."
@@ -377,7 +436,7 @@ export function UnstakeTab({ id }: { id: string }) {
                   'text-sm font-bold transition-colors',
                   'border border-giv-brand-100 bg-giv-brand-050 text-giv-brand-700 hover:opacity-80 cursor-pointer',
                 )}
-                disabled={Number(lockedAmount) === 0}
+                disabled={Number(lockedAmount) === 0 || isControlsDisabled}
                 onClick={() => setIsLockedDetailsModalOpen(true)}
               >
                 Locked GIV details
@@ -436,6 +495,7 @@ export function UnstakeTab({ id }: { id: string }) {
                         <button
                           key={label}
                           type="button"
+                          disabled={isControlsDisabled}
                           onClick={() => {
                             const percentage = Number(label.replace('%', ''))
                             const availableValue = parseFloat(
@@ -449,7 +509,11 @@ export function UnstakeTab({ id }: { id: string }) {
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
-                            'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                            'bg-giv-brand-050 text-giv-brand-700 transition-colors',
+                            !isControlsDisabled &&
+                              'hover:bg-giv-brand-200 cursor-pointer',
+                            isControlsDisabled &&
+                              'opacity-60 cursor-not-allowed',
                             'border border-giv-brand-100',
                           )}
                         >
@@ -458,6 +522,7 @@ export function UnstakeTab({ id }: { id: string }) {
                       ))}
                       <button
                         type="button"
+                        disabled={isControlsDisabled}
                         onClick={() =>
                           setAmountToUnstake(
                             formatAmountToSixDecimals(
@@ -469,7 +534,10 @@ export function UnstakeTab({ id }: { id: string }) {
                         }
                         className={clsx(
                           'rounded-xl px-3 py-2 text-xs font-medium',
-                          'bg-giv-brand-050 text-giv-brand-700 hover:bg-giv-brand-200 transition-colors cursor-pointer',
+                          'bg-giv-brand-050 text-giv-brand-700 transition-colors',
+                          !isControlsDisabled &&
+                            'hover:bg-giv-brand-200 cursor-pointer',
+                          isControlsDisabled && 'opacity-60 cursor-not-allowed',
                           'border border-giv-brand-100',
                         )}
                       >
@@ -480,7 +548,13 @@ export function UnstakeTab({ id }: { id: string }) {
                       <span>Available to unstake:</span>
                       <button
                         type="button"
-                        className="ml-1 cursor-pointer hover:underline"
+                        disabled={isControlsDisabled}
+                        className={clsx(
+                          'ml-1',
+                          !isControlsDisabled &&
+                            'cursor-pointer hover:underline',
+                          isControlsDisabled && 'cursor-not-allowed opacity-60',
+                        )}
                         onClick={() => setAmountToUnstake(availableLabel)}
                         title="Unstake max"
                       >
@@ -489,8 +563,13 @@ export function UnstakeTab({ id }: { id: string }) {
                       <button
                         type="button"
                         onClick={handleRefresh}
-                        className="ml-1 cursor-pointer"
-                        disabled={isRefreshingAvailable}
+                        className={clsx(
+                          'ml-1',
+                          isControlsDisabled
+                            ? 'cursor-not-allowed opacity-60'
+                            : 'cursor-pointer',
+                        )}
+                        disabled={isControlsDisabled}
                         title="Refresh available to unstake"
                       >
                         <IconReload
@@ -511,10 +590,12 @@ export function UnstakeTab({ id }: { id: string }) {
                     className={clsx(
                       'w-full py-4 bg-giv-brand-300! text-white! mt-8',
                       'rounded-md text-sm font-bold flex items-center justify-center gap-2',
-                      'hover:bg-giv-brand-400! transition-colors cursor-pointer',
-                      !canSubmit && 'opacity-60 cursor-not-allowed',
+                      !isControlsDisabled &&
+                        'hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                      (!canSubmit || isControlsDisabled) &&
+                        'opacity-60 cursor-not-allowed',
                     )}
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || isControlsDisabled}
                     onClick={handleUnstake}
                   >
                     Approve
