@@ -933,12 +933,15 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
   // Calculate GIVback values
   const liquidPart = BigInt(balance.givbackLiquidPart || '0')
   const givbackTotal = BigInt(balance.givback || '0')
+  const allocatedTokens = BigInt(balance.allocatedTokens || '0')
   const helperClaimable = helper.getUserClaimableNow(
     balance as unknown as ITokenDistroBalance,
   )
   // Calculate streamable amount
   const streamableAmount =
     helperClaimable > liquidPart ? helperClaimable - liquidPart : 0n
+  const streamableTotal =
+    allocatedTokens > givbackTotal ? allocatedTokens - givbackTotal : 0n
   // Calculate GIVback stream
   const givbackStream = helper.getStreamPartTokenPerWeek(givbackTotal)
 
@@ -946,10 +949,8 @@ export async function fetchGIVbacks(user: Address, chainId: number) {
     claimable: helperClaimable,
     claimableByHelper: helperClaimable,
     streamableAmount,
-    streaming: helper.getStreamPartTokenPerWeek(
-      BigInt(balance.allocatedTokens),
-    ),
-    allocated: BigInt(balance.allocatedTokens),
+    streaming: helper.getStreamPartTokenPerWeek(streamableTotal),
+    allocated: allocatedTokens,
     claimed: BigInt(balance.claimed),
     givbackLiquidPart: liquidPart,
     givbackStream,
