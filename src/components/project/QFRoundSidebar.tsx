@@ -57,10 +57,10 @@ export function QFRoundSidebar({
     Number(selectedRound?.qfRound?.id ?? 0),
   )
 
-  const isRoundInactive = selectedRound?.qfRound?.isActive
+  const isRoundActive = selectedRound?.qfRound?.isActive
   const hasDistributedFund = qfRoundHistory?.distributedFund?.amount != null
-  const notDistributedFund = !hasDistributedFund && !isRoundInactive
-  const showMatchingFunds = isRoundInactive && hasDistributedFund
+  const notDistributedFund = !hasDistributedFund && !isRoundActive
+  const showMatchingFunds = !isRoundActive && hasDistributedFund
 
   return (
     <div className="bg-white rounded-xl shadow-[0px_3px_20px_rgba(212,218,238,0.4)] p-4">
@@ -79,7 +79,7 @@ export function QFRoundSidebar({
           })}
         </span>
         <p className="text-base text-giv-neutral-700">
-          Raised from{' '}
+          Raised from
           <span className="text-giv-neutral-900 font-medium">
             {countUniqueDonors || 0}
           </span>{' '}
@@ -111,20 +111,20 @@ export function QFRoundSidebar({
         <div className="flex flex-col bg-gray-200 py-4 pb-1 px-2 rounded-xl mt-2">
           <div className="flex justify-between">
             <h5 className="text-green-600 font-bold text-xl">
+              +
               {qfRoundHistory?.allocatedFundUSDPreferred
                 ? '$' +
                   formatNumber(
-                    qfRoundHistory?.estimatedMatching?.amountUsd ?? 0,
+                    qfRoundHistory?.distributedFund?.amountUsd ?? 0,
                     {
                       minDecimals: 2,
-                      maxDecimals: 2,
+                      maxDecimals: 3,
                     },
                   )
-                : formatNumber(qfRoundHistory?.estimatedMatching?.amount ?? 0, {
+                : formatNumber(qfRoundHistory?.distributedFund?.amount ?? 0, {
                     minDecimals: 2,
-                    maxDecimals: 2,
-                  })}
-              +{' '}
+                    maxDecimals: 3,
+                  })}{' '}
               {qfRoundHistory?.allocatedFundUSDPreferred
                 ? ''
                 : qfRoundHistory?.distributedFund?.currency}
