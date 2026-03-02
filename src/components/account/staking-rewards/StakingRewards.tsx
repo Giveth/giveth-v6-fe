@@ -1,4 +1,9 @@
 import { useState } from 'react'
+import { defineChain } from 'thirdweb'
+import {
+  useActiveWalletChain,
+  useSwitchActiveWalletChain,
+} from 'thirdweb/react'
 import { GIVStreamSection } from '@/components/account/GIVStreamSection'
 import { ClaimRewardsBanner } from '@/components/account/staking-rewards/ClaimRewardsBanner'
 import { DropdownStakeNetworks } from '@/components/account/staking-rewards/DropdownStakeNetworks'
@@ -10,6 +15,9 @@ import {
 } from '@/lib/constants/staking-power-constants'
 
 export const StakingRewards = () => {
+  const activeChain = useActiveWalletChain()
+  const switchChain = useSwitchActiveWalletChain()
+
   const [claimChain, setClaimChain] = useState(CLAIM_REWARDS_CHAINS[0].id)
   const [stakingChain, setStakingChain] = useState(STAKING_CHAINS[0].id)
   const [givstreamChain, setGivstreamChain] = useState(STAKING_CHAINS[0].id)
@@ -27,7 +35,11 @@ export const StakingRewards = () => {
     }
   }
 
+  // Change user network to the chainId, if not already on the correct network
   const handleStakingChainChange = (chainId: number) => {
+    if (activeChain?.id !== chainId) {
+      switchChain(defineChain(chainId))
+    }
     setStakingChain(chainId)
     setGivstreamChain(chainId)
     if (isStakingChain(chainId)) {

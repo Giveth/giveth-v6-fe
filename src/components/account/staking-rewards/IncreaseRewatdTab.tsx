@@ -33,6 +33,7 @@ import {
   calculateMultiplier,
   calculateUnlockDate,
   fetchAvailableToLock,
+  fetchGIVpowerAPRRange,
   fetchTotalGIVpower,
   fetchStaking,
   getCurrentRoundInfo,
@@ -72,6 +73,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   const [lockedAmount, setLockedAmount] = useState<bigint>(0n)
   const [availableToLock, setAvailableToLock] = useState<bigint>(0n)
   const [baseApr, setBaseApr] = useState<number>(0)
+  const [aprRange, setAprRange] = useState<{
+    baseApr: number
+    maxApr: number
+  } | null>(null)
   const [tokenPriceInUSD, setTokenPriceInUSD] = useState<number>(0)
   const [roundInfo, setRoundInfo] = useState<{
     currentRound: number
@@ -299,6 +304,27 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     }
   }, [account?.address, pool?.GIVPOWER?.network])
 
+  useEffect(() => {
+    if (!pool?.GIVPOWER?.network) return
+    let cancelled = false
+
+    const fetchRange = async () => {
+      try {
+        const range = await fetchGIVpowerAPRRange(pool.GIVPOWER.network)
+        if (!cancelled) {
+          setAprRange(range)
+        }
+      } catch (error) {
+        console.error('Failed to fetch APR range:', error)
+      }
+    }
+
+    fetchRange()
+    return () => {
+      cancelled = true
+    }
+  }, [pool?.GIVPOWER?.network])
+
   // Fetch token price
   useEffect(() => {
     const coingeckoId = pool?.GIVPOWER?.coingeckoId
@@ -343,11 +369,29 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     updateRange(roundsRangeRef.current)
   }, [roundsToLock])
 
+  const hasStake = availableToLock + lockedAmount > 0n
   // Format APR value
-  const aprLabel = new Intl.NumberFormat(undefined, {
+  const aprNumberLabel = `${new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(baseApr)
+  }).format(baseApr)}%`
+  const aprRangeBase =
+    aprRange?.baseApr ?? (Number.isFinite(baseApr) ? baseApr : 0)
+  const aprRangeMax =
+    aprRange?.maxApr ??
+    aprRangeBase * calculateMultiplier(LOCK_CONSTANTS.MAX_ROUNDS)
+  const aprRangeLabel =
+    aprRangeBase > 0
+      ? `${aprRangeBase.toFixed(2)}%-${aprRangeMax.toFixed(2)}%`
+      : null
+  const aprLabel =
+    (!account?.address ||
+      !hasStake ||
+      !Number.isFinite(baseApr) ||
+      baseApr <= 0) &&
+    aprRangeLabel
+      ? aprRangeLabel
+      : aprNumberLabel
 
   // Format total locked amount
   const totalLockedAmountLabel = formatToken(
@@ -449,7 +493,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                   </div>
                   <div className="inline-flex items-center gap-2">
                     <span className="text-lg font-bold text-giv-neutral-900">
-                      {aprLabel}%
+                      {aprLabel}
                     </span>
                     <HelpTooltip
                       text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
