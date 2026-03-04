@@ -52,12 +52,13 @@ export const supportedWallets = walletConnectWallet
 
 /**
  * In-app wallet for AA (Account Abstraction) flow.
- * Supports email and Google sign-in with a smart account on Optimism.
+ * Supports email / Google auth and browser-wallet signer auth
+ * with a smart account on Optimism.
  * This gives non-crypto users a "Donate with dollars" experience.
  */
 export const aaInAppWallet = inAppWallet({
   auth: {
-    options: ['email', 'google'],
+    options: ['email', 'google', 'wallet'],
   },
   smartAccount: {
     chain: optimism,

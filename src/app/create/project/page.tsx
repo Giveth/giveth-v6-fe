@@ -1,35 +1,38 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useActiveWalletConnectionStatus } from 'thirdweb/react'
 import { AiChatPanel } from '@/components/create-project/AiChatPanel'
 import { CreateProjectLayout } from '@/components/create-project/CreateProjectLayout'
 import { ManualSidebarForm } from '@/components/create-project/ManualSidebarForm'
-import { SignInModal } from '@/components/modals/SignInModal'
+import { ProjectOwnerSignInButton } from '@/components/create-project/ProjectOwnerSignInButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useAAWalletStore } from '@/store/aa-wallet'
 
 export default function CreateProjectPage() {
   const { isAuthenticated, isLoading, signIn } = useSiweAuth()
   const connectionStatus = useActiveWalletConnectionStatus()
-  const router = useRouter()
   const [isInitializing, setIsInitializing] = useState(false)
   const [showAiUpdateCue, setShowAiUpdateCue] = useState(false)
   const aiUpdateCueTimerRef = useRef<number | null>(null)
-  const { isSignInModalOpen, setSignInModalOpen } = useAAWalletStore()
-
   // Default experience keeps manual edit visible on first load.
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [authError, setAuthError] = useState<string | null>(null)
+
+  // Default experience: AI chat (form hidden).
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const isAAWallet = useAAWalletStore(s => s.isAAWallet)
 
   const isConnected = connectionStatus === 'connected'
+  const isConnectedWithNonAAWallet = isConnected && !isAAWallet
+  const isProjectOwnerConnected = isConnected && isAAWallet
 
   useEffect(() => {
     const initializePage = async () => {
       if (isLoading) return
       setIsInitializing(true)
 
-      if (!isConnected) {
+      if (!isProjectOwnerConnected) {
+        setAuthError(null)
         setIsInitializing(false)
         return
       }
@@ -37,10 +40,12 @@ export default function CreateProjectPage() {
       if (!isAuthenticated) {
         try {
           await signIn()
+          setAuthError(null)
         } catch (error) {
           console.error('Failed to sign in:', error)
-          router.push('/')
-          return
+          setAuthError(
+            'Authentication was not completed. Please sign the message to continue.',
+          )
         }
       }
 
@@ -48,7 +53,7 @@ export default function CreateProjectPage() {
     }
 
     initializePage()
-  }, [isLoading, isAuthenticated, isConnected, signIn, router])
+  }, [isLoading, isAuthenticated, isProjectOwnerConnected, signIn])
 
   useEffect(() => {
     return () => {
@@ -80,28 +85,25 @@ export default function CreateProjectPage() {
     )
   }
 
-  if (!isConnected) {
+  if (!isProjectOwnerConnected) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-[#f7f8fc] flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Connect Your Wallet
+            Sign in with Thirdweb
           </h1>
           <p className="text-gray-600 mb-8">
-            You need to connect your wallet to create a project
+            Continue with Thirdweb to create your project-owner smart wallet.
+            Browser wallets act as signers for the Thirdweb smart wallet.
           </p>
-          <button
-            type="button"
-            onClick={() => setSignInModalOpen(true)}
-            className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8668fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80"
-          >
-            Connect Wallet
-          </button>
-          {isSignInModalOpen && (
-            <SignInModal
-              open={true}
-              onOpenChange={open => setSignInModalOpen(open)}
-            />
+          {isConnectedWithNonAAWallet ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              You are currently connected with a non-AA wallet (donor flow).
+              Disconnect it first, then sign in with the project-owner AA wallet
+              to continue.
+            </div>
+          ) : (
+            <ProjectOwnerSignInButton />
           )}
         </div>
       </div>
@@ -109,6 +111,31 @@ export default function CreateProjectPage() {
   }
 
   if (!isAuthenticated) {
+    if (authError) {
+      return (
+        <div className="min-h-[calc(100vh-64px)] bg-[#f7f8fc] flex items-center justify-center">
+          <div className="text-center">
+            <p className="max-w-md text-sm text-red-600 mb-4">{authError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthError(null)
+                void signIn().catch(error => {
+                  console.error('Sign in retry failed:', error)
+                  setAuthError(
+                    'Authentication was not completed. Please sign the message to continue.',
+                  )
+                })
+              }}
+              className="rounded-full bg-[#8668fc] px-5 py-3 text-sm font-semibold text-white hover:opacity-85 cursor-pointer"
+            >
+              Retry Authentication
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-[calc(100vh-64px)] bg-[#f7f8fc] flex items-center justify-center">
         <div className="text-center">

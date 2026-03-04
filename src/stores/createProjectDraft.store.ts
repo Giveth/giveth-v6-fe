@@ -141,6 +141,7 @@ export type CreateProjectDraftState = {
   draft: CreateProjectDraft
   errors: CreateProjectDraftErrors
   isSubmitting: boolean
+  isRecipientAddressesAutoFilled: boolean
   submitError?: string
   applyPatch: (patch: Partial<CreateProjectDraft>) => void
   setTitle: (title: string) => void
@@ -155,6 +156,10 @@ export type CreateProjectDraftState = {
     patch: Partial<CreateProjectRecipientAddress>,
   ) => void
   removeRecipientAddress: (id: string) => void
+  setRecipientAddresses: (
+    addresses: CreateProjectRecipientAddress[],
+    options?: { autoFilled?: boolean },
+  ) => void
   validate: () => boolean
   submitCreateProject: () => Promise<{ id: string; slug: string }>
   reset: () => void
@@ -181,6 +186,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
       draft: initialDraft,
       errors: {},
       isSubmitting: false,
+      isRecipientAddressesAutoFilled: false,
       submitError: undefined,
 
       applyPatch: patch =>
@@ -217,7 +223,12 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
               .slice(0, MAX_CATEGORIES)
           }
 
-          return { draft: next }
+          return {
+            draft: next,
+            isRecipientAddressesAutoFilled: patch.recipientAddresses
+              ? false
+              : state.isRecipientAddressesAutoFilled,
+          }
         }),
 
       setTitle: title => set(state => ({ draft: { ...state.draft, title } })),
@@ -249,6 +260,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
       addRecipientAddress: input =>
         set(state => ({
+          isRecipientAddressesAutoFilled: false,
           draft: {
             ...state.draft,
             recipientAddresses: [
@@ -267,6 +279,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
       updateRecipientAddress: (id, patch) =>
         set(state => ({
+          isRecipientAddressesAutoFilled: false,
           draft: {
             ...state.draft,
             recipientAddresses: state.draft.recipientAddresses.map(addr =>
@@ -277,12 +290,25 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
       removeRecipientAddress: id =>
         set(state => ({
+          isRecipientAddressesAutoFilled: false,
           draft: {
             ...state.draft,
             recipientAddresses: state.draft.recipientAddresses.filter(
               addr => addr.id !== id,
             ),
           },
+        })),
+
+      setRecipientAddresses: (addresses, options) =>
+        set(state => ({
+          draft: {
+            ...state.draft,
+            recipientAddresses: addresses.map(addr => ({
+              ...addr,
+              id: addr.id || createId(),
+            })),
+          },
+          isRecipientAddressesAutoFilled: Boolean(options?.autoFilled),
         })),
 
       validate: () => {
@@ -365,6 +391,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
           set({
             draft: { ...initialDraft },
             errors: {},
+            isRecipientAddressesAutoFilled: false,
             submitError: undefined,
           })
 
@@ -379,21 +406,41 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
         }
       },
 
-      reset: () => set({ draft: initialDraft, errors: {} }),
+      reset: () =>
+        set({
+          draft: initialDraft,
+          errors: {},
+          isRecipientAddressesAutoFilled: false,
+        }),
     }),
     {
       name: 'giveth-create-project-draft',
       storage: createJSONStorage(() => localStorage),
       // Only persist the draft fields. Errors/submitError are UI state and
       // should not survive refreshes (avoid "stuck" error messages).
-      partialize: state => ({ draft: state.draft }),
-      version: 2,
+      partialize: state => ({
+        draft: state.draft,
+        isRecipientAddressesAutoFilled: state.isRecipientAddressesAutoFilled,
+      }),
+      version: 3,
       migrate: (persisted, version) => {
         // v1 stored the whole store shape (including errors). Drop everything
         // except the draft when rehydrating older persisted states.
         if (version < 2) {
           const p = persisted as Partial<CreateProjectDraftState> | undefined
-          return { draft: p?.draft ?? initialDraft }
+          return {
+            draft: p?.draft ?? initialDraft,
+            isRecipientAddressesAutoFilled: false,
+          }
+        }
+
+        if (version < 3) {
+          const p = persisted as Partial<CreateProjectDraftState> | undefined
+          return {
+            ...p,
+            isRecipientAddressesAutoFilled:
+              p?.isRecipientAddressesAutoFilled ?? false,
+          }
         }
         return persisted as unknown as Partial<CreateProjectDraftState>
       },
