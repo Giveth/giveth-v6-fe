@@ -8,6 +8,7 @@ import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
 import { ProfileSection } from '@/components/account/ProfileSection'
 import { StakingRewards } from '@/components/account/staking-rewards/StakingRewards'
+import { UserProjectsTab } from '@/components/account/UserProjectsTab'
 
 export default function AccountPageClient() {
   const searchParams = useSearchParams()
@@ -35,7 +36,7 @@ export default function AccountPageClient() {
           {activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
           {activeTab === 'boosted' && <DonationsTable />}
-          {activeTab === 'projects' && <DonationsTable />}
+          {activeTab === 'projects' && <UserProjectsTab />}
         </main>
         <CtaSection />
       </div>

@@ -9,6 +9,7 @@ import {
   type PaginatedDonationsEntity,
   type PaginatedProjectsEntity,
   type ProjectEntity,
+  ProjectType,
   SortDirection,
   type UserEntity,
   type UserWalletEntity,
@@ -19,6 +20,7 @@ import {
   uploadAvatarMutation,
 } from '@/lib/graphql/mutations'
 import {
+  getCurrentGivbacksEligibilityFormQuery,
   myDonationsQuery,
   myProjectsQuery,
   userByAddressQuery,
@@ -47,16 +49,20 @@ export const useUserStats = (userId?: number, token?: string) =>
     enabled: !!token && !!userId,
   })
 
+/** Project fields for "My Projects". isGivbacksEligible: true when approved for GIVbacks. projectType: Cause = auto GIVbacks eligible. vouched = verification status (backend sets when admin verifies). givbacksEligibilityForm from myProjects query. */
 export type MyProject = Pick<
   ProjectEntity,
   | 'id'
   | 'title'
   | 'slug'
   | 'createdAt'
+  | 'status'
+  | 'projectType'
   | 'reviewStatus'
   | 'isGivbacksEligible'
   | 'vouched'
   | 'totalDonations'
+  | 'givbacksEligibilityForm'
 >
 
 type MyProjectsResponse = {
@@ -76,9 +82,23 @@ export const useMyProjects = (
       return client.request<MyProjectsResponse>(myProjectsQuery, {
         skip: params?.skip ?? 0,
         take: params?.take ?? 10,
+        projectType: ProjectType.Project,
       })
     },
     enabled: !!token && (params?.enabled ?? true),
+  })
+
+export const useGetCurrentGivbacksEligibilityForm = (
+  slug: string,
+  token?: string,
+) =>
+  useQuery({
+    queryKey: ['getCurrentGivbacksEligibilityForm', slug, token],
+    queryFn: async () => {
+      const client = createAuthorizedClient(token)
+      return client.request(getCurrentGivbacksEligibilityFormQuery, { slug })
+    },
+    enabled: !!token && !!slug,
   })
 
 export type MyDonation = Pick<

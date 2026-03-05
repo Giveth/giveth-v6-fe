@@ -6,6 +6,7 @@ import { type Route } from 'next'
 import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
 // import { IconRocket } from '@/components/icons/IconRocket'
 import { IconSparks } from '@/components/icons/IconSparks'
+import { IconStake } from '@/components/icons/IconStake'
 // import { IconStake } from '@/components/icons/IconStake'
 // import {
 //   givBacksLink,
@@ -45,12 +46,12 @@ export const DashboardTabs = ({
     //   icon: <IconRocket width={24} height={24} />,
     //   href: myGIVPowerLink.href as unknown as Route,
     // },
-    // {
-    //   id: 'projects',
-    //   label: 'My projects',
-    //   icon: <IconStake width={24} height={24} />,
-    //   href: myProjectsLink.href as unknown as Route,
-    // },
+    {
+      id: 'projects',
+      label: 'My projects',
+      icon: <IconStake width={24} height={24} />,
+      href: null,
+    },
   ]
 
   const handleTabClick = (tabId: string) => {

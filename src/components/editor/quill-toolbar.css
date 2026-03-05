@@ -1,0 +1,170 @@
+/* Editor content font size */
+.quill-editor-wrapper .ql-editor {
+  font-size: 16px;
+}
+
+/* Custom toolbar buttons: embed (no default Quill icon) */
+.quill-editor-wrapper .ql-toolbar .ql-embed .ql-icon {
+  display: none;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-embed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-embed::before {
+  content: 'Insert';
+  display: inline-block;
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 500;
+}
+
+/* Custom toolbar buttons: text and background color pickers */
+.quill-editor-wrapper .ql-toolbar .ql-textColor .ql-icon,
+.quill-editor-wrapper .ql-toolbar .ql-bgColor .ql-icon {
+  display: none;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-textColor,
+.quill-editor-wrapper .ql-toolbar .ql-bgColor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-textColor::before,
+.quill-editor-wrapper .ql-toolbar .ql-bgColor::before {
+  content: 'A';
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-textColor::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 7px;
+  right: 7px;
+  height: 2px;
+  background: #111827;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-bgColor::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 7px;
+  right: 7px;
+  height: 6px;
+  background: #fde047;
+}
+
+/* Make the custom emoji toolbar button visible (Quill has no icon for .ql-emoji) */
+.quill-editor-wrapper .ql-toolbar .ql-emoji .ql-icon {
+  display: none;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.quill-editor-wrapper .ql-toolbar .ql-emoji::before {
+  content: '😀' !important;
+  display: inline-block;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+/* Embed blots: responsive iframes */
+.quill-editor-wrapper .ql-editor .ql-embed-youtube,
+.quill-editor-wrapper .ql-editor .ql-embed-twitter,
+.quill-editor-wrapper .ql-editor .ql-embed-figma {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0.5rem 0;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-youtube {
+  margin: 0.5rem 0;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-youtube .ql-embed-youtube-iframe {
+  display: block;
+  border: none;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-youtube::after {
+  content: '✎';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 160ms ease-in-out;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-youtube:hover::after {
+  opacity: 1;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-twitter {
+  min-height: 120px;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #ffffff;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-twitter .twitter-tweet {
+  margin: 0;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-twitter .twitter-tweet-rendered {
+  margin: 0 !important;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-twitter .ql-embed-twitter-fallback {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: #1d4ed8;
+  text-decoration: underline;
+  font-size: 0.875rem;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-figma {
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.quill-editor-wrapper .ql-editor .ql-embed-figma .ql-embed-figma-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

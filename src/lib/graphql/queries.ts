@@ -449,12 +449,14 @@ export const myProjectsQuery = graphql(`
     $take: Int = 10
     $orderBy: ProjectSortField = CreatedAt
     $orderDirection: SortDirection = DESC
+    $projectType: ProjectType
   ) {
     myProjects(
       skip: $skip
       take: $take
       orderBy: $orderBy
       orderDirection: $orderDirection
+      projectType: $projectType
     ) {
       total
       projects {
@@ -462,11 +464,26 @@ export const myProjectsQuery = graphql(`
         title
         slug
         createdAt
+        status
+        projectType
         reviewStatus
         isGivbacksEligible
         vouched
         totalDonations
+        givbacksEligibilityForm {
+          id
+          status
+        }
       }
+    }
+  }
+`)
+
+export const getCurrentGivbacksEligibilityFormQuery = graphql(`
+  query GetCurrentGivbacksEligibilityForm($slug: String!) {
+    getCurrentGivbacksEligibilityForm(slug: $slug) {
+      id
+      status
     }
   }
 `)

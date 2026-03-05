@@ -66,6 +66,7 @@ export type CauseEntity = {
   createdAt: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   descriptionSummary?: Maybe<Scalars['String']['output']>;
+  givbacksEligibilityForm?: Maybe<GivbacksEligibilityFormEntity>;
   id: Scalars['ID']['output'];
   image?: Maybe<Scalars['String']['output']>;
   impactLocation?: Maybe<Scalars['String']['output']>;
@@ -855,6 +856,7 @@ export type ProjectEntity = {
   createdAt: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   descriptionSummary?: Maybe<Scalars['String']['output']>;
+  givbacksEligibilityForm?: Maybe<GivbacksEligibilityFormEntity>;
   id: Scalars['ID']['output'];
   image?: Maybe<Scalars['String']['output']>;
   impactLocation?: Maybe<Scalars['String']['output']>;
@@ -1358,6 +1360,7 @@ export type QueryMyProjectsArgs = {
   filters?: InputMaybe<ProjectFiltersInput>;
   orderBy?: ProjectSortField;
   orderDirection?: SortDirection;
+  projectType?: InputMaybe<ProjectType>;
   skip?: Scalars['Int']['input'];
   take?: Scalars['Int']['input'];
 };
@@ -1873,10 +1876,18 @@ export type MyProjectsQueryVariables = Exact<{
   take?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<ProjectSortField>;
   orderDirection?: InputMaybe<SortDirection>;
+  projectType?: InputMaybe<ProjectType>;
 }>;
 
 
-export type MyProjectsQuery = { __typename?: 'Query', myProjects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, createdAt: any, reviewStatus: ReviewStatus, isGivbacksEligible: boolean, vouched: boolean, totalDonations: number }> } };
+export type MyProjectsQuery = { __typename?: 'Query', myProjects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, createdAt: any, status?: ProjectStatus | null, projectType: ProjectType, reviewStatus: ReviewStatus, isGivbacksEligible: boolean, vouched: boolean, totalDonations: number, givbacksEligibilityForm?: { __typename?: 'GivbacksEligibilityFormEntity', id: number, status: GivbacksEligibilityStatus } | null }> } };
+
+export type GetCurrentGivbacksEligibilityFormQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type GetCurrentGivbacksEligibilityFormQuery = { __typename?: 'Query', getCurrentGivbacksEligibilityForm: { __typename?: 'GivbacksEligibilityFormEntity', id: number, status: GivbacksEligibilityStatus } };
 
 export type MyDonationsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -2503,12 +2514,13 @@ export const UserStatsDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<UserStatsQuery, UserStatsQueryVariables>;
 export const MyProjectsDocument = new TypedDocumentString(`
-    query MyProjects($skip: Int = 0, $take: Int = 10, $orderBy: ProjectSortField = CreatedAt, $orderDirection: SortDirection = DESC) {
+    query MyProjects($skip: Int = 0, $take: Int = 10, $orderBy: ProjectSortField = CreatedAt, $orderDirection: SortDirection = DESC, $projectType: ProjectType) {
   myProjects(
     skip: $skip
     take: $take
     orderBy: $orderBy
     orderDirection: $orderDirection
+    projectType: $projectType
   ) {
     total
     projects {
@@ -2516,14 +2528,28 @@ export const MyProjectsDocument = new TypedDocumentString(`
       title
       slug
       createdAt
+      status
+      projectType
       reviewStatus
       isGivbacksEligible
       vouched
       totalDonations
+      givbacksEligibilityForm {
+        id
+        status
+      }
     }
   }
 }
     `) as unknown as TypedDocumentString<MyProjectsQuery, MyProjectsQueryVariables>;
+export const GetCurrentGivbacksEligibilityFormDocument = new TypedDocumentString(`
+    query GetCurrentGivbacksEligibilityForm($slug: String!) {
+  getCurrentGivbacksEligibilityForm(slug: $slug) {
+    id
+    status
+  }
+}
+    `) as unknown as TypedDocumentString<GetCurrentGivbacksEligibilityFormQuery, GetCurrentGivbacksEligibilityFormQueryVariables>;
 export const MyDonationsDocument = new TypedDocumentString(`
     query MyDonations($skip: Int = 0, $take: Int = 20, $orderBy: DonationSortField! = CreatedAt, $orderDirection: SortDirection! = DESC) {
   myDonations(
