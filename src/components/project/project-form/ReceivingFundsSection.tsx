@@ -66,7 +66,7 @@ export function ReceivingFundsSection({
 
   // Validate the address for a given network, returning an error message if the address is not valid.
   const validateAddress = useCallback(
-    async (value: string, networkId: number, previousAddress?: string) => {
+    async (value: string, previousAddress?: string) => {
       const trimmed = value.trim()
       if (!trimmed) return 'Address is required.'
       if (!isAddress(trimmed) && !ENS_ADDRESS_REGEX.test(trimmed)) {
@@ -211,7 +211,6 @@ export function ReceivingFundsSection({
                       )?.address
                       const validationMessage = await validateAddress(
                         draftAddress,
-                        network.id,
                         previousAddress,
                       )
                       setAddressError(validationMessage)
@@ -255,7 +254,6 @@ export function ReceivingFundsSection({
                         )?.address
                         const validationMessage = await validateAddress(
                           draftAddress,
-                          network.id,
                           previousAddress,
                         )
                         if (validationMessage) {
