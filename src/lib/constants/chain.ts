@@ -1,3 +1,4 @@
+import { env } from 'process'
 import { IconArgent } from '@/components/icons/wallets/IconArgent'
 import { IconBinance } from '@/components/icons/wallets/IconBinance'
 import { IconBrave } from '@/components/icons/wallets/IconBrave'
@@ -12,7 +13,7 @@ import { IconSafe } from '@/components/icons/wallets/IconSafe'
 import { IconTrust } from '@/components/icons/wallets/IconTrust'
 import type { ChainInfo } from '@/lib/types/chain'
 
-export const CHAINS: Record<number, ChainInfo> = {
+export const PRODUCTION_CHAINS: Record<number, ChainInfo> = {
   // Mainnets
   1: {
     id: 1,
@@ -329,6 +330,53 @@ export const CHAINS: Record<number, ChainInfo> = {
     },
   },
 }
+
+export const TESTNET_CHAINS: Record<number, ChainInfo> = {
+  11155111: {
+    id: 11155111,
+    name: 'Ethereum Sepolia',
+    shortName: 'SEP',
+    blockExplorerUrl: 'https://sepolia.etherscan.io/',
+    iconKey: 'ethereum',
+    isTestnet: true,
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+  },
+  11155420: {
+    id: 11155420,
+    name: 'Optimism Sepolia',
+    shortName: 'OP-SEP',
+    blockExplorerUrl: 'https://sepolia-optimism.etherscan.io/',
+    iconKey: 'optimism',
+    isTestnet: true,
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+  },
+  84532: {
+    id: 84532,
+    name: 'Base Sepolia',
+    shortName: 'BASE-SEP',
+    blockExplorerUrl: 'https://sepolia.basescan.org/',
+    iconKey: 'base',
+    isTestnet: true,
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+  },
+}
+
+export const CHAINS: Record<number, ChainInfo> =
+  env.VERCEL_ENV === 'production'
+    ? PRODUCTION_CHAINS
+    : { ...PRODUCTION_CHAINS, ...TESTNET_CHAINS }
 
 // SVG icons from cryptocurrency-icons package via jsDelivr CDN
 const ETH_ICON =

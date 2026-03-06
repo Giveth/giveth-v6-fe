@@ -1157,6 +1157,7 @@ export type Query = {
   getTopPowerRank: Scalars['Float']['output'];
   globalConfiguration?: Maybe<GlobalConfigurationEntity>;
   globalConfigurations: Array<GlobalConfigurationEntity>;
+  isRecipientAddressUsedByOtherProject: Scalars['Boolean']['output'];
   isValidCauseTitle: Scalars['Boolean']['output'];
   isValidCauseTitleForEdit: Scalars['Boolean']['output'];
   isValidWalletAddress: Scalars['Boolean']['output'];
@@ -1328,6 +1329,12 @@ export type QueryGlobalConfigurationArgs = {
 
 export type QueryGlobalConfigurationsArgs = {
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryIsRecipientAddressUsedByOtherProjectArgs = {
+  address: Scalars['String']['input'];
+  projectId: Scalars['Int']['input'];
 };
 
 
@@ -1984,6 +1991,14 @@ export type GetQfRoundHistoryQueryVariables = Exact<{
 
 
 export type GetQfRoundHistoryQuery = { __typename?: 'Query', getQfRoundHistory?: { __typename?: 'QfRoundHistoryEntity', projectId: number, qfRoundId: number, uniqueDonors?: number | null, donationsCount?: number | null, raisedFundInUsd?: number | null, allocatedFundUSDPreferred?: boolean | null, estimatedMatching?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null } | null, distributedFund?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null, currency?: string | null, txHash?: string | null, networkId?: number | null, txDate?: any | null } | null } | null };
+
+export type IsRecipientUsedByOtherProjectQueryVariables = Exact<{
+  projectId: Scalars['Int']['input'];
+  address: Scalars['String']['input'];
+}>;
+
+
+export type IsRecipientUsedByOtherProjectQuery = { __typename?: 'Query', isRecipientAddressUsedByOtherProject: boolean };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2811,3 +2826,8 @@ export const GetQfRoundHistoryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<GetQfRoundHistoryQuery, GetQfRoundHistoryQueryVariables>;
+export const IsRecipientUsedByOtherProjectDocument = new TypedDocumentString(`
+    query IsRecipientUsedByOtherProject($projectId: Int!, $address: String!) {
+  isRecipientAddressUsedByOtherProject(projectId: $projectId, address: $address)
+}
+    `) as unknown as TypedDocumentString<IsRecipientUsedByOtherProjectQuery, IsRecipientUsedByOtherProjectQueryVariables>;

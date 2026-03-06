@@ -10,7 +10,7 @@ import {
   CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY,
   useCreateProjectDraftStore,
   type CreateProjectDraft,
-} from '@/stores/createProjectDraft.store'
+} from '@/store/createProjectDraft.store'
 import { EtherealOrb } from './EtherealOrb'
 
 export function AiChatPanel({

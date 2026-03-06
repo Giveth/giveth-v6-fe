@@ -1,6 +1,20 @@
-/* Editor content font size */
+/* Keep outer editor corners consistent */
+.quill-editor-wrapper .quill {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
 .quill-editor-wrapper .ql-editor {
   font-size: 16px;
+}
+
+.ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ql-container.ql-snow {
+  border: none;
 }
 
 /* Custom toolbar buttons: embed (no default Quill icon) */
@@ -167,4 +181,47 @@
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* Read-only URL-to-embed transforms */
+.ql-readonly .ql-editor .ql-readonly-youtube-embed {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 1rem 0;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.ql-readonly .ql-editor .ql-readonly-youtube-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.ql-readonly .ql-editor .ql-readonly-twitter-embed {
+  margin: 1rem 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+  max-width: 550px;
+}
+
+.ql-readonly .ql-editor .ql-readonly-twitter-embed iframe {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  border: 0;
+}
+
+.ql-readonly .ql-editor .ql-readonly-embed-fallback {
+  display: inline-block;
+  padding: 0.5rem 0.75rem 0.75rem;
+  font-size: 0.875rem;
+  color: #1d4ed8;
+  text-decoration: underline;
 }

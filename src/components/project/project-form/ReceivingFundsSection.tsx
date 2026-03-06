@@ -1,17 +1,23 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { isAddress } from 'viem'
 import { ChainIcon } from '@/components/ChainIcon'
+import { CHAINS } from '@/lib/constants/chain'
 import { ChainType } from '@/lib/graphql/generated/graphql'
-import { RECEIVING_FUNDS_NETWORKS } from './receivingFundsNetworks'
+import { validateProjectRecipientAddress } from '@/lib/helpers/projectHelper'
 
 export type ReceivingAddress = {
   address: string
   networkId: number
   chainType: ChainType
+  title?: string
+  memo?: string
+  isRecipient?: boolean
 }
 
 interface ReceivingFundsSectionProps {
+  projectId?: number
   addresses: ReceivingAddress[]
   connectedAddress?: string
   error?: string
@@ -19,7 +25,10 @@ interface ReceivingFundsSectionProps {
   onActivate: () => void
 }
 
+const ENS_ADDRESS_REGEX = /^(?:[a-z0-9-]+\.)+[a-z]{2,}$/i
+
 export function ReceivingFundsSection({
+  projectId,
   addresses,
   connectedAddress,
   error,
@@ -28,28 +37,70 @@ export function ReceivingFundsSection({
 }: ReceivingFundsSectionProps) {
   const [editingNetworkId, setEditingNetworkId] = useState<number | null>(null)
   const [draftAddress, setDraftAddress] = useState('')
+  const [addressError, setAddressError] = useState('')
+  const [isValidating, setIsValidating] = useState(false)
 
   const addressesByNetwork = useMemo(() => {
     return new Map(addresses.map(item => [item.networkId, item]))
   }, [addresses])
 
+  // Start editing the address for a given network, setting the draft address to the current address.
   const startEditing = useCallback(
     (networkId: number) => {
       const current = addressesByNetwork.get(networkId)?.address || ''
       setEditingNetworkId(networkId)
       setDraftAddress(current)
+      setAddressError('')
+      setIsValidating(false)
     },
     [addressesByNetwork],
   )
 
+  // Cancel editing the address for a given network, resetting the draft address, address error, and is validating state.
   const cancelEditing = useCallback(() => {
     setEditingNetworkId(null)
     setDraftAddress('')
+    setAddressError('')
+    setIsValidating(false)
   }, [])
 
+  // Validate the address for a given network, returning an error message if the address is not valid.
+  const validateAddress = useCallback(
+    async (value: string, networkId: number, previousAddress?: string) => {
+      const trimmed = value.trim()
+      if (!trimmed) return 'Address is required.'
+      if (!isAddress(trimmed) && !ENS_ADDRESS_REGEX.test(trimmed)) {
+        return 'Not a valid address.'
+      }
+      if (
+        previousAddress &&
+        trimmed.toLowerCase() === previousAddress.trim().toLowerCase()
+      ) {
+        return ''
+      }
+      if (!projectId) {
+        return ''
+      }
+
+      setIsValidating(true)
+      try {
+        const result = await validateProjectRecipientAddress({
+          projectId,
+          address: trimmed,
+        })
+        return result === true ? '' : result
+      } finally {
+        setIsValidating(false)
+      }
+    },
+    [projectId],
+  )
+
+  // Upsert the address for a given network, updating the address if it already exists, otherwise adding a new address.
   const upsertAddress = useCallback(
     (networkId: number, value: string) => {
       const trimmed = value.trim()
+      const existing = addresses.find(item => item.networkId === networkId)
       const remaining = addresses.filter(item => item.networkId !== networkId)
       if (!trimmed) {
         onAddressesChange(remaining)
@@ -59,15 +110,17 @@ export function ReceivingFundsSection({
       onAddressesChange([
         ...remaining,
         {
+          ...existing,
           networkId,
           address: trimmed,
-          chainType: ChainType.Evm,
+          chainType: existing?.chainType || ChainType.Evm,
         },
       ])
     },
     [addresses, onAddressesChange],
   )
 
+  // Remove the address for a given network, removing the address from the list of addresses.
   const removeAddress = useCallback(
     (networkId: number) => {
       onAddressesChange(addresses.filter(item => item.networkId !== networkId))
@@ -94,7 +147,7 @@ export function ReceivingFundsSection({
       </p>
 
       <div className="space-y-3">
-        {RECEIVING_FUNDS_NETWORKS.map(network => {
+        {Object.values(CHAINS).map(network => {
           const current = addressesByNetwork.get(network.id)
           const hasAddress = Boolean(current?.address?.trim())
           const isEditing = editingNetworkId === network.id
@@ -148,15 +201,40 @@ export function ReceivingFundsSection({
                   <input
                     type="text"
                     value={draftAddress}
-                    onChange={e => setDraftAddress(e.target.value)}
+                    onChange={e => {
+                      setDraftAddress(e.target.value)
+                      setAddressError('')
+                    }}
+                    onBlur={async () => {
+                      const previousAddress = addressesByNetwork.get(
+                        network.id,
+                      )?.address
+                      const validationMessage = await validateAddress(
+                        draftAddress,
+                        network.id,
+                        previousAddress,
+                      )
+                      setAddressError(validationMessage)
+                    }}
                     placeholder={`Enter ${network.name} address or ENS`}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-giv-neutral-900 focus:border-giv-brand-500 focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20"
                   />
+                  {addressError && (
+                    <p className="text-xs text-red-600">{addressError}</p>
+                  )}
+                  {isValidating && (
+                    <p className="text-xs text-gray-500">
+                      Validating address...
+                    </p>
+                  )}
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     {connectedAddress && (
                       <button
                         type="button"
-                        onClick={() => setDraftAddress(connectedAddress)}
+                        onClick={() => {
+                          setDraftAddress(connectedAddress)
+                          setAddressError('')
+                        }}
                         className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-giv-brand-600 hover:bg-giv-brand-050"
                       >
                         Use connected wallet
@@ -171,11 +249,24 @@ export function ReceivingFundsSection({
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        upsertAddress(network.id, draftAddress)
+                      onClick={async () => {
+                        const previousAddress = addressesByNetwork.get(
+                          network.id,
+                        )?.address
+                        const validationMessage = await validateAddress(
+                          draftAddress,
+                          network.id,
+                          previousAddress,
+                        )
+                        if (validationMessage) {
+                          setAddressError(validationMessage)
+                          return
+                        }
+                        upsertAddress(network.id, draftAddress.trim())
                         cancelEditing()
                       }}
-                      className="rounded-md bg-giv-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+                      disabled={isValidating}
+                      className="rounded-md bg-giv-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Save
                     </button>

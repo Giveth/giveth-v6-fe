@@ -1,9 +1,14 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import Script from 'next/script'
 import clsx from 'clsx'
 import { format } from 'date-fns'
+import {
+  formatContentForReadonlyQuill,
+  loadTwitterWidgets,
+} from '@/components/editor/readonlyQuillContent'
 import { DeVouchBanner } from '@/components/project/DeVouchBanner'
 import { useProjectUpdates } from '@/hooks/useProjectUpdates'
 
@@ -27,6 +32,7 @@ type TimelineUpdate = {
 }
 
 export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
+  const quillWrapperRef = useRef<HTMLDivElement>(null)
   const { data, isLoading, error } = useProjectUpdates({ projectId, take: 20 })
 
   const updates = data?.projectUpdates.projectUpdates ?? []
@@ -34,6 +40,7 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
 
   const emptyState = !isLoading && !error && total === 0
 
+  // Create the timeline updates, including the project launched update.
   const timelineUpdates = useMemo(() => {
     const apiUpdates: TimelineUpdate[] = updates.map(u => ({
       id: u.id,
@@ -76,9 +83,26 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
     [],
   )
 
+  // Hydrate the Twitter widgets when the component mounts or the timeline updates change.
+  const hydrateTwitterEmbeds = useCallback(() => {
+    loadTwitterWidgets(quillWrapperRef.current)
+  }, [])
+
+  // Hydrate the Twitter widgets when the component mounts or the timeline updates change.
+  useEffect(() => {
+    hydrateTwitterEmbeds()
+    const timeoutId = window.setTimeout(hydrateTwitterEmbeds, 300)
+    return () => window.clearTimeout(timeoutId)
+  }, [timelineUpdates, hydrateTwitterEmbeds])
+
   return (
     <>
-      <div>
+      <Script
+        src="https://platform.twitter.com/widgets.js"
+        strategy="lazyOnload"
+        onLoad={hydrateTwitterEmbeds}
+      />
+      <div ref={quillWrapperRef}>
         {isLoading && (
           <div className="flex items-center justify-center py-12 text-giv-neutral-700">
             Loading updates...
@@ -160,12 +184,13 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
                     {u.content?.trim() && (
                       <div className="mt-6">
                         <ReactQuill
-                          value={u.content}
+                          value={formatContentForReadonlyQuill(u.content)}
                           readOnly={true}
                           theme="snow"
                           modules={modules}
                           formats={formats}
                           className={clsx(
+                            'quill-editor-wrapper',
                             'ql-readonly',
                             '[&_.ql-container]:border-none!',
                             '[&_.ql-toolbar]:hidden',
@@ -179,6 +204,16 @@ export function UpdatesTab({ projectId, projectCreatedAt }: UpdatesTabProps) {
                             '[&_.ql-editor_h1]:tracking-tight',
                             '[&_.ql-editor_h2]:text-giv-deep-blue-800',
                             '[&_.ql-editor_h2]:font-semibold',
+                            '[&_.ql-editor_.ql-video-wrapper]:mb-4',
+                            '[&_.ql-editor_.ql-video-wrapper]:relative',
+                            '[&_.ql-editor_.ql-video-wrapper]:pb-[56.25%]',
+                            '[&_.ql-editor_.ql-video-wrapper]:h-0',
+                            '[&_.ql-editor_.ql-video-wrapper]:overflow-hidden',
+                            '[&_.ql-editor_.ql-video-wrapper_iframe]:absolute',
+                            '[&_.ql-editor_.ql-video-wrapper_iframe]:top-0',
+                            '[&_.ql-editor_.ql-video-wrapper_iframe]:left-0',
+                            '[&_.ql-editor_.ql-video-wrapper_iframe]:w-full',
+                            '[&_.ql-editor_.ql-video-wrapper_iframe]:h-full',
                           )}
                         />
                       </div>

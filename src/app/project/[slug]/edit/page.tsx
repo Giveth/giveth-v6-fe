@@ -23,7 +23,9 @@ export default function ProjectEditPage() {
     signIn,
     error: authError,
   } = useSiweAuth()
-  const { data, isLoading, error } = useProjectBySlug(slug)
+  const { data, isLoading, error } = useProjectBySlug(slug, {
+    noCache: true,
+  })
   const project = data?.projectBySlug
 
   if (isLoading)

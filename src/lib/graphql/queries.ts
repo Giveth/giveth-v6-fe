@@ -775,3 +775,43 @@ export const getQfRoundHistoryQuery = graphql(`
     }
   }
 `)
+
+export const IsRecipientUsedByOtherProjectQuery = graphql(`
+  query IsRecipientUsedByOtherProject($projectId: Int!, $address: String!) {
+    isRecipientAddressUsedByOtherProject(
+      projectId: $projectId
+      address: $address
+    )
+  }
+`)
+
+export const updateProjectWithOptionalFieldsMutation = `
+  mutation UpdateProject($projectId: Int!, $input: UpdateProjectInput!) {
+    updateProject(projectId: $projectId, input: $input) {
+      id
+      title
+      description
+      image
+      impactLocation
+      categories {
+        id
+        name
+      }
+      addresses {
+        id
+        address
+        networkId
+        title
+        memo
+        chainType
+        isRecipient
+      }
+      socialMedia {
+        id
+        type
+        link
+      }
+      updatedAt
+    }
+  }
+`

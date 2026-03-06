@@ -4,6 +4,7 @@ import { isAddress } from 'viem'
 import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { formatContentForStorage } from '@/components/editor/readonlyQuillContent'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
@@ -52,11 +53,19 @@ export type CreateProjectDraftErrors = Partial<
   >
 >
 
+/**
+ * Create a unique id
+ * @returns The unique id
+ */
 const createId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2)
 
+/**
+ * The schema for a URL or empty string
+ * @returns The schema for a URL or empty string
+ */
 const urlOrEmpty = z
   .string()
   .trim()
@@ -65,6 +74,11 @@ const urlOrEmpty = z
     message: 'Please enter a valid URL',
   })
 
+/**
+ * Check if the value is a valid URL
+ * @param value - The value to check
+ * @returns True if the value is a valid URL, false otherwise
+ */
 function safeIsUrl(value: string): boolean {
   try {
     // Accept users pasting without protocol (e.g. example.com)
@@ -78,21 +92,41 @@ function safeIsUrl(value: string): boolean {
   }
 }
 
+/**
+ * Check if the value is a valid base58 address
+ * @param value - The value to check
+ * @returns True if the value is a valid base58 address, false otherwise
+ */
 function isBase58(value: string): boolean {
   // Excludes 0 O I l
   return /^[1-9A-HJ-NP-Za-km-z]+$/.test(value)
 }
 
+/**
+ * Check if the value is a valid Solana address
+ * @param value - The value to check
+ * @returns True if the value is a valid Solana address, false otherwise
+ */
 function isSolanaAddress(value: string): boolean {
   // Minimal validation: base58, common length range for Solana public keys.
   return isBase58(value) && value.length >= 32 && value.length <= 44
 }
 
+/**
+ * Check if the value is a valid Stellar address
+ * @param value - The value to check
+ * @returns True if the value is a valid Stellar address, false otherwise
+ */
 function isStellarAddress(value: string): boolean {
   // Minimal StrKey format check for public key: starts with 'G' and base32 chars.
   return /^G[A-Z2-7]{55}$/.test(value)
 }
 
+/**
+ * Validate the create project draft
+ * @param draft - The draft to validate
+ * @returns The errors
+ */
 export function validateCreateProjectDraft(
   draft: CreateProjectDraft,
 ): CreateProjectDraftErrors {
@@ -137,6 +171,12 @@ export function validateCreateProjectDraft(
   return errors
 }
 
+/**
+ * The shape of the create-project draft store state.
+ *
+ * Includes draft values, validation/submission state,
+ * and actions to mutate or submit the draft.
+ */
 export type CreateProjectDraftState = {
   draft: CreateProjectDraft
   errors: CreateProjectDraftErrors
@@ -160,6 +200,10 @@ export type CreateProjectDraftState = {
   reset: () => void
 }
 
+/**
+ * The initial draft
+ * @returns The initial draft
+ */
 const initialDraft: CreateProjectDraft = {
   title: '',
   description: '',
@@ -313,7 +357,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
           const variables: unknown = {
             input: {
               title: draft.title.trim(),
-              description: draft.description.trim(),
+              description: formatContentForStorage(draft.description.trim()),
               image: draft.image.trim() ? draft.image.trim() : null,
               impactLocation: draft.impactLocation.trim()
                 ? draft.impactLocation.trim()

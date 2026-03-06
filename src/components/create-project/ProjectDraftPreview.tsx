@@ -3,7 +3,7 @@
 import { ProjectPageView } from '@/components/project/ProjectPageView'
 import { useSiweAuth } from '@/context/AuthContext'
 import { type ChainType } from '@/lib/graphql/generated/graphql'
-import { useCreateProjectDraftStore } from '@/stores/createProjectDraft.store'
+import { useCreateProjectDraftStore } from '@/store/createProjectDraft.store'
 
 export function ProjectDraftPreview() {
   const { user, walletAddress } = useSiweAuth()

@@ -59,7 +59,7 @@ export function PublishProjectSection({
           type="submit"
           variant="primary"
           disabled={isSubmitting}
-          className="h-12 flex-1 rounded-full bg-giv-brand-500 text-white hover:bg-giv-brand-600"
+          className="h-12 flex-1 rounded-full bg-giv-brand-500 text-white hover:bg-giv-brand-600 cursor-pointer"
         >
           {isSubmitting
             ? isEdit
@@ -74,7 +74,7 @@ export function PublishProjectSection({
           variant="outline"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="h-12 flex-1 rounded-full border-giv-brand-500 text-giv-brand-500 hover:bg-giv-brand-050"
+          className="h-12 flex-1 rounded-full border-giv-brand-500 text-giv-brand-500 hover:bg-giv-brand-050 cursor-pointer"
         >
           Cancel
         </Button>

@@ -377,9 +377,11 @@ export function QuillEditor({
         formats={QUILL_FORMATS}
         aria-label={ariaLabel}
         className={clsx(
-          'rounded-b-lg border-x border-b border-gray-200 bg-white',
-          '[&_.ql-toolbar]:rounded-t-none [&_.ql-toolbar]:border-t [&_.ql-toolbar]:border-gray-200 [&_.ql-toolbar]:bg-gray-50',
-          '[&_.ql-container]:border-none [&_.ql-editor]:min-h-(--quill-min-height)',
+          'overflow-hidden rounded-xl border border-gray-200 bg-white',
+          '[&_.ql-toolbar]:rounded-none',
+          '[&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b',
+          '[&_.ql-toolbar]:border-gray-200 [&_.ql-toolbar]:bg-gray-50',
+          '[&_.ql-container]:border-0 [&_.ql-editor]:min-h-(--quill-min-height)',
           error && 'border-red-500 [&_.ql-toolbar]:border-red-500',
         )}
         style={{ ['--quill-min-height' as string]: minHeight }}

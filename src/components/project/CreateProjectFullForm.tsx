@@ -10,6 +10,10 @@ import {
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useActiveAccount } from 'thirdweb/react'
+import {
+  formatContentForEditorLoad,
+  formatContentForStorage,
+} from '@/components/editor/readonlyQuillContent'
 import { CategoriesSection } from '@/components/project/project-form/CategoriesSection'
 import {
   globalLocation,
@@ -19,12 +23,13 @@ import { ProjectDescriptionSection } from '@/components/project/project-form/Pro
 import { ProjectImageSection } from '@/components/project/project-form/ProjectImageSection'
 import { ProjectNameSection } from '@/components/project/project-form/ProjectNameSection'
 import { PublishProjectSection } from '@/components/project/project-form/PublishProjectSection'
-import { RECEIVING_FUNDS_NETWORK_IDS } from '@/components/project/project-form/receivingFundsNetworks'
 import {
   type ReceivingAddress,
   ReceivingFundsSection,
 } from '@/components/project/project-form/ReceivingFundsSection'
 import { SocialLinksSection } from '@/components/project/project-form/SocialLinksSection'
+import { CHAINS } from '@/lib/constants/chain'
+import { env } from '@/lib/env'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import {
   ChainType,
@@ -32,11 +37,12 @@ import {
   type MainCategoriesQuery,
   type ProjectEntity,
 } from '@/lib/graphql/generated/graphql'
+import { createProjectMutation } from '@/lib/graphql/mutations'
 import {
-  createProjectMutation,
-  updateProjectMutation,
-} from '@/lib/graphql/mutations'
-import { categoriesQuery, mainCategoriesQuery } from '@/lib/graphql/queries'
+  categoriesQuery,
+  mainCategoriesQuery,
+  updateProjectWithOptionalFieldsMutation,
+} from '@/lib/graphql/queries'
 
 const MIN_DESCRIPTION_CHARS = 1200
 const MIN_TITLE_CHARS = 3
@@ -52,6 +58,37 @@ function getDescriptionTextLength(html: string): number {
     .trim()
   return text.length
 }
+
+function normalizeImageForMutation(image: string): string | undefined {
+  const value = image.trim()
+  if (!value) return undefined
+
+  try {
+    return new URL(value).toString()
+  } catch {
+    // Ignore and try to resolve relative paths.
+  }
+
+  if (value.startsWith('/')) {
+    let base = env.FRONTEND_URL
+    if (typeof window !== 'undefined') {
+      const { origin, hostname } = window.location
+      const isLocalhost =
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '::1'
+      base = isLocalhost ? 'https://qf.giveth.io/' : origin
+    }
+    try {
+      return new URL(value, base).toString()
+    } catch {
+      return undefined
+    }
+  }
+
+  return undefined
+}
+
 export const MAX_CATEGORIES = 5
 
 type Category = CategoriesQuery['categories'][number]
@@ -68,6 +105,15 @@ export type InitialProject = {
         address?: string | null
         networkId?: number | null
         chainType?: ChainType | null
+        title?: string | null
+        memo?: string | null
+        isRecipient?: boolean | null
+      }[]
+    | null
+  socialMedia?:
+    | {
+        type?: string | null
+        link?: string | null
       }[]
     | null
   categories?: {
@@ -86,20 +132,26 @@ type CreateProjectResponse = {
   }
 }
 type UpdateProjectResponse = {
-  updateProject: Pick<
-    ProjectEntity,
-    'id' | 'title' | 'slug' | 'description' | 'image' | 'impactLocation'
-  > & {
-    categories?: {
-      id?: string | null
-      value?: string | null
-      name?: string | null
-    }[]
-    addresses?: {
-      address?: string | null
-      networkId?: number | null
-      chainType?: ChainType | null
-    }[]
+  updateProject: {
+    id: string
+    title: string
+    description?: string | null
+    image?: string | null
+    impactLocation?: string | null
+    updatedAt: string
+    categories?: { id: string; name: string }[] | null
+    addresses?:
+      | {
+          id: string
+          address: string
+          networkId: number
+          title?: string | null
+          memo?: string | null
+          chainType: ChainType
+          isRecipient: boolean
+        }[]
+      | null
+    socialMedia?: { id: string; type: string; link: string }[] | null
   }
 }
 
@@ -254,6 +306,12 @@ export function CreateProjectFullForm({
 }: CreateProjectFullFormProps) {
   const router = useRouter()
   const account = useActiveAccount()
+  const parsedProjectId = initialProject?.id
+    ? Number.parseInt(initialProject.id, 10)
+    : undefined
+  const projectId = Number.isFinite(parsedProjectId)
+    ? parsedProjectId
+    : undefined
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [activeSection, setActiveSection] = useState<CreateFormSection>('name')
@@ -261,14 +319,22 @@ export function CreateProjectFullForm({
   const [formData, setFormData] = useState<FormData>(() => {
     const normalizedAddresses =
       initialProject?.addresses
-        ?.map(addr => ({
-          address: (addr?.address || '').trim(),
-          networkId:
-            typeof addr?.networkId === 'number'
-              ? addr.networkId
-              : RECEIVING_FUNDS_NETWORK_IDS[0],
-          chainType: addr?.chainType || ChainType.Evm,
-        }))
+        ?.map(addr => {
+          const normalized: ReceivingAddress = {
+            address: (addr?.address || '').trim(),
+            networkId:
+              typeof addr?.networkId === 'number'
+                ? addr.networkId
+                : Object.values(CHAINS)[0].id,
+            chainType: addr?.chainType || ChainType.Evm,
+          }
+          if (addr?.title) normalized.title = addr.title
+          if (addr?.memo) normalized.memo = addr.memo
+          if (typeof addr?.isRecipient === 'boolean') {
+            normalized.isRecipient = addr.isRecipient
+          }
+          return normalized
+        })
         ?.filter(
           (addr): addr is ReceivingAddress =>
             Boolean(addr.address) && Boolean(addr.networkId),
@@ -288,7 +354,7 @@ export function CreateProjectFullForm({
           ? [
               {
                 address: account.address,
-                networkId: RECEIVING_FUNDS_NETWORK_IDS[0],
+                networkId: Object.values(CHAINS)[0].id,
                 chainType: ChainType.Evm,
               },
             ]
@@ -296,8 +362,14 @@ export function CreateProjectFullForm({
 
     return {
       title: initialProject?.title || '',
-      description: initialProject?.description || '',
-      socialLinks: {},
+      description: formatContentForEditorLoad(
+        initialProject?.description || '',
+      ),
+      socialLinks: Object.fromEntries(
+        (initialProject?.socialMedia || [])
+          .map(item => [item?.type || '', item?.link || ''])
+          .filter(([type, link]) => Boolean(type && link)),
+      ),
       selectedSubcategories:
         initialProject?.categories
           ?.map(cat => cat?.value || cat?.id || cat?.name || '')
@@ -353,13 +425,15 @@ export function CreateProjectFullForm({
           address: address.address.trim(),
         }))
         .filter(address => Boolean(address.address))
+      const image = normalizeImageForMutation(data.image)
+      const description = formatContentForStorage(data.description)
 
       const variables = {
         input: {
           title: data.title,
-          description: data.description,
+          description,
           impactLocation: data.impactLocation || null,
-          image: data.image || null,
+          image,
           categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
           addresses: addresses.length > 0 ? addresses : undefined,
         },
@@ -405,33 +479,50 @@ export function CreateProjectFullForm({
 
       const addresses = data.addresses
         .map(address => ({
-          ...address,
           address: address.address.trim(),
+          networkId: address.networkId,
+          chainType: address.chainType || ChainType.Evm,
+          title: address.title?.trim() || undefined,
+          memo: address.memo?.trim() || undefined,
         }))
         .filter(address => Boolean(address.address))
+
+      const socialMedia = Object.entries(data.socialLinks)
+        .map(([type, link]) => ({
+          type: type.trim(),
+          link: link.trim(),
+        }))
+        .filter(item => Boolean(item.type && item.link))
+      const image = normalizeImageForMutation(data.image)
+      const description = formatContentForStorage(data.description)
 
       const variables = {
         projectId: parseInt(initialProject.id),
         input: {
           title: data.title,
-          description: data.description,
+          description,
           impactLocation: data.impactLocation || null,
-          image: data.image || null,
+          image,
           categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
           addresses: addresses.length > 0 ? addresses : undefined,
+          socialMedia: socialMedia.length > 0 ? socialMedia : undefined,
         },
       }
 
       const response = await client.request<UpdateProjectResponse>(
-        updateProjectMutation,
+        updateProjectWithOptionalFieldsMutation,
         variables,
       )
 
       return response
     },
-    onSuccess: data => {
-      const slug = data.updateProject.slug || initialProject?.slug
-      router.push(`/project/${slug}`)
+    onSuccess: () => {
+      const slug = initialProject?.slug
+      if (slug) {
+        router.push(`/project/${slug}`)
+      } else {
+        router.push('/')
+      }
     },
     onError: error => {
       console.error('Error updating project:', error)
@@ -652,6 +743,7 @@ export function CreateProjectFullForm({
               />
 
               <ReceivingFundsSection
+                projectId={projectId}
                 addresses={formData.addresses}
                 connectedAddress={account?.address}
                 error={errors.addresses}
