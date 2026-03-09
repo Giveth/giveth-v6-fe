@@ -1,20 +1,26 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { useActiveAccount, useActiveWallet } from 'thirdweb/react'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useSiweAuth } from '@/context/AuthContext'
 import { createGraphQLClient } from '@/lib/graphql/client'
-import type {
-  CategoriesQuery,
-  MainCategoriesQuery,
+import {
+  type CategoriesQuery,
+  type MainCategoriesQuery,
 } from '@/lib/graphql/generated/graphql'
 import { mainCategoriesQuery } from '@/lib/graphql/queries'
 import { uploadImageFile } from '@/lib/graphql/upload'
+import {
+  createProjectAccountSalt,
+  deriveProjectOwnerRecipientAddresses,
+  resolveProjectOwnerAdminAccount,
+} from '@/lib/thirdweb/project-owner-wallet'
 import { cn } from '@/lib/utils'
 import {
   useCreateProjectDraftStore,
@@ -52,6 +58,9 @@ const MANUAL_TEXTAREA_CLASSES =
 const MANUAL_SELECT_CLASSES =
   'h-10 w-full rounded-md border border-[#D7DDEA] bg-white px-3 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 
+const normalizeTitleForSalt = (title: string) =>
+  title.trim().toLowerCase().replace(/\s+/g, ' ')
+
 export function ManualSidebarForm() {
   const router = useRouter()
   const { token } = useSiweAuth()
@@ -65,13 +74,23 @@ export function ManualSidebarForm() {
     image: false,
     funds: false,
   })
+  const activeAccount = useActiveAccount()
+  const activeWallet = useActiveWallet()
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isAutofillingRecipients, setIsAutofillingRecipients] = useState(false)
+  const [recipientSetupError, setRecipientSetupError] = useState<string | null>(
+    null,
+  )
   const [imageUploadError, setImageUploadError] = useState<string | null>(null)
   const imageFileInputRef = useRef<HTMLInputElement | null>(null)
+  const pendingProjectSaltRef = useRef<string | null>(null)
 
   const draft = useCreateProjectDraftStore(s => s.draft)
   const errors = useCreateProjectDraftStore(s => s.errors)
   const isSubmitting = useCreateProjectDraftStore(s => s.isSubmitting)
+  const isRecipientAddressesAutoFilled = useCreateProjectDraftStore(
+    s => s.isRecipientAddressesAutoFilled,
+  )
   const submitError = useCreateProjectDraftStore(s => s.submitError)
   const setTitle = useCreateProjectDraftStore(s => s.setTitle)
   const setDescription = useCreateProjectDraftStore(s => s.setDescription)
@@ -88,6 +107,9 @@ export function ManualSidebarForm() {
   const removeRecipientAddress = useCreateProjectDraftStore(
     s => s.removeRecipientAddress,
   )
+  const setRecipientAddresses = useCreateProjectDraftStore(
+    s => s.setRecipientAddresses,
+  )
   const validate = useCreateProjectDraftStore(s => s.validate)
   const submitCreateProject = useCreateProjectDraftStore(
     s => s.submitCreateProject,
@@ -95,6 +117,79 @@ export function ManualSidebarForm() {
 
   const liveErrors = useMemo(() => validateCreateProjectDraft(draft), [draft])
   const canPublish = Object.keys(liveErrors).length === 0
+  const ownerAdminAccount = useMemo(
+    () => resolveProjectOwnerAdminAccount(activeWallet, activeAccount),
+    [activeWallet, activeAccount],
+  )
+  const normalizedTitleForSalt = normalizeTitleForSalt(draft.title)
+
+  const autofillRecipientAddresses = useCallback(async () => {
+    if (!ownerAdminAccount) return
+
+    const salt = createProjectAccountSalt(
+      `${ownerAdminAccount.address.toLowerCase()}:${normalizedTitleForSalt}`,
+    )
+
+    if (
+      draft.recipientAddresses.length > 0 &&
+      isRecipientAddressesAutoFilled &&
+      pendingProjectSaltRef.current === salt
+    )
+      return
+
+    pendingProjectSaltRef.current = salt
+    setIsAutofillingRecipients(true)
+    setRecipientSetupError(null)
+
+    try {
+      // This is provisional, I'll add a more robust solution later.
+      // (i.e., reserving the id for the auto-filled addresses and using the project identity as the salt
+      // so that the salt is both unique & constructed from the project identity for each project)
+      const addresses = await deriveProjectOwnerRecipientAddresses({
+        adminAccount: ownerAdminAccount,
+        accountSalt: salt,
+      })
+
+      setRecipientAddresses(
+        addresses.map(a => ({
+          id: `autofill-${a.networkId}`,
+          chainType: a.chainType,
+          networkId: a.networkId,
+          address: a.address,
+          title: a.title,
+        })),
+        { autoFilled: true },
+      )
+    } catch (error) {
+      console.error('Recipient auto-fill failed:', error)
+      setRecipientSetupError(
+        'Could not auto-fill recipient addresses. You can enter them manually.',
+      )
+    } finally {
+      setIsAutofillingRecipients(false)
+    }
+  }, [
+    draft.recipientAddresses.length,
+    isRecipientAddressesAutoFilled,
+    normalizedTitleForSalt,
+    ownerAdminAccount,
+    setRecipientAddresses,
+  ])
+
+  useEffect(() => {
+    // Only auto-fill when the user has not manually customized addresses.
+    if (!ownerAdminAccount) return
+    if (!normalizedTitleForSalt) return
+    if (draft.recipientAddresses.length > 0 && !isRecipientAddressesAutoFilled)
+      return
+    void autofillRecipientAddresses()
+  }, [
+    autofillRecipientAddresses,
+    draft.recipientAddresses.length,
+    isRecipientAddressesAutoFilled,
+    normalizedTitleForSalt,
+    ownerAdminAccount,
+  ])
 
   const { data: mainCategoriesData } = useQuery({
     queryKey: ['mainCategories'],
@@ -390,7 +485,17 @@ export function ManualSidebarForm() {
             onToggle={() => toggleSection('funds')}
           >
             <div className="space-y-3">
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-[#7c6af2] hover:text-[#5f4cf0] disabled:text-[#b8b4e7]"
+                  onClick={() => void autofillRecipientAddresses()}
+                  disabled={isAutofillingRecipients || !ownerAdminAccount}
+                >
+                  {isAutofillingRecipients
+                    ? 'Generating...'
+                    : 'Regenerate from wallet'}
+                </button>
                 <button
                   type="button"
                   className="inline-flex items-center gap-2 text-xs font-semibold text-[#7c6af2] hover:text-[#5f4cf0]"
@@ -400,6 +505,19 @@ export function ManualSidebarForm() {
                   Add address
                 </button>
               </div>
+
+              {isRecipientAddressesAutoFilled && (
+                <div className="rounded-xl border border-giv-brand-100 bg-giv-brand-05 px-3 py-2 text-xs text-giv-brand-600">
+                  Recipient addresses are auto-generated from your Thirdweb
+                  owner wallet. A unique per-project smart account is finalized
+                  after publishing.
+                </div>
+              )}
+              {recipientSetupError && (
+                <p className="text-xs font-medium text-red-600">
+                  {recipientSetupError}
+                </p>
+              )}
 
               {draft.recipientAddresses.length === 0 ? (
                 <div className="rounded-md border border-[#eef0f7] bg-[#fbfbff] px-4 py-3 text-sm text-[#6b7280]">
@@ -507,12 +625,14 @@ export function ManualSidebarForm() {
         <Button
           type="button"
           variant="secondary"
-          disabled={isSubmitting || !canPublish}
-          className="w-full rounded-md bg-[#edeefe] text-[#3b2ed0] hover:bg-[#e4e6ff] disabled:bg-[#edeefe] disabled:text-[#9aa0bd] disabled:hover:bg-[#edeefe]"
+          disabled={isSubmitting || isAutofillingRecipients || !canPublish}
+          className="w-full rounded-xl bg-[#edeefe] text-[#3b2ed0] hover:bg-[#e4e6ff] disabled:bg-[#edeefe] disabled:text-[#9aa0bd] disabled:hover:bg-[#edeefe]"
           onClick={async () => {
             const ok = validate()
             if (!ok) return
+
             const { slug } = await submitCreateProject()
+
             router.push(`/project/${slug}`)
           }}
         >
