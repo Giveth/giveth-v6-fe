@@ -198,7 +198,7 @@ export const HowItWorksLink = {
 
 export const myProjectsLink = {
   label: 'My Projects',
-  href: oldFrontendPath('/account?tab=projects', '/account?tab=projects'),
+  href: '/account?tab=projects',
 }
 
 export const myCausesLink = {
