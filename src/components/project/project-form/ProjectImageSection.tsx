@@ -323,7 +323,7 @@ export function ProjectImageSection({
               </div>
               <p className="text-base text-giv-neutral-900">
                 Drag and drop an image, or{' '}
-                <span className="text-giv-pink-500">upload from device</span>.
+                <span className="text-giv-brand-500">upload from device</span>.
               </p>
               <p className="mt-1 text-sm text-gray-500">
                 PNG, JPG, GIF up to 5MB

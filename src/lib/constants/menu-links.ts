@@ -201,6 +201,11 @@ export const myProjectsLink = {
   href: '/account?tab=projects',
 }
 
+export const EditMyProjectsLink = {
+  label: 'Edit My Projects',
+  href: '/project/{slug}/edit',
+}
+
 export const myCausesLink = {
   label: 'My Causes',
   href: oldFrontendPath('/account?tab=causes', '/account?tab=causes'),

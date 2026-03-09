@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useActiveAccount } from 'thirdweb/react'
 import {
   formatContentForEditorLoad,
@@ -47,7 +47,12 @@ import {
 const MIN_DESCRIPTION_CHARS = 1200
 const MIN_TITLE_CHARS = 3
 
-/** Plain-text length for HTML description (used for min-length validation). */
+/**
+ * Get the plain-text length for an HTML description.
+ * @param html
+ * @returns The plain-text length of the HTML description.
+ * @description This function gets the plain-text length for an HTML description. It removes HTML tags, replaces special characters, and trims the result.
+ */
 function getDescriptionTextLength(html: string): number {
   const text = html
     .replace(/<[^>]*>/g, '')
@@ -59,6 +64,12 @@ function getDescriptionTextLength(html: string): number {
   return text.length
 }
 
+/**
+ * Normalize an image URL for a mutation.
+ * @param image - The image to normalize.
+ * @returns The normalized image URL.
+ * @description This function normalizes an image URL for a mutation. It handles relative paths and ensures the image is a valid URL.
+ */
 function normalizeImageForMutation(image: string): string | undefined {
   const value = image.trim()
   if (!value) return undefined
@@ -87,6 +98,49 @@ function normalizeImageForMutation(image: string): string | undefined {
   }
 
   return undefined
+}
+
+function mapApiSocialTypeToUi(type: string): string {
+  return type === 'x' ? 'twitter' : type
+}
+
+function mapUiSocialTypeToApi(type: string): string {
+  return type === 'twitter' ? 'x' : type
+}
+
+/**
+ * Get a readable error message from a GraphQL error object.
+ * @param error - The error object to get the readable error message from.
+ * @returns The readable error message.
+ */
+function getReadableErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const gqlError = error as {
+      message?: string
+      response?: { errors?: Array<{ message?: string }> }
+    }
+
+    const firstGraphQlMessage = gqlError.response?.errors?.find(
+      item => typeof item?.message === 'string' && item.message.trim(),
+    )?.message
+    if (firstGraphQlMessage) return firstGraphQlMessage
+
+    if (typeof gqlError.message === 'string' && gqlError.message.trim()) {
+      const compactMessage = gqlError.message.trim()
+      const prefixMatch = compactMessage.match(/^([^:\n]+):\s*\{/)
+      if (prefixMatch?.[1]) return prefixMatch[1]
+      return compactMessage
+    }
+  }
+
+  if (typeof error === 'string' && error.trim()) {
+    const compactMessage = error.trim()
+    const prefixMatch = compactMessage.match(/^([^:\n]+):\s*\{/)
+    if (prefixMatch?.[1]) return prefixMatch[1]
+    return compactMessage
+  }
+
+  return 'Something went wrong.'
 }
 
 export const MAX_CATEGORIES = 5
@@ -305,6 +359,7 @@ export function CreateProjectFullForm({
   initialProject,
 }: CreateProjectFullFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const account = useActiveAccount()
   const parsedProjectId = initialProject?.id
     ? Number.parseInt(initialProject.id, 10)
@@ -367,7 +422,10 @@ export function CreateProjectFullForm({
       ),
       socialLinks: Object.fromEntries(
         (initialProject?.socialMedia || [])
-          .map(item => [item?.type || '', item?.link || ''])
+          .map(item => [
+            mapApiSocialTypeToUi(item?.type || ''),
+            item?.link || '',
+          ])
           .filter(([type, link]) => Boolean(type && link)),
       ),
       selectedSubcategories:
@@ -389,6 +447,7 @@ export function CreateProjectFullForm({
     },
   })
 
+  // Fetch main categories from API
   const { data: mainCategoriesData } = useQuery({
     queryKey: ['mainCategories'],
     queryFn: async () => {
@@ -451,7 +510,7 @@ export function CreateProjectFullForm({
     },
     onError: error => {
       console.error('Error creating project:', error)
-      setErrors({ submit: error.message })
+      setErrors({ submit: getReadableErrorMessage(error) })
     },
   })
 
@@ -460,6 +519,7 @@ export function CreateProjectFullForm({
       if (!initialProject?.id) {
         throw new Error('Missing project id')
       }
+      const projectId = parseInt(initialProject.id)
       const token = localStorage.getItem('giveth_token')
       const client = createGraphQLClient({
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -477,7 +537,7 @@ export function CreateProjectFullForm({
         })
         .filter((id): id is number => id !== null)
 
-      const addresses = data.addresses
+      const normalizedAddresses = data.addresses
         .map(address => ({
           address: address.address.trim(),
           networkId: address.networkId,
@@ -489,7 +549,7 @@ export function CreateProjectFullForm({
 
       const socialMedia = Object.entries(data.socialLinks)
         .map(([type, link]) => ({
-          type: type.trim(),
+          type: mapUiSocialTypeToApi(type.trim()),
           link: link.trim(),
         }))
         .filter(item => Boolean(item.type && item.link))
@@ -497,36 +557,44 @@ export function CreateProjectFullForm({
       const description = formatContentForStorage(data.description)
 
       const variables = {
-        projectId: parseInt(initialProject.id),
+        projectId,
         input: {
           title: data.title,
           description,
           impactLocation: data.impactLocation || null,
           image,
           categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
-          addresses: addresses.length > 0 ? addresses : undefined,
+          addresses: normalizedAddresses,
           socialMedia: socialMedia.length > 0 ? socialMedia : undefined,
         },
       }
 
-      const response = await client.request<UpdateProjectResponse>(
-        updateProjectWithOptionalFieldsMutation,
-        variables,
-      )
-
-      return response
+      try {
+        const response = await client.request<UpdateProjectResponse>(
+          updateProjectWithOptionalFieldsMutation,
+          variables,
+        )
+        return response
+      } catch (error) {
+        console.error('[Project Save Debug] updateProject error', error)
+        throw error
+      }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       const slug = initialProject?.slug
       if (slug) {
+        queryClient.removeQueries({
+          queryKey: ['projectBySlug', slug],
+        })
         router.push(`/project/${slug}`)
+        router.refresh()
       } else {
         router.push('/')
       }
     },
     onError: error => {
       console.error('Error updating project:', error)
-      setErrors({ submit: error.message })
+      setErrors({ submit: getReadableErrorMessage(error) })
     },
   })
 

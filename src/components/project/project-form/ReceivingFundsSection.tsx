@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import clsx from 'clsx'
 import { isAddress } from 'viem'
 import { ChainIcon } from '@/components/ChainIcon'
 import { CHAINS } from '@/lib/constants/chain'
@@ -180,7 +181,7 @@ export function ReceivingFundsSection({
                   <button
                     type="button"
                     onClick={() => startEditing(network.id)}
-                    className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-giv-brand-600 hover:bg-giv-brand-050"
+                    className="rounded-sm border border-gray-300 px-3 py-1.5 text-sm font-medium text-giv-brand-600 hover:bg-giv-brand-050 cursor-pointer"
                   >
                     {hasAddress ? 'Edit Address' : 'Add Address'}
                   </button>
@@ -188,7 +189,7 @@ export function ReceivingFundsSection({
                     <button
                       type="button"
                       onClick={() => removeAddress(network.id)}
-                      className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                      className="rounded-sm border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
                     >
                       Remove
                     </button>
@@ -234,7 +235,7 @@ export function ReceivingFundsSection({
                           setDraftAddress(connectedAddress)
                           setAddressError('')
                         }}
-                        className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-giv-brand-600 hover:bg-giv-brand-050"
+                        className="rounded-sm border border-gray-300 px-3 py-1.5 text-sm text-giv-brand-600 hover:bg-giv-brand-050 cursor-pointer"
                       >
                         Use connected wallet
                       </button>
@@ -242,7 +243,7 @@ export function ReceivingFundsSection({
                     <button
                       type="button"
                       onClick={cancelEditing}
-                      className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                      className="rounded-sm border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -264,7 +265,13 @@ export function ReceivingFundsSection({
                         cancelEditing()
                       }}
                       disabled={isValidating}
-                      className="rounded-md bg-giv-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                      className={clsx(
+                        'rounded-sm bg-giv-brand-500 px-3 py-1.5',
+                        'text-sm font-medium text-white',
+                        'hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60',
+                        'cursor-pointer',
+                        isValidating && 'opacity-60 cursor-not-allowed',
+                      )}
                     >
                       Save
                     </button>
