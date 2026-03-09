@@ -4,10 +4,10 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import {
   ChevronDown,
   Eye,
-  FileText,
+  // FileText,
   Pencil,
-  Trash2,
-  Wallet,
+  // Trash2,
+  // Wallet,
 } from 'lucide-react'
 import { type MyProject } from '@/hooks/useAccount'
 import { EditMyProjectsLink } from '@/lib/constants/menu-links'
