@@ -62,15 +62,22 @@ export const StakingRewards = () => {
   }
 
   // Change user network to the chainId, if not already on the correct network, and set the claim chain to the same chain
-  const handleStakingChainChange = (chainId: number) => {
-    hasUserSelectedChainRef.current = true
-    if (activeChain?.id !== chainId) {
-      switchChain(defineChain(chainId))
-    }
-    setStakingChain(chainId)
-    setGivstreamChain(chainId)
-    if (isStakingChain(chainId)) {
-      setClaimChain(chainId)
+  const handleStakingChainChange = async (chainId: number) => {
+    try {
+      if (activeChain?.id !== chainId) {
+        const switchResult = await switchChain(defineChain(chainId))
+        if (typeof switchResult === 'boolean' && !switchResult) {
+          return
+        }
+      }
+      hasUserSelectedChainRef.current = true
+      setStakingChain(chainId)
+      setGivstreamChain(chainId)
+      if (isClaimRewardsChain(chainId)) {
+        setClaimChain(chainId)
+      }
+    } catch (error) {
+      console.error('Failed to switch staking chain:', error)
     }
   }
 
@@ -79,7 +86,7 @@ export const StakingRewards = () => {
     hasUserSelectedChainRef.current = true
     setGivstreamChain(chainId)
     setStakingChain(chainId)
-    if (isStakingChain(chainId)) {
+    if (isClaimRewardsChain(chainId)) {
       setClaimChain(chainId)
     }
   }
