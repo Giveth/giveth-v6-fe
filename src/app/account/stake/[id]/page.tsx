@@ -2,12 +2,14 @@ import { Suspense } from 'react'
 import StakePageClient from '@/app/account/stake/[id]/StakePageClient'
 
 type StakePageProps = {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function StakePage({ params }: StakePageProps) {
+export default async function StakePage({ params }: StakePageProps) {
+  const { id } = await params
+
   return (
     <Suspense
       fallback={
@@ -19,7 +21,7 @@ export default function StakePage({ params }: StakePageProps) {
         </div>
       }
     >
-      <StakePageClient id={params.id} />
+      <StakePageClient id={id} />
     </Suspense>
   )
 }
