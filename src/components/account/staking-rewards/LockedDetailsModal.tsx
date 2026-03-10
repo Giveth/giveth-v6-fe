@@ -180,37 +180,41 @@ export default function LockedDetailsModal({
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-5 gap-2 text-lg font-bold text-giv-neutral-800 bg-giv-neutral-300 py-2 px-3 rounded-xl">
-              <div>Amount</div>
-              <div>Locked for</div>
-              <div>Multiplier</div>
-              <div>APR</div>
-              <div>Unlock Date</div>
-            </div>
-
-            <div className="mt-1 max-h-[260px] overflow-y-auto">
-              {isLoading ? (
-                <div className="py-6 text-sm text-giv-neutral-600">
-                  Loading locks...
-                </div>
-              ) : rows.length === 0 ? (
-                <div className="py-6 text-sm text-giv-neutral-600">
-                  No locked positions found.
-                </div>
-              ) : (
-                rows.map(row => (
-                  <div
-                    key={row.id}
-                    className="grid grid-cols-5 gap-2 py-4 px-3 text-lg font-medium text-giv-neutral-800 even:bg-giv-neutral-200 rounded-xl"
-                  >
-                    <div className="text-giv-neutral-900">{row.amount}</div>
-                    <div>{row.roundsLabel}</div>
-                    <div>{row.multiplier}</div>
-                    <div>{row.boostedApr}%</div>
-                    <div>{row.unlockDate}</div>
+            <div className="mt-5 overflow-x-auto">
+              <div className="min-w-[640px]">
+                <div className="mt-1 max-h-[260px] overflow-y-auto">
+                  <div className="sticky top-0 z-10 grid grid-cols-5 gap-2 rounded-xl bg-giv-neutral-300 py-2 px-3 text-lg font-bold text-giv-neutral-800 whitespace-nowrap">
+                    <div>Amount</div>
+                    <div>Locked for</div>
+                    <div>Multiplier</div>
+                    <div>APR</div>
+                    <div>Unlock Date</div>
                   </div>
-                ))
-              )}
+
+                  {isLoading ? (
+                    <div className="py-6 text-sm text-giv-neutral-600">
+                      Loading locks...
+                    </div>
+                  ) : rows.length === 0 ? (
+                    <div className="py-6 text-sm text-giv-neutral-600">
+                      No locked positions found.
+                    </div>
+                  ) : (
+                    rows.map(row => (
+                      <div
+                        key={row.id}
+                        className="grid grid-cols-5 gap-2 rounded-xl py-4 px-3 text-lg font-medium text-giv-neutral-800 even:bg-giv-neutral-200 whitespace-nowrap"
+                      >
+                        <div className="text-giv-neutral-900">{row.amount}</div>
+                        <div>{row.roundsLabel}</div>
+                        <div>{row.multiplier}</div>
+                        <div>{row.boostedApr}%</div>
+                        <div>{row.unlockDate}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 

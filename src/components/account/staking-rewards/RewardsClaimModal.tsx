@@ -173,7 +173,7 @@ export default function RewardsClaimModal({
                 {/* GIVstream */}
                 <span>GIVstream</span>
 
-                <div className="flex justify-end gap-2 md:contents">
+                <div className="flex justify-center md:justify-end gap-2 md:contents">
                   <div className="flex flex-col gap-1 md:contents">
                     <span className="font-semibold md:text-right text-base md:text-lg">
                       {givstreamAmount}
@@ -198,7 +198,7 @@ export default function RewardsClaimModal({
 
                 {/* GIVbacks */}
                 <span>GIVbacks</span>
-                <div className="flex justify-end gap-2 md:contents">
+                <div className="flex justify-center md:justify-end gap-2 md:contents">
                   <span className="font-semibold md:text-right text-base md:text-lg">
                     {givbacksAmount}
                   </span>
@@ -208,7 +208,7 @@ export default function RewardsClaimModal({
                 {/* GIVpower */}
                 <span>GIVpower</span>
 
-                <div className="flex justify-end gap-2 md:contents">
+                <div className="flex justify-center md:justify-end gap-2 md:contents">
                   <span className="font-semibold md:text-right text-base md:text-lg">
                     {givfarmAmount}
                   </span>
@@ -223,7 +223,7 @@ export default function RewardsClaimModal({
                 {/* Total */}
                 <span />
 
-                <div className="flex justify-end gap-2 md:contents">
+                <div className="flex justify-center md:justify-end gap-2 md:contents">
                   <span className="font-semibold md:text-right text-base md:text-lg">
                     {totalGiv} GIV
                   </span>

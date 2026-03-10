@@ -123,61 +123,68 @@ export const GIVStreamHistoryModal = ({
 
           <div className="mt-8 flex flex-1 min-h-0 flex-col">
             <div className="mt-2 rounded-xl border border-giv-neutral-100 bg-white p-6">
-              <div className="grid grid-cols-4 gap-2 text-sm font-bold text-giv-neutral-800 border-b border-giv-neutral-200 pb-3">
-                <div>GIVstream Source</div>
-                <div>Flowrate Change</div>
-                <div>Date</div>
-                <div>Tx</div>
-              </div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[560px]">
+                  <div className="grid grid-cols-4 gap-2 border-b border-giv-neutral-200 pb-3 text-sm font-bold text-giv-neutral-800 whitespace-nowrap">
+                    <div>GIVstream Source</div>
+                    <div>Flowrate Change</div>
+                    <div>Date</div>
+                    <div>Tx</div>
+                  </div>
 
-              <div className="mt-1 flex-1 min-h-0 overflow-y-auto">
-                {isLoading ? (
-                  <div className="py-6 text-sm text-giv-neutral-600">
-                    Loading history...
-                  </div>
-                ) : events.length === 0 ? (
-                  <div className="py-6 text-sm text-giv-neutral-600">
-                    No history found.
-                  </div>
-                ) : (
-                  events.map((event, idx) => {
-                    const flowrateChange =
-                      helper && event.amount
-                        ? calculateFlowrateChange(BigInt(event.amount), helper)
-                        : 0n
-                    const flowrateLabel = formatNumber(
-                      formatUnits(flowrateChange, 18),
-                      {
-                        minDecimals: 4,
-                        maxDecimals: 4,
-                      },
-                    )
-                    return (
-                      <div
-                        key={`${event.txHash}-${idx}`}
-                        className="grid grid-cols-4 gap-2 py-4 text-sm font-medium text-giv-neutral-800 border-b border-giv-neutral-100 last:border-b-0"
-                      >
-                        <div className="text-giv-neutral-900">
-                          {getSourceLabel(event.distributor)}
-                        </div>
-                        <div className="text-giv-green-600 font-semibold">
-                          +{flowrateLabel} GIV/week
-                        </div>
-                        <div className="text-giv-neutral-700">
-                          {formatHistoryDate(event.timestamp)}
-                        </div>
-                        <a
-                          href={getTransactionUrl(chainId, event.txHash)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-giv-brand-600 hover:text-giv-brand-700"
-                        >
-                          {shortenTxHash(event.txHash)}
-                        </a>
+                  <div className="mt-1 flex-1 min-h-0 overflow-y-auto">
+                    {isLoading ? (
+                      <div className="py-6 text-sm text-giv-neutral-600">
+                        Loading history...
                       </div>
-                    )
-                  })
-                )}
+                    ) : events.length === 0 ? (
+                      <div className="py-6 text-sm text-giv-neutral-600">
+                        No history found.
+                      </div>
+                    ) : (
+                      events.map((event, idx) => {
+                        const flowrateChange =
+                          helper && event.amount
+                            ? calculateFlowrateChange(
+                                BigInt(event.amount),
+                                helper,
+                              )
+                            : 0n
+                        const flowrateLabel = formatNumber(
+                          formatUnits(flowrateChange, 18),
+                          {
+                            minDecimals: 4,
+                            maxDecimals: 4,
+                          },
+                        )
+                        return (
+                          <div
+                            key={`${event.txHash}-${idx}`}
+                            className="grid grid-cols-4 gap-2 border-b border-giv-neutral-100 py-4 text-sm font-medium text-giv-neutral-800 last:border-b-0 whitespace-nowrap"
+                          >
+                            <div className="text-giv-neutral-900">
+                              {getSourceLabel(event.distributor)}
+                            </div>
+                            <div className="text-giv-green-600 font-semibold">
+                              +{flowrateLabel} GIV/week
+                            </div>
+                            <div className="text-giv-neutral-700">
+                              {formatHistoryDate(event.timestamp)}
+                            </div>
+                            <a
+                              href={getTransactionUrl(chainId, event.txHash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-giv-brand-600 hover:text-giv-brand-700"
+                            >
+                              {shortenTxHash(event.txHash)}
+                            </a>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 flex items-center justify-center gap-3">
