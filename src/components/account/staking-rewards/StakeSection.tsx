@@ -255,7 +255,7 @@ export const StakeSection = ({
         </h2>
         <div className="mt-3 grid gap-6 lg:grid-cols-[1fr_1fr]">
           <div className="flex flex-col gap-3">
-            <div className="flex max-h-[390px] flex-col gap-3 overflow-y-auto pr-3">
+            <div className="flex max-h-[450px] md:max-h-[390px] flex-col gap-3 overflow-y-auto md:pr-3">
               {chains.map(chain => {
                 const chainInfo = stakingByChain[chain.id]
                 const isSelected = chain.id === selectedChain
@@ -265,7 +265,8 @@ export const StakeSection = ({
                     type="button"
                     onClick={() => onSelectChain(chain.id)}
                     className={clsx(
-                      'relative flex items-center justify-between rounded-xl border px-4 py-6 text-left',
+                      'relative flex flex-wrap md:flex-nowrap items-center justify-between',
+                      'rounded-xl border px-4 py-6 text-left',
                       'transition-colors cursor-pointer',
 
                       // Default
@@ -274,15 +275,16 @@ export const StakeSection = ({
 
                       // Selected = bubble + arrow
                       isSelected &&
-                        `border-2
-                      border-giv-brand-200 bg-giv-brand-100
-                  
-                      after:absolute after:right-[-9px] after:top-1/2
-                      after:h-4 after:w-4
-                      after:-translate-y-1/2 after:rotate-45
-                      after:bg-giv-brand-100
-                      after:border-r-2 after:border-t-2 after:border-giv-brand-200
-                    `,
+                        `
+                          border-2
+                          border-giv-brand-200 bg-giv-brand-100
+                      
+                          md:after:absolute md:after:right-[-9px] md:after:top-1/2
+                          md:after:h-4 md:after:w-4
+                          md:after:-translate-y-1/2 md:after:rotate-45
+                          md:after:bg-giv-brand-100
+                          md:after:border-r-2 md:after:border-t-2 md:after:border-giv-brand-200
+                        `,
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -301,7 +303,7 @@ export const StakeSection = ({
                         On {chain.name}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm font-semibold text-giv-neutral-900">
+                    <div className="flex items-center gap-2 pt-4 md:pt-0 text-sm font-semibold text-giv-neutral-900">
                       <span className="text-base font-medium text-giv-neutral-900">
                         APR
                       </span>
@@ -335,7 +337,7 @@ export const StakeSection = ({
           </div>
 
           <div className="flex flex-col rounded-2xl border-2 border-giv-brand-200 bg-white p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap md:flex-nowrap items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="relative h-10 w-10">
                   <TokenIcon
@@ -354,8 +356,9 @@ export const StakeSection = ({
               </div>
               <div
                 className={clsx(
+                  'w-full md:w-auto',
                   'flex items-center gap-1',
-                  'py-2 px-3 rounded-xl',
+                  'py-2 px-3 rounded-xl mt-5 md:mt-0',
                   'bg-giv-neutral-300',
                   'text-sm font-semibold text-giv-neutral-900',
                 )}
@@ -377,7 +380,7 @@ export const StakeSection = ({
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between py-3">
+            <div className="mt-4 flex items-center justify-between py-3 text-sm md:text-base">
               <span className="flex items-center gap-2">
                 <IconStarsSecond width={24} height={24} />
                 <span className="ml-1 font-medium text-giv-neutral-900">
@@ -415,8 +418,8 @@ export const StakeSection = ({
               />
             </button>
 
-            <div className="mt-6 flex justify-between gap-6">
-              <div className="w-1/2 flex flex-col items-center gap-2">
+            <div className="mt-6 flex flex-wrap md:flex-nowrap justify-between gap-6">
+              <div className="w-full md:w-1/2 flex flex-col items-center gap-2">
                 <button
                   type="button"
                   disabled={!canStake}
@@ -438,7 +441,7 @@ export const StakeSection = ({
                   {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
                 </div>
               </div>
-              <div className="w-1/2 flex flex-col items-center gap-2">
+              <div className="w-full md:w-1/2 flex flex-col items-center gap-2">
                 <button
                   type="button"
                   disabled={!canUnstake}
