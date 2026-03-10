@@ -53,7 +53,7 @@ export const UserGivbacksBanner = () => {
         </div>
 
         <div className="flex flex-1 flex-col lg:flex-row ml-0 lg:ml-32 gap-4 lg:gap-16 justify-between text-sm text-giv-gray-700 sm:items-center sm:gap-10">
-          <div className="flex-col lg:flex-row gap-4 lg:gap-20 items-center">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-20 items-center">
             <div>
               <div className="flex flex-col gap-2 mb-3">
                 <div className="text-sm text-giv-neutral-800 font-medium">
@@ -76,7 +76,7 @@ export const UserGivbacksBanner = () => {
               <div className="flex items-center gap-2 text-sm text-giv-neutral-800 font-medium">
                 <span>Your tickets</span>
                 <HelpTooltip
-                  text="You can get tickets by donating to the GIVbacks Round. The more you donate, the more tickets you get."
+                  text="Get raffle tickets by donating to GIVbacks eligible projects. The more you donate and the higher the GIVpower of the project you donate to, the more entries you get for your donation."
                   className="py-0.5! px-1.5!"
                   width={1}
                   height={1}
