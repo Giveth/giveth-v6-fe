@@ -182,15 +182,15 @@ export default function LockedDetailsModal({
 
             <div className="mt-5 overflow-x-auto">
               <div className="min-w-[640px]">
-                <div className="grid grid-cols-5 gap-2 rounded-xl bg-giv-neutral-300 py-2 px-3 text-lg font-bold text-giv-neutral-800 whitespace-nowrap">
-                  <div>Amount</div>
-                  <div>Locked for</div>
-                  <div>Multiplier</div>
-                  <div>APR</div>
-                  <div>Unlock Date</div>
-                </div>
-
                 <div className="mt-1 max-h-[260px] overflow-y-auto">
+                  <div className="sticky top-0 z-10 grid grid-cols-5 gap-2 rounded-xl bg-giv-neutral-300 py-2 px-3 text-lg font-bold text-giv-neutral-800 whitespace-nowrap">
+                    <div>Amount</div>
+                    <div>Locked for</div>
+                    <div>Multiplier</div>
+                    <div>APR</div>
+                    <div>Unlock Date</div>
+                  </div>
+
                   {isLoading ? (
                     <div className="py-6 text-sm text-giv-neutral-600">
                       Loading locks...
