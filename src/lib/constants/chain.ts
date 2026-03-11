@@ -13,6 +13,9 @@ import { IconSafe } from '@/components/icons/wallets/IconSafe'
 import { IconTrust } from '@/components/icons/wallets/IconTrust'
 import type { ChainInfo } from '@/lib/types/chain'
 
+// If VERCEL_ENV is not set, default to production
+const environment = env.VERCEL_ENV ?? 'production'
+
 export const PRODUCTION_CHAINS: Record<number, ChainInfo> = {
   // Mainnets
   1: {
@@ -374,7 +377,7 @@ export const TESTNET_CHAINS: Record<number, ChainInfo> = {
 }
 
 export const CHAINS: Record<number, ChainInfo> =
-  env.VERCEL_ENV === 'production'
+  environment === 'production'
     ? PRODUCTION_CHAINS
     : { ...PRODUCTION_CHAINS, ...TESTNET_CHAINS }
 

@@ -565,7 +565,7 @@ export function CreateProjectFullForm({
           image,
           categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
           addresses: normalizedAddresses,
-          socialMedia: socialMedia.length > 0 ? socialMedia : undefined,
+          socialMedia,
         },
       }
 
