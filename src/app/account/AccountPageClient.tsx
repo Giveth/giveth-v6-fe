@@ -6,6 +6,7 @@ import { AuthGate } from '@/components/account/AuthGate'
 import { CtaSection } from '@/components/account/CtaGivBacks'
 import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
+import { MyProjectsTab } from '@/components/account/MyProjectsTab'
 import { ProfileSection } from '@/components/account/ProfileSection'
 import { StakingRewards } from '@/components/account/staking-rewards/StakingRewards'
 
@@ -35,7 +36,7 @@ export default function AccountPageClient() {
           {activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
           {activeTab === 'boosted' && <DonationsTable />}
-          {activeTab === 'projects' && <DonationsTable />}
+          {activeTab === 'projects' && <MyProjectsTab />}
         </main>
         <CtaSection />
       </div>
