@@ -326,13 +326,16 @@ export function QuillEditor({
       const videoId = parseEmbedUrl('youtube', payload.url)
       if (!videoId) return
 
-      const width = Math.max(
-        1,
-        Math.round(payload.width || DEFAULT_YOUTUBE_IFRAME_WIDTH),
-      )
-      const height = Math.max(
-        1,
-        Math.round(payload.height || DEFAULT_YOUTUBE_IFRAME_HEIGHT),
+      const clampDimension = (value: number | undefined, fallback: number) => {
+        const numeric = Number(value)
+        if (!Number.isFinite(numeric) || numeric <= 0) return fallback
+        return Math.min(3000, Math.round(numeric))
+      }
+
+      const width = clampDimension(payload.width, DEFAULT_YOUTUBE_IFRAME_WIDTH)
+      const height = clampDimension(
+        payload.height,
+        DEFAULT_YOUTUBE_IFRAME_HEIGHT,
       )
 
       const iframe = node.querySelector<HTMLIFrameElement>('iframe')

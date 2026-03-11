@@ -401,21 +401,11 @@ export function registerEmbedBlots(Quill: any) {
       const url = typeof value === 'string' && value.trim() ? value.trim() : ''
       if (!url) return node
 
-      try {
-        const parsedUrl = new URL(url)
-        const protocol = parsedUrl.protocol.toLowerCase()
-        const hostname = parsedUrl.hostname.toLowerCase()
-        const isHttp = protocol === 'http:' || protocol === 'https:'
-        const isFigmaHost =
-          hostname === 'figma.com' || hostname.endsWith('.figma.com')
+      const normalizedUrl = parseEmbedUrl('figma', url)
+      if (!normalizedUrl) return node
 
-        if (!isHttp || !isFigmaHost) return node
-      } catch {
-        return node
-      }
-
-      const embedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`
-      node.setAttribute('data-figma-url', url)
+      const embedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(normalizedUrl)}`
+      node.setAttribute('data-figma-url', normalizedUrl)
       const iframe = document.createElement('iframe')
       iframe.setAttribute('src', embedUrl)
       iframe.setAttribute('frameborder', '0')

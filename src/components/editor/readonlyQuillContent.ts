@@ -647,7 +647,9 @@ function replaceStandaloneLinksWithEmbeds(html: string): string {
       const links = Array.from(paragraph.querySelectorAll('a[href]'))
       if (links.length === 1) {
         const clone = paragraph.cloneNode(true) as HTMLParagraphElement
-        clone.querySelectorAll('a[href]').forEach(linkNode => linkNode.remove())
+        clone.querySelectorAll('a[href]').forEach(linkNode => {
+          linkNode.remove()
+        })
         const remainingText = (clone.textContent ?? '')
           .replace(/\u00a0/g, ' ')
           .trim()
@@ -775,16 +777,106 @@ const READONLY_ALLOWED_ATTR = [
   'loading',
   'rel',
   'src',
+  'style',
   'target',
   'title',
   'width',
 ] as const
 
+let hasReadonlyStyleHook = false
+
+function isReadonlyEmbedStyleElement(node: Element): boolean {
+  const tagName = node.tagName.toLowerCase()
+  const classes = node.className?.toString().split(/\s+/).filter(Boolean) ?? []
+  if (tagName === 'div') return classes.includes('ql-video-wrapper')
+  if (tagName === 'iframe') return classes.includes('ql-video')
+  return false
+}
+
+function sanitizeReadonlyEmbedStyle(styleValue: string): string {
+  const declarations = styleValue.split(';')
+  const sanitized: string[] = []
+
+  for (const declaration of declarations) {
+    const separatorIndex = declaration.indexOf(':')
+    if (separatorIndex <= 0) continue
+
+    const property = declaration.slice(0, separatorIndex).trim().toLowerCase()
+    const value = declaration
+      .slice(separatorIndex + 1)
+      .trim()
+      .toLowerCase()
+
+    if (!value) continue
+
+    if (
+      (property === 'max-width' || property === 'width') &&
+      (/^\d{1,4}px$/.test(value) || /^\d{1,3}(?:\.\d+)?%$/.test(value))
+    ) {
+      sanitized.push(`${property}:${value}`)
+      continue
+    }
+
+    if (
+      property === 'height' &&
+      (value === 'auto' ||
+        /^\d{1,4}px$/.test(value) ||
+        /^\d{1,3}(?:\.\d+)?%$/.test(value))
+    ) {
+      sanitized.push(`${property}:${value}`)
+      continue
+    }
+
+    if (property === 'padding-bottom' && /^\d{1,3}(?:\.\d+)?%$/.test(value)) {
+      sanitized.push(`${property}:${value}`)
+      continue
+    }
+
+    if (property === 'aspect-ratio' && /^\d{1,4}\s*\/\s*\d{1,4}$/.test(value)) {
+      sanitized.push(`${property}:${value.replace(/\s+/g, '')}`)
+    }
+  }
+
+  return sanitized.join(';')
+}
+
+function ensureReadonlyStyleHook() {
+  if (hasReadonlyStyleHook) return
+
+  // Keep sizing metadata emitted by buildVideoEmbed while stripping other inline CSS.
+  DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent) => {
+    if (hookEvent.attrName !== 'style') return
+
+    const node = currentNode as Element
+    if (!node || typeof node.getAttribute !== 'function') {
+      hookEvent.keepAttr = false
+      return
+    }
+
+    if (!isReadonlyEmbedStyleElement(node)) {
+      hookEvent.keepAttr = false
+      return
+    }
+
+    const sanitizedStyle = sanitizeReadonlyEmbedStyle(hookEvent.attrValue ?? '')
+    if (!sanitizedStyle) {
+      hookEvent.keepAttr = false
+      return
+    }
+
+    hookEvent.attrValue = sanitizedStyle
+    hookEvent.keepAttr = true
+  })
+
+  hasReadonlyStyleHook = true
+}
+
 function sanitizeReadonlyHtml(html: string): string {
+  ensureReadonlyStyleHook()
+
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [...READONLY_ALLOWED_TAGS],
     ALLOWED_ATTR: [...READONLY_ALLOWED_ATTR],
-    FORBID_ATTR: ['style'],
     ALLOW_DATA_ATTR: false,
     ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|\/|#)/i,
   }) as string
@@ -953,7 +1045,9 @@ export function formatContentForStorage(content: string): string {
   const duplicateFallbackLinks = Array.from(
     root.querySelectorAll('a.ql-embed-twitter-fallback'),
   )
-  duplicateFallbackLinks.forEach(link => link.remove())
+  duplicateFallbackLinks.forEach(link => {
+    link.remove()
+  })
 
   return root.innerHTML.trim()
 }

@@ -69,6 +69,10 @@ export interface EmojiCategory {
   emojis: string[]
 }
 
+function dedupeEmojiList(emojis: string[]): string[] {
+  return Array.from(new Set(emojis))
+}
+
 /** Categorized emoji sets for the Quill editor toolbar picker */
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
@@ -1705,7 +1709,10 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
       '🏳️',
     ],
   },
-]
+].map(category => ({
+  ...category,
+  emojis: dedupeEmojiList(category.emojis),
+}))
 
 /** Flat list of all default emojis (all categories) for backward compatibility */
 export const DEFAULT_EMOJIS: string[] = Array.from(
