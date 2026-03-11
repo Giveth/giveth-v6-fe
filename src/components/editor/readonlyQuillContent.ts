@@ -783,7 +783,7 @@ const READONLY_ALLOWED_ATTR = [
   'width',
 ] as const
 
-let hasReadonlyStyleHook = false
+type ReadonlyStyleHook = Parameters<typeof DOMPurify.addHook>[1]
 
 function isReadonlyEmbedStyleElement(node: Element): boolean {
   const tagName = node.tagName.toLowerCase()
@@ -840,11 +840,9 @@ function sanitizeReadonlyEmbedStyle(styleValue: string): string {
   return sanitized.join(';')
 }
 
-function ensureReadonlyStyleHook() {
-  if (hasReadonlyStyleHook) return
-
-  // Keep sizing metadata emitted by buildVideoEmbed while stripping other inline CSS.
-  DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent) => {
+function ensureReadonlyStyleHook(): ReadonlyStyleHook {
+  // Register the hook only for the current sanitize call.
+  const readonlyStyleHook: ReadonlyStyleHook = (currentNode, hookEvent) => {
     if (hookEvent.attrName !== 'style') return
 
     const node = currentNode as Element
@@ -866,20 +864,25 @@ function ensureReadonlyStyleHook() {
 
     hookEvent.attrValue = sanitizedStyle
     hookEvent.keepAttr = true
-  })
+  }
 
-  hasReadonlyStyleHook = true
+  // Keep sizing metadata emitted by buildVideoEmbed while stripping other inline CSS.
+  DOMPurify.addHook('uponSanitizeAttribute', readonlyStyleHook)
+  return readonlyStyleHook
 }
 
 function sanitizeReadonlyHtml(html: string): string {
-  ensureReadonlyStyleHook()
-
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [...READONLY_ALLOWED_TAGS],
-    ALLOWED_ATTR: [...READONLY_ALLOWED_ATTR],
-    ALLOW_DATA_ATTR: false,
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|\/|#)/i,
-  }) as string
+  const readonlyStyleHook = ensureReadonlyStyleHook()
+  try {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [...READONLY_ALLOWED_TAGS],
+      ALLOWED_ATTR: [...READONLY_ALLOWED_ATTR],
+      ALLOW_DATA_ATTR: false,
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|\/|#)/i,
+    }) as string
+  } finally {
+    DOMPurify.removeHook('uponSanitizeAttribute', readonlyStyleHook)
+  }
 }
 
 /**
@@ -1046,6 +1049,15 @@ export function formatContentForStorage(content: string): string {
     root.querySelectorAll('a.ql-embed-twitter-fallback'),
   )
   duplicateFallbackLinks.forEach(link => {
+    const paragraph = link.closest('p')
+    if (
+      paragraph &&
+      paragraph.childElementCount === 1 &&
+      paragraph.textContent?.trim() === link.textContent?.trim()
+    ) {
+      paragraph.remove()
+      return
+    }
     link.remove()
   })
 
