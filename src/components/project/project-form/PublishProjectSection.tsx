@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 
 interface PublishProjectSectionProps {
@@ -24,6 +25,12 @@ export function PublishProjectSection({
   onActivate,
 }: PublishProjectSectionProps) {
   const isEdit = mode === 'edit'
+  const submitErrorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!submitError) return
+    submitErrorRef.current?.focus()
+  }, [submitError])
 
   return (
     <section
@@ -49,7 +56,14 @@ export function PublishProjectSection({
       )}
 
       {submitError && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+        <div
+          ref={submitErrorRef}
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          tabIndex={-1}
+          className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600"
+        >
           {submitError}
         </div>
       )}

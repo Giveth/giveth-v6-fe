@@ -1,4 +1,3 @@
-import { env } from 'process'
 import { IconArgent } from '@/components/icons/wallets/IconArgent'
 import { IconBinance } from '@/components/icons/wallets/IconBinance'
 import { IconBrave } from '@/components/icons/wallets/IconBrave'
@@ -14,7 +13,7 @@ import { IconTrust } from '@/components/icons/wallets/IconTrust'
 import type { ChainInfo } from '@/lib/types/chain'
 
 // If VERCEL_ENV is not set, default to production
-const environment = env.VERCEL_ENV ?? 'production'
+const environment = process.env.VERCEL_ENV ?? 'production'
 
 export const PRODUCTION_CHAINS: Record<number, ChainInfo> = {
   // Mainnets

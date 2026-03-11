@@ -37,11 +37,17 @@ export function ProjectNameSection({
         onChange={e => onTitleChange(e.target.value)}
         placeholder="My Amazing Project"
         maxLength={55}
+        aria-invalid={!!error}
+        aria-describedby={error ? 'title-error' : undefined}
         className={`w-full px-4 py-3 rounded-lg border ${
           error ? 'border-red-500' : 'border-gray-200'
         } focus:outline-none focus:ring-2 focus:ring-giv-brand-500/20 focus:border-giv-brand-500 text-giv-neutral-900`}
       />
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p id="title-error" role="alert" className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </section>
   )
 }

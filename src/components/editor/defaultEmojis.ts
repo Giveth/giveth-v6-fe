@@ -1708,4 +1708,6 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
 ]
 
 /** Flat list of all default emojis (all categories) for backward compatibility */
-export const DEFAULT_EMOJIS: string[] = EMOJI_CATEGORIES.flatMap(c => c.emojis)
+export const DEFAULT_EMOJIS: string[] = Array.from(
+  new Set(EMOJI_CATEGORIES.flatMap(c => c.emojis)),
+)

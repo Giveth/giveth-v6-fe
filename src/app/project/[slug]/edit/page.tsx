@@ -14,7 +14,7 @@ import { useProjectBySlug } from '@/hooks/useProject'
 export default function ProjectEditPage() {
   const params = useParams()
   const slug = params.slug as string
-  if (slug === 'preview') return <ProjectDraftPreview />
+  const isPreview = slug === 'preview'
 
   const {
     user,
@@ -23,9 +23,14 @@ export default function ProjectEditPage() {
     signIn,
     error: authError,
   } = useSiweAuth()
-  const { data, isLoading, error } = useProjectBySlug(slug, {
+  const { data, isLoading, error } = useProjectBySlug(isPreview ? '' : slug, {
     noCache: true,
   })
+
+  if (isPreview) {
+    return <ProjectDraftPreview />
+  }
+
   const project = data?.projectBySlug
 
   if (isLoading)

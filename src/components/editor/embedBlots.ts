@@ -80,6 +80,34 @@ function normalizeTwitterUrl(url: string): string | null {
 }
 
 /**
+ * Parse and validate a Figma URL.
+ * @param url - The Figma URL.
+ * @returns The trimmed Figma URL when valid.
+ */
+function parseFigmaUrl(url: string): string | null {
+  if (!url || typeof url !== 'string') return null
+  const trimmed = url.trim()
+  if (!trimmed) return null
+
+  try {
+    const parsed = new URL(trimmed)
+    const protocol = parsed.protocol.toLowerCase()
+    const host = parsed.hostname.toLowerCase()
+    const path = parsed.pathname.toLowerCase()
+
+    const isHttp = protocol === 'http:' || protocol === 'https:'
+    const isFigmaHost = host === 'figma.com' || host === 'www.figma.com'
+    const isSupportedPath =
+      path.startsWith('/file/') || path.startsWith('/proto/')
+
+    if (!isHttp || !isFigmaHost || !isSupportedPath) return null
+    return trimmed
+  } catch {
+    return null
+  }
+}
+
+/**
  * Render the Twitter widget.
  * @see https://developer.x.com/en/docs/twitter-for-websites/javascript-api/guides/oembed-api
  * @param target - The target element.
@@ -372,10 +400,21 @@ export function registerEmbedBlots(Quill: any) {
       const node = super.create() as HTMLDivElement
       const url = typeof value === 'string' && value.trim() ? value.trim() : ''
       if (!url) return node
-      const embedUrl =
-        url.startsWith('http') && url.includes('figma.com')
-          ? `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`
-          : url
+
+      try {
+        const parsedUrl = new URL(url)
+        const protocol = parsedUrl.protocol.toLowerCase()
+        const hostname = parsedUrl.hostname.toLowerCase()
+        const isHttp = protocol === 'http:' || protocol === 'https:'
+        const isFigmaHost =
+          hostname === 'figma.com' || hostname.endsWith('.figma.com')
+
+        if (!isHttp || !isFigmaHost) return node
+      } catch {
+        return node
+      }
+
+      const embedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`
       node.setAttribute('data-figma-url', url)
       const iframe = document.createElement('iframe')
       iframe.setAttribute('src', embedUrl)
@@ -420,7 +459,7 @@ export function parseEmbedUrl(type: EmbedType, url: string): string | null {
     case 'twitter':
       return normalizeTwitterUrl(url)
     case 'figma':
-      return url?.trim() && url.includes('figma.com') ? url.trim() : null
+      return parseFigmaUrl(url)
     default:
       return null
   }

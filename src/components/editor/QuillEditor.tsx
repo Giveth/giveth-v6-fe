@@ -180,8 +180,15 @@ export function QuillEditor({
   const formatRangeRef = useRef<{ index: number; length: number } | null>(null)
   const quillInstanceRef = useRef<QuillEditorInstance | null>(null)
 
-  const modules = useMemo(
-    () => ({
+  const modules = useMemo(() => {
+    if (disabled) {
+      return {
+        toolbar: false,
+        emojiShortcuts: false,
+      }
+    }
+
+    return {
       toolbar: {
         container: [...QUILL_TOOLBAR_CONTAINER, [{ emoji: '😀' }]],
         handlers: {
@@ -241,23 +248,25 @@ export function QuillEditor({
         },
       },
       emojiShortcuts: true,
-    }),
-    [emojiEventName, embedEventName],
-  )
+    }
+  }, [disabled, emojiEventName, embedEventName])
 
   useEffect(() => {
+    if (disabled) return
     const handler = () => setEmojiPickerOpen(true)
     window.addEventListener(emojiEventName, handler)
     return () => window.removeEventListener(emojiEventName, handler)
-  }, [emojiEventName])
+  }, [disabled, emojiEventName])
 
   useEffect(() => {
+    if (disabled) return
     const handler = () => setEmbedPopoverOpen(true)
     window.addEventListener(embedEventName, handler)
     return () => window.removeEventListener(embedEventName, handler)
-  }, [embedEventName])
+  }, [disabled, embedEventName])
 
   useEffect(() => {
+    if (disabled) return
     const handler = (event: Event) => {
       const customEvent = event as CustomEvent<YoutubeEditEventDetail>
       const detail = customEvent.detail
@@ -268,7 +277,7 @@ export function QuillEditor({
     }
     window.addEventListener(YOUTUBE_EDIT_EVENT, handler)
     return () => window.removeEventListener(YOUTUBE_EDIT_EVENT, handler)
-  }, [])
+  }, [disabled])
 
   const insertEmoji = useCallback((emoji: string) => {
     const editor = quillInstanceRef.current
@@ -386,14 +395,14 @@ export function QuillEditor({
         )}
         style={{ ['--quill-min-height' as string]: minHeight }}
       />
-      {emojiPickerOpen && (
+      {!disabled && emojiPickerOpen && (
         <EmojiPickerPopover
           categories={EMOJI_CATEGORIES}
           onSelect={insertEmoji}
           onClose={() => setEmojiPickerOpen(false)}
         />
       )}
-      {colorPopoverOpen && (
+      {!disabled && colorPopoverOpen && (
         <ColorPickerPopover
           mode={colorMode}
           value={colorValue}
@@ -401,7 +410,7 @@ export function QuillEditor({
           onClose={() => setColorPopoverOpen(false)}
         />
       )}
-      {embedPopoverOpen && (
+      {!disabled && embedPopoverOpen && (
         <EmbedPopover
           onInsert={handleEmbedSubmit}
           onClose={() => {

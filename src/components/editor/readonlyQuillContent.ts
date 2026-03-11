@@ -1,3 +1,5 @@
+import DOMPurify from 'isomorphic-dompurify'
+
 const URL_REGEX = /(https?:\/\/[^\s<>"')]+)/g
 const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/
 const YOUTUBE_WIDTH_PARAM = 'givethW'
@@ -285,7 +287,8 @@ function toFigmaUrl(url: string): string | null {
   try {
     const parsed = new URL(url.trim())
     const host = parsed.hostname.toLowerCase()
-    if (!host.includes('figma.com')) return null
+    const isFigmaHost = host === 'figma.com' || host.endsWith('.figma.com')
+    if (!isFigmaHost) return null
 
     if (parsed.pathname.startsWith('/embed')) {
       const nestedUrl = parsed.searchParams.get('url')
@@ -733,6 +736,60 @@ function linkifyPlainText(text: string): string {
   return html
 }
 
+const READONLY_ALLOWED_TAGS = [
+  'a',
+  'blockquote',
+  'br',
+  'code',
+  'div',
+  'em',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'iframe',
+  'img',
+  'li',
+  'ol',
+  'p',
+  'pre',
+  's',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'u',
+  'ul',
+] as const
+
+const READONLY_ALLOWED_ATTR = [
+  'allow',
+  'allowfullscreen',
+  'alt',
+  'class',
+  'frameborder',
+  'height',
+  'href',
+  'loading',
+  'rel',
+  'src',
+  'target',
+  'title',
+  'width',
+] as const
+
+function sanitizeReadonlyHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [...READONLY_ALLOWED_TAGS],
+    ALLOWED_ATTR: [...READONLY_ALLOWED_ATTR],
+    FORBID_ATTR: ['style'],
+    ALLOW_DATA_ATTR: false,
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|\/|#)/i,
+  }) as string
+}
+
 /**
  * Formats stored content for read-only display.
  * It normalizes links, converts known embed links, and preserves plain text.
@@ -743,15 +800,17 @@ function linkifyPlainText(text: string): string {
 export function formatContentForReadonlyQuill(content: string): string {
   const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(content)
   if (looksLikeHtml) {
-    return replaceStandaloneLinksWithEmbeds(
+    const formatted = replaceStandaloneLinksWithEmbeds(
       normalizeQuillEmbedBlocks(normalizeLinksInHtml(content)),
     )
+    return sanitizeReadonlyHtml(formatted)
   }
 
   const linkedText = linkifyPlainText(content)
-  return replaceStandaloneLinksWithEmbeds(
+  const formatted = replaceStandaloneLinksWithEmbeds(
     `<p>${linkedText.replaceAll('\n', '<br/>')}</p>`,
   )
+  return sanitizeReadonlyHtml(formatted)
 }
 
 /**

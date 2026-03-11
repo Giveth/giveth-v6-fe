@@ -41,9 +41,9 @@ export function registerEmojiShortcuts(Quill: {
           if (!textBefore.endsWith(shortcut)) continue
 
           const replaceAt = index - shortcut.length
-          quill.deleteText(replaceAt, shortcut.length, 'silent')
-          quill.insertText(replaceAt, emoji, 'silent')
-          quill.setSelection(replaceAt + emoji.length, 0, 'silent')
+          quill.deleteText(replaceAt, shortcut.length, 'api')
+          quill.insertText(replaceAt, emoji, 'api')
+          quill.setSelection(replaceAt + emoji.length, 0, 'api')
           return
         }
       })

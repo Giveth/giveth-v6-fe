@@ -23,8 +23,6 @@ export function UserProjectsTab() {
   const total = data?.myProjects?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  console.log(projects)
-
   // Handle page change, update the current page state
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
