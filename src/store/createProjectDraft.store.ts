@@ -102,14 +102,81 @@ function isBase58(value: string): boolean {
   return /^[1-9A-HJ-NP-Za-km-z]+$/.test(value)
 }
 
+const BASE58_ALPHABET =
+  '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+const STELLAR_BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+const STELLAR_ED25519_PUBLIC_KEY_VERSION_BYTE = 6 << 3 // 48, "G..."
+
+function decodeBase58(value: string): Uint8Array | null {
+  if (!value) return null
+
+  let decoded = 0n
+  for (const char of value) {
+    const digit = BASE58_ALPHABET.indexOf(char)
+    if (digit < 0) return null
+    decoded = decoded * 58n + BigInt(digit)
+  }
+
+  const bytes: number[] = []
+  while (decoded > 0n) {
+    bytes.push(Number(decoded & 0xffn))
+    decoded >>= 8n
+  }
+  bytes.reverse()
+
+  const leadingZeroes = value.match(/^1+/)?.[0].length ?? 0
+  return new Uint8Array([...new Array(leadingZeroes).fill(0), ...bytes])
+}
+
+function decodeBase32(value: string): Uint8Array | null {
+  if (!value) return null
+
+  let buffer = 0
+  let bits = 0
+  const out: number[] = []
+
+  for (const char of value) {
+    const idx = STELLAR_BASE32_ALPHABET.indexOf(char)
+    if (idx < 0) return null
+
+    buffer = (buffer << 5) | idx
+    bits += 5
+
+    while (bits >= 8) {
+      bits -= 8
+      out.push((buffer >> bits) & 0xff)
+      buffer &= (1 << bits) - 1
+    }
+  }
+
+  return new Uint8Array(out)
+}
+
+function crc16Xmodem(data: Uint8Array): number {
+  let crc = 0x0000
+  for (const byte of data) {
+    crc ^= byte << 8
+    for (let i = 0; i < 8; i += 1) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ 0x1021) & 0xffff
+      } else {
+        crc = (crc << 1) & 0xffff
+      }
+    }
+  }
+  return crc
+}
+
 /**
  * Check if the value is a valid Solana address
  * @param value - The value to check
  * @returns True if the value is a valid Solana address, false otherwise
  */
 function isSolanaAddress(value: string): boolean {
-  // Minimal validation: base58, common length range for Solana public keys.
-  return isBase58(value) && value.length >= 32 && value.length <= 44
+  const normalized = value.trim()
+  if (!isBase58(normalized)) return false
+  const decoded = decodeBase58(normalized)
+  return Boolean(decoded && decoded.length === 32)
 }
 
 /**
@@ -118,8 +185,20 @@ function isSolanaAddress(value: string): boolean {
  * @returns True if the value is a valid Stellar address, false otherwise
  */
 function isStellarAddress(value: string): boolean {
-  // Minimal StrKey format check for public key: starts with 'G' and base32 chars.
-  return /^G[A-Z2-7]{55}$/.test(value)
+  const normalized = value.trim().toUpperCase()
+  if (!/^G[A-Z2-7]{55}$/.test(normalized)) return false
+
+  const decoded = decodeBase32(normalized)
+  if (!decoded || decoded.length !== 35) return false
+
+  const payload = decoded.slice(0, 33) // version byte + 32-byte pubkey
+  const checksum = decoded.slice(33, 35) // little-endian CRC16-XModem
+  if (payload[0] !== STELLAR_ED25519_PUBLIC_KEY_VERSION_BYTE) return false
+
+  const expectedChecksum = crc16Xmodem(payload)
+  const lo = expectedChecksum & 0xff
+  const hi = (expectedChecksum >> 8) & 0xff
+  return checksum[0] === lo && checksum[1] === hi
 }
 
 /**

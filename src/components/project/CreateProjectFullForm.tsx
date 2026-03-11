@@ -587,7 +587,6 @@ export function CreateProjectFullForm({
           queryKey: ['projectBySlug', slug],
         })
         router.push(`/project/${slug}`)
-        router.refresh()
       } else {
         router.push('/')
       }

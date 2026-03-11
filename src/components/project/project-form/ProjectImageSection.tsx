@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useUploadAvatar } from '@/hooks/useAccount'
 
 const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
@@ -61,10 +61,12 @@ export function ProjectImageSection({
   onImageChange,
   onActivate,
 }: ProjectImageSectionProps) {
-  const token =
-    typeof window !== 'undefined'
-      ? (localStorage.getItem('giveth_token') ?? undefined)
-      : undefined
+  const [token, setToken] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    setToken(localStorage.getItem('giveth_token') ?? undefined)
+  }, [])
+
   const uploadMutation = useUploadAvatar(token)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [tab, setTab] = useState<'upload' | 'search'>('upload')
