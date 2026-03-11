@@ -437,7 +437,7 @@ function maybeEmbedForUrl(url: string): string | null {
   const tweetId = toTwitterTweetId(url)
   if (tweetId) {
     const tweetUrl = `https://twitter.com/i/status/${tweetId}`
-    return `<blockquote class="twitter-tweet"><a href="${escapeHtml(tweetUrl)}"></a></blockquote><p><a href="${escapeHtml(tweetUrl)}" target="_blank" rel="noopener noreferrer">Open this post on X</a></p>`
+    return `<blockquote class="twitter-tweet"><a class="ql-embed-twitter-fallback" href="${escapeHtml(tweetUrl)}"></a></blockquote><p><a class="ql-embed-twitter-fallback" href="${escapeHtml(tweetUrl)}" target="_blank" rel="noopener noreferrer">Open this post on X</a></p>`
   }
 
   const youtubeEmbedUrl = toYoutubeEmbedUrl(url)

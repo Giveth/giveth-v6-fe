@@ -23,13 +23,22 @@ export default function ProjectEditPage() {
     signIn,
     error: authError,
   } = useSiweAuth()
-  const { data, isLoading, error } = useProjectBySlug(isPreview ? '' : slug, {
-    noCache: true,
-  })
+  const canFetchProject = !isPreview && isConnected && isAuthenticated && !!slug
+  const { data, isLoading, error } = useProjectBySlug(
+    canFetchProject ? slug : '',
+    {
+      noCache: true,
+    },
+  )
 
   if (isPreview) {
     return <ProjectDraftPreview />
   }
+
+  // Show sign-in flow before ownership checks.
+  if (!isConnected) return <NotConnected />
+  if (!isAuthenticated || !user)
+    return <NotAuthenticated error={authError} signIn={signIn} />
 
   const project = data?.projectBySlug
 
@@ -45,11 +54,6 @@ export default function ProjectEditPage() {
         Project not found
       </div>
     )
-
-  // Show sign-in flow before ownership checks.
-  if (!isConnected) return <NotConnected />
-  if (!isAuthenticated || !user)
-    return <NotAuthenticated error={authError} signIn={signIn} />
 
   const isOwner = project.adminUser?.id === String(user.id)
   if (!isOwner) {
