@@ -1,6 +1,12 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
 export interface ProjectCartItem {
@@ -234,11 +240,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const removeFromCart = (roundId: number, projectId: string) => {
+  const removeFromCart = useCallback((roundId: number, projectId: string) => {
     setCartItems(prev =>
       prev.filter(item => !(item.roundId === roundId && item.id === projectId)),
     )
-  }
+  }, [])
 
   const clearCart = () => {
     setCartItems([])
