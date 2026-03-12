@@ -1,0 +1,213 @@
+# AI Onboarding
+
+This project uses three MCP servers as the default AI context layer for day-to-day development:
+
+- **Figma MCP** for design files, components, variables, and layout context
+- **Context7 MCP** for current, version-aware library documentation and examples
+- **GitHub MCP** for repository, issue, pull request, and workflow access
+
+These MCPs are **developer-tool integrations**, not runtime dependencies of the Next.js app.
+
+## Repository-Shared MCP Config
+
+This repository now includes project-scoped MCP config for the three main clients we use:
+
+- **Cursor**: `.cursor/mcp.json`
+- **Claude Code**: `.mcp.json`
+- **Codex**: `.codex/config.toml` in trusted projects
+
+These committed files share the **server definitions**, but they do **not** store secrets.
+For Codex, open this repository as a trusted project before running project-specific MCP commands, otherwise Codex may fall back to user-level MCP config.
+
+## Per-User Authentication Model
+
+### Figma MCP
+
+- No API key is committed in this repo.
+- This project uses the **desktop MCP server**, which runs locally at `http://127.0.0.1:3845/mcp`.
+- Each developer must:
+  - install and run the Figma desktop app
+  - enable the desktop MCP server in Dev Mode
+  - sign in with their own Figma account
+  - have permission to the Figma files they want to inspect
+
+### Context7 MCP
+
+- This repo uses the **OAuth endpoint**: `https://mcp.context7.com/mcp/oauth`.
+- That avoids committing a shared API key.
+- Each developer authenticates interactively inside their client after the server is added.
+- If a client does not support MCP OAuth, Context7 documents API key auth as the fallback.
+
+### GitHub MCP
+
+- This repo uses GitHub's hosted remote MCP server.
+- **Cursor**, **Claude Code**, and **Codex** use a per-user `GITHUB_PAT`.
+- In Claude Code, if `GITHUB_PAT` is missing, GitHub may show `Failed to connect` or return `401` while the other project MCP servers still load.
+- We do **not** share one PAT across the team.
+- Access stays tied to the developer's own GitHub identity and token scopes.
+
+## What We Use Each MCP For
+
+### Figma MCP
+
+**What it is**
+
+Figma's official MCP server gives AI agents access to design context from Figma files, including frames, components, variables, layout information, Make resources, and Code Connect context.
+
+**Why we want it here**
+
+- Implement QF views against real designs instead of approximations
+- Pull design tokens and layout data from the source of truth
+- Keep generated UI closer to the design system
+
+**Project choice**
+
+- We use the **desktop** Figma MCP server, not the hosted Figma MCP server.
+- Shared repo config points to `http://127.0.0.1:3845/mcp`.
+
+**Official docs**
+
+- [Figma MCP Server introduction](https://developers.figma.com/docs/figma-mcp-server/)
+- [Desktop server installation](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/)
+- [Plans, access, and permissions](https://developers.figma.com/docs/figma-mcp-server/plans-access-and-permissions/)
+- [Figma MCP Catalog](https://www.figma.com/mcp-catalog/)
+
+**Client setup links**
+
+- Cursor: [Figma desktop server docs, Cursor section](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/#cursor)
+- Claude Code: [Figma desktop server docs, Claude Code section](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/#claude-code)
+- Codex: [OpenAI Codex MCP docs](https://developers.openai.com/codex/mcp) plus [Figma desktop server installation](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/)
+
+Inference from the official docs:
+
+- Figma does not currently publish a dedicated **desktop-server** guide for Codex. For Codex, we use the generic project-scoped MCP config supported by OpenAI Codex together with Figma's local desktop endpoint.
+
+### Context7 MCP
+
+**What it is**
+
+Context7 is an MCP server for up-to-date, version-specific documentation and code examples pulled directly from source docs and repositories.
+
+**Why we want it here**
+
+- This repo depends on fast-moving tools where stale examples are expensive
+- It is useful for Next.js, React, GraphQL, TanStack Query, Thirdweb, Viem, Tailwind, Vitest, and Playwright
+- It gives agents a safer default path for API verification before they suggest changes
+
+**Project choice**
+
+- We use the **OAuth** endpoint in shared config: `https://mcp.context7.com/mcp/oauth`
+- That keeps Context7 credentials out of version control
+- In Codex, open and trust this repo first, then run `codex mcp get context7` and confirm the URL is `https://mcp.context7.com/mcp/oauth`
+- After that check, authenticate it with `codex mcp login context7`
+
+**Official docs**
+
+- [Context7 overview](https://context7.com/docs/overview)
+- [Context7 installation](https://context7.com/docs/installation)
+- [Context7 OAuth](https://context7.com/docs/howto/oauth)
+- [Adding libraries to Context7](https://context7.com/docs/adding-libraries)
+
+**Client setup links**
+
+- Cursor: [Context7 Cursor setup](https://context7.com/docs/clients/cursor)
+- Claude Code: [Context7 Claude Code setup](https://context7.com/docs/clients/claude-code)
+- Codex: [OpenAI Codex MCP docs](https://developers.openai.com/codex/mcp) plus [Context7 all clients](https://context7.com/docs/resources/all-clients) and [Context7 OAuth](https://context7.com/docs/howto/oauth)
+
+Inference from the official docs and local verification:
+
+- Context7's published Codex example currently shows the API-key variant using `https://mcp.context7.com/mcp` and `CONTEXT7_API_KEY`.
+- This repo intentionally uses Context7's OAuth endpoint instead, because current Codex supports MCP OAuth and can authenticate it with `codex mcp login context7`.
+
+### GitHub MCP
+
+**What it is**
+
+GitHub's official MCP server connects AI tools directly to GitHub for repository browsing, code access, issues, pull requests, workflows, releases, and other platform data.
+
+**Why we want it here**
+
+- Inspect PRs, issues, and workflow runs without leaving the coding flow
+- Work with remote repository state that local git history does not fully cover
+- Support review and triage tasks that need live GitHub context
+
+**Project choice**
+
+- We use GitHub's hosted remote server
+- Cursor, Claude Code, and Codex reference a per-user `GITHUB_PAT`
+- In Claude Code, the shared `.mcp.json` uses `${GITHUB_PAT:-}` so a missing PAT does not break the rest of the project-scoped config
+
+**Official docs**
+
+- [GitHub MCP Server repository](https://github.com/github/github-mcp-server)
+- [Host integration and auth](https://github.com/github/github-mcp-server/blob/main/docs/host-integration.md)
+- [Extend GitHub Copilot coding agent with MCP](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp)
+
+**Client setup links**
+
+- Cursor: [GitHub MCP Cursor guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-cursor.md)
+- Claude Code: [Anthropic Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp) plus [GitHub MCP Claude Code guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md)
+- Codex: [GitHub MCP Codex guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-codex.md)
+
+## Shared Config Files In This Repo
+
+### `.cursor/mcp.json`
+
+- Provides project-scoped config for Cursor
+- Uses `figma-desktop`, `context7`, and `github`
+- Uses `${env:GITHUB_PAT}` for GitHub auth
+
+### `.mcp.json`
+
+- Provides project-scoped config for Claude Code
+- Uses explicit `type: "http"` entries, matching Claude Code's current project config format
+- Uses the hosted GitHub MCP URL with an `Authorization` header built from `${GITHUB_PAT:-}`
+- The `:-` default avoids breaking `.mcp.json` parsing when `GITHUB_PAT` is unset
+- If `GITHUB_PAT` is not set, GitHub may appear as `Failed to connect` in Claude Code while Figma and Context7 still load
+
+### `.codex/config.toml`
+
+- Provides project-scoped config for Codex
+- Applies in trusted projects
+- Uses `figma-desktop`, `context7`, and `github`
+- Uses the Context7 OAuth endpoint
+- Before authenticating Context7, run `codex mcp get context7` in this repo and confirm it resolves to `https://mcp.context7.com/mcp/oauth`
+- If `codex mcp get context7` resolves to `https://mcp.context7.com/mcp`, Codex is still using a user-level Context7 server and the project config is not active yet
+- Once the project config is active, authenticate Context7 with `codex mcp login context7`
+- Uses `bearer_token_env_var = "GITHUB_PAT"` for GitHub auth
+
+## Verification Checklist
+
+After pulling the repo config, each developer should verify:
+
+1. **Figma**: the desktop app is running and the desktop MCP server is enabled in Dev Mode
+2. **Context7**: in Codex, open and trust this repo, run `codex mcp get context7`, confirm the URL is `https://mcp.context7.com/mcp/oauth`, then run `codex mcp login context7`; in other clients, authenticate after the OAuth endpoint appears
+3. **GitHub**: `GITHUB_PAT` is available in Cursor, Claude Code, and Codex
+4. **Cursor**: the servers appear in the MCP settings and show as connected
+5. **Claude Code**: run `claude mcp list`; if GitHub shows `Failed to connect`, confirm `GITHUB_PAT` is set in the Claude Code environment
+6. **Codex**: start Codex in this repository, verify the project-scoped MCP servers are available from MCP settings, and confirm Context7 is logged in against the project-scoped `/oauth` server
+
+## Sources
+
+Only official vendor documentation and official repositories were used.
+
+- Figma: [Introduction](https://developers.figma.com/docs/figma-mcp-server/)
+- Figma: [Desktop server installation](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/)
+- Figma: [Plans, access, and permissions](https://developers.figma.com/docs/figma-mcp-server/plans-access-and-permissions/)
+- Figma: [MCP Catalog](https://www.figma.com/mcp-catalog/)
+- Context7: [Overview](https://context7.com/docs/overview)
+- Context7: [Installation](https://context7.com/docs/installation)
+- Context7: [Cursor setup](https://context7.com/docs/clients/cursor)
+- Context7: [Claude Code setup](https://context7.com/docs/clients/claude-code)
+- Context7: [OAuth](https://context7.com/docs/howto/oauth)
+- Context7: [All clients](https://context7.com/docs/resources/all-clients)
+- Context7: [Adding libraries](https://context7.com/docs/adding-libraries)
+- Cursor: [Model Context Protocol docs](https://docs.cursor.com/context/model-context-protocol)
+- Anthropic: [Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp)
+- OpenAI: [Codex MCP docs](https://developers.openai.com/codex/mcp)
+- GitHub: [GitHub MCP Server repository](https://github.com/github/github-mcp-server)
+- GitHub: [Host integration and auth](https://github.com/github/github-mcp-server/blob/main/docs/host-integration.md)
+- GitHub: [Cursor installation guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-cursor.md)
+- GitHub: [Claude Code installation guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md)
+- GitHub: [Codex installation guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-codex.md)
+- GitHub Docs: [Extend GitHub Copilot coding agent with MCP](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp)
