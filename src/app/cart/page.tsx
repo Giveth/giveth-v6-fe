@@ -20,6 +20,7 @@ export default function CartPage() {
     cartItems,
     givethPercentage,
     showMissingAmountErrors,
+    removeFromCart,
     updateProjectDonation,
     updateSelectedChainId,
     updateSelectedToken,
@@ -111,7 +112,34 @@ export default function CartPage() {
     updateSelectedToken,
   ])
 
-  const handleApplyAAAmountToAll = () => {
+  // Remove projects from the cart if they are in inactive rounds
+  // This is to prevent users from adding projects to the cart that are not active
+  useEffect(() => {
+    if (isLoading || error || !activeRoundsData) return
+    if (cartItems.length === 0) return
+
+    const activeRoundIds = new Set(
+      (activeRoundsData.activeQfRounds || [])
+        .map(round => Number(round.id))
+        .filter(roundId => Number.isFinite(roundId)),
+    )
+
+    const projectsInInactiveRounds = cartItems.filter(item => {
+      if (item.roundId == null || item.roundId <= 0) return false
+      return !activeRoundIds.has(item.roundId)
+    })
+
+    if (projectsInInactiveRounds.length === 0) return
+
+    projectsInInactiveRounds.forEach(project => {
+      if (project.roundId != null) {
+        removeFromCart(project.roundId, project.id)
+      }
+    })
+  }, [activeRoundsData, cartItems, error, isLoading, removeFromCart])
+
+  // Apply the amount to all projects in the cart
+  const handleApplyAmountToAll = () => {
     const normalizedAmount = normalizeDecimalInput(aaAmountToDonate) || '0'
     setAaAmountToDonate(normalizedAmount)
 
@@ -188,7 +216,7 @@ export default function CartPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={handleApplyAAAmountToAll}
+                      onClick={handleApplyAmountToAll}
                       className="ml-1 text-base font-medium text-giv-brand-500 hover:text-giv-brand-700 transition-colors cursor-pointer"
                     >
                       Apply to all
