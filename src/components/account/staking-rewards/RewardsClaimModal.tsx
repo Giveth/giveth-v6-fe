@@ -111,13 +111,17 @@ export default function RewardsClaimModal({
         style={{
           position: 'fixed',
           top: 0,
+          bottom: 0,
           right: 0,
           left: 'auto',
           transform: 'none',
+          height: '100dvh',
+          paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
         }}
         className={clsx(
-          'z-50 h-screen w-[90vw]! md:w-[750px]! md:max-w-[750px]!',
-          'bg-white py-10! px-8!',
+          'z-50 w-[90vw]! md:w-[750px]! md:max-w-[750px]!',
+          'bg-white pt-10! px-8!',
+          'flex flex-col overflow-hidden',
           'rounded-none! md:rounded-l-2xl! rounded-r-none!',
         )}
       >
@@ -133,7 +137,7 @@ export default function RewardsClaimModal({
           </Dialog.Close>
         </div>
 
-        <div className="mt-6 flex h-[calc(100%-48px)] flex-col">
+        <div className="pt-6 flex min-h-0 flex-1 flex-col overflow-y-auto">
           {!claimTxHash && (
             <>
               <div className="rounded-xl border border-giv-brand-100 p-6 mb-6">
