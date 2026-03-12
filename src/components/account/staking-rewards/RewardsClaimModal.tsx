@@ -133,7 +133,7 @@ export default function RewardsClaimModal({
           </Dialog.Close>
         </div>
 
-        <div className="mt-6 flex h-[calc(100%-100px)] sm:h-[calc(100%-48px)] flex-col">
+        <div className="mt-6 flex h-[calc(100%-100px)] md:h-[calc(100%-48px)] flex-col">
           {!claimTxHash && (
             <>
               <div className="rounded-xl border border-giv-brand-100 p-6 mb-6">
