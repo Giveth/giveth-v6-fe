@@ -1,11 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useUpcomingQfRounds } from '@/hooks/useUpcomingQfRounds'
+import { useQfRounds } from '@/hooks/useUpcomingQfRounds'
 import { CHAINS } from '@/lib/constants/chain'
 import { env } from '@/lib/env'
 import { parseGivethProjectRef } from '@/lib/helpers/qfApplicationGate'
@@ -53,6 +53,12 @@ function getNetworkName(networkId: number): string {
   return CHAINS[networkId]?.name || `Network ${networkId}`
 }
 
+function toTimestamp(value?: string | null): number | null {
+  if (!value) return null
+  const timestamp = new Date(value).getTime()
+  return Number.isFinite(timestamp) ? timestamp : null
+}
+
 export default function QfApplyGatePageClient({
   initialProject,
   initialRoundId,
@@ -86,29 +92,81 @@ export default function QfApplyGatePageClient({
     data: roundsData,
     isLoading: isRoundsLoading,
     error: roundsError,
-  } = useUpcomingQfRounds()
+  } = useQfRounds()
+
   const rounds = roundsData?.qfRounds?.rounds || []
 
+  const { activeRounds, upcomingRounds, roundOptions } = useMemo(() => {
+    const now = Date.now()
+    const active = []
+    const upcoming = []
+
+    for (const round of rounds) {
+      const begin = toTimestamp(round.beginDate)
+      const end = toTimestamp(round.endDate)
+      if (begin === null || end === null) continue
+
+      if (begin <= now && now <= end) {
+        active.push(round)
+      } else if (begin > now) {
+        upcoming.push(round)
+      }
+    }
+
+    active.sort(
+      (a, b) =>
+        (toTimestamp(a.endDate) ?? Number.POSITIVE_INFINITY) -
+        (toTimestamp(b.endDate) ?? Number.POSITIVE_INFINITY),
+    )
+    upcoming.sort(
+      (a, b) =>
+        (toTimestamp(a.beginDate) ?? Number.POSITIVE_INFINITY) -
+        (toTimestamp(b.beginDate) ?? Number.POSITIVE_INFINITY),
+    )
+
+    return {
+      activeRounds: active,
+      upcomingRounds: upcoming,
+      roundOptions: [...active, ...upcoming],
+    }
+  }, [rounds])
+
+  const activeRoundIds = useMemo(
+    () => new Set(activeRounds.map(round => String(round.id))),
+    [activeRounds],
+  )
+
   const initialSelectedRoundId = useMemo(() => {
-    if (initialRoundId) return String(initialRoundId)
+    if (
+      initialRoundId &&
+      roundOptions.some(round => String(round.id) === String(initialRoundId))
+    ) {
+      return String(initialRoundId)
+    }
     if (initialRoundSlug) {
-      const match = rounds.find(r => r.slug === initialRoundSlug)
+      const match = roundOptions.find(r => r.slug === initialRoundSlug)
       if (match) return String(match.id)
     }
-    return rounds.length === 1 ? String(rounds[0].id) : ''
-  }, [initialRoundId, initialRoundSlug, rounds])
+    return roundOptions.length === 1 ? String(roundOptions[0].id) : ''
+  }, [initialRoundId, initialRoundSlug, roundOptions])
 
   const [projectInput, setProjectInput] = useState(initialProject || '')
   const [roundId, setRoundId] = useState<string>(initialSelectedRoundId)
   const [uiError, setUiError] = useState<string | null>(null)
   const [result, setResult] = useState<GateResult | null>(null)
 
+  useEffect(() => {
+    if (!roundId && initialSelectedRoundId) {
+      setRoundId(initialSelectedRoundId)
+    }
+  }, [initialSelectedRoundId, roundId])
+
   const gateMut = useMutation({
     mutationFn: async () => {
       setUiError(null)
       setResult(null)
 
-      const selectedRound = rounds.find(r => String(r.id) === roundId)
+      const selectedRound = roundOptions.find(r => String(r.id) === roundId)
       if (!selectedRound) {
         throw new Error('Please select a QF round.')
       }
@@ -210,9 +268,7 @@ export default function QfApplyGatePageClient({
     },
   })
 
-  const roundOptions = useMemo(() => rounds, [rounds])
-
-  const noUpcomingRounds =
+  const noOpenOrUpcomingRounds =
     !isRoundsLoading && !roundsError && (roundOptions?.length || 0) === 0
 
   return (
@@ -261,13 +317,15 @@ export default function QfApplyGatePageClient({
                   <option value="">
                     {isRoundsLoading
                       ? 'Loading rounds…'
-                      : noUpcomingRounds
-                        ? 'No upcoming rounds'
+                      : noOpenOrUpcomingRounds
+                        ? 'No active/upcoming rounds'
                         : 'Select a round'}
                   </option>
                   {roundOptions.map(r => (
                     <option key={r.id} value={String(r.id)}>
-                      {r.name}
+                      {activeRoundIds.has(String(r.id))
+                        ? `${r.name} (Active)`
+                        : `${r.name} (Upcoming)`}
                     </option>
                   ))}
                 </select>
@@ -277,9 +335,16 @@ export default function QfApplyGatePageClient({
                   Failed to load rounds: {getReadableErrorMessage(roundsError)}
                 </p>
               )}
-              {noUpcomingRounds && (
+              {noOpenOrUpcomingRounds && (
                 <p className="mt-2 text-sm text-giv-neutral-700">
-                  There are currently no QF rounds accepting applications.
+                  There are currently no active or upcoming QF rounds accepting
+                  applications.
+                </p>
+              )}
+              {!isRoundsLoading && !roundsError && (
+                <p className="mt-2 text-xs text-giv-neutral-500">
+                  Showing {activeRounds.length} active and{' '}
+                  {upcomingRounds.length} upcoming round(s).
                 </p>
               )}
             </div>
@@ -287,7 +352,7 @@ export default function QfApplyGatePageClient({
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => gateMut.mutate()}
-                disabled={gateMut.isPending || noUpcomingRounds}
+                disabled={gateMut.isPending || noOpenOrUpcomingRounds}
               >
                 {gateMut.isPending && (
                   <Loader2 className="w-4 h-4 animate-spin" />
