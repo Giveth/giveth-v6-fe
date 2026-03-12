@@ -1,23 +1,54 @@
 import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
-import {
-  QfRoundStatusFilter,
-  type QfRoundsQuery,
-} from '@/lib/graphql/generated/graphql'
-import { qfRoundsQuery } from '@/lib/graphql/queries'
+import type { Maybe } from '@/lib/graphql/generated/graphql'
 
 /**
- * Upcoming QF rounds (beginDate in the future).
+ * QF rounds used by the apply gate.
+ * Returns all rounds and lets the UI decide which are active/upcoming by date.
  */
-export const useUpcomingQfRounds = () => {
-  return useQuery<QfRoundsQuery>({
-    queryKey: ['upcomingQfRounds'],
+const qfRoundsForApplyQuery = /* GraphQL */ `
+  query QfRoundsForApply($skip: Int = 0, $take: Int = 100) {
+    qfRounds(skip: $skip, take: $take) {
+      total
+      rounds {
+        id
+        name
+        slug
+        beginDate
+        endDate
+        eligibleNetworks
+        applicationTypeformUrl
+      }
+    }
+  }
+`
+
+type QfRoundsForApplyResponse = {
+  qfRounds?: {
+    total: number
+    rounds: Array<{
+      id: string
+      name: string
+      slug: string
+      beginDate: string
+      endDate: string
+      eligibleNetworks: number[]
+      applicationTypeformUrl?: Maybe<string>
+    }>
+  }
+}
+
+export const useQfRounds = () => {
+  return useQuery<QfRoundsForApplyResponse>({
+    queryKey: ['qfRoundsForApply'],
     queryFn: async () => {
-      return graphQLClient.request(qfRoundsQuery, {
-        skip: 0,
-        take: 50,
-        filters: { status: QfRoundStatusFilter.Upcoming },
-      })
+      return graphQLClient.request<QfRoundsForApplyResponse>(
+        qfRoundsForApplyQuery,
+        {
+          skip: 0,
+          take: 100,
+        },
+      )
     },
     staleTime: 1000 * 60 * 5,
   })
