@@ -67,6 +67,7 @@ interface CartContextType {
     isGivbackEligible?: boolean,
   ) => void
   removeFromCart: (roundId: number, projectId: string) => void
+  pruneInactiveRoundProjects: (activeRoundIds: number[]) => void
   clearCart: () => void
   isInCart: (projectId: string, roundId?: number) => boolean
   updateProjectDonation: (
@@ -246,6 +247,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
+  const pruneInactiveRoundProjects = useCallback((activeRoundIds: number[]) => {
+    const activeRoundIdSet = new Set(
+      activeRoundIds.filter(roundId => Number.isFinite(roundId)),
+    )
+
+    setCartItems(prev => {
+      const filtered = prev.filter(item => {
+        if (item.roundId == null || item.roundId <= 0) return true
+        return activeRoundIdSet.has(item.roundId)
+      })
+
+      return filtered.length === prev.length ? prev : filtered
+    })
+  }, [])
+
   const clearCart = () => {
     setCartItems([])
   }
@@ -313,6 +329,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateSelectedChainId,
         updateSelectedToken,
         removeFromCart,
+        pruneInactiveRoundProjects,
         clearCart,
         isInCart,
         updateProjectDonation,
