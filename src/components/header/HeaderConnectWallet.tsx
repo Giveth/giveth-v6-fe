@@ -33,6 +33,7 @@ import { useAAWalletStore } from '@/store/aa-wallet'
 export function HeaderConnectWallet() {
   const account = useActiveAccount()
   const wallet = useActiveWallet()
+  const isSafeWallet = wallet?.id === 'global.safe'
   const chain = useActiveWalletChain()
   const connectionStatus = useActiveWalletConnectionStatus()
   const [isOpen, setIsOpen] = useState(false)
@@ -259,13 +260,15 @@ export function HeaderConnectWallet() {
                 {supportLink.label}
               </Link>
 
-              <button
-                onClick={handleDisconnect}
-                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Disconnect
-              </button>
+              {!isSafeWallet && (
+                <button
+                  onClick={handleDisconnect}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Disconnect
+                </button>
+              )}
             </div>
           )}
         </div>
