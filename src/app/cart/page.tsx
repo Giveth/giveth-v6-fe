@@ -27,7 +27,7 @@ export default function CartPage() {
     cartItems,
     givethPercentage,
     showMissingAmountErrors,
-    removeFromCart,
+    pruneInactiveRoundProjects,
     updateProjectDonation,
     updateSelectedChainId,
     updateSelectedToken,
@@ -143,24 +143,14 @@ export default function CartPage() {
     if (isLoading || error || !activeRoundsData) return
     if (cartItems.length === 0) return
 
-    const projectsInInactiveRounds = cartItems.filter(item => {
-      return isInactiveQfRoundItem(item.roundId, activeRoundIds)
-    })
-
-    if (projectsInInactiveRounds.length === 0) return
-
-    projectsInInactiveRounds.forEach(project => {
-      if (project.roundId != null) {
-        removeFromCart(project.roundId, project.id)
-      }
-    })
+    pruneInactiveRoundProjects(Array.from(activeRoundIds))
   }, [
     activeRoundIds,
     activeRoundsData,
     cartItems,
     error,
     isLoading,
-    removeFromCart,
+    pruneInactiveRoundProjects,
   ])
 
   // Apply the amount to all projects in the cart
