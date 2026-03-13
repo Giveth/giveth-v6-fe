@@ -189,7 +189,7 @@ After pulling the repo config, each developer should verify:
 
 ## Sources
 
-Only official vendor documentation and official repositories were used.
+Official vendor documentation and official repositories were used, and local CLI verification was performed where client behavior needed confirmation.
 
 - Figma: [Introduction](https://developers.figma.com/docs/figma-mcp-server/)
 - Figma: [Desktop server installation](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/)
