@@ -38,6 +38,7 @@ const baseWallets: Wallet[] = [
   createWallet('io.metamask'),
   createWallet('com.trustwallet.app'),
   createWallet('com.coinbase.wallet'),
+  createWallet('global.safe'),
 ]
 
 export const primaryWallets = baseWallets
