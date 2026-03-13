@@ -176,6 +176,48 @@ GitHub's official MCP server connects AI tools directly to GitHub for repository
 - Once the project config is active, authenticate Context7 with `codex mcp login context7`
 - Uses `bearer_token_env_var = "GIVETH_GITHUB_MCP_PAT"` for GitHub auth
 
+## Setting Up `GIVETH_GITHUB_MCP_PAT` for Terminal and Desktop Apps
+
+On macOS, GUI apps (Claude, Codex, Cursor) do **not** read shell config files like `~/.zshenv`. You need to set the env var in two places.
+
+### 1. Terminal apps (shell)
+
+Add this to `~/.zshenv`:
+
+```bash
+export GIVETH_GITHUB_MCP_PAT='github_pat_YOUR_TOKEN_HERE'
+```
+
+This covers Claude Code CLI and any terminal-based tool.
+
+### 2. Desktop / GUI apps (launchctl)
+
+macOS GUI apps inherit environment from `launchd`, not from your shell. To make the variable visible to Claude, Codex, and Cursor desktop apps, add this line to `~/.zshenv` **after** the export:
+
+```bash
+launchctl setenv GIVETH_GITHUB_MCP_PAT "$GIVETH_GITHUB_MCP_PAT"
+```
+
+Your `~/.zshenv` should look like:
+
+```bash
+export GIVETH_GITHUB_MCP_PAT='github_pat_YOUR_TOKEN_HERE'
+launchctl setenv GIVETH_GITHUB_MCP_PAT "$GIVETH_GITHUB_MCP_PAT"
+```
+
+### Verifying
+
+- **Terminal**: `echo $GIVETH_GITHUB_MCP_PAT`
+- **GUI apps**: `launchctl getenv GIVETH_GITHUB_MCP_PAT`
+
+Both should print your token.
+
+### Important notes
+
+- `launchctl setenv` does **not** persist across reboots on its own — that's why you put it in `~/.zshenv`, so it re-runs on every login shell start.
+- After setting or changing the value, **restart** any already-running desktop apps (Claude, Codex, Cursor) for them to pick up the new value.
+- Do **not** wrap the token in `$(echo ...)` — pass it as a plain string or use `"$VARIABLE"` expansion.
+
 ## Verification Checklist
 
 After pulling the repo config, each developer should verify:
