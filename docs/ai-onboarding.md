@@ -212,11 +212,51 @@ launchctl setenv GIVETH_GITHUB_MCP_PAT "$GIVETH_GITHUB_MCP_PAT"
 
 Both should print your token.
 
+### Caveat: GUI apps opened before any terminal
+
+The `~/.zshenv` approach only runs `launchctl setenv` when a **zsh shell process starts**. If you reboot and open Claude, Codex, or Cursor **before** opening a terminal, no shell has run yet, so the variable won't be set for those apps.
+
+For most developers this is fine — opening a terminal is usually one of the first things you do. But if you want the variable available to GUI apps **unconditionally at login** (even without opening a terminal first), use a **LaunchAgent plist** instead.
+
+### Alternative: LaunchAgent plist (guaranteed at login)
+
+Create `~/Library/LaunchAgents/com.giveth.github-pat.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.giveth.github-pat</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/launchctl</string>
+    <string>setenv</string>
+    <string>GIVETH_GITHUB_MCP_PAT</string>
+    <string>github_pat_YOUR_TOKEN_HERE</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
+```
+
+Then load it (or log out and back in):
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.giveth.github-pat.plist
+```
+
+This runs at every login, before any GUI app starts, so the variable is always available. Note that the plist contains the **raw token value** (not a shell variable reference) because it runs outside of any shell context.
+
 ### Important notes
 
-- `launchctl setenv` does **not** persist across reboots on its own — that's why you put it in `~/.zshenv`, so it re-runs on every login shell start.
-- After setting or changing the value, **restart** any already-running desktop apps (Claude, Codex, Cursor) for them to pick up the new value.
+- **After changing the token in `~/.zshenv`**: open a new terminal (so the new export and `launchctl setenv` run), then restart any already-running desktop apps.
+- **After changing the token in the plist**: you must reload the agent (`launchctl unload` then `launchctl load` the plist, or log out and back in) before restarting desktop apps — simply restarting the apps is not enough, because `launchd` still has the old value until the plist is reloaded.
 - Do **not** wrap the token in `$(echo ...)` — pass it as a plain string or use `"$VARIABLE"` expansion.
+- The plist file is local to your machine and should **not** be committed to version control.
 
 ## Verification Checklist
 
