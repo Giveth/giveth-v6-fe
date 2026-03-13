@@ -251,7 +251,7 @@ export function formatNumberWithTinyValueLabel(
 
   if (!Number.isFinite(num)) return '0'
 
-  const tinyThreshold = 1 / 10 ** maxDecimals
+  const tinyThreshold = 0.5 * 10 ** -maxDecimals
   if (num > 0 && num < tinyThreshold) {
     const zeroLabel = formatNumber(0, {
       minDecimals,
