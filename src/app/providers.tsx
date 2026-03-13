@@ -61,7 +61,7 @@ function ThirdwebAutoConnect() {
     void connect(async () => {
       if (discoveredSafeProvider) {
         const safeWallet = createWallet('global.safe')
-        await safeWallet.connect({
+        await safeWallet.autoConnect({
           client: thirdwebClient,
         })
         return safeWallet
@@ -84,7 +84,7 @@ function ThirdwebAutoConnect() {
           provider: safeProvider as unknown as EIP1193.EIP1193Provider,
           walletId: 'global.safe',
         })
-        await safeWallet.connect({
+        await safeWallet.autoConnect({
           client: thirdwebClient,
         })
         return safeWallet
