@@ -2,6 +2,8 @@
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { Theme } from '@radix-ui/themes'
+import { SafeAppProvider } from '@safe-global/safe-apps-provider'
+import SafeAppsSDK from '@safe-global/safe-apps-sdk'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
@@ -51,27 +53,37 @@ function ThirdwebAutoConnect() {
     const isSafeContext =
       inIframe || hasSafeUrlHint || hasSafeReferrer || hasSafeAncestor
     const discoveredSafeProvider = injectedProvider('global.safe')
-    const fallbackProvider = (window as Window & { ethereum?: unknown })
-      .ethereum
 
     if (!discoveredSafeProvider && !isSafeContext) return
 
     hasTriedSafeAutoConnect.current = true
 
     void connect(async () => {
-      if (fallbackProvider && isSafeContext) {
-        const safeWallet = EIP1193.fromProvider({
-          provider: fallbackProvider as EIP1193.EIP1193Provider,
-          walletId: 'global.safe',
-        })
+      if (discoveredSafeProvider) {
+        const safeWallet = createWallet('global.safe')
         await safeWallet.connect({
           client: thirdwebClient,
         })
         return safeWallet
       }
 
-      if (discoveredSafeProvider) {
-        const safeWallet = createWallet('global.safe')
+      if (isSafeContext) {
+        const sdk = new SafeAppsSDK()
+        const safeInfo = await Promise.race([
+          sdk.safe.getInfo().catch(() => null),
+          new Promise<null>(resolve => {
+            window.setTimeout(() => resolve(null), 1500)
+          }),
+        ])
+        if (!safeInfo) {
+          throw new Error('Safe SDK provider not available')
+        }
+
+        const safeProvider = new SafeAppProvider(safeInfo, sdk)
+        const safeWallet = EIP1193.fromProvider({
+          provider: safeProvider as unknown as EIP1193.EIP1193Provider,
+          walletId: 'global.safe',
+        })
         await safeWallet.connect({
           client: thirdwebClient,
         })
