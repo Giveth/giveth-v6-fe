@@ -11,7 +11,7 @@ import {
   useConnect,
   useIsAutoConnecting,
 } from 'thirdweb/react'
-import { createWallet, injectedProvider } from 'thirdweb/wallets'
+import { EIP1193, createWallet, injectedProvider } from 'thirdweb/wallets'
 import { AuthProvider } from '@/context/AuthContext'
 import { useThemeSync } from '@/hooks/use-theme-sync'
 import { env } from '@/lib/env'
@@ -41,17 +41,44 @@ function ThirdwebAutoConnect() {
     if (hasTriedSafeAutoConnect.current) return
     if (typeof window === 'undefined') return
     if (isAutoConnecting || connectionStatus !== 'disconnected') return
-    if (window.parent === window) return
-    if (!injectedProvider('global.safe')) return
+    const inIframe = window.parent !== window
+    const hasSafeUrlHint = new URLSearchParams(window.location.search).has(
+      'safe',
+    )
+    const hasSafeReferrer = document.referrer.includes('safe.global')
+    const hasSafeAncestor =
+      window.location.ancestorOrigins?.[0]?.includes('safe.global') ?? false
+    const isSafeContext =
+      inIframe || hasSafeUrlHint || hasSafeReferrer || hasSafeAncestor
+    const discoveredSafeProvider = injectedProvider('global.safe')
+    const fallbackProvider = (window as Window & { ethereum?: unknown })
+      .ethereum
+
+    if (!discoveredSafeProvider && !isSafeContext) return
 
     hasTriedSafeAutoConnect.current = true
 
     void connect(async () => {
-      const safeWallet = createWallet('global.safe')
-      await safeWallet.connect({
-        client: thirdwebClient,
-      })
-      return safeWallet
+      if (fallbackProvider && isSafeContext) {
+        const safeWallet = EIP1193.fromProvider({
+          provider: fallbackProvider as EIP1193.EIP1193Provider,
+          walletId: 'global.safe',
+        })
+        await safeWallet.connect({
+          client: thirdwebClient,
+        })
+        return safeWallet
+      }
+
+      if (discoveredSafeProvider) {
+        const safeWallet = createWallet('global.safe')
+        await safeWallet.connect({
+          client: thirdwebClient,
+        })
+        return safeWallet
+      }
+
+      throw new Error('Safe provider not available for auto-connect')
     }).catch(() => {
       // Silently ignore failed Safe auto-connect and keep manual connect available.
     })
