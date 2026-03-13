@@ -47,6 +47,23 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Adding CORS headers for /manifest.json, this is needed for the web app manifest to work
+        // This is a workaround to allow the web app manifest to work in the browser
+        source: '/manifest.json',
+        locale: false,
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          { key: 'Access-Control-Allow-Methods', value: 'GET' },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-Requested-With, content-type, Authorization',
+          },
+        ],
+      },
+      {
         source: '/:all*(svg|jpg|jpeg|png|gif|webp|avif)',
         headers: [
           {
