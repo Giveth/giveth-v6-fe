@@ -41,8 +41,8 @@ For Codex, open this repository as a trusted project before running project-spec
 ### GitHub MCP
 
 - This repo uses GitHub's hosted remote MCP server.
-- **Cursor**, **Claude Code**, and **Codex** use a per-user `GITHUB_PAT`.
-- In Claude Code, if `GITHUB_PAT` is missing, GitHub may show `Failed to connect` or return `401` while the other project MCP servers still load.
+- **Cursor**, **Claude Code**, and **Codex** use a per-user `GIVETH_GITHUB_MCP_PAT`.
+- In Claude Code, if `GIVETH_GITHUB_MCP_PAT` is missing, GitHub may show `Failed to connect` or return `401` while the other project MCP servers still load.
 - We do **not** share one PAT across the team.
 - Access stays tied to the developer's own GitHub identity and token scopes.
 
@@ -134,8 +134,8 @@ GitHub's official MCP server connects AI tools directly to GitHub for repository
 **Project choice**
 
 - We use GitHub's hosted remote server
-- Cursor, Claude Code, and Codex reference a per-user `GITHUB_PAT`
-- In Claude Code, the shared `.mcp.json` uses `${GITHUB_PAT:-}` so a missing PAT does not break the rest of the project-scoped config
+- Cursor, Claude Code, and Codex reference a per-user `GIVETH_GITHUB_MCP_PAT`
+- In Claude Code, the shared `.mcp.json` uses `${GIVETH_GITHUB_MCP_PAT:-}` so a missing PAT does not break the rest of the project-scoped config
 
 **Official docs**
 
@@ -155,15 +155,15 @@ GitHub's official MCP server connects AI tools directly to GitHub for repository
 
 - Provides project-scoped config for Cursor
 - Uses `figma-desktop`, `context7`, and `github`
-- Uses `${env:GITHUB_PAT}` for GitHub auth
+- Uses `${env:GIVETH_GITHUB_MCP_PAT}` for GitHub auth
 
 ### `.mcp.json`
 
 - Provides project-scoped config for Claude Code
 - Uses explicit `type: "http"` entries, matching Claude Code's current project config format
-- Uses the hosted GitHub MCP URL with an `Authorization` header built from `${GITHUB_PAT:-}`
-- The `:-` default avoids breaking `.mcp.json` parsing when `GITHUB_PAT` is unset
-- If `GITHUB_PAT` is not set, GitHub may appear as `Failed to connect` in Claude Code while Figma and Context7 still load
+- Uses the hosted GitHub MCP URL with an `Authorization` header built from `${GIVETH_GITHUB_MCP_PAT:-}`
+- The `:-` default avoids breaking `.mcp.json` parsing when `GIVETH_GITHUB_MCP_PAT` is unset
+- If `GIVETH_GITHUB_MCP_PAT` is not set, GitHub may appear as `Failed to connect` in Claude Code while Figma and Context7 still load
 
 ### `.codex/config.toml`
 
@@ -174,7 +174,7 @@ GitHub's official MCP server connects AI tools directly to GitHub for repository
 - Before authenticating Context7, run `codex mcp get context7` in this repo and confirm it resolves to `https://mcp.context7.com/mcp/oauth`
 - If `codex mcp get context7` resolves to `https://mcp.context7.com/mcp`, Codex is still using a user-level Context7 server and the project config is not active yet
 - Once the project config is active, authenticate Context7 with `codex mcp login context7`
-- Uses `bearer_token_env_var = "GITHUB_PAT"` for GitHub auth
+- Uses `bearer_token_env_var = "GIVETH_GITHUB_MCP_PAT"` for GitHub auth
 
 ## Verification Checklist
 
@@ -182,9 +182,9 @@ After pulling the repo config, each developer should verify:
 
 1. **Figma**: the desktop app is running and the desktop MCP server is enabled in Dev Mode
 2. **Context7**: in Codex, open and trust this repo, run `codex mcp get context7`, confirm the URL is `https://mcp.context7.com/mcp/oauth`, then run `codex mcp login context7`; in other clients, authenticate after the OAuth endpoint appears
-3. **GitHub**: `GITHUB_PAT` is available in Cursor, Claude Code, and Codex
+3. **GitHub**: `GIVETH_GITHUB_MCP_PAT` is available in Cursor, Claude Code, and Codex
 4. **Cursor**: the servers appear in the MCP settings and show as connected
-5. **Claude Code**: run `claude mcp list`; if GitHub shows `Failed to connect`, confirm `GITHUB_PAT` is set in the Claude Code environment
+5. **Claude Code**: run `claude mcp list`; if GitHub shows `Failed to connect`, confirm `GIVETH_GITHUB_MCP_PAT` is set in the Claude Code environment
 6. **Codex**: start Codex in this repository, verify the project-scoped MCP servers are available from MCP settings, and confirm Context7 is logged in against the project-scoped `/oauth` server
 
 ## Sources
