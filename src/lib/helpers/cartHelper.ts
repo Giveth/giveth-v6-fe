@@ -191,6 +191,15 @@ export async function getTokensByChainId(
   return res.tokensByNetwork
 }
 
+/**
+ * Format a number to a human readable string
+ *
+ * @param value - The value to format
+ * @param minDecimals - The minimum number of decimals to display
+ * @param maxDecimals - The maximum number of decimals to display
+ * @param locale - The locale to use for formatting
+ * @returns The formatted number
+ */
 export function formatNumber(
   value: string | number,
   {
@@ -210,6 +219,52 @@ export function formatNumber(
   return num.toLocaleString(locale, {
     minimumFractionDigits: minDecimals,
     maximumFractionDigits: maxDecimals,
+  })
+}
+
+/**
+ * Formats tiny positive values using a less-than label
+ * to avoid displaying rounded "0.00" for non-zero balances.
+ *
+ * @param value - The value to format
+ * @param minDecimals - The minimum number of decimals to display
+ * @param maxDecimals - The maximum number of decimals to display
+ * @param locale - The locale to use for formatting
+ * @returns The formatted number
+ *
+ * @example
+ * formatNumberWithTinyValueLabel('0.004', { minDecimals: 2, maxDecimals: 2 }) // "<0.00"
+ */
+export function formatNumberWithTinyValueLabel(
+  value: string | number,
+  {
+    minDecimals = 2,
+    maxDecimals = 2,
+    locale,
+  }: {
+    minDecimals?: number
+    maxDecimals?: number
+    locale?: string
+  } = {},
+) {
+  const num = Number(value)
+
+  if (!Number.isFinite(num)) return '0'
+
+  const tinyThreshold = 1 / 10 ** maxDecimals
+  if (num > 0 && num < tinyThreshold) {
+    const zeroLabel = formatNumber(0, {
+      minDecimals,
+      maxDecimals,
+      locale,
+    })
+    return `<${zeroLabel}`
+  }
+
+  return formatNumber(num, {
+    minDecimals,
+    maxDecimals,
+    locale,
   })
 }
 

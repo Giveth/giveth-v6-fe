@@ -8,7 +8,7 @@ import { useActiveAccount } from 'thirdweb/react'
 import { TokenIcon } from '@/components/TokenIcon'
 import { useCart } from '@/context/CartContext'
 import {
-  formatNumber,
+  formatNumberWithTinyValueLabel,
   getPriceFromUniswapV2,
   getTokenPriceInUSDByCoingeckoId,
   useWalletTokens,
@@ -188,38 +188,47 @@ function TokenDropdownItems({
 
   return (
     <>
-      {filteredWalletTokens.map(t => (
-        <DropdownMenu.Item
-          key={t.address}
-          onSelect={() => {
-            onSelectToken(t)
-          }}
-          className="
-            cursor-pointer rounded-lg px-3 py-2 text-sm
-            text-giv-deep-blue-800 outline-none
-            hover:bg-giv-neutral-200
-            focus:bg-giv-neutral-200
-          "
-        >
-          <div className="flex items-center justify-start gap-4">
-            <TokenIcon
-              tokenSymbol={t.symbol}
-              networkId={t.chainId}
-              address={t.address as `0x${string}`}
-              height={20}
-              width={20}
-              isGivbackEligible={t.isGivbackEligible}
-            />
-            <span className="font-medium text-giv-neutral-900">{t.symbol}</span>
-            <span className="text-giv-neutral-700 tabular-nums ml-auto">
-              {formatNumber(t.formattedBalance, {
-                minDecimals: 2,
-                maxDecimals: 2,
-              })}
-            </span>
-          </div>
-        </DropdownMenu.Item>
-      ))}
+      {filteredWalletTokens.map(t => {
+        const balanceLabel = formatNumberWithTinyValueLabel(
+          t.formattedBalance,
+          {
+            minDecimals: 2,
+            maxDecimals: 2,
+          },
+        )
+
+        return (
+          <DropdownMenu.Item
+            key={t.address}
+            onSelect={() => {
+              onSelectToken(t)
+            }}
+            className="
+              cursor-pointer rounded-lg px-3 py-2 text-sm
+              text-giv-deep-blue-800 outline-none
+              hover:bg-giv-neutral-200
+              focus:bg-giv-neutral-200
+            "
+          >
+            <div className="flex items-center justify-start gap-4">
+              <TokenIcon
+                tokenSymbol={t.symbol}
+                networkId={t.chainId}
+                address={t.address as `0x${string}`}
+                height={20}
+                width={20}
+                isGivbackEligible={t.isGivbackEligible}
+              />
+              <span className="font-medium text-giv-neutral-900">
+                {t.symbol}
+              </span>
+              <span className="text-giv-neutral-700 tabular-nums ml-auto">
+                {balanceLabel}
+              </span>
+            </div>
+          </DropdownMenu.Item>
+        )
+      })}
     </>
   )
 }
