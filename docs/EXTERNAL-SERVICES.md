@@ -19,14 +19,14 @@ graph LR
 
 ## 1. giveth-v6-core — Primary Backend
 
-|            |                                                       |
-| ---------- | ----------------------------------------------------- |
-| Protocol   | GraphQL via `graphql-request`                         |
-| Env var    | `NEXT_PUBLIC_GRAPHQL_ENDPOINT`                        |
-| Production | `https://core.v6.giveth.io/graphql`                   |
-| Staging    | `https://core.v6-staging.giveth.io/graphql`           |
-| Local      | `http://localhost:4000/graphql`                       |
-| Auth       | `Authorization: Bearer {JWT}` (JWT from SIWE service) |
+|            |                                                                                                    |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| Protocol   | GraphQL via `graphql-request`                                                                      |
+| Env var    | `NEXT_PUBLIC_GRAPHQL_ENDPOINT`                                                                     |
+| Production | `https://core.v6.giveth.io/graphql`                                                                |
+| Staging    | `https://core.v6-staging.giveth.io/graphql`                                                        |
+| Local      | `http://localhost:4000/graphql`                                                                    |
+| Auth       | `Authorization: Bearer {token}` (core token from `verifySiweToken` mutation — see SIWE flow below) |
 
 Used for: projects, donations, users, QF rounds, categories, matching, staking, passport eligibility, project image uploads.
 
@@ -44,7 +44,7 @@ Used for: projects, donations, users, QF rounds, categories, matching, staking, 
 
 Used for: user-exists check by wallet, creating user records (sync during auth), QF Apply flow (project data by slug).
 
-Code: `src/lib/impact-graph/client.ts`, `src/lib/impact-graph/userSync.ts`.
+Code: `src/lib/impact-graph/client.ts`, `src/lib/impact-graph/userSync.ts`, `src/app/qf/apply/QfApplyGatePageClient.tsx`.
 
 > These calls should migrate to v6-core and be removed from the frontend when ready.
 
@@ -73,8 +73,10 @@ sequenceDiagram
   FE->>Wallet: Sign message (EIP-191)
   Wallet-->>FE: signature
   FE->>AUTH: POST /v1/authentication
-  AUTH-->>FE: JWT
-  FE->>v6-core: GraphQL with Bearer JWT
+  AUTH-->>FE: SIWE JWT
+  FE->>v6-core: verifySiweToken mutation (SIWE JWT)
+  v6-core-->>FE: core token + user
+  FE->>v6-core: subsequent requests with Bearer {core token}
 ```
 
 ---
@@ -87,7 +89,7 @@ Server-side only (`src/app/api/ai/create-project/route.ts`). Streams structured 
 | ------------- | ------------------------------------- |
 | Endpoint      | `POST {OPENAI_BASE_URL}/v1/responses` |
 | Default base  | `https://api.openai.com`              |
-| Default model | `gpt-4-mini`                          |
+| Default model | `gpt-5-mini`                          |
 | Auth          | `Bearer {OPENAI_API_KEY}`             |
 
 Server-only env vars: `OPENAI_API_KEY` (required), `OPENAI_MODEL`, `OPENAI_BASE_URL` (optional).
