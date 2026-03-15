@@ -43,3 +43,7 @@ next-env.d.ts
 # IDEs
 .idea
 .vscode
+
+# Codex local runtime artifacts
+/.codex/*
+!/.codex/config.toml
