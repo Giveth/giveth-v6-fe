@@ -51,3 +51,6 @@ pnpm codegen        # GraphQL artifacts via codegen.ts
 ## Environment & Security Tips
 - Copy `.env.example` to `.env.local` and fill required values before running locally.
 - Never commit API keys, wallet secrets, or private endpoints.
+
+## System Architecture Reference
+Only consult [docs/EXTERNAL-SERVICES.md](docs/EXTERNAL-SERVICES.md) when your task involves cross-service concerns — for example: backend API endpoints, authentication flows, or environment variable wiring. For routine frontend work (components, styling, hooks, tests) you do not need it.
