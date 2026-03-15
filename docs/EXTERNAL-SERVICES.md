@@ -13,6 +13,8 @@ graph LR
   FE -- "REST" --> SIWE["SIWE Auth Service"]
   FE -- "Thirdweb SDK · JSON-RPC" --> CHAINS["Blockchain RPCs +<br/>DonationHandler contracts"]
   FE -- "REST · server-side only" --> OPENAI["OpenAI API"]
+  FE -- "GraphQL · public" --> SUBGRAPH["The Graph<br/>Staking subgraphs"]
+  FE -- "REST · public" --> COINGECKO["CoinGecko API"]
 ```
 
 ---
@@ -83,7 +85,7 @@ sequenceDiagram
 
 ## 4. OpenAI API — AI Project Creation
 
-Server-side only (`src/app/api/ai/create-project/route.ts`). Streams structured JSON for form field extraction.
+Server-side only (`src/app/api/ai/create-project/route.ts`). Streams conversational text via SSE (`assistant_delta` events), then may make a second `/v1/responses` call with structured outputs to extract form field patches.
 
 |               |                                       |
 | ------------- | ------------------------------------- |
@@ -110,3 +112,31 @@ Handles wallet connection, ENS resolution, on-chain reads/writes (DonationHandle
 Supported chains and wallets are configured in code — see the files above rather than duplicating here.
 
 For donation contract integration details (addresses, EIP-5792/7702 flows, token lists, fallback logic), see [donation-handler-integration.md](./donation-handler-integration.md).
+
+---
+
+## 6. The Graph — Staking Subgraphs
+
+|          |                                                                                      |
+| -------- | ------------------------------------------------------------------------------------ |
+| Protocol | GraphQL via `fetch` (POST to subgraph URL)                                           |
+| URLs     | Hard-coded per chain in `src/lib/constants/staking-power-constants.tsx`              |
+| Auth     | Optional `Bearer {NEXT_PUBLIC_SUBGRAPH_API_KEY}` header (omitted if env var not set) |
+
+Used for: GIVpower staking data, token distribution balances, and reward stream info. Each chain (Optimism, Gnosis, Ethereum, Polygon zkEVM) has its own subgraph URL pointing to `gateway.thegraph.com` or `gateway-arbitrum.network.thegraph.com`.
+
+Code: `src/lib/helpers/stakeHelper.ts` (`querySubgraph` function).
+
+---
+
+## 7. CoinGecko API — Token Pricing
+
+|          |                                                 |
+| -------- | ----------------------------------------------- |
+| Protocol | REST via `fetch`                                |
+| Endpoint | `https://api.coingecko.com/api/v3/simple/price` |
+| Auth     | None (public, rate-limited)                     |
+
+Used for: fetching USD prices of tokens by their CoinGecko ID (e.g. for displaying donation values in the cart).
+
+Code: `src/lib/helpers/cartHelper.ts` (`getTokenPriceInUSDByCoingeckoId`).
