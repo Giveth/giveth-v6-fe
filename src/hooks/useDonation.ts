@@ -29,6 +29,7 @@ import {
   waitForBatchCalls,
   checkWalletCapabilities,
   type Call,
+  type Hex,
 } from '@/lib/web3/batch-transactions'
 
 export type DonationStatus =
@@ -210,14 +211,13 @@ export function useDonation(): UseDonationReturn {
           if (isSafeWallet || (provider && capabilities.supportsAtomicBatch)) {
             setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
-            const donationData = await encode(
+            const donationData = (await encode(
               donationTx as Parameters<typeof encode>[0],
-            )
+            )) as Hex
             const calls: Call[] = [
               {
                 to: donationHandlerAddress,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: donationData as any,
+                data: donationData,
                 value: details.amount,
               },
             ]
@@ -291,21 +291,23 @@ export function useDonation(): UseDonationReturn {
 
         // Try batch transaction first (Safe or EIP-5792-capable wallet).
         if (isSafeWallet || (provider && capabilities.supportsAtomicBatch)) {
+          let submittedBundleId: string | undefined
           try {
             setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
-            const approvalData = await encode(approvalTx)
+            const approvalData = (await encode(approvalTx)) as Hex
+            const donationData = (await encode(
+              donationTx as Parameters<typeof encode>[0],
+            )) as Hex
 
             const calls: Call[] = [
               {
                 to: details.tokenAddress,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: approvalData as any,
+                data: approvalData,
               },
               {
                 to: donationHandlerAddress,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: donationTx.data as any,
+                data: donationData,
               },
             ]
 
@@ -315,6 +317,7 @@ export function useDonation(): UseDonationReturn {
               chainId: details.chainId,
               isSafeWallet,
             })
+            submittedBundleId = bundleId
 
             setState(prev => ({
               ...prev,
@@ -341,6 +344,10 @@ export function useDonation(): UseDonationReturn {
             }
             throw new Error('Batch transaction failed')
           } catch (batchError) {
+            if (submittedBundleId) {
+              // Batch was already submitted. Do not fallback to sequential and risk double-send.
+              throw batchError
+            }
             if (isSafeWallet) throw batchError
             console.warn(
               'Batch path failed for non-Safe wallet. Falling back to sequential transactions.',
@@ -454,14 +461,13 @@ export function useDonation(): UseDonationReturn {
           if (isSafeWallet || (provider && capabilities.supportsAtomicBatch)) {
             setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
-            const donationData = await encode(
+            const donationData = (await encode(
               batchDonationTx as Parameters<typeof encode>[0],
-            )
+            )) as Hex
             const calls: Call[] = [
               {
                 to: donationHandlerAddress,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: donationData as any,
+                data: donationData,
                 value: details.totalAmount,
               },
             ]
@@ -545,22 +551,21 @@ export function useDonation(): UseDonationReturn {
 
         // Try batch transaction first (Safe or EIP-5792-capable wallet).
         if (isSafeWallet || (provider && capabilities.supportsAtomicBatch)) {
+          let submittedBundleId: string | undefined
           try {
             setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
-            const approvalData = await encode(approvalTx)
-            const donationData = await encode(batchDonationTx)
+            const approvalData = (await encode(approvalTx)) as Hex
+            const donationData = (await encode(batchDonationTx)) as Hex
 
             const calls: Call[] = [
               {
                 to: details.tokenAddress,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: approvalData as any,
+                data: approvalData,
               },
               {
                 to: donationHandlerAddress,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: donationData as any,
+                data: donationData,
               },
             ]
 
@@ -570,6 +575,7 @@ export function useDonation(): UseDonationReturn {
               chainId: details.chainId,
               isSafeWallet,
             })
+            submittedBundleId = bundleId
 
             setState(prev => ({
               ...prev,
@@ -596,6 +602,10 @@ export function useDonation(): UseDonationReturn {
             }
             throw new Error('Batch transaction failed')
           } catch (batchError) {
+            if (submittedBundleId) {
+              // Batch was already submitted. Do not fallback to sequential and risk double-send.
+              throw batchError
+            }
             if (isSafeWallet) throw batchError
             console.warn(
               'Batch path failed for non-Safe wallet. Falling back to sequential transactions.',

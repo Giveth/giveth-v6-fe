@@ -592,12 +592,12 @@ function resolveFinalStatus(
 ): CallsStatus | null {
   if (!status) return null
 
-  if (status.status === 'CONFIRMED' || hasSuccessfulReceipt(status.receipts)) {
-    return { ...status, status: 'CONFIRMED' }
-  }
-
   if (status.status === 'FAILED' || hasFailedReceipt(status.receipts)) {
     return { ...status, status: 'FAILED' }
+  }
+
+  if (status.status === 'CONFIRMED' || hasSuccessfulReceipt(status.receipts)) {
+    return { ...status, status: 'CONFIRMED' }
   }
 
   return null
