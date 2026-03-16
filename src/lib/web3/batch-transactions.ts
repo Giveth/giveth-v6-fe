@@ -8,7 +8,10 @@
  * - Reduced gas costs and improved UX
  */
 
+import SafeAppsSDK from '@safe-global/safe-apps-sdk'
 import { encode } from 'thirdweb'
+import { defineChain } from 'thirdweb/chains'
+import { thirdwebClient } from '@/lib/thirdweb/client'
 import type { PreparedTransaction } from 'thirdweb'
 import type { Account } from 'thirdweb/wallets'
 
@@ -31,6 +34,28 @@ interface WalletCapabilities {
   delegation?: {
     supported: boolean
   }
+}
+
+type WalletCapabilitiesRecord = Record<string, WalletCapabilities> & {
+  message?: string
+}
+
+interface RawCallsStatus {
+  status?: number | string | 'pending' | 'success' | 'failure'
+  receipts?: unknown
+}
+
+interface RawReceipt {
+  logs?: unknown
+  status?: unknown
+  blockHash?: unknown
+  blockNumber?: unknown
+  gasUsed?: unknown
+  transactionHash?: unknown
+}
+
+interface WaitForBatchCallsOptions {
+  isSafeWallet?: boolean
 }
 
 /**
@@ -115,12 +140,22 @@ export async function sendBatchCalls(
 ): Promise<SendCallsResponse> {
   const { account, calls, chainId } = options
 
+  // Prefer account-level methods for Safe-compatible accounts.
+  if (account.sendCalls) {
+    const chain = defineChain(chainId ?? 1)
+    const result = await account.sendCalls({
+      // thirdweb expects call shape; runtime is validated by wallet/provider.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      calls: calls as any,
+      chain,
+      version: '1.0',
+      atomicRequired: true,
+    })
+    return { bundleId: result.id }
+  }
+
   // Get the wallet provider
-  const provider = (
-    account as Account & {
-      wallet?: { getProvider?: () => EIP1193Provider }
-    }
-  ).wallet?.getProvider?.()
+  const provider = getProviderFromAccount(account)
   if (!provider) {
     throw new Error('Wallet provider not found')
   }
@@ -172,12 +207,12 @@ export async function getBatchCallsStatus(
   bundleId: string,
 ): Promise<CallsStatus> {
   try {
-    const status = (await provider.request({
+    const rawStatus = (await provider.request({
       method: 'wallet_getCallsStatus',
       params: [bundleId],
-    })) as CallsStatus
+    })) as RawCallsStatus
 
-    return status
+    return normalizeCallsStatus(rawStatus)
   } catch (error) {
     console.error('Failed to get batch calls status:', error)
     throw new Error(
@@ -195,24 +230,94 @@ export async function getBatchCallsStatus(
  * @returns Final status of the batch calls
  */
 export async function waitForBatchCalls(
-  provider: EIP1193Provider,
+  accountOrProvider: Account | EIP1193Provider,
   bundleId: string,
-  timeout = 60000,
+  chainId?: number,
+  timeout = 180000,
+  options: WaitForBatchCallsOptions = {},
 ): Promise<CallsStatus> {
   const startTime = Date.now()
   const pollInterval = 2000 // Check every 2 seconds
+  let lastPollingError: unknown
+  const account = accountOrProvider as Account
+
+  if (account.getCallsStatus && chainId) {
+    const chain = defineChain(chainId)
+    const provider = getProviderFromAccount(account)
+
+    while (Date.now() - startTime < timeout) {
+      try {
+        const response = (await account.getCallsStatus({
+          id: bundleId,
+          chain,
+          client: thirdwebClient,
+        })) as RawCallsStatus
+
+        const status = normalizeAccountCallsStatus(response)
+        const resolved = resolveFinalStatus(status)
+        if (resolved) return resolved
+      } catch (error) {
+        // Safe account polling can intermittently fail; keep polling.
+        lastPollingError = error
+      }
+
+      if (options.isSafeWallet) {
+        const safeStatus = await getStatusFromSafeSdk(bundleId)
+        const resolvedSafeStatus = resolveFinalStatus(safeStatus)
+        if (resolvedSafeStatus) return resolvedSafeStatus
+      }
+
+      const providerStatus = await getStatusFromProviderCallsFallback(
+        provider,
+        bundleId,
+      )
+      const resolvedProviderStatus = resolveFinalStatus(providerStatus)
+      if (resolvedProviderStatus) return resolvedProviderStatus
+
+      const receiptStatus = await getStatusFromReceiptFallback(
+        provider,
+        bundleId,
+      )
+      const resolvedReceiptStatus = resolveFinalStatus(receiptStatus)
+      if (resolvedReceiptStatus) return resolvedReceiptStatus
+
+      await new Promise(resolve => setTimeout(resolve, pollInterval))
+    }
+
+    if (lastPollingError instanceof Error) {
+      throw new Error(`Batch transaction timeout (${lastPollingError.message})`)
+    }
+    throw new Error('Batch transaction timeout')
+  }
+
+  const provider = accountOrProvider as EIP1193Provider
 
   while (Date.now() - startTime < timeout) {
-    const status = await getBatchCallsStatus(provider, bundleId)
-
-    if (status.status === 'CONFIRMED' || status.status === 'FAILED') {
-      return status
+    try {
+      const status = await getBatchCallsStatus(provider, bundleId)
+      const resolvedStatus = resolveFinalStatus(status)
+      if (resolvedStatus) return resolvedStatus
+    } catch (error) {
+      lastPollingError = error
     }
+
+    if (options.isSafeWallet) {
+      const safeStatus = await getStatusFromSafeSdk(bundleId)
+      const resolvedSafeStatus = resolveFinalStatus(safeStatus)
+      if (resolvedSafeStatus) return resolvedSafeStatus
+    }
+
+    const receiptStatus = await getStatusFromReceiptFallback(provider, bundleId)
+    const resolvedReceiptStatus = resolveFinalStatus(receiptStatus)
+    if (resolvedReceiptStatus) return resolvedReceiptStatus
 
     // Wait before polling again
     await new Promise(resolve => setTimeout(resolve, pollInterval))
   }
 
+  if (lastPollingError instanceof Error) {
+    throw new Error(`Batch transaction timeout (${lastPollingError.message})`)
+  }
   throw new Error('Batch transaction timeout')
 }
 
@@ -303,13 +408,32 @@ export async function executeSequentially(
  * Check wallet capabilities for EIP-7702 and EIP-5792
  */
 export async function checkWalletCapabilities(
-  provider: EIP1193Provider,
+  providerOrAccount: EIP1193Provider | Account,
+  chainId?: number,
 ): Promise<{
   supportsEIP5792: boolean
   supportsEIP7702: boolean
   supportsAtomicBatch: boolean
 }> {
   try {
+    const account = providerOrAccount as Account
+    if (account.getCapabilities) {
+      const capabilities = await account.getCapabilities({ chainId })
+      const chainCapabilities = extractCapabilitiesForChain(
+        capabilities as WalletCapabilitiesRecord | WalletCapabilities,
+        chainId,
+      )
+      return {
+        supportsEIP5792:
+          typeof capabilities === 'object' &&
+          capabilities !== null &&
+          !('message' in capabilities),
+        supportsEIP7702: chainCapabilities?.delegation?.supported === true,
+        supportsAtomicBatch: chainCapabilities?.atomicBatch?.supported === true,
+      }
+    }
+
+    const provider = providerOrAccount as EIP1193Provider
     if (!provider?.request) {
       return {
         supportsEIP5792: false,
@@ -320,13 +444,14 @@ export async function checkWalletCapabilities(
 
     const capabilities = (await provider.request({
       method: 'wallet_getCapabilities',
-    })) as WalletCapabilities
+    })) as WalletCapabilitiesRecord | WalletCapabilities
+    const chainCapabilities = extractCapabilitiesForChain(capabilities, chainId)
 
     return {
       supportsEIP5792:
         typeof capabilities === 'object' && capabilities !== null,
-      supportsEIP7702: capabilities?.delegation?.supported === true,
-      supportsAtomicBatch: capabilities?.atomicBatch?.supported === true,
+      supportsEIP7702: chainCapabilities?.delegation?.supported === true,
+      supportsAtomicBatch: chainCapabilities?.atomicBatch?.supported === true,
     }
   } catch (error) {
     console.warn('Could not check wallet capabilities:', error)
@@ -336,4 +461,356 @@ export async function checkWalletCapabilities(
       supportsAtomicBatch: false,
     }
   }
+}
+
+function getProviderFromAccount(account: Account): EIP1193Provider | undefined {
+  return (
+    account as Account & {
+      wallet?: { getProvider?: () => EIP1193Provider }
+    }
+  ).wallet?.getProvider?.()
+}
+
+function extractCapabilitiesForChain(
+  capabilities: WalletCapabilitiesRecord | WalletCapabilities,
+  chainId?: number,
+): WalletCapabilities | undefined {
+  if (!capabilities || typeof capabilities !== 'object') return undefined
+
+  const directCapabilities = capabilities as WalletCapabilities
+  if (directCapabilities.atomicBatch || directCapabilities.delegation) {
+    return directCapabilities
+  }
+
+  const recordCapabilities = capabilities as WalletCapabilitiesRecord
+  const keysToTry = [
+    chainId != null ? String(chainId) : undefined,
+    chainId != null ? `0x${chainId.toString(16)}` : undefined,
+  ].filter(Boolean) as string[]
+
+  for (const key of keysToTry) {
+    const value = recordCapabilities[key]
+    if (value && typeof value === 'object') return value
+  }
+
+  for (const [key, value] of Object.entries(recordCapabilities)) {
+    if (key === 'message') continue
+    if (value && typeof value === 'object') return value as WalletCapabilities
+  }
+
+  return undefined
+}
+
+function normalizeCallsStatus(rawStatus: RawCallsStatus): CallsStatus {
+  const statusValue = rawStatus?.status
+  const receipts = normalizeReceipts(rawStatus?.receipts)
+
+  if (typeof statusValue === 'number') {
+    // EIP-5792 canonical status codes:
+    // 100: pending, 200: success, >=400: failed.
+    if (statusValue === 200) return { status: 'CONFIRMED', receipts }
+    if (statusValue >= 400) return { status: 'FAILED', receipts }
+    return { status: 'PENDING', receipts }
+  }
+
+  if (typeof statusValue === 'string') {
+    const normalizedStatus = statusValue.toLowerCase()
+    if (normalizedStatus === 'confirmed' || normalizedStatus === 'success') {
+      return { status: 'CONFIRMED', receipts }
+    }
+    if (
+      normalizedStatus === 'failed' ||
+      normalizedStatus === 'failure' ||
+      normalizedStatus === 'reverted'
+    ) {
+      return { status: 'FAILED', receipts }
+    }
+  }
+
+  return { status: 'PENDING', receipts }
+}
+
+function normalizeAccountCallsStatus(rawStatus: RawCallsStatus): CallsStatus {
+  const statusValue = rawStatus?.status
+  const receipts = normalizeReceipts(rawStatus?.receipts)
+  const hasSuccessReceipt = hasSuccessfulReceipt(receipts)
+  const hasFailureReceipt = hasFailedReceipt(receipts)
+
+  if (statusValue === 'success' || hasSuccessReceipt) {
+    return { status: 'CONFIRMED', receipts }
+  }
+
+  // Safe can intermittently report "failure" before finalizing execution.
+  if (statusValue === 'failure' && hasFailureReceipt) {
+    return { status: 'FAILED', receipts }
+  }
+
+  return { status: 'PENDING', receipts }
+}
+
+function normalizeReceipts(receipts: unknown): CallsStatus['receipts'] {
+  if (!Array.isArray(receipts)) return undefined
+
+  return receipts.map(receipt => {
+    const rawReceipt = receipt as RawReceipt
+    const rawLogs = Array.isArray(rawReceipt.logs) ? rawReceipt.logs : []
+
+    return {
+      logs: rawLogs.map(log => {
+        const entry = log as {
+          address?: unknown
+          data?: unknown
+          topics?: unknown
+        }
+        return {
+          address: String(entry.address ?? ''),
+          data: String(entry.data ?? '0x'),
+          topics: Array.isArray(entry.topics)
+            ? entry.topics.map(topic => String(topic))
+            : [],
+        }
+      }),
+      status: String(rawReceipt.status ?? ''),
+      blockHash: String(rawReceipt.blockHash ?? ''),
+      blockNumber: String(rawReceipt.blockNumber ?? ''),
+      gasUsed: String(rawReceipt.gasUsed ?? ''),
+      transactionHash: String(rawReceipt.transactionHash ?? ''),
+    }
+  })
+}
+
+function hasSuccessfulReceipt(
+  receipts: CallsStatus['receipts'] | undefined,
+): boolean {
+  if (!receipts || receipts.length === 0) return false
+
+  return receipts.some(receipt => {
+    const status = String(receipt.status ?? '').toLowerCase()
+    return (
+      status === 'success' ||
+      status === '0x1' ||
+      status === '1' ||
+      status === 'confirmed'
+    )
+  })
+}
+
+function hasFailedReceipt(
+  receipts: CallsStatus['receipts'] | undefined,
+): boolean {
+  if (!receipts || receipts.length === 0) return false
+
+  return receipts.some(receipt => {
+    const status = String(receipt.status ?? '').toLowerCase()
+    return status === 'reverted' || status === '0x0' || status === '0'
+  })
+}
+
+function resolveFinalStatus(
+  status: CallsStatus | null | undefined,
+): CallsStatus | null {
+  if (!status) return null
+
+  if (status.status === 'CONFIRMED' || hasSuccessfulReceipt(status.receipts)) {
+    return { ...status, status: 'CONFIRMED' }
+  }
+
+  if (status.status === 'FAILED' || hasFailedReceipt(status.receipts)) {
+    return { ...status, status: 'FAILED' }
+  }
+
+  return null
+}
+
+async function getStatusFromProviderCallsFallback(
+  provider: EIP1193Provider | undefined,
+  bundleId: string,
+): Promise<CallsStatus | null> {
+  if (!provider?.request) return null
+
+  try {
+    return await getBatchCallsStatus(provider, bundleId)
+  } catch {
+    return null
+  }
+}
+
+async function getStatusFromSafeSdk(
+  bundleId: string,
+): Promise<CallsStatus | null> {
+  if (typeof window === 'undefined') return null
+
+  const candidates = extractHashCandidates(bundleId)
+  if (candidates.length === 0) return null
+
+  const sdk = new SafeAppsSDK()
+
+  for (const safeTxHash of candidates) {
+    try {
+      const txDetails = await sdk.txs.getBySafeTxHash(safeTxHash)
+      const safeStatus = mapSafeTxStatus(txDetails)
+      if (!safeStatus) continue
+
+      const txHash = extractExecutedTxHash(txDetails) ?? safeTxHash
+      if (safeStatus === 'PENDING') return { status: 'PENDING' }
+
+      return {
+        status: safeStatus,
+        receipts: [
+          {
+            logs: [],
+            status: safeStatus === 'CONFIRMED' ? '0x1' : '0x0',
+            blockHash: '',
+            blockNumber: '',
+            gasUsed: '',
+            transactionHash: txHash,
+          },
+        ],
+      }
+    } catch {
+      // Ignore candidate mismatch and continue with other candidates.
+    }
+  }
+
+  return null
+}
+
+function mapSafeTxStatus(txDetails: unknown): CallsStatus['status'] | null {
+  const tx = txDetails as {
+    txStatus?: unknown
+    isExecuted?: unknown
+    isSuccessful?: unknown
+  }
+
+  if (
+    typeof tx.isExecuted === 'boolean' &&
+    typeof tx.isSuccessful === 'boolean'
+  ) {
+    return tx.isExecuted
+      ? tx.isSuccessful
+        ? 'CONFIRMED'
+        : 'FAILED'
+      : 'PENDING'
+  }
+
+  const txStatusValue =
+    typeof tx.txStatus === 'string'
+      ? tx.txStatus
+      : (tx.txStatus as { status?: unknown } | undefined)?.status
+  const normalized = String(txStatusValue ?? '').toLowerCase()
+
+  if (
+    normalized.includes('success') ||
+    normalized.includes('executed') ||
+    normalized.includes('confirmed')
+  ) {
+    return 'CONFIRMED'
+  }
+  if (
+    normalized.includes('failed') ||
+    normalized.includes('reverted') ||
+    normalized.includes('cancel')
+  ) {
+    return 'FAILED'
+  }
+  if (normalized.length > 0) {
+    return 'PENDING'
+  }
+
+  return null
+}
+
+function extractExecutedTxHash(txDetails: unknown): string | null {
+  const tx = txDetails as {
+    txHash?: unknown
+    transactionHash?: unknown
+    executionInfo?: { txHash?: unknown }
+    detailedExecutionInfo?: { txHash?: unknown }
+  }
+
+  const candidates = [
+    tx.txHash,
+    tx.transactionHash,
+    tx.executionInfo?.txHash,
+    tx.detailedExecutionInfo?.txHash,
+  ]
+
+  for (const candidate of candidates) {
+    if (isLikelyTxHash(candidate)) return candidate
+  }
+
+  return null
+}
+
+function isLikelyTxHash(value: unknown): value is `0x${string}` {
+  return typeof value === 'string' && /^0x[a-fA-F0-9]{64}$/.test(value)
+}
+
+function extractHashCandidates(value: string): string[] {
+  if (typeof value !== 'string' || value.length === 0) return []
+
+  const candidates = new Set<string>()
+  if (isLikelyTxHash(value)) candidates.add(value)
+
+  const prefixedMatches = value.match(/0x[a-fA-F0-9]{64}/g) ?? []
+  for (const match of prefixedMatches) {
+    candidates.add(match)
+  }
+
+  if (value.startsWith('0x')) {
+    const hexBody = value.slice(2)
+    if (/^[a-fA-F0-9]+$/.test(hexBody) && hexBody.length >= 64) {
+      candidates.add(`0x${hexBody.slice(0, 64)}`)
+      candidates.add(`0x${hexBody.slice(-64)}`)
+    }
+  }
+
+  return Array.from(candidates)
+}
+
+async function getStatusFromReceiptFallback(
+  provider: EIP1193Provider | undefined,
+  bundleId: string,
+): Promise<CallsStatus | null> {
+  if (!provider?.request) return null
+
+  const txHashes = extractHashCandidates(bundleId)
+  for (const txHash of txHashes) {
+    try {
+      const receipt = (await provider.request({
+        method: 'eth_getTransactionReceipt',
+        params: [txHash],
+      })) as RawReceipt | null
+
+      if (!receipt) continue
+
+      const status = String(receipt.status ?? '').toLowerCase()
+      const isSuccess =
+        status === '0x1' || status === '1' || status === 'success'
+      const isFailure =
+        status === '0x0' || status === '0' || status === 'reverted'
+
+      if (!isSuccess && !isFailure) continue
+
+      const receipts = normalizeReceipts([
+        {
+          logs: receipt.logs ?? [],
+          status: receipt.status ?? '',
+          blockHash: receipt.blockHash ?? '',
+          blockNumber: receipt.blockNumber ?? '',
+          gasUsed: receipt.gasUsed ?? '',
+          transactionHash: receipt.transactionHash ?? txHash,
+        },
+      ])
+
+      return {
+        status: isSuccess ? 'CONFIRMED' : 'FAILED',
+        receipts,
+      }
+    } catch {
+      // Ignore unsupported receipt lookups and continue with polling.
+    }
+  }
+
+  return null
 }

@@ -13,7 +13,7 @@
 
 import { useState, useCallback } from 'react'
 import { sendTransaction, waitForReceipt, encode } from 'thirdweb'
-import { useActiveAccount } from 'thirdweb/react'
+import { useActiveAccount, useActiveWallet } from 'thirdweb/react'
 import {
   getDonationHandlerContract,
   getERC20Contract,
@@ -68,6 +68,8 @@ export interface UseDonationReturn {
  */
 export function useDonation(): UseDonationReturn {
   const account = useActiveAccount()
+  const activeWallet = useActiveWallet()
+  const isSafeWallet = activeWallet?.id === 'global.safe'
   const [state, setState] = useState<DonationState>({
     status: 'idle',
     supportsEIP5792: false,
@@ -105,16 +107,11 @@ export function useDonation(): UseDonationReturn {
         const donationHandlerAddress =
           DONATION_HANDLER_ADDRESSES[details.chainId]
 
-        // Check wallet capabilities
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const provider = (account as any).wallet?.getProvider?.()
-        const capabilities = provider
-          ? await checkWalletCapabilities(provider)
-          : {
-              supportsEIP5792: false,
-              supportsEIP7702: false,
-              supportsAtomicBatch: false,
-            }
+        // Check wallet capabilities (account-level first for Safe support).
+        const capabilities = await checkWalletCapabilities(
+          account,
+          details.chainId,
+        )
 
         setState(prev => ({
           ...prev,
@@ -147,7 +144,63 @@ export function useDonation(): UseDonationReturn {
 
         // Native tokens don't need approval
         if (isNativeToken) {
-          // Just send the transaction
+          // Safe completion is more reliable through batch status polling.
+          if (capabilities.supportsAtomicBatch) {
+            setState(prev => ({ ...prev, status: 'awaiting_approval' }))
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const donationData = await encode(donationTx as any)
+            const calls: Call[] = [
+              {
+                to: donationHandlerAddress,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data: donationData as any,
+                value: details.amount,
+              },
+            ]
+
+            const { bundleId } = await sendBatchCalls({
+              account,
+              calls,
+              chainId: details.chainId,
+            })
+
+            setState(prev => ({
+              ...prev,
+              status: 'confirming',
+              bundleId,
+            }))
+
+            const result = await waitForBatchCalls(
+              account,
+              bundleId,
+              details.chainId,
+              180000,
+              { isSafeWallet },
+            )
+
+            if (result.status === 'CONFIRMED') {
+              const txHash = result.receipts?.[0]?.transactionHash ?? bundleId
+              setState(prev => ({
+                ...prev,
+                status: 'success',
+                transactionHash: txHash,
+              }))
+              return {
+                success: true,
+                transactionHash: txHash,
+                bundleId,
+              }
+            }
+            throw new Error('Batch transaction failed')
+          }
+
+          if (isSafeWallet) {
+            throw new Error(
+              'Safe wallet batch capability is unavailable. Please reconnect Safe and try again.',
+            )
+          }
+
           setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
           const receipt = await sendTransaction({
@@ -183,7 +236,7 @@ export function useDonation(): UseDonationReturn {
         )
 
         // Try EIP-5792 batch transaction first
-        if (provider && capabilities.supportsAtomicBatch) {
+        if (capabilities.supportsAtomicBatch) {
           setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
           const approvalData = await encode(approvalTx)
@@ -214,10 +267,16 @@ export function useDonation(): UseDonationReturn {
           }))
 
           // Wait for confirmation
-          const result = await waitForBatchCalls(provider, bundleId)
+          const result = await waitForBatchCalls(
+            account,
+            bundleId,
+            details.chainId,
+            180000,
+            { isSafeWallet },
+          )
 
           if (result.status === 'CONFIRMED') {
-            const txHash = result.receipts?.[0]?.transactionHash
+            const txHash = result.receipts?.[0]?.transactionHash ?? bundleId
             setState(prev => ({
               ...prev,
               status: 'success',
@@ -232,6 +291,12 @@ export function useDonation(): UseDonationReturn {
             throw new Error('Batch transaction failed')
           }
         } else {
+          if (isSafeWallet) {
+            throw new Error(
+              'Safe wallet batch capability is unavailable. Please reconnect Safe and try again.',
+            )
+          }
+
           // Fallback to sequential transactions
           console.warn(
             'Wallet does not support EIP-5792. Falling back to sequential transactions.',
@@ -281,7 +346,7 @@ export function useDonation(): UseDonationReturn {
         }
       }
     },
-    [account],
+    [account, isSafeWallet],
   )
 
   /**
@@ -306,16 +371,11 @@ export function useDonation(): UseDonationReturn {
         const donationHandlerAddress =
           DONATION_HANDLER_ADDRESSES[details.chainId]
 
-        // Check wallet capabilities
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const provider = (account as any).wallet?.getProvider?.()
-        const capabilities = provider
-          ? await checkWalletCapabilities(provider)
-          : {
-              supportsEIP5792: false,
-              supportsEIP7702: false,
-              supportsAtomicBatch: false,
-            }
+        // Check wallet capabilities (account-level first for Safe support).
+        const capabilities = await checkWalletCapabilities(
+          account,
+          details.chainId,
+        )
 
         setState(prev => ({
           ...prev,
@@ -341,7 +401,63 @@ export function useDonation(): UseDonationReturn {
             [],
           )
 
-          // Just send the transaction
+          // Safe completion is more reliable through batch status polling.
+          if (capabilities.supportsAtomicBatch) {
+            setState(prev => ({ ...prev, status: 'awaiting_approval' }))
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const donationData = await encode(batchDonationTx as any)
+            const calls: Call[] = [
+              {
+                to: donationHandlerAddress,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data: donationData as any,
+                value: details.totalAmount,
+              },
+            ]
+
+            const { bundleId } = await sendBatchCalls({
+              account,
+              calls,
+              chainId: details.chainId,
+            })
+
+            setState(prev => ({
+              ...prev,
+              status: 'confirming',
+              bundleId,
+            }))
+
+            const result = await waitForBatchCalls(
+              account,
+              bundleId,
+              details.chainId,
+              180000,
+              { isSafeWallet },
+            )
+
+            if (result.status === 'CONFIRMED') {
+              const txHash = result.receipts?.[0]?.transactionHash ?? bundleId
+              setState(prev => ({
+                ...prev,
+                status: 'success',
+                transactionHash: txHash,
+              }))
+              return {
+                success: true,
+                transactionHash: txHash,
+                bundleId,
+              }
+            }
+            throw new Error('Batch transaction failed')
+          }
+
+          if (isSafeWallet) {
+            throw new Error(
+              'Safe wallet batch capability is unavailable. Please reconnect Safe and try again.',
+            )
+          }
+
           setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
           const receipt = await sendTransaction({
@@ -387,7 +503,7 @@ export function useDonation(): UseDonationReturn {
         )
 
         // Try EIP-5792 batch transaction first
-        if (provider && capabilities.supportsAtomicBatch) {
+        if (capabilities.supportsAtomicBatch) {
           setState(prev => ({ ...prev, status: 'awaiting_approval' }))
 
           const approvalData = await encode(approvalTx)
@@ -419,10 +535,16 @@ export function useDonation(): UseDonationReturn {
           }))
 
           // Wait for confirmation
-          const result = await waitForBatchCalls(provider, bundleId)
+          const result = await waitForBatchCalls(
+            account,
+            bundleId,
+            details.chainId,
+            180000,
+            { isSafeWallet },
+          )
 
           if (result.status === 'CONFIRMED') {
-            const txHash = result.receipts?.[0]?.transactionHash
+            const txHash = result.receipts?.[0]?.transactionHash ?? bundleId
             setState(prev => ({
               ...prev,
               status: 'success',
@@ -436,6 +558,12 @@ export function useDonation(): UseDonationReturn {
           } else {
             throw new Error('Batch transaction failed')
           }
+        }
+
+        if (isSafeWallet) {
+          throw new Error(
+            'Safe wallet batch capability is unavailable. Please reconnect Safe and try again.',
+          )
         }
 
         // Fallback to sequential transactions
@@ -488,7 +616,7 @@ export function useDonation(): UseDonationReturn {
         }
       }
     },
-    [account],
+    [account, isSafeWallet],
   )
 
   return {
