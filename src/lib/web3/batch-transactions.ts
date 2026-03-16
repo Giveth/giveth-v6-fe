@@ -421,6 +421,12 @@ export async function checkWalletCapabilities(
   }
 }
 
+/**
+ * Get the provider from the account
+ *
+ * @param account - The account to get the provider from
+ * @returns The provider from the account
+ */
 function getProviderFromAccount(account: Account): EIP1193Provider | undefined {
   return (
     account as Account & {
@@ -429,6 +435,12 @@ function getProviderFromAccount(account: Account): EIP1193Provider | undefined {
   ).wallet?.getProvider?.()
 }
 
+/**
+ * Extract the bundle ID from the value
+ *
+ * @param value - The value to extract the bundle ID from
+ * @returns The bundle ID
+ */
 function extractBundleId(value: unknown): string | undefined {
   if (typeof value === 'string' && value.length > 0) return value
   if (!value || typeof value !== 'object') return undefined
@@ -450,6 +462,12 @@ function extractBundleId(value: unknown): string | undefined {
   return undefined
 }
 
+/**
+ * Extract the Safe bundle ID from the response
+ *
+ * @param response - The response to extract the Safe bundle ID from
+ * @returns The Safe bundle ID
+ */
 function extractSafeBundleId(
   response: Record<string, unknown>,
 ): string | undefined {
@@ -476,6 +494,13 @@ function extractSafeBundleId(
   return undefined
 }
 
+/**
+ * Extract the capabilities for the chain
+ *
+ * @param capabilities - The capabilities to extract
+ * @param chainId - The chain ID
+ * @returns The capabilities for the chain
+ */
 function extractCapabilitiesForChain(
   capabilities: WalletCapabilitiesRecord | WalletCapabilities,
   chainId?: number,
@@ -504,6 +529,12 @@ function extractCapabilitiesForChain(
   return undefined
 }
 
+/**
+ * Normalize the receipts
+ *
+ * @param receipts - The receipts to normalize
+ * @returns The normalized receipts
+ */
 function normalizeReceipts(receipts: unknown): CallsStatus['receipts'] {
   if (!Array.isArray(receipts)) return undefined
 
@@ -535,6 +566,12 @@ function normalizeReceipts(receipts: unknown): CallsStatus['receipts'] {
   })
 }
 
+/**
+ * Normalize the calls status
+ *
+ * @param rawStatus - The raw status to normalize
+ * @returns The normalized calls status
+ */
 function normalizeCallsStatus(rawStatus: RawCallsStatus): CallsStatus {
   const statusValue = rawStatus?.status
   const receipts = normalizeReceipts(rawStatus?.receipts)
@@ -560,6 +597,12 @@ function normalizeCallsStatus(rawStatus: RawCallsStatus): CallsStatus {
   return { status: 'PENDING', receipts }
 }
 
+/**
+ * Check if the receipts have a successful status
+ *
+ * @param receipts - The receipts to check
+ * @returns True if the receipts have a successful status
+ */
 function hasSuccessfulReceipt(
   receipts: CallsStatus['receipts'] | undefined,
 ): boolean {
@@ -576,6 +619,12 @@ function hasSuccessfulReceipt(
   })
 }
 
+/**
+ * Check if the receipts have a failed status
+ *
+ * @param receipts - The receipts to check
+ * @returns True if the receipts have a failed status
+ */
 function hasFailedReceipt(
   receipts: CallsStatus['receipts'] | undefined,
 ): boolean {
@@ -587,6 +636,12 @@ function hasFailedReceipt(
   })
 }
 
+/**
+ * Resolve the final status of the batch call
+ *
+ * @param status - The status of the batch call
+ * @returns The final status of the batch call
+ */
 function resolveFinalStatus(
   status: CallsStatus | null | undefined,
 ): CallsStatus | null {
@@ -603,10 +658,22 @@ function resolveFinalStatus(
   return null
 }
 
+/**
+ * Check if the value is likely a transaction hash
+ *
+ * @param value - The value to check
+ * @returns True if the value is likely a transaction hash
+ */
 function isLikelyTxHash(value: unknown): value is `0x${string}` {
   return typeof value === 'string' && /^0x[a-fA-F0-9]{64}$/.test(value)
 }
 
+/**
+ * Extract the Safe transaction hash from the composite ID
+ *
+ * @param value - The composite ID to extract the Safe transaction hash from
+ * @returns The Safe transaction hash
+ */
 function extractSafeTxHashFromCompositeId(value: string): string | null {
   if (!value.includes('multisig_')) return null
   const lastUnderscore = value.lastIndexOf('_')
@@ -616,6 +683,12 @@ function extractSafeTxHashFromCompositeId(value: string): string | null {
   return isLikelyTxHash(candidate) ? candidate : null
 }
 
+/**
+ * Extract the hash candidates from the value
+ *
+ * @param value - The value to extract the hash candidates from
+ * @returns The hash candidates
+ */
 function extractHashCandidates(value: string): string[] {
   if (!value) return []
 
@@ -634,11 +707,24 @@ function extractHashCandidates(value: string): string[] {
   return Array.from(candidates)
 }
 
+/**
+ * Extract the Safe transaction hash from the bundle ID
+ *
+ * @param bundleId - The bundle ID of the batch call
+ * @returns The Safe transaction hash
+ */
 function extractSafeTxHashFromBundleId(bundleId: string): string | null {
   const candidates = extractHashCandidates(bundleId)
   return candidates.length > 0 ? candidates[0] : null
 }
 
+/**
+ * Normalize the receipt to the calls status
+ *
+ * @param receipt - The receipt to normalize
+ * @param fallbackTxHash - The fallback transaction hash
+ * @returns The normalized calls status
+ */
 function normalizeReceiptToCallsStatus(
   receipt: RawReceipt,
   fallbackTxHash: string,
@@ -668,6 +754,13 @@ function normalizeReceiptToCallsStatus(
   }
 }
 
+/**
+ * Get the status of a batch call from the receipt fallback
+ *
+ * @param provider - The wallet provider
+ * @param bundleId - The bundle ID of the batch call
+ * @returns The status of the batch call
+ */
 async function getStatusFromReceiptFallback(
   provider: EIP1193Provider,
   bundleId: string,
@@ -718,6 +811,13 @@ function extractExecutedTxHash(txDetails: unknown): string | null {
   return null
 }
 
+/**
+ * Wait for a Safe transaction to be executed
+ *
+ * @param safeTxHash - The Safe transaction hash to wait for
+ * @param timeout - The timeout in milliseconds
+ * @returns The status of the Safe transaction
+ */
 async function waitForSafeExecution(
   safeTxHash: string,
   timeout: number,
@@ -740,6 +840,27 @@ async function waitForSafeExecution(
 
       const txStatus = String(txDetails.txStatus ?? '').toUpperCase()
       const executionTxHash = extractExecutedTxHash(txDetails)
+      const isFailedStatus =
+        txStatus === 'FAILED' ||
+        txStatus === 'CANCELLED' ||
+        txStatus === 'REJECTED'
+
+      if (isFailedStatus) {
+        return {
+          status: 'FAILED',
+          receipts: [
+            {
+              logs: [],
+              status: '0x0',
+              blockHash: '',
+              blockNumber: '',
+              gasUsed: '',
+              transactionHash: executionTxHash ?? safeTxHash,
+            },
+          ],
+        }
+      }
+
       const isExecuted =
         txStatus === 'SUCCESS' ||
         txStatus === 'EXECUTED' ||
@@ -759,26 +880,6 @@ async function waitForSafeExecution(
               blockNumber: '',
               gasUsed: '',
               transactionHash: executionTxHash ?? safeTxHash,
-            },
-          ],
-        }
-      }
-
-      if (
-        txStatus === 'FAILED' ||
-        txStatus === 'CANCELLED' ||
-        txStatus === 'REJECTED'
-      ) {
-        return {
-          status: 'FAILED',
-          receipts: [
-            {
-              logs: [],
-              status: '0x0',
-              blockHash: '',
-              blockNumber: '',
-              gasUsed: '',
-              transactionHash: safeTxHash,
             },
           ],
         }
