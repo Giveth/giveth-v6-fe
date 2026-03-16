@@ -163,6 +163,7 @@ export function useDonation(): UseDonationReturn {
               account,
               calls,
               chainId: details.chainId,
+              isSafeWallet,
             })
 
             setState(prev => ({
@@ -258,6 +259,7 @@ export function useDonation(): UseDonationReturn {
             account,
             calls,
             chainId: details.chainId,
+            isSafeWallet,
           })
 
           setState(prev => ({
@@ -420,6 +422,7 @@ export function useDonation(): UseDonationReturn {
               account,
               calls,
               chainId: details.chainId,
+              isSafeWallet,
             })
 
             setState(prev => ({
@@ -526,6 +529,7 @@ export function useDonation(): UseDonationReturn {
             account,
             calls,
             chainId: details.chainId,
+            isSafeWallet,
           })
 
           setState(prev => ({

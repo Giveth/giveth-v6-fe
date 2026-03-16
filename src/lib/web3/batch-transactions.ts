@@ -75,6 +75,7 @@ export interface BatchCallOptions {
   account: Account
   calls: Call[]
   chainId?: number
+  isSafeWallet?: boolean
 }
 
 /**
@@ -138,7 +139,31 @@ export async function supportsWalletSendCalls(
 export async function sendBatchCalls(
   options: BatchCallOptions,
 ): Promise<SendCallsResponse> {
-  const { account, calls, chainId } = options
+  const { account, calls, chainId, isSafeWallet } = options
+
+  // Safe SDK returns safeTxHash, which is more reliable for completion polling.
+  if (isSafeWallet && typeof window !== 'undefined') {
+    try {
+      const sdk = new SafeAppsSDK({
+        allowedDomains: [/safe\.global$/],
+        debug: false,
+      })
+      const response = (await sdk.txs.send({
+        txs: calls.map(call => ({
+          to: call.to,
+          data: call.data || '0x',
+          value: (call.value ?? BigInt(0)).toString(),
+        })),
+      })) as { safeTxHash?: string }
+
+      if (response.safeTxHash) {
+        return { bundleId: response.safeTxHash }
+      }
+    } catch (error) {
+      // Fall back to wallet/account EIP-5792 path if Safe SDK send is unavailable.
+      console.warn('Safe SDK tx send fallback to wallet_sendCalls', error)
+    }
+  }
 
   // Prefer account-level methods for Safe-compatible accounts.
   if (account.sendCalls) {
@@ -265,6 +290,13 @@ export async function waitForBatchCalls(
         const safeStatus = await getStatusFromSafeSdk(bundleId)
         const resolvedSafeStatus = resolveFinalStatus(safeStatus)
         if (resolvedSafeStatus) return resolvedSafeStatus
+
+        const safeServiceStatus = await getStatusFromSafeApiKit(
+          bundleId,
+          chainId,
+        )
+        const resolvedSafeServiceStatus = resolveFinalStatus(safeServiceStatus)
+        if (resolvedSafeServiceStatus) return resolvedSafeServiceStatus
       }
 
       const providerStatus = await getStatusFromProviderCallsFallback(
@@ -305,6 +337,10 @@ export async function waitForBatchCalls(
       const safeStatus = await getStatusFromSafeSdk(bundleId)
       const resolvedSafeStatus = resolveFinalStatus(safeStatus)
       if (resolvedSafeStatus) return resolvedSafeStatus
+
+      const safeServiceStatus = await getStatusFromSafeApiKit(bundleId, chainId)
+      const resolvedSafeServiceStatus = resolveFinalStatus(safeServiceStatus)
+      if (resolvedSafeServiceStatus) return resolvedSafeServiceStatus
     }
 
     const receiptStatus = await getStatusFromReceiptFallback(provider, bundleId)
@@ -670,6 +706,56 @@ async function getStatusFromSafeSdk(
     } catch {
       // Ignore candidate mismatch and continue with other candidates.
     }
+  }
+
+  return null
+}
+
+async function getStatusFromSafeApiKit(
+  bundleId: string,
+  chainId?: number,
+): Promise<CallsStatus | null> {
+  if (typeof window === 'undefined') return null
+  if (!chainId) return null
+
+  const candidates = extractHashCandidates(bundleId)
+  if (candidates.length === 0) return null
+
+  try {
+    const safeApiKitModule = await import('@safe-global/api-kit')
+    const SafeApiKit = safeApiKitModule.default
+    const safeService = new SafeApiKit({
+      chainId: BigInt(chainId),
+    })
+
+    for (const safeTxHash of candidates) {
+      try {
+        const txDetails = await safeService.getTransaction(safeTxHash)
+        const safeStatus = mapSafeTxStatus(txDetails)
+        if (!safeStatus) continue
+
+        const txHash = extractExecutedTxHash(txDetails) ?? safeTxHash
+        if (safeStatus === 'PENDING') return { status: 'PENDING' }
+
+        return {
+          status: safeStatus,
+          receipts: [
+            {
+              logs: [],
+              status: safeStatus === 'CONFIRMED' ? '0x1' : '0x0',
+              blockHash: '',
+              blockNumber: '',
+              gasUsed: '',
+              transactionHash: txHash,
+            },
+          ],
+        }
+      } catch {
+        // Candidate does not map to a tx known by Safe service yet.
+      }
+    }
+  } catch {
+    // Safe API kit unavailable or failed for this runtime.
   }
 
   return null
