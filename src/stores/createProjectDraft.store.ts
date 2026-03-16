@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
+import { looksLikeAiContextLeak } from '@/lib/create-project/ai-context'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
 
@@ -78,6 +79,20 @@ function safeIsUrl(value: string): boolean {
   }
 }
 
+function sanitizeDraftDescription(description: string): string {
+  return looksLikeAiContextLeak(description) ? '' : description
+}
+
+function sanitizePersistedDraft(
+  draft: Partial<CreateProjectDraft> | undefined,
+): CreateProjectDraft {
+  return {
+    ...initialDraft,
+    ...draft,
+    description: sanitizeDraftDescription(String(draft?.description ?? '')),
+  }
+}
+
 function isBase58(value: string): boolean {
   // Excludes 0 O I l
   return /^[1-9A-HJ-NP-Za-km-z]+$/.test(value)
@@ -108,6 +123,8 @@ export function validateCreateProjectDraft(
   const description = draft.description.trim()
   if (!description) {
     errors.description = 'Description is required'
+  } else if (looksLikeAiContextLeak(description)) {
+    errors.description = 'Description contains invalid AI-generated context'
   }
 
   for (const type of ['website', 'facebook', 'x', 'linkedin'] as const) {
@@ -194,6 +211,10 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
           const next: CreateProjectDraft = {
             ...state.draft,
             ...patch,
+          }
+
+          if (typeof patch.description === 'string') {
+            next.description = sanitizeDraftDescription(patch.description)
           }
 
           // Merge social media by type (avoid duplicates).
@@ -422,27 +443,22 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
         draft: state.draft,
         isRecipientAddressesAutoFilled: state.isRecipientAddressesAutoFilled,
       }),
-      version: 3,
+      version: 4,
       migrate: (persisted, version) => {
         // v1 stored the whole store shape (including errors). Drop everything
         // except the draft when rehydrating older persisted states.
+        const p = persisted as Partial<CreateProjectDraftState> | undefined
         if (version < 2) {
-          const p = persisted as Partial<CreateProjectDraftState> | undefined
           return {
-            draft: p?.draft ?? initialDraft,
+            draft: sanitizePersistedDraft(p?.draft),
             isRecipientAddressesAutoFilled: false,
           }
         }
-
-        if (version < 3) {
-          const p = persisted as Partial<CreateProjectDraftState> | undefined
-          return {
-            ...p,
-            isRecipientAddressesAutoFilled:
-              p?.isRecipientAddressesAutoFilled ?? false,
-          }
+        return {
+          draft: sanitizePersistedDraft(p?.draft),
+          isRecipientAddressesAutoFilled:
+            p?.isRecipientAddressesAutoFilled ?? false,
         }
-        return persisted as unknown as Partial<CreateProjectDraftState>
       },
     },
   ),
