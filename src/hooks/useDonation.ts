@@ -136,7 +136,19 @@ export function useDonation(): UseDonationReturn {
       })
       await waitForReceipt(approvalReceipt)
 
-      const finalAllowance = await readAllowance()
+      const maxAllowanceReadAttempts = 5
+      const allowanceRetryDelayMs = 1200
+      let finalAllowance = await readAllowance()
+
+      for (
+        let attempt = 1;
+        attempt < maxAllowanceReadAttempts && finalAllowance < requiredAmount;
+        attempt++
+      ) {
+        await new Promise(resolve => setTimeout(resolve, allowanceRetryDelayMs))
+        finalAllowance = await readAllowance()
+      }
+
       if (finalAllowance < requiredAmount) {
         throw new Error('InsufficientAllowance')
       }
