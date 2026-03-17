@@ -11,6 +11,7 @@ export function DesktopNavigation({ hideSearch }: { hideSearch?: boolean }) {
           href={item.href}
           label={item.label}
           submenu={item.submenu}
+          target={item.target}
         />
       ))}
 

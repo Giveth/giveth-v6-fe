@@ -7,17 +7,19 @@ import { z } from 'zod'
 export const submenuItemSchema = z.object({
   label: z.string(),
   href: z.string(),
+  target: z.string().optional(),
 })
 
 export const menuLinkSchema = z.object({
   label: z.string(),
   href: z.string(),
   submenu: z.array(submenuItemSchema).optional(),
+  target: z.string().optional(),
 })
 
 type MenuLinkProps = z.infer<typeof menuLinkSchema>
 
-export function MenuLink({ label, href, submenu }: MenuLinkProps) {
+export function MenuLink({ label, href, submenu, target }: MenuLinkProps) {
   const [menuOpen, setMenuOpen] = useState(false) // dropdown menu open state
 
   if (submenu) {
@@ -29,6 +31,7 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
       >
         <Link
           href={{ pathname: href }}
+          target={target}
           className={clsx(
             'flex justify-between md:justify-start items-center gap-1',
             'text-sm font-semibold text-giv-neutral-900 hover:text-giv-brand-500',
@@ -55,6 +58,7 @@ export function MenuLink({ label, href, submenu }: MenuLinkProps) {
               <Link
                 key={item.label}
                 href={{ pathname: item.href }}
+                target={item.target}
                 className={clsx(
                   'flex items-center gap-1',
                   'text-sm font-medium text-giv-neutral-900 hover:text-giv-brand-500',
