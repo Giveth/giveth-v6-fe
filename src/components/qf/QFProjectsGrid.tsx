@@ -35,6 +35,8 @@ interface QFProjectsGridProps {
   currentFilters: QFFiltersState
   onFilterChange: (filters: QFFiltersState) => void
   totalProjects?: number
+  onLoadMore?: () => void
+  isLoadingMore?: boolean
 }
 
 export function QFProjectsGrid({
@@ -55,6 +57,8 @@ export function QFProjectsGrid({
   currentFilters,
   onFilterChange,
   totalProjects = 0,
+  onLoadMore,
+  isLoadingMore = false,
 }: QFProjectsGridProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -173,12 +177,19 @@ export function QFProjectsGrid({
             {/* Only show load more if we have more projects? For now static as per previous code */}
             {projects.length > 0 && projects.length < totalProjects && (
               <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={isLoadingMore}
                 className={clsx(
-                  'px-8 py-3 border-2 border-giv-pink-500 text-giv-pink-500',
-                  'rounded-full text-sm font-medium hover:bg-giv-pink-200 transition-colors',
+                  'px-10 py-6',
+                  'rounded-[2.25rem] bg-giv-brand-100 text-giv-brand-700',
+                  'text-sm leading-none font-bold tracking-tight',
+                  'hover:bg-giv-brand-200 hover:opacity-85 transition-all duration-200',
+                  'cursor-pointer',
+                  isLoadingMore && 'opacity-70 cursor-not-allowed',
                 )}
               >
-                Load More
+                {isLoadingMore ? 'Loading...' : 'Load More Projects'}
               </button>
             )}
           </div>
