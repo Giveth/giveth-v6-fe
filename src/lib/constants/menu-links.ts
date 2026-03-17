@@ -58,7 +58,7 @@ export const menuItems: MenuItem[] = [
       },
       {
         label: 'Vote',
-        href: 'https://snapshot.org/#/s:giv.eth',
+        href: 'https://snapshot.org/#/giv.eth',
         target: '_blank',
       },
       {
