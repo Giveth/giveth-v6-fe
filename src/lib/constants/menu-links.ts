@@ -45,7 +45,7 @@ export const menuItems = [
       },
       {
         label: 'Vote',
-        href: oldFrontendPath('/vote', '/vote'),
+        href: 'https://snapshot.org/#/s:giv.eth',
       },
       {
         label: 'Join Us',
