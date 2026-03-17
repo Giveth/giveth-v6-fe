@@ -2,13 +2,26 @@ import { env } from '@/lib/env'
 
 const oldFrontend = env.OLD_FRONTEND_URL
 
+type MenuSubItem = {
+  label: string
+  href: string
+  target?: string
+}
+
+type MenuItem = {
+  label: string
+  href: string
+  submenu?: MenuSubItem[]
+  target?: string
+}
+
 const oldFrontendPath = (path: string, fallback: string) =>
   oldFrontend ? `${oldFrontend}${path}` : fallback
 
 export const LogoLink = oldFrontend ?? '/'
 
 // Menu items for the navigation
-export const menuItems = [
+export const menuItems: MenuItem[] = [
   {
     label: 'Donate',
     href: '/qf',
@@ -45,7 +58,8 @@ export const menuItems = [
       },
       {
         label: 'Vote',
-        href: oldFrontendPath('/vote', '/vote'),
+        href: 'https://snapshot.org/#/s:giv.eth',
+        target: '_blank',
       },
       {
         label: 'Join Us',
@@ -53,7 +67,8 @@ export const menuItems = [
       },
       {
         label: 'Leave Feedback',
-        href: oldFrontendPath('/feedback', '/feedback'),
+        href: 'https://giveth.typeform.com/feedback',
+        target: '_blank',
       },
     ],
   },

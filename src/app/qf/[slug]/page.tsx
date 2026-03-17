@@ -18,6 +18,7 @@ import {
 } from '@/lib/graphql/generated/graphql'
 
 export default function QFRoundPage() {
+  const PROJECTS_PAGE_SIZE = 15
   const params = useParams<{ slug: string }>()
   const { slug } = params
 
@@ -33,6 +34,7 @@ export default function QFRoundPage() {
   })
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const [projectsTake, setProjectsTake] = useState(PROJECTS_PAGE_SIZE)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -74,6 +76,7 @@ export default function QFRoundPage() {
     isLoading: isProjectsLoading,
     isFetching: isProjectsFetching,
   } = useProjects({
+    take: projectsTake,
     filters: {
       qfRoundId: roundId,
       isGivbacksEligible: filters.isGivbacksEligible || undefined,
@@ -92,6 +95,18 @@ export default function QFRoundPage() {
   const projects = (projectsData?.projects?.projects as ProjectEntity[]) || []
   const totalProjects = projectsData?.projects?.total || 0
   const hasProjectsData = !!projectsData?.projects
+  const hasMoreProjects = projects.length < totalProjects
+  const isLoadingMore =
+    isProjectsFetching && hasProjectsData && projects.length > 0
+
+  const handleLoadMore = () => {
+    if (!hasMoreProjects || isProjectsFetching) return
+    setProjectsTake(prev => prev + PROJECTS_PAGE_SIZE)
+  }
+
+  useEffect(() => {
+    setProjectsTake(PROJECTS_PAGE_SIZE)
+  }, [roundId, debouncedSearchTerm, sortField, sortDirection, filters])
 
   const handleSortChange = (
     field: ProjectSortField,
@@ -167,6 +182,8 @@ export default function QFRoundPage() {
           onSortChange={handleSortChange}
           currentFilters={filters}
           onFilterChange={setFilters}
+          onLoadMore={handleLoadMore}
+          isLoadingMore={isLoadingMore}
         />
       </main>
     </div>
