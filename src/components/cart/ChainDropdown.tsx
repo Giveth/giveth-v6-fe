@@ -36,19 +36,25 @@ export const ChainDropdown = ({
   useEffect(() => {
     if (isSafeWallet) {
       if (chainId > 0) {
-        setSelectedChainIdState(chainId)
-        updateSelectedChainId(roundId, chainId)
+        setSelectedChainIdState(prev => (prev === chainId ? prev : chainId))
+        if (selectedChainId !== chainId) {
+          updateSelectedChainId(roundId, chainId)
+        }
       }
       return
     }
 
     if (selectedChainId && selectedChainId > 0) {
-      setSelectedChainIdState(selectedChainId)
+      setSelectedChainIdState(prev =>
+        prev === selectedChainId ? prev : selectedChainId,
+      )
       return
     }
     if (chainId > 0) {
-      setSelectedChainIdState(chainId)
-      updateSelectedChainId(roundId, chainId)
+      setSelectedChainIdState(prev => (prev === chainId ? prev : chainId))
+      if (selectedChainId !== chainId) {
+        updateSelectedChainId(roundId, chainId)
+      }
     }
   }, [chainId, isSafeWallet, selectedChainId, roundId, updateSelectedChainId])
 
