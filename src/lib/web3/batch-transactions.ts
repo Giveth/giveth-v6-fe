@@ -13,6 +13,8 @@ import { encode } from 'thirdweb'
 import type { PreparedTransaction } from 'thirdweb'
 import type { Account } from 'thirdweb/wallets'
 
+const SAFE_ALLOWED_DOMAINS = [/^https:\/\/app\.safe\.global$/]
+
 // Hex type definition for address and data fields
 export type Hex = `0x${string}`
 
@@ -144,7 +146,7 @@ export async function sendBatchCalls(
   if (isSafeWallet && typeof window !== 'undefined') {
     try {
       const sdk = new SafeAppsSDK({
-        allowedDomains: [/safe\.global$/],
+        allowedDomains: SAFE_ALLOWED_DOMAINS,
         debug: false,
       })
       const response = (await sdk.txs.send({
@@ -823,7 +825,7 @@ async function waitForSafeExecution(
   timeout: number,
 ): Promise<CallsStatus> {
   const sdk = new SafeAppsSDK({
-    allowedDomains: [/safe\.global$/],
+    allowedDomains: SAFE_ALLOWED_DOMAINS,
     debug: false,
   })
   const startTime = Date.now()
@@ -835,7 +837,6 @@ async function waitForSafeExecution(
       const txDetails = (await sdk.txs.getBySafeTxHash(safeTxHash)) as {
         txStatus?: unknown
         isExecuted?: unknown
-        isSuccessful?: unknown
       }
 
       const txStatus = String(txDetails.txStatus ?? '').toUpperCase()
@@ -868,7 +869,10 @@ async function waitForSafeExecution(
         Boolean(executionTxHash)
 
       if (isExecuted) {
-        const isFailed = txDetails.isSuccessful === false
+        const isFailed =
+          txStatus === 'FAILED' ||
+          txStatus === 'CANCELLED' ||
+          txStatus === 'REJECTED'
 
         return {
           status: isFailed ? 'FAILED' : 'CONFIRMED',
