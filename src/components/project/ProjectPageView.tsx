@@ -6,12 +6,15 @@ import { AboutTab } from '@/components/project/AboutTab'
 import { AllTimeDonations } from '@/components/project/AllTimeDonations'
 import { DonationCard } from '@/components/project/DonationCard'
 import { GivbacksInfoBox } from '@/components/project/GivbacksInfoBox'
+import { GivbacksApplicationModal } from '@/components/project/givbacks/GivbacksApplicationModal'
 import { ProjectDonationsTable } from '@/components/project/ProjectDonationsTable'
+import { useCurrentGivbacksEligibilityForm } from '@/hooks/useGivbacksEligibility'
 import { ProjectHero } from '@/components/project/ProjectHero'
 import { ProjectPageBadges } from '@/components/project/ProjectPageBadges'
 import { ProjectTabs } from '@/components/project/ProjectTabs'
 import { QFRoundSidebar } from '@/components/project/QFRoundSidebar'
 import { UpdatesTab } from '@/components/project/UpdatesTab'
+import { useSiweAuth } from '@/context/AuthContext'
 import {
   type ProjectBySlugQuery,
   type ProjectEntity,
@@ -41,6 +44,38 @@ export type ProjectPageViewData = {
   impactLocation?: string | null
 }
 
+function OwnerGivbacksCta({
+  slug,
+  open,
+  onOpenChange,
+}: {
+  slug: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const { data } = useCurrentGivbacksEligibilityForm(slug)
+  const status = data?.getCurrentGivbacksEligibilityForm?.status
+  const isUnderReview = status === 'SUBMITTED' || status === 'VERIFIED'
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={isUnderReview}
+        onClick={() => onOpenChange(true)}
+        className={`w-full rounded-xl px-6 py-3 font-semibold text-white transition-colors ${
+          isUnderReview
+            ? 'cursor-not-allowed bg-giv-neutral-400'
+            : 'cursor-pointer bg-giv-brand-500 hover:bg-giv-brand-700'
+        }`}
+      >
+        {isUnderReview ? 'Application under review' : 'Apply for GIVbacks'}
+      </button>
+      <GivbacksApplicationModal slug={slug} open={open} onOpenChange={onOpenChange} />
+    </>
+  )
+}
+
 export function ProjectPageView({
   project,
   updatesCount = null,
@@ -50,11 +85,18 @@ export function ProjectPageView({
   updatesCount?: number | null
   isPreview?: boolean
 }) {
+  const { user } = useSiweAuth()
   const [activeTab, setActiveTab] = useState(isPreview ? 'about' : 'donations')
   const [selectedRound, setSelectedRound] = useState<
     QfRoundSelection | undefined
   >(undefined)
+  const [givbacksModalOpen, setGivbacksModalOpen] = useState(false)
   const projectId = project?.id ? parseInt(project.id) : undefined
+  const isOwner = !!(
+    user?.id &&
+    project.adminUser?.id &&
+    String(user.id) === String(project.adminUser.id)
+  )
 
   return (
     <div className="min-h-screen bg-giv-neutral-200">
@@ -67,6 +109,13 @@ export function ProjectPageView({
           <div className="flex flex-col gap-6">
             <ProjectHero project={project} />
             <GivbacksInfoBox />
+            {isOwner && !project.isGivbacksEligible && (
+              <OwnerGivbacksCta
+                slug={project.slug}
+                open={givbacksModalOpen}
+                onOpenChange={setGivbacksModalOpen}
+              />
+            )}
           </div>
           <div className="flex flex-col gap-6">
             {!isPreview ? (
