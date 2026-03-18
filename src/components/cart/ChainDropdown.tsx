@@ -31,6 +31,8 @@ export const ChainDropdown = ({
     selectedChainId && selectedChainId > 0 ? selectedChainId : chainId,
   )
 
+  // If the user is using a Safe wallet, the chain is set to the current chain
+  // Otherwise, the chain is set to the selected chain or the current chain
   useEffect(() => {
     if (isSafeWallet) {
       if (chainId > 0) {
