@@ -2,10 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { graphQLClient } from '@/lib/graphql/client'
 import {
   type GetQfRoundHistoryQuery,
+  type IsRecipientUsedByOtherProjectQuery as IsRecipientUsedByOtherProjectQueryResult,
   type ProjectBySlugQuery,
   type ProjectEntity,
 } from '@/lib/graphql/generated/graphql'
-import { getQfRoundHistoryQuery } from '@/lib/graphql/queries'
+import {
+  getQfRoundHistoryQuery,
+  IsRecipientUsedByOtherProjectQuery,
+} from '@/lib/graphql/queries'
 
 type ProjectCategory = NonNullable<
   NonNullable<ProjectBySlugQuery['projectBySlug']['categories']>[number]
@@ -132,4 +136,29 @@ export const useProjectQfRoundHistory = (
     },
     enabled: !!projectId && !!qfRoundId,
   })
+}
+
+export const validateProjectRecipientAddress = async ({
+  projectId,
+  address,
+}: {
+  projectId: number
+  address: string
+}): Promise<true | string> => {
+  try {
+    const data =
+      await graphQLClient.request<IsRecipientUsedByOtherProjectQueryResult>(
+        IsRecipientUsedByOtherProjectQuery,
+        {
+          projectId,
+          address,
+        },
+      )
+
+    return data.isRecipientAddressUsedByOtherProject
+      ? 'This address is already used for another project.'
+      : true
+  } catch (error) {
+    return error instanceof Error ? error.message : 'Address validation failed.'
+  }
 }

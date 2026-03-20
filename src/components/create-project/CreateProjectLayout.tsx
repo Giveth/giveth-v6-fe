@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ExternalLink, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useCreateProjectDraftStore } from '@/stores/createProjectDraft.store'
+import { useCreateProjectDraftStore } from '@/store/createProjectDraft.store'
 import type { Route } from 'next'
 
 export function CreateProjectLayout({

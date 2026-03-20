@@ -66,6 +66,7 @@ export type CauseEntity = {
   createdAt: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   descriptionSummary?: Maybe<Scalars['String']['output']>;
+  givbacksEligibilityForm?: Maybe<GivbacksEligibilityFormEntity>;
   id: Scalars['ID']['output'];
   image?: Maybe<Scalars['String']['output']>;
   impactLocation?: Maybe<Scalars['String']['output']>;
@@ -855,6 +856,7 @@ export type ProjectEntity = {
   createdAt: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   descriptionSummary?: Maybe<Scalars['String']['output']>;
+  givbacksEligibilityForm?: Maybe<GivbacksEligibilityFormEntity>;
   id: Scalars['ID']['output'];
   image?: Maybe<Scalars['String']['output']>;
   impactLocation?: Maybe<Scalars['String']['output']>;
@@ -1155,6 +1157,7 @@ export type Query = {
   getTopPowerRank: Scalars['Float']['output'];
   globalConfiguration?: Maybe<GlobalConfigurationEntity>;
   globalConfigurations: Array<GlobalConfigurationEntity>;
+  isRecipientAddressUsedByOtherProject: Scalars['Boolean']['output'];
   isValidCauseTitle: Scalars['Boolean']['output'];
   isValidCauseTitleForEdit: Scalars['Boolean']['output'];
   isValidWalletAddress: Scalars['Boolean']['output'];
@@ -1329,6 +1332,12 @@ export type QueryGlobalConfigurationsArgs = {
 };
 
 
+export type QueryIsRecipientAddressUsedByOtherProjectArgs = {
+  address: Scalars['String']['input'];
+  projectId: Scalars['Int']['input'];
+};
+
+
 export type QueryIsValidCauseTitleArgs = {
   causeId?: InputMaybe<Scalars['Int']['input']>;
   title: Scalars['String']['input'];
@@ -1358,6 +1367,7 @@ export type QueryMyProjectsArgs = {
   filters?: InputMaybe<ProjectFiltersInput>;
   orderBy?: ProjectSortField;
   orderDirection?: SortDirection;
+  projectType?: InputMaybe<ProjectType>;
   skip?: Scalars['Int']['input'];
   take?: Scalars['Int']['input'];
 };
@@ -1873,10 +1883,18 @@ export type MyProjectsQueryVariables = Exact<{
   take?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<ProjectSortField>;
   orderDirection?: InputMaybe<SortDirection>;
+  projectType?: InputMaybe<ProjectType>;
 }>;
 
 
-export type MyProjectsQuery = { __typename?: 'Query', myProjects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, createdAt: any, reviewStatus: ReviewStatus, isGivbacksEligible: boolean, vouched: boolean, totalDonations: number }> } };
+export type MyProjectsQuery = { __typename?: 'Query', myProjects: { __typename?: 'PaginatedProjectsEntity', total: number, projects: Array<{ __typename?: 'ProjectEntity', id: string, title: string, slug: string, createdAt: any, status?: ProjectStatus | null, projectType: ProjectType, reviewStatus: ReviewStatus, isGivbacksEligible: boolean, vouched: boolean, totalDonations: number, givbacksEligibilityForm?: { __typename?: 'GivbacksEligibilityFormEntity', id: number, status: GivbacksEligibilityStatus } | null }> } };
+
+export type GetCurrentGivbacksEligibilityFormQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type GetCurrentGivbacksEligibilityFormQuery = { __typename?: 'Query', getCurrentGivbacksEligibilityForm: { __typename?: 'GivbacksEligibilityFormEntity', id: number, status: GivbacksEligibilityStatus } };
 
 export type MyDonationsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -1973,6 +1991,14 @@ export type GetQfRoundHistoryQueryVariables = Exact<{
 
 
 export type GetQfRoundHistoryQuery = { __typename?: 'Query', getQfRoundHistory?: { __typename?: 'QfRoundHistoryEntity', projectId: number, qfRoundId: number, uniqueDonors?: number | null, donationsCount?: number | null, raisedFundInUsd?: number | null, allocatedFundUSDPreferred?: boolean | null, estimatedMatching?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null } | null, distributedFund?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null, currency?: string | null, txHash?: string | null, networkId?: number | null, txDate?: any | null } | null } | null };
+
+export type IsRecipientUsedByOtherProjectQueryVariables = Exact<{
+  projectId: Scalars['Int']['input'];
+  address: Scalars['String']['input'];
+}>;
+
+
+export type IsRecipientUsedByOtherProjectQuery = { __typename?: 'Query', isRecipientAddressUsedByOtherProject: boolean };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2503,12 +2529,13 @@ export const UserStatsDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<UserStatsQuery, UserStatsQueryVariables>;
 export const MyProjectsDocument = new TypedDocumentString(`
-    query MyProjects($skip: Int = 0, $take: Int = 10, $orderBy: ProjectSortField = CreatedAt, $orderDirection: SortDirection = DESC) {
+    query MyProjects($skip: Int = 0, $take: Int = 10, $orderBy: ProjectSortField = CreatedAt, $orderDirection: SortDirection = DESC, $projectType: ProjectType) {
   myProjects(
     skip: $skip
     take: $take
     orderBy: $orderBy
     orderDirection: $orderDirection
+    projectType: $projectType
   ) {
     total
     projects {
@@ -2516,14 +2543,28 @@ export const MyProjectsDocument = new TypedDocumentString(`
       title
       slug
       createdAt
+      status
+      projectType
       reviewStatus
       isGivbacksEligible
       vouched
       totalDonations
+      givbacksEligibilityForm {
+        id
+        status
+      }
     }
   }
 }
     `) as unknown as TypedDocumentString<MyProjectsQuery, MyProjectsQueryVariables>;
+export const GetCurrentGivbacksEligibilityFormDocument = new TypedDocumentString(`
+    query GetCurrentGivbacksEligibilityForm($slug: String!) {
+  getCurrentGivbacksEligibilityForm(slug: $slug) {
+    id
+    status
+  }
+}
+    `) as unknown as TypedDocumentString<GetCurrentGivbacksEligibilityFormQuery, GetCurrentGivbacksEligibilityFormQueryVariables>;
 export const MyDonationsDocument = new TypedDocumentString(`
     query MyDonations($skip: Int = 0, $take: Int = 20, $orderBy: DonationSortField! = CreatedAt, $orderDirection: SortDirection! = DESC) {
   myDonations(
@@ -2785,3 +2826,8 @@ export const GetQfRoundHistoryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<GetQfRoundHistoryQuery, GetQfRoundHistoryQueryVariables>;
+export const IsRecipientUsedByOtherProjectDocument = new TypedDocumentString(`
+    query IsRecipientUsedByOtherProject($projectId: Int!, $address: String!) {
+  isRecipientAddressUsedByOtherProject(projectId: $projectId, address: $address)
+}
+    `) as unknown as TypedDocumentString<IsRecipientUsedByOtherProjectQuery, IsRecipientUsedByOtherProjectQueryVariables>;

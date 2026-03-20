@@ -4,6 +4,7 @@ import { isAddress } from 'viem'
 import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { formatContentForStorage } from '@/components/editor/readonlyQuillContent'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
@@ -52,11 +53,19 @@ export type CreateProjectDraftErrors = Partial<
   >
 >
 
+/**
+ * Create a unique id
+ * @returns The unique id
+ */
 const createId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2)
 
+/**
+ * The schema for a URL or empty string
+ * @returns The schema for a URL or empty string
+ */
 const urlOrEmpty = z
   .string()
   .trim()
@@ -65,6 +74,11 @@ const urlOrEmpty = z
     message: 'Please enter a valid URL',
   })
 
+/**
+ * Check if the value is a valid URL
+ * @param value - The value to check
+ * @returns True if the value is a valid URL, false otherwise
+ */
 function safeIsUrl(value: string): boolean {
   try {
     // Accept users pasting without protocol (e.g. example.com)
@@ -78,21 +92,120 @@ function safeIsUrl(value: string): boolean {
   }
 }
 
+/**
+ * Check if the value is a valid base58 address
+ * @param value - The value to check
+ * @returns True if the value is a valid base58 address, false otherwise
+ */
 function isBase58(value: string): boolean {
   // Excludes 0 O I l
   return /^[1-9A-HJ-NP-Za-km-z]+$/.test(value)
 }
 
+const BASE58_ALPHABET =
+  '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+const STELLAR_BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+const STELLAR_ED25519_PUBLIC_KEY_VERSION_BYTE = 6 << 3 // 48, "G..."
+
+function decodeBase58(value: string): Uint8Array | null {
+  if (!value) return null
+
+  let decoded = 0n
+  for (const char of value) {
+    const digit = BASE58_ALPHABET.indexOf(char)
+    if (digit < 0) return null
+    decoded = decoded * 58n + BigInt(digit)
+  }
+
+  const bytes: number[] = []
+  while (decoded > 0n) {
+    bytes.push(Number(decoded & 0xffn))
+    decoded >>= 8n
+  }
+  bytes.reverse()
+
+  const leadingZeroes = value.match(/^1+/)?.[0].length ?? 0
+  return new Uint8Array([...new Array(leadingZeroes).fill(0), ...bytes])
+}
+
+function decodeBase32(value: string): Uint8Array | null {
+  if (!value) return null
+
+  let buffer = 0
+  let bits = 0
+  const out: number[] = []
+
+  for (const char of value) {
+    const idx = STELLAR_BASE32_ALPHABET.indexOf(char)
+    if (idx < 0) return null
+
+    buffer = (buffer << 5) | idx
+    bits += 5
+
+    while (bits >= 8) {
+      bits -= 8
+      out.push((buffer >> bits) & 0xff)
+      buffer &= (1 << bits) - 1
+    }
+  }
+
+  return new Uint8Array(out)
+}
+
+function crc16Xmodem(data: Uint8Array): number {
+  let crc = 0x0000
+  for (const byte of data) {
+    crc ^= byte << 8
+    for (let i = 0; i < 8; i += 1) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ 0x1021) & 0xffff
+      } else {
+        crc = (crc << 1) & 0xffff
+      }
+    }
+  }
+  return crc
+}
+
+/**
+ * Check if the value is a valid Solana address
+ * @param value - The value to check
+ * @returns True if the value is a valid Solana address, false otherwise
+ */
 function isSolanaAddress(value: string): boolean {
-  // Minimal validation: base58, common length range for Solana public keys.
-  return isBase58(value) && value.length >= 32 && value.length <= 44
+  const normalized = value.trim()
+  if (!isBase58(normalized)) return false
+  const decoded = decodeBase58(normalized)
+  return Boolean(decoded && decoded.length === 32)
 }
 
+/**
+ * Check if the value is a valid Stellar address
+ * @param value - The value to check
+ * @returns True if the value is a valid Stellar address, false otherwise
+ */
 function isStellarAddress(value: string): boolean {
-  // Minimal StrKey format check for public key: starts with 'G' and base32 chars.
-  return /^G[A-Z2-7]{55}$/.test(value)
+  const normalized = value.trim().toUpperCase()
+  if (!/^G[A-Z2-7]{55}$/.test(normalized)) return false
+
+  const decoded = decodeBase32(normalized)
+  if (!decoded || decoded.length !== 35) return false
+
+  const payload = decoded.slice(0, 33) // version byte + 32-byte pubkey
+  const checksum = decoded.slice(33, 35) // little-endian CRC16-XModem
+  if (payload[0] !== STELLAR_ED25519_PUBLIC_KEY_VERSION_BYTE) return false
+
+  const expectedChecksum = crc16Xmodem(payload)
+  const lo = expectedChecksum & 0xff
+  const hi = (expectedChecksum >> 8) & 0xff
+  return checksum[0] === lo && checksum[1] === hi
 }
 
+/**
+ * Validate the create project draft
+ * @param draft - The draft to validate
+ * @returns The errors
+ */
 export function validateCreateProjectDraft(
   draft: CreateProjectDraft,
 ): CreateProjectDraftErrors {
@@ -137,6 +250,12 @@ export function validateCreateProjectDraft(
   return errors
 }
 
+/**
+ * The shape of the create-project draft store state.
+ *
+ * Includes draft values, validation/submission state,
+ * and actions to mutate or submit the draft.
+ */
 export type CreateProjectDraftState = {
   draft: CreateProjectDraft
   errors: CreateProjectDraftErrors
@@ -165,6 +284,10 @@ export type CreateProjectDraftState = {
   reset: () => void
 }
 
+/**
+ * The initial draft
+ * @returns The initial draft
+ */
 const initialDraft: CreateProjectDraft = {
   title: '',
   description: '',
@@ -339,7 +462,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
           const variables: unknown = {
             input: {
               title: draft.title.trim(),
-              description: draft.description.trim(),
+              description: formatContentForStorage(draft.description.trim()),
               image: draft.image.trim() ? draft.image.trim() : null,
               impactLocation: draft.impactLocation.trim()
                 ? draft.impactLocation.trim()

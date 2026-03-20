@@ -449,12 +449,14 @@ export const myProjectsQuery = graphql(`
     $take: Int = 10
     $orderBy: ProjectSortField = CreatedAt
     $orderDirection: SortDirection = DESC
+    $projectType: ProjectType
   ) {
     myProjects(
       skip: $skip
       take: $take
       orderBy: $orderBy
       orderDirection: $orderDirection
+      projectType: $projectType
     ) {
       total
       projects {
@@ -462,11 +464,26 @@ export const myProjectsQuery = graphql(`
         title
         slug
         createdAt
+        status
+        projectType
         reviewStatus
         isGivbacksEligible
         vouched
         totalDonations
+        givbacksEligibilityForm {
+          id
+          status
+        }
       }
+    }
+  }
+`)
+
+export const getCurrentGivbacksEligibilityFormQuery = graphql(`
+  query GetCurrentGivbacksEligibilityForm($slug: String!) {
+    getCurrentGivbacksEligibilityForm(slug: $slug) {
+      id
+      status
     }
   }
 `)
@@ -758,3 +775,43 @@ export const getQfRoundHistoryQuery = graphql(`
     }
   }
 `)
+
+export const IsRecipientUsedByOtherProjectQuery = graphql(`
+  query IsRecipientUsedByOtherProject($projectId: Int!, $address: String!) {
+    isRecipientAddressUsedByOtherProject(
+      projectId: $projectId
+      address: $address
+    )
+  }
+`)
+
+export const updateProjectWithOptionalFieldsMutation = `
+  mutation UpdateProject($projectId: Int!, $input: UpdateProjectInput!) {
+    updateProject(projectId: $projectId, input: $input) {
+      id
+      title
+      description
+      image
+      impactLocation
+      categories {
+        id
+        name
+      }
+      addresses {
+        id
+        address
+        networkId
+        title
+        memo
+        chainType
+        isRecipient
+      }
+      socialMedia {
+        id
+        type
+        link
+      }
+      updatedAt
+    }
+  }
+`

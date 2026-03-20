@@ -12,8 +12,10 @@ import { IconSafe } from '@/components/icons/wallets/IconSafe'
 import { IconTrust } from '@/components/icons/wallets/IconTrust'
 import type { ChainInfo } from '@/lib/types/chain'
 
-export const CHAINS: Record<number, ChainInfo> = {
-  // Mainnets
+// If VERCEL_ENV is not set, default to production
+const environment = process.env.VERCEL_ENV ?? 'production'
+
+export const PRODUCTION_CHAINS: Record<number, ChainInfo> = {
   1: {
     id: 1,
     name: 'Ethereum',
@@ -183,24 +185,12 @@ export const CHAINS: Record<number, ChainInfo> = {
       decimals: 6,
     },
   },
+}
 
-  // Testnets
-  3: {
-    id: 3,
-    name: 'Ropsten',
-    shortName: 'ROP',
-    blockExplorerUrl: 'https://ropsten.etherscan.io/',
-    iconKey: 'ethereum',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
+export const TESTNET_CHAINS: Record<number, ChainInfo> = {
   11155111: {
     id: 11155111,
-    name: 'Sepolia',
+    name: 'Ethereum Sepolia',
     shortName: 'SEP',
     blockExplorerUrl: 'https://sepolia.etherscan.io/',
     iconKey: 'ethereum',
@@ -208,32 +198,6 @@ export const CHAINS: Record<number, ChainInfo> = {
     nativeCurrency: {
       name: 'Ether',
       symbol: 'ETH',
-      decimals: 18,
-    },
-  },
-  63: {
-    id: 63,
-    name: 'Mordor',
-    shortName: 'MOR',
-    blockExplorerUrl: 'https://etc-mordor.blockscout.com/',
-    iconKey: 'etc',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Mordor ETC',
-      symbol: 'mETC',
-      decimals: 18,
-    },
-  },
-  44787: {
-    id: 44787,
-    name: 'Celo Alfajores Testnet',
-    shortName: 'ALF',
-    blockExplorerUrl: 'https://explorer.celo.org/alfajores/',
-    iconKey: 'celo',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'CELO',
-      symbol: 'CELO',
       decimals: 18,
     },
   },
@@ -250,22 +214,9 @@ export const CHAINS: Record<number, ChainInfo> = {
       decimals: 18,
     },
   },
-  421614: {
-    id: 421614,
-    name: 'Arbitrum Sepolia Testnet',
-    shortName: 'ARB-SEP',
-    blockExplorerUrl: 'https://sepolia.arbiscan.io/',
-    iconKey: 'arbitrum',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
   84532: {
     id: 84532,
-    name: 'Base Sepolia Testnet',
+    name: 'Base Sepolia',
     shortName: 'BASE-SEP',
     blockExplorerUrl: 'https://sepolia.basescan.org/',
     iconKey: 'base',
@@ -276,59 +227,12 @@ export const CHAINS: Record<number, ChainInfo> = {
       decimals: 18,
     },
   },
-  2442: {
-    id: 2442,
-    name: 'Polygon zkEVM Cardona',
-    shortName: 'ZK-CARD',
-    blockExplorerUrl: 'https://cardona-zkevm.polygonscan.com/',
-    iconKey: 'zkevm',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-  },
-  102: {
-    id: 102,
-    name: 'Solana Testnet',
-    shortName: 'SOL-T',
-    blockExplorerUrl: 'https://explorer.solana.com/',
-    iconKey: 'solana',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Solana',
-      symbol: 'SOL',
-      decimals: 9,
-    },
-  },
-  103: {
-    id: 103,
-    name: 'Solana Devnet',
-    shortName: 'SOL-D',
-    blockExplorerUrl: 'https://explorer.solana.com/',
-    iconKey: 'solana',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Solana',
-      symbol: 'SOL',
-      decimals: 9,
-    },
-  },
-  3001: {
-    id: 3001,
-    name: 'Cardano Preprod',
-    shortName: 'ADA-P',
-    blockExplorerUrl: 'https://preprod.cardanoscan.io/',
-    iconKey: 'cardano',
-    isTestnet: true,
-    nativeCurrency: {
-      name: 'Ada',
-      symbol: 'ADA',
-      decimals: 6,
-    },
-  },
 }
+
+export const CHAINS: Record<number, ChainInfo> =
+  environment === 'production'
+    ? PRODUCTION_CHAINS
+    : { ...PRODUCTION_CHAINS, ...TESTNET_CHAINS }
 
 // SVG icons from cryptocurrency-icons package via jsDelivr CDN
 const ETH_ICON =

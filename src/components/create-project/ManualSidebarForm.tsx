@@ -27,7 +27,7 @@ import {
   validateCreateProjectDraft,
   type CreateProjectChainType,
   type CreateProjectSocialType,
-} from '@/stores/createProjectDraft.store'
+} from '@/store/createProjectDraft.store'
 
 type FormSectionKey =
   | 'projectDetails'
