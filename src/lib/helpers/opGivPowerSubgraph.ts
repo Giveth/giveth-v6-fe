@@ -37,6 +37,7 @@ const GRAPH_GATEWAY_PROXYABLE_REGEX =
 const GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX =
   /^https:\/\/gateway\.thegraph\.com\/api\/subgraphs\/id\//
 const OP_GIVPOWER_PROXY_ENDPOINT = '/api/subgraph/op-givpower'
+const SUBGRAPH_FETCH_TIMEOUT_MS = 10_000
 
 /**
  * Format a value to a human-readable format
@@ -94,16 +95,54 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
     ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
   }
 
-  const res = await fetch(subgraphUrl, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      query,
-      variables: { id },
-    }),
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    SUBGRAPH_FETCH_TIMEOUT_MS,
+  )
 
-  const json = (await res.json()) as SubgraphResponse
+  let res: Response
+  try {
+    res = await fetch(subgraphUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        query,
+        variables: { id },
+      }),
+      signal: controller.signal,
+    })
+  } catch (error) {
+    const isAbortError =
+      typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      (error as { name?: string }).name === 'AbortError'
+
+    if (isAbortError) {
+      throw new Error(
+        `Subgraph request timed out after ${SUBGRAPH_FETCH_TIMEOUT_MS}ms`,
+      )
+    }
+
+    throw new Error(
+      error instanceof Error
+        ? `Subgraph request failed: ${error.message}`
+        : 'Subgraph request failed',
+    )
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  const responseText = await res.text()
+  let json: SubgraphResponse = {}
+  if (responseText) {
+    try {
+      json = JSON.parse(responseText) as SubgraphResponse
+    } catch {
+      json = {}
+    }
+  }
 
   if (!res.ok) {
     const graphError = json?.errors?.[0]?.message

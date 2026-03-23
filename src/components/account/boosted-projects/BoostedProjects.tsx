@@ -128,6 +128,7 @@ export const BoostedProjects = () => {
     )
   }, [boostData?.boostedProjects])
 
+  // Get the view rows, this is used to display the boosted projects in the table
   const viewRows = useMemo<BoostedProjectTableRow[]>(() => {
     return boostedProjects
       .map(item => {
@@ -152,6 +153,7 @@ export const BoostedProjects = () => {
       })
   }, [boostedProjects, totalGivpower, sortBy, sortDirection])
 
+  // Get the edit rows, this is used to display the boosted projects in the table
   const editRows = useMemo<BoostedProjectTableRow[]>(() => {
     return editBoosts.map(boost => {
       const percent = Number(boost.percentage) || 0
@@ -172,18 +174,27 @@ export const BoostedProjects = () => {
     })
   }, [editBoosts, totalGivpower])
 
+  // Get the rows, this is used to display the boosted projects in the table
   const rows: BoostedProjectTableRow[] =
     mode === 'EDITING' ? editRows : viewRows
   const viewTotalPercent = useMemo(
     () => viewRows.reduce((acc, row) => acc + row.percent, 0),
     [viewRows],
   )
+
+  // Get the displayed total percent, this is used to display the total percent of the boosted projects
   const displayedTotalPercent = mode === 'EDITING' ? sum : viewTotalPercent
+  // Get the has edit error, this is used to check if there is an error in the edit boosts
   const hasEditError = editBoosts.some(boost => boost.hasError)
+  // Get the has empty input, this is used to check if there is an empty input in the edit boosts
   const hasEmptyInput = editBoosts.some(boost => boost.displayValue === '')
+  // Get the is sum at hundred, this is used to check if the sum is at hundred
   const isSumAtHundred = Math.abs(sum - 100) < SUM_TOLERANCE
+  // Get the is mutation in flight, this is used to check if there is a mutation in flight
   const isMutationInFlight = isSyncingBoost || pendingProjectId != null
+  // Get the can enter edit mode, this is used to check if the user can enter the edit mode
   const canEnterEditMode = viewRows.length >= 2 && !isMutationInFlight
+  // Get the can apply changes, this is used to check if the user can apply the changes
   const canApplyChanges =
     mode === 'EDITING' &&
     !isSyncingBoost &&
@@ -235,6 +246,8 @@ export const BoostedProjects = () => {
 
   // Handle the reset all event, this is used to reset all the boosted projects
   const handleResetAll = () => {
+    if (isSyncingBoost) return
+
     const resetBoosts = cloneBoosts(initialEditBoosts)
     setEditBoosts(resetBoosts)
     setSum(calculateBoostSum(resetBoosts))
@@ -243,6 +256,8 @@ export const BoostedProjects = () => {
 
   // Handle the cancel editing event, this is used to cancel the editing mode
   const handleCancelEditing = () => {
+    if (isSyncingBoost) return
+
     handleResetAll()
     setMode('VIEWING')
     setEditBoosts([])
@@ -252,6 +267,8 @@ export const BoostedProjects = () => {
 
   // Handle the lock power event, this is used to lock or unlock a boosted project
   const toggleLockPower = (id: string) => {
+    if (isSyncingBoost) return
+
     setEditBoosts(prevBoosts => {
       const tempBoosts = cloneBoosts(prevBoosts)
       let locksCount = 0
@@ -282,6 +299,8 @@ export const BoostedProjects = () => {
     rawValue: string,
     isOnBlur = false,
   ) => {
+    if (isSyncingBoost) return
+
     let nextRawValue = rawValue.trim()
 
     // If the input is on blur, we need to validate the input
@@ -361,11 +380,13 @@ export const BoostedProjects = () => {
 
       const diff = 100 - (sumOfLocks + sumOfUnlocks)
       const sumOfOtherUnlocks = sumOfUnlocks - newPercentage
+      const evenSplitRate =
+        otherNonLockedBoosts.length > 0 ? 1 / otherNonLockedBoosts.length : 0
       for (const boost of otherNonLockedBoosts) {
         const rate =
           sumOfOtherUnlocks !== 0
             ? Number(boost.percentage) / sumOfOtherUnlocks
-            : 0.1
+            : evenSplitRate
         boost.percentage = Number(
           (Number(boost.percentage) + rate * diff).toFixed(2),
         )
@@ -486,10 +507,13 @@ export const BoostedProjects = () => {
             <button
               type="button"
               onClick={handleResetAll}
+              disabled={isSyncingBoost}
               className={clsx(
                 'w-auto py-2 px-4 rounded-md text-sm font-bold',
                 'border border-giv-neutral-300 text-giv-neutral-700',
-                'hover:opacity-80 cursor-pointer',
+                isSyncingBoost
+                  ? 'opacity-60 cursor-not-allowed'
+                  : 'hover:opacity-80 cursor-pointer',
               )}
             >
               Reset All
@@ -511,10 +535,13 @@ export const BoostedProjects = () => {
             <button
               type="button"
               onClick={handleCancelEditing}
+              disabled={isSyncingBoost}
               className={clsx(
                 'w-auto py-2 px-4 rounded-md text-sm font-bold',
                 'border border-giv-neutral-300 text-giv-neutral-700',
-                'hover:opacity-80 cursor-pointer',
+                isSyncingBoost
+                  ? 'opacity-60 cursor-not-allowed'
+                  : 'hover:opacity-80 cursor-pointer',
               )}
             >
               Cancel
@@ -634,6 +661,7 @@ export const BoostedProjects = () => {
                       <input
                         type="text"
                         inputMode="decimal"
+                        disabled={isSyncingBoost}
                         value={
                           row.displayValue ?? formatInputPercent(row.percent)
                         }
@@ -648,6 +676,7 @@ export const BoostedProjects = () => {
                           row.hasError
                             ? 'border-giv-error-400 bg-giv-error-100 text-giv-error-400'
                             : 'border-giv-neutral-300 text-giv-neutral-800',
+                          isSyncingBoost && 'opacity-60 cursor-not-allowed',
                         )}
                         aria-label={`Allocation percentage for ${row.title}`}
                       />
@@ -655,16 +684,19 @@ export const BoostedProjects = () => {
                       <button
                         type="button"
                         onClick={() => toggleLockPower(row.id)}
-                        disabled={!row.isLocked && !row.isLockable}
+                        disabled={
+                          isSyncingBoost || (!row.isLocked && !row.isLockable)
+                        }
                         className={clsx(
                           'inline-flex items-center justify-center rounded-md border p-1 transition-colors',
                           row.isLocked
                             ? 'border-giv-brand-300 text-giv-brand-500 bg-giv-brand-050'
                             : 'border-giv-neutral-300 text-giv-neutral-700',
-                          !row.isLocked &&
-                            !row.isLockable &&
+                          (isSyncingBoost ||
+                            (!row.isLocked && !row.isLockable)) &&
                             'opacity-50 cursor-not-allowed',
-                          (row.isLocked || row.isLockable) &&
+                          !isSyncingBoost &&
+                            (row.isLocked || row.isLockable) &&
                             'hover:opacity-80',
                         )}
                         aria-label={
