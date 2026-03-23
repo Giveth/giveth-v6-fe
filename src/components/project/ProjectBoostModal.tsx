@@ -1,6 +1,6 @@
 'use client'
 
-import { type CSSProperties, useEffect, useRef, useState } from 'react'
+import { type CSSProperties, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Dialog } from '@radix-ui/themes'
 import clsx from 'clsx'
@@ -108,16 +108,19 @@ export default function ProjectBoostModal({
   )
 
   const [allocationPercent, setAllocationPercent] = useState(0)
-  const fetchedAllocationPercentRef = useRef(fetchedAllocationPercent)
+  const [hasUserAdjustedAllocation, setHasUserAdjustedAllocation] =
+    useState(false)
 
+  // Keep slider synced from backend until user starts changing it.
   useEffect(() => {
-    fetchedAllocationPercentRef.current = fetchedAllocationPercent
-  }, [fetchedAllocationPercent])
-
-  // Only sync allocation from backend when modal opens.
-  useEffect(() => {
-    if (open) setAllocationPercent(fetchedAllocationPercentRef.current)
-  }, [open])
+    if (!open) {
+      setHasUserAdjustedAllocation(false)
+      return
+    }
+    if (!hasUserAdjustedAllocation) {
+      setAllocationPercent(fetchedAllocationPercent)
+    }
+  }, [open, fetchedAllocationPercent, hasUserAdjustedAllocation])
 
   // Handle the open change event
   const handleOpenChange = (nextOpen: boolean) => {
@@ -125,6 +128,7 @@ export default function ProjectBoostModal({
       setShowBoostSuccess(false)
       setConfirmedAllocationPercent(0)
       setSubmitBoostError(null)
+      setHasUserAdjustedAllocation(false)
     }
     onOpenChange(nextOpen)
   }
@@ -463,9 +467,10 @@ export default function ProjectBoostModal({
                     max={100}
                     step={1}
                     value={allocationPercent}
-                    onChange={event =>
+                    onChange={event => {
+                      setHasUserAdjustedAllocation(true)
                       setAllocationPercent(Number(event.target.value))
-                    }
+                    }}
                     style={
                       { '--percent': `${allocationPercent}%` } as CSSProperties
                     }

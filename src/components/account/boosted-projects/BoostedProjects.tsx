@@ -59,6 +59,7 @@ const cloneBoosts = (boosts: IEnhancedPowerBoosting[]) =>
 
 const formatInputPercent = (value: number) =>
   Number.isInteger(value) ? `${value}` : Number(value.toFixed(2)).toString()
+const roundAllocationPercent = (value: number) => Number(value.toFixed(2))
 
 /**
  * Format a number as a percentage
@@ -333,6 +334,7 @@ export const BoostedProjects = () => {
     ) {
       return
     }
+    const normalizedNewPercentage = roundAllocationPercent(newPercentage)
 
     // Update the boosted projects, this is used to update the percentage of a boosted project
     // This is a side effect, so we need to use a function to update the state
@@ -350,9 +352,9 @@ export const BoostedProjects = () => {
 
         if (boost.id === id) {
           changedBoost = boost
-          changedBoost.percentage = newPercentage
+          changedBoost.percentage = normalizedNewPercentage
           changedBoost.displayValue = nextRawValue
-          sumOfUnlocks += newPercentage
+          sumOfUnlocks += normalizedNewPercentage
         } else if (!boost.isLocked) {
           otherNonLockedBoosts.push(boost)
           sumOfUnlocks += Number(boost.percentage)
@@ -364,13 +366,13 @@ export const BoostedProjects = () => {
       if (!changedBoost) return tempBoosts
 
       const free = 100 - sumOfLocks
-      if (newPercentage > free) {
+      if (normalizedNewPercentage > free) {
         changedBoost.hasError = true
         return tempBoosts
       }
 
       const diff = 100 - (sumOfLocks + sumOfUnlocks)
-      const sumOfOtherUnlocks = sumOfUnlocks - newPercentage
+      const sumOfOtherUnlocks = sumOfUnlocks - normalizedNewPercentage
       const evenSplitRate =
         otherNonLockedBoosts.length > 0 ? 1 / otherNonLockedBoosts.length : 0
       for (const boost of otherNonLockedBoosts) {
@@ -378,8 +380,20 @@ export const BoostedProjects = () => {
           sumOfOtherUnlocks !== 0
             ? Number(boost.percentage) / sumOfOtherUnlocks
             : evenSplitRate
-        boost.percentage = Number(
-          (Number(boost.percentage) + rate * diff).toFixed(2),
+        boost.percentage = roundAllocationPercent(
+          Number(boost.percentage) + rate * diff,
+        )
+      }
+
+      // Keep editor math stable by assigning any post-rounding remainder
+      // into one adjustable row so total stays exactly 100.
+      const roundingRemainder = roundAllocationPercent(
+        100 - calculateBoostSum(tempBoosts),
+      )
+      const remainderTarget = otherNonLockedBoosts[0] ?? changedBoost
+      if (remainderTarget && roundingRemainder !== 0) {
+        remainderTarget.percentage = roundAllocationPercent(
+          Number(remainderTarget.percentage) + roundingRemainder,
         )
       }
 
