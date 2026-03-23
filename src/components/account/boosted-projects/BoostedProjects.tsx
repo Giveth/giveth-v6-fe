@@ -83,7 +83,6 @@ export const BoostedProjects = () => {
   const [initialEditBoosts, setInitialEditBoosts] = useState<
     IEnhancedPowerBoosting[]
   >([])
-  const [sum, setSum] = useState(100)
 
   const connectedUserId =
     Number(user?.id) ||
@@ -181,6 +180,7 @@ export const BoostedProjects = () => {
     () => viewRows.reduce((acc, row) => acc + row.percent, 0),
     [viewRows],
   )
+  const sum = useMemo(() => calculateBoostSum(editBoosts), [editBoosts])
 
   // Get the displayed total percent, this is used to display the total percent of the boosted projects
   const displayedTotalPercent = mode === 'EDITING' ? sum : viewTotalPercent
@@ -240,7 +240,6 @@ export const BoostedProjects = () => {
     setMode('EDITING')
     setEditBoosts(freshEditBoosts)
     setInitialEditBoosts(cloneBoosts(freshEditBoosts))
-    setSum(calculateBoostSum(freshEditBoosts))
     setActionError(null)
   }
 
@@ -250,7 +249,6 @@ export const BoostedProjects = () => {
 
     const resetBoosts = cloneBoosts(initialEditBoosts)
     setEditBoosts(resetBoosts)
-    setSum(calculateBoostSum(resetBoosts))
     setActionError(null)
   }
 
@@ -262,7 +260,6 @@ export const BoostedProjects = () => {
     setMode('VIEWING')
     setEditBoosts([])
     setInitialEditBoosts([])
-    setSum(100)
   }
 
   // Handle the lock power event, this is used to lock or unlock a boosted project
@@ -337,8 +334,6 @@ export const BoostedProjects = () => {
       return
     }
 
-    let nextSum = sum
-
     // Update the boosted projects, this is used to update the percentage of a boosted project
     // This is a side effect, so we need to use a function to update the state
     // We need to clone the boosts to avoid mutating the original state
@@ -366,15 +361,11 @@ export const BoostedProjects = () => {
         }
       }
 
-      if (!changedBoost) {
-        nextSum = calculateBoostSum(tempBoosts)
-        return tempBoosts
-      }
+      if (!changedBoost) return tempBoosts
 
       const free = 100 - sumOfLocks
       if (newPercentage > free) {
         changedBoost.hasError = true
-        nextSum = sumOfLocks + sumOfUnlocks
         return tempBoosts
       }
 
@@ -392,11 +383,8 @@ export const BoostedProjects = () => {
         )
       }
 
-      nextSum = calculateBoostSum(tempBoosts)
       return tempBoosts
     })
-
-    setSum(nextSum)
   }
 
   // Handle the apply changes event, this is used to apply the changes to the boosted projects
@@ -430,7 +418,6 @@ export const BoostedProjects = () => {
       setMode('VIEWING')
       setEditBoosts([])
       setInitialEditBoosts([])
-      setSum(100)
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : 'Failed to save allocations',
@@ -729,12 +716,16 @@ export const BoostedProjects = () => {
                 type="button"
                 onClick={() => handleRemoveBoost(row.projectId)}
                 disabled={
-                  mode === 'EDITING' || pendingProjectId === row.projectId
+                  mode === 'EDITING' ||
+                  isSyncingBoost ||
+                  pendingProjectId === row.projectId
                 }
                 className={clsx(
                   'inline-flex items-center justify-center rounded-xl border px-3 py-2 transition-colors',
                   'border-giv-brand-100 text-giv-brand-500',
-                  mode === 'EDITING' || pendingProjectId === row.projectId
+                  mode === 'EDITING' ||
+                    isSyncingBoost ||
+                    pendingProjectId === row.projectId
                     ? 'opacity-60 cursor-not-allowed'
                     : 'hover:opacity-80 cursor-pointer',
                 )}
