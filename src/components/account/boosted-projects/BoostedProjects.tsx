@@ -193,8 +193,9 @@ export const BoostedProjects = () => {
   const isSumAtHundred = Math.abs(sum - 100) < SUM_TOLERANCE
   // Get the is mutation in flight, this is used to check if there is a mutation in flight
   const isMutationInFlight = isSyncingBoost || pendingProjectId != null
+  const isTableReadOnly = isMutationInFlight || isFetchingBoostData
   // Get the can enter edit mode, this is used to check if the user can enter the edit mode
-  const canEnterEditMode = viewRows.length >= 2 && !isMutationInFlight
+  const canEnterEditMode = viewRows.length >= 2 && !isTableReadOnly
   // Get the can apply changes, this is used to check if the user can apply the changes
   const canApplyChanges =
     mode === 'EDITING' &&
@@ -303,7 +304,7 @@ export const BoostedProjects = () => {
 
     // If the input is on blur, we need to validate the input
     if (isOnBlur) {
-      if (nextRawValue === '') nextRawValue = '0.1'
+      if (nextRawValue === '') nextRawValue = '0'
       else {
         setEditBoosts(prevBoosts =>
           prevBoosts.map(boost =>
@@ -441,7 +442,7 @@ export const BoostedProjects = () => {
 
   // Handle the remove boost event
   const handleRemoveBoost = async (projectId: number) => {
-    if (isSyncingBoost || mode === 'EDITING') return
+    if (isTableReadOnly || mode === 'EDITING') return
 
     setActionError(null)
     setPendingProjectId(projectId)
@@ -729,17 +730,11 @@ export const BoostedProjects = () => {
               <button
                 type="button"
                 onClick={() => handleRemoveBoost(row.projectId)}
-                disabled={
-                  mode === 'EDITING' ||
-                  isSyncingBoost ||
-                  pendingProjectId === row.projectId
-                }
+                disabled={mode === 'EDITING' || isTableReadOnly}
                 className={clsx(
                   'inline-flex items-center justify-center rounded-xl border px-3 py-2 transition-colors',
                   'border-giv-brand-100 text-giv-brand-500',
-                  mode === 'EDITING' ||
-                    isSyncingBoost ||
-                    pendingProjectId === row.projectId
+                  mode === 'EDITING' || isTableReadOnly
                     ? 'opacity-60 cursor-not-allowed'
                     : 'hover:opacity-80 cursor-pointer',
                 )}
@@ -759,7 +754,15 @@ export const BoostedProjects = () => {
             )}
           >
             <div>Total GIVpower</div>
-            <div />
+            <div className="text-left tabular-nums">
+              {totalGivpower == null
+                ? '-'
+                : formatNumber(totalGivpower, {
+                    minDecimals: 2,
+                    maxDecimals: 2,
+                    locale: 'en-US',
+                  })}
+            </div>
             <div className="text-left tabular-nums">
               {formatPercent(displayedTotalPercent)}
             </div>
