@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { CHAINS } from '@/lib/constants/chain'
+import { looksLikeAiContextLeak } from '@/lib/create-project/ai-context'
 import { serverEnv } from '@/lib/env/server'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { ChainType } from '@/lib/graphql/generated/graphql'
@@ -221,6 +222,8 @@ export async function POST(req: Request) {
     '',
     'DEFAULT behavior: extract facts into form fields from BOTH the user message AND the ASSISTANT_MESSAGE.',
     'This includes values the assistant recommended, selected, or generated on behalf of the user.',
+    'Treat CURRENT_DRAFT_JSON as context only. Do not copy it into patched fields unless the user explicitly asks to replace that field.',
+    'Never set any field to raw JSON, chat-history scaffolding, schema text, or meta-conversation text.',
     'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
     '',
     'assistantMessage behavior (this is what the user will see in chat):',
@@ -252,6 +255,11 @@ export async function POST(req: Request) {
     '- Base it only on the project title and any facts in the current draft/user message.',
     '- Avoid unverifiable specifics; keep wording general.',
     '- If title is missing, ask for it and do not draft.',
+    '',
+    'Description behavior:',
+    '- Only patch description when the latest user message clearly provides description content, asks to edit it, asks to clear it, or explicitly asks you to draft/write/generate it.',
+    '- Description must be plain project prose only.',
+    '- Do NOT copy CURRENT_DRAFT_JSON, RECENT_CHAT_HISTORY, USER_MESSAGE labels, ASSISTANT_MESSAGE, or helper text such as follow-up questions into description.',
     '',
     'Fields you may patch:',
     '- title',
@@ -502,6 +510,23 @@ function toStringOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
 }
 
+function sanitizeExtractedPatch(
+  patch: PatchOut | undefined,
+): PatchOut | undefined {
+  if (!patch) return undefined
+
+  const next = { ...patch }
+  if (
+    typeof next.description === 'string' &&
+    next.description.trim() &&
+    looksLikeAiContextLeak(next.description)
+  ) {
+    delete next.description
+  }
+
+  return Object.keys(next).length ? next : undefined
+}
+
 async function getCategoryOptions(): Promise<CategoryOption[]> {
   const client = createGraphQLClient()
   const data = await client.request(mainCategoriesQuery)
@@ -655,11 +680,12 @@ function createOpenAiBackedEventStreamResponse({
             : fallbackCategoryIds
               ? { categoryIds: fallbackCategoryIds }
               : undefined
+          const safePatch = sanitizeExtractedPatch(finalPatch)
 
-          if (finalPatch) {
+          if (safePatch) {
             controller.enqueue(
               encoder.encode(
-                `data: ${JSON.stringify({ type: 'patch', patch: finalPatch })}\n\n`,
+                `data: ${JSON.stringify({ type: 'patch', patch: safePatch })}\n\n`,
               ),
             )
           }
