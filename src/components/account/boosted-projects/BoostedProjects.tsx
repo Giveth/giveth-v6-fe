@@ -511,7 +511,7 @@ export const BoostedProjects = () => {
               onClick={handleResetAll}
               disabled={isSyncingBoost}
               className={clsx(
-                'w-auto py-2 px-4 rounded-md text-sm font-bold',
+                'w-auto py-3 px-4 rounded-md text-sm font-bold',
                 'border border-giv-neutral-300 text-giv-neutral-700',
                 isSyncingBoost
                   ? 'opacity-60 cursor-not-allowed'
@@ -525,7 +525,7 @@ export const BoostedProjects = () => {
               onClick={handleApplyChanges}
               disabled={!canApplyChanges}
               className={clsx(
-                'w-auto py-2 px-4 rounded-md text-sm font-bold',
+                'w-auto py-3 px-4 rounded-md text-sm font-bold',
                 'bg-giv-brand-300! text-white! border border-giv-brand-300!',
                 canApplyChanges
                   ? 'hover:bg-giv-brand-400! cursor-pointer'
@@ -539,7 +539,7 @@ export const BoostedProjects = () => {
               onClick={handleCancelEditing}
               disabled={isSyncingBoost}
               className={clsx(
-                'w-auto py-2 px-4 rounded-md text-sm font-bold',
+                'w-auto py-3 px-4 rounded-md text-sm font-bold',
                 'border border-giv-neutral-300 text-giv-neutral-700',
                 isSyncingBoost
                   ? 'opacity-60 cursor-not-allowed'
