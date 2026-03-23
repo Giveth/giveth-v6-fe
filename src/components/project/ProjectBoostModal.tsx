@@ -1,6 +1,6 @@
 'use client'
 
-import { type CSSProperties, useEffect, useState } from 'react'
+import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Dialog } from '@radix-ui/themes'
 import clsx from 'clsx'
@@ -23,8 +23,8 @@ import { useUserByAddress } from '@/hooks/useAccount'
 import { givpowerDocLink, myGIVPowerLink } from '@/lib/constants/menu-links'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 
-// Correct chain IDs for the Boost enabled networks
-const BOOST_ENABLED_NETWORKS = [10, 100, 1101] as const
+// Chain IDs with active GIVpower staking support for boost modal gating
+const BOOST_ENABLED_NETWORKS = [10, 100] as const
 // Default network to switch to when the user is not on a supported network
 const DEFAULT_BOOST_NETWORK = 10
 
@@ -108,11 +108,16 @@ export default function ProjectBoostModal({
   )
 
   const [allocationPercent, setAllocationPercent] = useState(0)
+  const fetchedAllocationPercentRef = useRef(fetchedAllocationPercent)
 
-  // Set the allocation percentage for the current project
   useEffect(() => {
-    if (open) setAllocationPercent(fetchedAllocationPercent)
-  }, [open, fetchedAllocationPercent])
+    fetchedAllocationPercentRef.current = fetchedAllocationPercent
+  }, [fetchedAllocationPercent])
+
+  // Only sync allocation from backend when modal opens.
+  useEffect(() => {
+    if (open) setAllocationPercent(fetchedAllocationPercentRef.current)
+  }, [open])
 
   // Handle the open change event
   const handleOpenChange = (nextOpen: boolean) => {

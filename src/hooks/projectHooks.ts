@@ -82,7 +82,6 @@ type PowerBoostingInfoV6Response = {
       updatedAt: string
       user?: {
         id: number
-        email?: string | null
       } | null
       project?: {
         id: number
@@ -130,7 +129,8 @@ type TotalGivpowerAcrossBoostNetworksResponse = {
   }>
 }
 
-const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = [10, 100, 1101] as const
+// Only include networks with active GIVpower staking configuration.
+const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = [10, 100] as const
 
 const formatUnitsFromWei = (value: string, decimals = 18): string => {
   const v = BigInt(value || '0')
@@ -173,8 +173,10 @@ export function useUserBoostForProject({
   token?: string | null
   enabled?: boolean
 }) {
+  const isAuthenticated = Boolean(token)
+
   return useQuery({
-    queryKey: ['userBoostForProject', userId, projectId],
+    queryKey: ['userBoostForProject', userId, projectId, isAuthenticated],
     queryFn: async () => {
       const client = createGraphQLClient(
         token
@@ -241,6 +243,7 @@ export function useBoostModalData({
 }) {
   const normalizedUserId = Number(userId)
   const normalizedCurrentProjectId = Number(currentProjectId)
+  const isAuthenticated = Boolean(token)
   const hasValidUserId =
     Number.isFinite(normalizedUserId) && normalizedUserId > 0
   const hasValidProjectId =
@@ -250,7 +253,14 @@ export function useBoostModalData({
   const isBoostModalQueryEnabled = enabled && hasValidUserId
 
   return useQuery({
-    queryKey: ['boostModalData', userId, currentProjectId, take, skip],
+    queryKey: [
+      'boostModalData',
+      userId,
+      currentProjectId,
+      take,
+      skip,
+      isAuthenticated,
+    ],
     queryFn: async () => {
       if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
         return {
@@ -362,13 +372,10 @@ export function useTotalGivpowerAcrossBoostNetworks({
           const subgraphUrl = config?.subgraphUrl
           const lmAddress = config?.GIVPOWER?.LM_ADDRESS
 
-          // Some chains may not have GIVpower LM configured yet.
           if (!subgraphUrl || !lmAddress) {
-            return {
-              chainId,
-              balanceWei: '0',
-              balance: '0',
-            }
+            throw new Error(
+              `Missing GIVpower subgraph configuration for chain ${chainId}`,
+            )
           }
 
           try {
@@ -383,12 +390,12 @@ export function useTotalGivpowerAcrossBoostNetworks({
               balanceWei: result.balanceWei,
               balance: result.balance,
             }
-          } catch {
-            return {
-              chainId,
-              balanceWei: '0',
-              balance: '0',
-            }
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : 'Unknown subgraph error'
+            throw new Error(
+              `Failed to fetch GIVpower for chain ${chainId}: ${message}`,
+            )
           }
         }),
       )

@@ -19,6 +19,7 @@ type SortDirection = 'asc' | 'desc'
 type Mode = 'VIEWING' | 'EDITING'
 const TABLE_GRID_COLUMNS =
   'grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,0.8fr)_56px]'
+const SUM_TOLERANCE = 1e-3
 
 interface IEnhancedPowerBoosting {
   id: string
@@ -180,16 +181,17 @@ export const BoostedProjects = () => {
   const displayedTotalPercent = mode === 'EDITING' ? sum : viewTotalPercent
   const hasEditError = editBoosts.some(boost => boost.hasError)
   const hasEmptyInput = editBoosts.some(boost => boost.displayValue === '')
-  const canEnterEditMode = viewRows.length >= 2
+  const isSumAtHundred = Math.abs(sum - 100) < SUM_TOLERANCE
+  const isMutationInFlight = isSyncingBoost || pendingProjectId != null
+  const canEnterEditMode = viewRows.length >= 2 && !isMutationInFlight
   const canApplyChanges =
     mode === 'EDITING' &&
     !isSyncingBoost &&
     !hasEditError &&
     !hasEmptyInput &&
-    Math.round(sum) === 100
+    isSumAtHundred
   const showAllocationWarning =
-    mode === 'EDITING' &&
-    (Math.round(sum) !== 100 || hasEditError || hasEmptyInput)
+    mode === 'EDITING' && (!isSumAtHundred || hasEditError || hasEmptyInput)
 
   // Check if the initial loading is in progress
   const isInitialLoading =
@@ -351,7 +353,7 @@ export const BoostedProjects = () => {
       }
 
       const free = 100 - sumOfLocks
-      if (newPercentage >= free) {
+      if (newPercentage > free) {
         changedBoost.hasError = true
         nextSum = sumOfLocks + sumOfUnlocks
         return tempBoosts

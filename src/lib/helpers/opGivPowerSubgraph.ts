@@ -4,6 +4,18 @@ type FetchOpGivPowerInput = {
   userAddress: string // wallet address
 }
 
+type FetchOpGivPowerDirectInput = FetchOpGivPowerInput & {
+  apiKey?: string
+}
+
+type FetchOpGivPowerOutput = {
+  id: string
+  balanceWei: string
+  balance: string
+  rewardsWei: string
+  rewardPerTokenPaid: string
+}
+
 type SubgraphResponse = {
   data?: {
     unipoolBalance?: {
@@ -15,6 +27,16 @@ type SubgraphResponse = {
   }
   errors?: Array<{ message?: string }>
 }
+
+type ProxyResponse = FetchOpGivPowerOutput & {
+  error?: string
+}
+
+const GRAPH_GATEWAY_PROXYABLE_REGEX =
+  /^https:\/\/(?:gateway\.thegraph\.com|gateway-arbitrum\.network\.thegraph\.com)\/api\/(?:[^/]+\/)?subgraphs\/id\//
+const GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX =
+  /^https:\/\/gateway\.thegraph\.com\/api\/subgraphs\/id\//
+const OP_GIVPOWER_PROXY_ENDPOINT = '/api/subgraph/op-givpower'
 
 /**
  * Format a value to a human-readable format
@@ -35,25 +57,25 @@ function formatUnits(value: string, decimals = 18): string {
 }
 
 /**
- * Fetch the user's GIVpower from the subgraph
+ * Fetch the user's GIVpower directly from the subgraph endpoint.
+ * This should only be used from server-side contexts when an auth key is required.
  * @param subgraphUrl - The subgraph URL
  * @param lmAddress - The LM address
  * @param userAddress - The user's address
+ * @param apiKey - Optional Graph gateway API key
  * @returns The user's GIVpower
  */
-export async function fetchUserOpGivPowerFromSubgraph({
+export async function fetchUserOpGivPowerFromSubgraphDirect({
   subgraphUrl,
   lmAddress,
   userAddress,
-}: FetchOpGivPowerInput) {
-  const isGraphGateway =
-    /^https:\/\/gateway\.thegraph\.com\/api\/subgraphs\/id\//.test(subgraphUrl)
-  const apiKey = process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY
+  apiKey,
+}: FetchOpGivPowerDirectInput): Promise<FetchOpGivPowerOutput> {
+  const isGraphGatewayRequiringHeader =
+    GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX.test(subgraphUrl)
 
-  if (isGraphGateway && !apiKey) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUBGRAPH_API_KEY for The Graph gateway request',
-    )
+  if (isGraphGatewayRequiringHeader && !apiKey) {
+    throw new Error('Missing SUBGRAPH_API_KEY for The Graph gateway request')
   }
 
   const id = `${lmAddress.toLowerCase()}-${userAddress.toLowerCase()}`
@@ -104,4 +126,60 @@ export async function fetchUserOpGivPowerFromSubgraph({
     rewardsWei: row?.rewards ?? '0',
     rewardPerTokenPaid: row?.rewardPerTokenPaid ?? '0',
   }
+}
+
+/**
+ * Fetch the user's GIVpower from the subgraph.
+ * In browser context, Graph gateway requests are proxied via server route
+ * to avoid exposing gateway API keys in client-side code.
+ * @param subgraphUrl - The subgraph URL
+ * @param lmAddress - The LM address
+ * @param userAddress - The user's address
+ * @returns The user's GIVpower
+ */
+export async function fetchUserOpGivPowerFromSubgraph({
+  subgraphUrl,
+  lmAddress,
+  userAddress,
+}: FetchOpGivPowerInput): Promise<FetchOpGivPowerOutput> {
+  const shouldProxyGatewayRequest =
+    typeof window !== 'undefined' &&
+    GRAPH_GATEWAY_PROXYABLE_REGEX.test(subgraphUrl)
+
+  if (shouldProxyGatewayRequest) {
+    const res = await fetch(OP_GIVPOWER_PROXY_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subgraphUrl,
+        lmAddress,
+        userAddress,
+      }),
+    })
+
+    const json = (await res.json().catch(() => ({}))) as ProxyResponse
+
+    if (!res.ok) {
+      throw new Error(
+        json.error || `GIVpower proxy request failed: ${res.status}`,
+      )
+    }
+
+    return {
+      id: json.id,
+      balanceWei: json.balanceWei,
+      balance: json.balance,
+      rewardsWei: json.rewardsWei,
+      rewardPerTokenPaid: json.rewardPerTokenPaid,
+    }
+  }
+
+  return fetchUserOpGivPowerFromSubgraphDirect({
+    subgraphUrl,
+    lmAddress,
+    userAddress,
+    apiKey: process.env.SUBGRAPH_API_KEY,
+  })
 }

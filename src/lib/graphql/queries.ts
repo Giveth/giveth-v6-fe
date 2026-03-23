@@ -786,7 +786,6 @@ export const fetchPowerBoostingInfoV6Query = `
         updatedAt
         user {
           id
-          email
         }
         project {
           id
