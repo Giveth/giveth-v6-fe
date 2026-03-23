@@ -3,15 +3,9 @@
 import { cloneElement, isValidElement } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type Route } from 'next'
+import { IconBoost } from '@/components/icons/IconBoost'
 import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
-// import { IconRocket } from '@/components/icons/IconRocket'
 import { IconSparks } from '@/components/icons/IconSparks'
-// import { IconStake } from '@/components/icons/IconStake'
-// import {
-//   givBacksLink,
-//   myGIVPowerLink,
-//   myProjectsLink,
-// } from '@/lib/constants/menu-links'
 
 interface DashboardTabsProps {
   activeTab: string
@@ -39,12 +33,12 @@ export const DashboardTabs = ({
       icon: <IconPraiseHandBold width={24} height={24} />,
       href: null,
     },
-    // {
-    //   id: 'boosted',
-    //   label: 'Boosted Projects',
-    //   icon: <IconRocket width={24} height={24} />,
-    //   href: myGIVPowerLink.href as unknown as Route,
-    // },
+    {
+      id: 'boosted',
+      label: 'Boosted Projects',
+      icon: <IconBoost width={24} height={24} />,
+      href: null,
+    },
     // {
     //   id: 'projects',
     //   label: 'My projects',
@@ -53,6 +47,7 @@ export const DashboardTabs = ({
     // },
   ]
 
+  // Handle the tab click event
   const handleTabClick = (tabId: string) => {
     const next = new URLSearchParams(searchParams)
     next.set('tab', tabId)
