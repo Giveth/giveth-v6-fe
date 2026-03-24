@@ -44,6 +44,11 @@ next-env.d.ts
 .idea
 .vscode
 
-# Codex local runtime artifacts
+# AI tools - local settings & runtime artifacts
+/.claude/*
+!/.claude/skills
 /.codex/*
 !/.codex/config.toml
+!/.codex/skills
+/.codex/skills/.system
+/.cursor/skills/.system
