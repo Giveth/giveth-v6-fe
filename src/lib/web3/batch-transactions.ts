@@ -358,31 +358,6 @@ export async function executeApprovalAndDonation(
 }
 
 /**
- * Fallback: Execute transactions sequentially if batch is not supported
- *
- * This is a fallback for wallets that don't support EIP-5792
- */
-export async function executeSequentially(
-  _account: Account,
-  transactions: PreparedTransaction[],
-): Promise<string[]> {
-  const txHashes: string[] = []
-
-  for (const _tx of transactions) {
-    // Execute each transaction
-    // Note: This requires the actual send function from thirdweb
-    // You'll need to implement this based on your transaction sending logic
-    console.warn(
-      'Sequential execution not fully implemented - needs send logic',
-    )
-    // const receipt = await sendTransaction({ account, transaction: _tx })
-    // txHashes.push(receipt.transactionHash)
-  }
-
-  return txHashes
-}
-
-/**
  * Check wallet capabilities for EIP-7702 and EIP-5792
  */
 export async function checkWalletCapabilities(
@@ -869,17 +844,12 @@ async function waitForSafeExecution(
         Boolean(executionTxHash)
 
       if (isExecuted) {
-        const isFailed =
-          txStatus === 'FAILED' ||
-          txStatus === 'CANCELLED' ||
-          txStatus === 'REJECTED'
-
         return {
-          status: isFailed ? 'FAILED' : 'CONFIRMED',
+          status: 'CONFIRMED',
           receipts: [
             {
               logs: [],
-              status: isFailed ? '0x0' : '0x1',
+              status: '0x1',
               blockHash: '',
               blockNumber: '',
               gasUsed: '',
