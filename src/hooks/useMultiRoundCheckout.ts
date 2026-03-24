@@ -31,6 +31,7 @@ import type { BatchDonationDetails } from '@/lib/contracts/donation-handler'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import type { CreateDonationInput } from '@/lib/graphql/generated/graphql'
 import { createDonationMutation } from '@/lib/graphql/queries'
+import { resolveDonationTokenPayload } from '@/lib/helpers/donationTokenPayload'
 
 export interface RoundCheckoutStatus {
   roundId: number
@@ -214,6 +215,10 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
 
       let completed = 0
       let failed = 0
+      const tokenPayloadCache = new Map<
+        string,
+        Awaited<ReturnType<typeof resolveDonationTokenPayload>>
+      >()
 
       // Execute each round sequentially
       for (let i = 0; i < rounds.length; i++) {
@@ -254,8 +259,28 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             await switchChain(defineChain(round.selectedChainId))
           }
 
-          // Prepare batch donation details
-          const tokenDecimals = getTokenDecimals(round.tokenSymbol)
+          // Normalize token metadata once per round so tx encoding and
+          // createDonation persistence use the same source of truth.
+          const cacheKey = `${round.selectedChainId}:${round.tokenAddress || 'native'}`
+          let tokenPayload = tokenPayloadCache.get(cacheKey)
+          if (!tokenPayload) {
+            tokenPayload = await resolveDonationTokenPayload({
+              chainId: round.selectedChainId,
+              selectedToken: round.selectedToken,
+              tokenAddress: round.tokenAddress,
+              tokenDecimals: round.tokenDecimals,
+              tokenSymbol: round.tokenSymbol,
+            })
+            tokenPayloadCache.set(cacheKey, tokenPayload)
+          }
+
+          const { currency, decimals, tokenAddress } = tokenPayload
+
+          if (!currency) {
+            throw new Error(
+              `Missing token symbol for round "${round.roundName}" on chain ${round.selectedChainId}`,
+            )
+          }
 
           const donations = round.projects.map(project => {
             const resolvedRecipient =
@@ -272,9 +297,9 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
 
             return {
               projectAddress: resolvedRecipient,
-              amount: parseUnits(project.donationAmount || '0', tokenDecimals),
-              tokenAddress: round.tokenAddress,
-              tokenSymbol: round.tokenSymbol,
+              amount: parseUnits(project.donationAmount || '0', decimals),
+              tokenAddress: tokenAddress ?? '',
+              tokenSymbol: currency,
               chainId: round.selectedChainId,
             }
           })
@@ -313,8 +338,8 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                 donations.push({
                   projectAddress: givethRecipient,
                   amount: givethAmount,
-                  tokenAddress: round.tokenAddress,
-                  tokenSymbol: round.tokenSymbol,
+                  tokenAddress: tokenAddress ?? '',
+                  tokenSymbol: currency,
                   chainId: round.selectedChainId,
                 })
                 givethDonation = {
@@ -333,7 +358,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           const batchDetails: BatchDonationDetails = {
             donations,
             chainId: round.selectedChainId,
-            tokenAddress: round.tokenAddress,
+            tokenAddress: tokenAddress ?? '',
             totalAmount,
           }
 
@@ -369,7 +394,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                   amount: Number(project.donationAmount || 0),
                   anonymous: options?.anonymous,
                   chainType: 'EVM',
-                  currency: round.tokenSymbol,
+                  currency,
                   fromWalletAddress: account.address,
                   projectId: Number(project.id),
                   qfRoundId: round.roundId,
@@ -379,12 +404,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                       a => a.networkId === round.selectedChainId,
                     )?.address ??
                     '',
-                  tokenAddress:
-                    round.tokenAddress ===
-                      '0x0000000000000000000000000000000000000000' ||
-                    !round.tokenAddress
-                      ? undefined
-                      : round.tokenAddress,
+                  tokenAddress,
                   transactionId: txHash,
                   transactionNetworkId: round.selectedChainId,
                 }),
@@ -392,22 +412,15 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
 
               if (givethDonation) {
                 createInputs.push({
-                  amount: Number(
-                    formatUnits(givethDonation.amount, tokenDecimals),
-                  ),
+                  amount: Number(formatUnits(givethDonation.amount, decimals)),
                   anonymous: options?.anonymous,
                   chainType: 'EVM',
-                  currency: round.tokenSymbol,
+                  currency,
                   fromWalletAddress: account.address,
                   projectId: GIVETH_PROJECT_ID,
                   qfRoundId: undefined,
                   toWalletAddress: givethDonation.recipient,
-                  tokenAddress:
-                    round.tokenAddress ===
-                      '0x0000000000000000000000000000000000000000' ||
-                    !round.tokenAddress
-                      ? undefined
-                      : round.tokenAddress,
+                  tokenAddress,
                   transactionId: txHash,
                   transactionNetworkId: round.selectedChainId,
                 })
@@ -517,25 +530,6 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
     reset,
     validateRounds,
   }
-}
-
-/**
- * Helper to get token decimals
- * TODO: Get from backend or token contract
- */
-function getTokenDecimals(symbol: string): number {
-  const decimalsMap: Record<string, number> = {
-    USDT: 6,
-    USDC: 6,
-    DAI: 18,
-    WETH: 18,
-    ETH: 18,
-    MATIC: 18,
-    BTC: 8,
-    WBTC: 8,
-  }
-
-  return decimalsMap[symbol.toUpperCase()] || 18
 }
 
 function calculatePercentageAmount(
