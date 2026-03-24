@@ -94,7 +94,9 @@ export default function QfApplyGatePageClient({
     error: roundsError,
   } = useQfRounds()
 
-  const rounds = roundsData?.qfRounds?.rounds || []
+  const rounds = (roundsData?.qfRounds?.rounds || []).filter(
+    round => String(round.id) !== '238', // Do not show TEST round 238
+  )
 
   const { activeRounds, upcomingRounds, roundOptions } = useMemo(() => {
     const now = Date.now()
