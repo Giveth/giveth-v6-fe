@@ -1,12 +1,48 @@
-import {
-  normalizeDonationTokenPayload,
-  resetDonationTokenPayloadCachesForTests,
-  withContractReadRetry,
-} from '@/lib/helpers/donationTokenPayload'
+import * as donationTokenPayloadModule from '@/lib/helpers/donationTokenPayload'
+
+const { multicallMock, readContractMock } = vi.hoisted(() => ({
+  multicallMock: vi.fn(),
+  readContractMock: vi.fn(),
+}))
+
+vi.mock('viem', async () => {
+  const actual = await vi.importActual('viem')
+
+  return {
+    ...actual,
+    createPublicClient: vi.fn(() => ({
+      multicall: multicallMock,
+    })),
+    http: vi.fn((url: string) => ({ url })),
+  }
+})
+
+vi.mock('thirdweb', async () => {
+  const actual = await vi.importActual('thirdweb')
+
+  return {
+    ...actual,
+    defineChain: vi.fn((id: number) => ({
+      id,
+      rpc: `https://${id}.rpc.test`,
+    })),
+    getContract: vi.fn(options => options),
+    readContract: readContractMock,
+  }
+})
+
+vi.mock('@/lib/thirdweb/client', () => ({
+  thirdwebClient: {},
+}))
+
+beforeEach(() => {
+  multicallMock.mockReset()
+  readContractMock.mockReset()
+})
 
 describe('withContractReadRetry', () => {
   afterEach(() => {
-    resetDonationTokenPayloadCachesForTests()
+    donationTokenPayloadModule.resetDonationTokenPayloadCachesForTests()
   })
 
   it('retries transient contract read failures', async () => {
@@ -15,18 +51,20 @@ describe('withContractReadRetry', () => {
       .mockRejectedValueOnce(new Error('Network request failed'))
       .mockResolvedValueOnce('ok')
 
-    await expect(withContractReadRetry(operation, 1)).resolves.toBe('ok')
+    await expect(
+      donationTokenPayloadModule.withContractReadRetry(operation, 1),
+    ).resolves.toBe('ok')
     expect(operation).toHaveBeenCalledTimes(2)
   })
 })
 
 describe('normalizeDonationTokenPayload', () => {
   afterEach(() => {
-    resetDonationTokenPayloadCachesForTests()
+    donationTokenPayloadModule.resetDonationTokenPayloadCachesForTests()
   })
 
   it('uses backend canonical metadata for known ERC20 tokens', () => {
-    const result = normalizeDonationTokenPayload(
+    const result = donationTokenPayloadModule.normalizeDonationTokenPayload(
       {
         chainId: 10,
         selectedToken: {
@@ -60,7 +98,7 @@ describe('normalizeDonationTokenPayload', () => {
   })
 
   it('treats zero address tokens as native', () => {
-    const result = normalizeDonationTokenPayload({
+    const result = donationTokenPayloadModule.normalizeDonationTokenPayload({
       chainId: 1,
       selectedToken: {
         address: '0x0000000000000000000000000000000000000000',
@@ -85,7 +123,7 @@ describe('normalizeDonationTokenPayload', () => {
   })
 
   it('falls back to selected token metadata when no known token exists', () => {
-    const result = normalizeDonationTokenPayload({
+    const result = donationTokenPayloadModule.normalizeDonationTokenPayload({
       chainId: 100,
       selectedToken: {
         address: '0x1111111111111111111111111111111111111111',
@@ -105,6 +143,88 @@ describe('normalizeDonationTokenPayload', () => {
       currency: 'CUSTOM',
       tokenAddress: '0x1111111111111111111111111111111111111111',
       decimals: 8,
+      isNativeToken: false,
+    })
+  })
+})
+
+describe('resolveDonationTokenPayload', () => {
+  afterEach(() => {
+    donationTokenPayloadModule.resetDonationTokenPayloadCachesForTests()
+  })
+
+  it('batches concurrent unknown token metadata reads per chain', async () => {
+    multicallMock.mockResolvedValue([
+      {
+        status: 'success',
+        result: 'TOKENA',
+      },
+      {
+        status: 'success',
+        result: 6,
+      },
+      {
+        status: 'success',
+        result: 'TOKENB',
+      },
+      {
+        status: 'success',
+        result: 18,
+      },
+    ])
+
+    const [tokenA, tokenB] = await Promise.all([
+      donationTokenPayloadModule.resolveDonationTokenPayloadWithKnownTokens(
+        {
+          chainId: 10,
+          selectedToken: {
+            address: '0x1111111111111111111111111111111111111111',
+            symbol: 'OLDA',
+            decimals: 8,
+            chainId: 10,
+            priceInUSD: 0,
+            balance: '0',
+            formattedBalance: '0',
+          },
+          tokenSymbol: 'OLDA',
+          tokenAddress: '0x1111111111111111111111111111111111111111',
+          tokenDecimals: 8,
+        },
+        [],
+      ),
+      donationTokenPayloadModule.resolveDonationTokenPayloadWithKnownTokens(
+        {
+          chainId: 10,
+          selectedToken: {
+            address: '0x2222222222222222222222222222222222222222',
+            symbol: 'OLDB',
+            decimals: 8,
+            chainId: 10,
+            priceInUSD: 0,
+            balance: '0',
+            formattedBalance: '0',
+          },
+          tokenSymbol: 'OLDB',
+          tokenAddress: '0x2222222222222222222222222222222222222222',
+          tokenDecimals: 8,
+        },
+        [],
+      ),
+    ])
+
+    expect(multicallMock).toHaveBeenCalledTimes(1)
+    expect(readContractMock).not.toHaveBeenCalled()
+    expect(multicallMock.mock.calls[0]?.[0]?.contracts).toHaveLength(4)
+    expect(tokenA).toEqual({
+      currency: 'TOKENA',
+      tokenAddress: '0x1111111111111111111111111111111111111111',
+      decimals: 6,
+      isNativeToken: false,
+    })
+    expect(tokenB).toEqual({
+      currency: 'TOKENB',
+      tokenAddress: '0x2222222222222222222222222222222222222222',
+      decimals: 18,
       isNativeToken: false,
     })
   })

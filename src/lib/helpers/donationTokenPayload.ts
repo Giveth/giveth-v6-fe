@@ -389,17 +389,10 @@ export async function getKnownTokensByNetwork(networkId: number) {
   })
 }
 
-export async function resolveDonationTokenPayload(
+export async function resolveDonationTokenPayloadWithKnownTokens(
   source: DonationTokenSource,
+  knownTokens: KnownToken[] = [],
 ): Promise<NormalizedDonationTokenPayload> {
-  const selectedAddress = normalizeAddress(source.selectedToken?.address)
-  const sourceAddress = normalizeAddress(source.tokenAddress)
-
-  if (!selectedAddress && !sourceAddress) {
-    return normalizeDonationTokenPayload(source)
-  }
-
-  const knownTokens = await getKnownTokensByNetwork(source.chainId)
   const normalizedPayload = normalizeDonationTokenPayload(source, knownTokens)
 
   if (!normalizedPayload.tokenAddress) {
@@ -429,4 +422,18 @@ export async function resolveDonationTokenPayload(
     decimals: contractMetadata.decimals,
     isNativeToken: false,
   }
+}
+
+export async function resolveDonationTokenPayload(
+  source: DonationTokenSource,
+): Promise<NormalizedDonationTokenPayload> {
+  const selectedAddress = normalizeAddress(source.selectedToken?.address)
+  const sourceAddress = normalizeAddress(source.tokenAddress)
+
+  if (!selectedAddress && !sourceAddress) {
+    return normalizeDonationTokenPayload(source)
+  }
+
+  const knownTokens = await getKnownTokensByNetwork(source.chainId)
+  return resolveDonationTokenPayloadWithKnownTokens(source, knownTokens)
 }
