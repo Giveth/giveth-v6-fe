@@ -28,24 +28,11 @@ If the developer says to proceed, continue with only the committed code. If they
 
 If the working tree is clean, proceed.
 
-## Step 3 — Run Checks
-
-Run these in sequence:
-
-1. `pnpm lint`
-2. `pnpm type-check`
-
-If the developer chose to proceed with uncommitted changes in Step 2, check whether any failures come from uncommitted files. Ignore those — they're not part of the PR. Only stop if there are errors in committed code.
-
-If checks fail on committed code, stop and show the errors — don't open a PR with broken code.
-
-If all committed code passes, proceed.
-
-## Step 4 — Resolve the Issue
+## Step 3 — Resolve the Issue
 
 You need the GitHub issue to write a good PR body. Try these approaches in order:
 
-### 4a. User provided input directly
+### 3a. User provided input directly
 
 If the user passed an argument (issue number, URL, or pasted text), use that:
 
@@ -53,11 +40,11 @@ If the user passed an argument (issue number, URL, or pasted text), use that:
 - `https://github.com/Giveth/giveth-v6-fe/issues/123` → extract number, fetch from GitHub
 - Pasted text block → use directly as the issue content
 
-### 4b. Extract from branch name
+### 3b. Extract from branch name
 
 Run `git branch --show-current` and look for a number pattern (e.g. `feat/123-description`, `fix/GIV-123-description`). If found, fetch the issue from GitHub.
 
-### 4c. Ask the developer
+### 3c. Ask the developer
 
 If you cannot determine the issue, ask:
 
@@ -71,17 +58,17 @@ If you cannot determine the issue, ask:
 
 Use whatever GitHub tools are available to you — MCP tools, `gh` CLI, etc. The repository is `Giveth/giveth-v6-fe`.
 
-## Step 5 — Gather the Diff
+## Step 4 — Gather the Diff
 
 Get the committed changes on this branch compared to `staging`:
 
-```
+```bash
 git diff staging...HEAD
 ```
 
 If `staging` doesn't exist locally, use `origin/staging`. Read the diff to understand what was changed, added, or removed.
 
-## Step 6 — Fill the PR Template
+## Step 5 — Fill the PR Template
 
 Read the PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Fill in each section:
 
@@ -90,7 +77,7 @@ Read the PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Fill in each section
 - **Changes**: Bullet list of concrete changes derived from the diff. Group logically (e.g. "Added donation modal component", "Updated cart store to support batch transactions"). Not a file-by-file list — describe what was done at a meaningful level.
 - **How to Test**: Step-by-step manual verification instructions. Infer from the issue's acceptance criteria and the changes. Be specific: pages to visit, buttons to click, expected outcomes.
 
-## Step 7 — Review with Developer
+## Step 6 — Review with Developer
 
 Show the filled PR body to the developer. Ask:
 
@@ -98,7 +85,7 @@ Show the filled PR body to the developer. Ask:
 
 Wait for their confirmation or edits. Apply any changes they request.
 
-## Step 8 — Push and Open the PR
+## Step 7 — Push and Open the PR
 
 After the developer confirms:
 
@@ -112,5 +99,4 @@ Show the developer the PR URL when done.
 - Never use `Closes`, `Fixes`, or `Resolves` in the issue reference — just `#<number>`. The team has separate pipeline steps for closing issues.
 - The "How to Test" section is a draft for the developer to review — flag it as something they should verify and adjust.
 - Keep the summary concise — the issue link provides full context.
-- If lint or type-check fails, be helpful: show the errors clearly and suggest what to fix.
 - Read the project's `AGENTS.md` for any PR conventions or standards.
