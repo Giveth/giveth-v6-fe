@@ -254,8 +254,29 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             await switchChain(defineChain(round.selectedChainId))
           }
 
-          // Prepare batch donation details
-          const tokenDecimals = getTokenDecimals(round.tokenSymbol)
+          // Resolve token metadata from selected token/list state.
+          const tokenDecimals =
+            round.selectedToken?.decimals ?? round.tokenDecimals
+          const tokenSymbol = round.selectedToken?.symbol || round.tokenSymbol
+          const tokenAddress =
+            round.selectedToken?.address ?? round.tokenAddress
+          const normalizedTokenAddress =
+            tokenAddress === '0x0000000000000000000000000000000000000000' ||
+            !tokenAddress
+              ? ''
+              : tokenAddress
+
+          if (!Number.isFinite(tokenDecimals) || tokenDecimals < 0) {
+            throw new Error(
+              `Invalid token decimals for round "${round.roundName}" on chain ${round.selectedChainId}`,
+            )
+          }
+
+          if (!tokenSymbol) {
+            throw new Error(
+              `Missing token symbol for round "${round.roundName}" on chain ${round.selectedChainId}`,
+            )
+          }
 
           const donations = round.projects.map(project => {
             const resolvedRecipient =
@@ -273,8 +294,8 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             return {
               projectAddress: resolvedRecipient,
               amount: parseUnits(project.donationAmount || '0', tokenDecimals),
-              tokenAddress: round.tokenAddress,
-              tokenSymbol: round.tokenSymbol,
+              tokenAddress: normalizedTokenAddress,
+              tokenSymbol,
               chainId: round.selectedChainId,
             }
           })
@@ -313,8 +334,8 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                 donations.push({
                   projectAddress: givethRecipient,
                   amount: givethAmount,
-                  tokenAddress: round.tokenAddress,
-                  tokenSymbol: round.tokenSymbol,
+                  tokenAddress: normalizedTokenAddress,
+                  tokenSymbol,
                   chainId: round.selectedChainId,
                 })
                 givethDonation = {
@@ -333,7 +354,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           const batchDetails: BatchDonationDetails = {
             donations,
             chainId: round.selectedChainId,
-            tokenAddress: round.tokenAddress,
+            tokenAddress: normalizedTokenAddress,
             totalAmount,
           }
 
@@ -369,7 +390,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                   amount: Number(project.donationAmount || 0),
                   anonymous: options?.anonymous,
                   chainType: 'EVM',
-                  currency: round.tokenSymbol,
+                  currency: tokenSymbol,
                   fromWalletAddress: account.address,
                   projectId: Number(project.id),
                   qfRoundId: round.roundId,
@@ -379,12 +400,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                       a => a.networkId === round.selectedChainId,
                     )?.address ??
                     '',
-                  tokenAddress:
-                    round.tokenAddress ===
-                      '0x0000000000000000000000000000000000000000' ||
-                    !round.tokenAddress
-                      ? undefined
-                      : round.tokenAddress,
+                  tokenAddress: normalizedTokenAddress || undefined,
                   transactionId: txHash,
                   transactionNetworkId: round.selectedChainId,
                 }),
@@ -397,17 +413,12 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                   ),
                   anonymous: options?.anonymous,
                   chainType: 'EVM',
-                  currency: round.tokenSymbol,
+                  currency: tokenSymbol,
                   fromWalletAddress: account.address,
                   projectId: GIVETH_PROJECT_ID,
                   qfRoundId: undefined,
                   toWalletAddress: givethDonation.recipient,
-                  tokenAddress:
-                    round.tokenAddress ===
-                      '0x0000000000000000000000000000000000000000' ||
-                    !round.tokenAddress
-                      ? undefined
-                      : round.tokenAddress,
+                  tokenAddress: normalizedTokenAddress || undefined,
                   transactionId: txHash,
                   transactionNetworkId: round.selectedChainId,
                 })
@@ -517,25 +528,6 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
     reset,
     validateRounds,
   }
-}
-
-/**
- * Helper to get token decimals
- * TODO: Get from backend or token contract
- */
-function getTokenDecimals(symbol: string): number {
-  const decimalsMap: Record<string, number> = {
-    USDT: 6,
-    USDC: 6,
-    DAI: 18,
-    WETH: 18,
-    ETH: 18,
-    MATIC: 18,
-    BTC: 8,
-    WBTC: 8,
-  }
-
-  return decimalsMap[symbol.toUpperCase()] || 18
 }
 
 function calculatePercentageAmount(
