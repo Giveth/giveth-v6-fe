@@ -99,7 +99,6 @@ export async function POST(req: Request) {
 
   try {
     const apiKey = getApiKey()
-    const subgraphInfo = getSubgraphDebugInfo(subgraphUrl)
     const response = await fetchUserOpGivPowerFromSubgraphDirect({
       subgraphUrl,
       lmAddress,
