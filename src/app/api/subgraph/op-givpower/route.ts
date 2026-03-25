@@ -22,8 +22,7 @@ type RequestBody = {
   userAddress?: unknown
 }
 
-const getApiKey = () =>
-  process.env.SUBGRAPH_API_KEY || process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY
+const getApiKey = () => process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY
 
 const shortenAddress = (address: string) =>
   `${address.slice(0, 6)}...${address.slice(-4)}`

@@ -118,7 +118,7 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
 
   if (isGraphGatewayRequiringHeader && !apiKey) {
     throw new SubgraphFetchError(
-      'Missing SUBGRAPH_API_KEY for The Graph gateway request',
+      'Missing NEXT_PUBLIC_SUBGRAPH_API_KEY for The Graph gateway request',
       { subgraphUrl },
     )
   }
@@ -281,6 +281,6 @@ export async function fetchUserOpGivPowerFromSubgraph({
     subgraphUrl,
     lmAddress,
     userAddress,
-    apiKey: process.env.SUBGRAPH_API_KEY,
+    apiKey: process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY,
   })
 }
