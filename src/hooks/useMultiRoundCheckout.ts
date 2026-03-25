@@ -17,6 +17,7 @@ import { useState, useCallback } from 'react'
 import { defineChain } from 'thirdweb'
 import {
   useActiveAccount,
+  useActiveWallet,
   useActiveWalletChain,
   useSwitchActiveWalletChain,
 } from 'thirdweb/react'
@@ -70,8 +71,10 @@ export interface UseMultiRoundCheckoutReturn {
  */
 export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
   const account = useActiveAccount()
+  const activeWallet = useActiveWallet()
   const activeChain = useActiveWalletChain()
   const switchChain = useSwitchActiveWalletChain()
+  const isSafeWallet = activeWallet?.id === 'global.safe'
   const { token } = useSiweAuth()
   const { givethPercentage } = useCart()
   const { data: givethProjectData } = useProjectById(GIVETH_PROJECT_ID)
@@ -251,7 +254,31 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               return { ...prev, roundStatuses: newStatuses }
             })
 
-            await switchChain(defineChain(round.selectedChainId))
+            if (isSafeWallet) {
+              throw new Error(
+                `Safe wallet cannot switch networks programmatically. Please open Safe on chain ${round.selectedChainId} and retry.`,
+              )
+            }
+
+            try {
+              await switchChain(defineChain(round.selectedChainId))
+            } catch (switchError) {
+              const message =
+                switchError instanceof Error
+                  ? switchError.message
+                  : String(switchError)
+
+              if (
+                message.includes('wallet_addEthereumChain') ||
+                message.includes('wallet_switchEthereumChain')
+              ) {
+                throw new Error(
+                  `Could not switch network automatically to chain ${round.selectedChainId}. Please switch your wallet network manually and retry.`,
+                )
+              }
+
+              throw switchError
+            }
           }
 
           // Resolve token metadata from selected token/list state.
@@ -512,6 +539,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
     },
     [
       account,
+      isSafeWallet,
       activeChain,
       switchChain,
       batchDonate,
