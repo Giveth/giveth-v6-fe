@@ -223,7 +223,8 @@ export const myCausesLink = {
 
 export const myGIVPowerLink = {
   label: 'My GIVPower',
-  href: oldFrontendPath('/account?tab=givpower', '/account?tab=givpower'),
+  href: '/account?tab=boosted',
+  target: '_self',
 }
 
 export const myRecurringDonationsLink = {

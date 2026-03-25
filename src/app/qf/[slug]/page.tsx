@@ -24,7 +24,7 @@ export default function QFRoundPage() {
 
   // State for Sorting and Filtering
   const [sortField, setSortField] = useState<ProjectSortField>(
-    ProjectSortField.QualityScore,
+    ProjectSortField.TotalPower,
   )
   const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('DESC')
   const [filters, setFilters] = useState<QFFiltersState>({
@@ -49,7 +49,7 @@ export default function QFRoundPage() {
       debouncedSearchTerm.length < 2 &&
       sortField === ProjectSortField.Relevance
     ) {
-      setSortField(ProjectSortField.QualityScore)
+      setSortField(ProjectSortField.TotalPower)
       setSortDirection('DESC')
     }
   }, [debouncedSearchTerm, sortField])

@@ -7,7 +7,7 @@ export enum ProjectSortField {
   CreatedAt = 'createdAt',
   UpdatedAt = 'updatedAt',
   TotalDonations = 'totalDonations',
-  QualityScore = 'qualityScore',
+  TotalPower = 'totalPower',
   Relevance = 'relevance',
 }
 

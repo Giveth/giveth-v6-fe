@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AuthGate } from '@/components/account/AuthGate'
+import { BoostedProjects } from '@/components/account/boosted-projects/BoostedProjects'
 import { CtaSection } from '@/components/account/CtaGivBacks'
 import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
@@ -34,7 +35,7 @@ export default function AccountPageClient() {
 
           {activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
-          {activeTab === 'boosted' && <DonationsTable />}
+          {activeTab === 'boosted' && <BoostedProjects />}
           {activeTab === 'projects' && <DonationsTable />}
         </main>
         <CtaSection />

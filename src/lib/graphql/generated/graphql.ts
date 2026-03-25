@@ -86,6 +86,7 @@ export type CauseEntity = {
   sumDonationValueUsdForActiveQfRound?: Maybe<Scalars['Float']['output']>;
   title: Scalars['String']['output'];
   totalDonations: Scalars['Float']['output'];
+  totalPower?: Maybe<Scalars['Float']['output']>;
   totalProjectUpdates?: Maybe<Scalars['Int']['output']>;
   totalReactions: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -504,6 +505,7 @@ export type Mutation = {
   setMultiplePowerBoosting: Array<PowerBoostingEntity>;
   setPrimaryWallet: UserEntity;
   setSinglePowerBoosting: Array<PowerBoostingEntity>;
+  syncPowerBoostingTemp: SyncPowerBoostingBoostTempPayload;
   unlikeProject: Scalars['Boolean']['output'];
   unlikeProjectUpdate: Scalars['Boolean']['output'];
   updateCause: CauseEntity;
@@ -677,6 +679,11 @@ export type MutationSetPrimaryWalletArgs = {
 export type MutationSetSinglePowerBoostingArgs = {
   percentage: Scalars['Float']['input'];
   projectId: Scalars['Int']['input'];
+};
+
+
+export type MutationSyncPowerBoostingTempArgs = {
+  input: SyncPowerBoostingBoostTempInput;
 };
 
 
@@ -875,6 +882,7 @@ export type ProjectEntity = {
   sumDonationValueUsdForActiveQfRound?: Maybe<Scalars['Float']['output']>;
   title: Scalars['String']['output'];
   totalDonations: Scalars['Float']['output'];
+  totalPower?: Maybe<Scalars['Float']['output']>;
   totalProjectUpdates?: Maybe<Scalars['Int']['output']>;
   totalReactions: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -977,9 +985,9 @@ export type ProjectSocialMediaInput = {
 export enum ProjectSortField {
   CreatedAt = 'CreatedAt',
   QfDonations = 'QfDonations',
-  QualityScore = 'QualityScore',
   Relevance = 'Relevance',
   TotalDonations = 'TotalDonations',
+  TotalPower = 'TotalPower',
   UpdatedAt = 'UpdatedAt'
 }
 
@@ -1561,6 +1569,28 @@ export enum SybilDefenseType {
   PassportModel = 'PASSPORT_MODEL',
   PassportStamps = 'PASSPORT_STAMPS'
 }
+
+export type SyncPowerBoostingBoostTempInput = {
+  percentages: Array<Scalars['Float']['input']>;
+  projectIds: Array<Scalars['Int']['input']>;
+};
+
+export type SyncPowerBoostingBoostTempItem = {
+  __typename?: 'SyncPowerBoostingBoostTempItem';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['Int']['output'];
+  percentage: Scalars['Float']['output'];
+  powerRank?: Maybe<Scalars['Int']['output']>;
+  projectId: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['Int']['output'];
+};
+
+export type SyncPowerBoostingBoostTempPayload = {
+  __typename?: 'SyncPowerBoostingBoostTempPayload';
+  powerBoostings: Array<SyncPowerBoostingBoostTempItem>;
+  totalCount: Scalars['Int']['output'];
+};
 
 export type TokenEntity = {
   __typename?: 'TokenEntity';
