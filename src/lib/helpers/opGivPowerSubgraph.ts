@@ -32,12 +32,53 @@ type ProxyResponse = FetchOpGivPowerOutput & {
   error?: string
 }
 
+type SubgraphFetchErrorMeta = {
+  status?: number
+  subgraphUrl?: string
+  graphErrors?: string[]
+  responseSnippet?: string
+  timedOut?: boolean
+}
+
+export class SubgraphFetchError extends Error {
+  readonly status?: number
+  readonly subgraphUrl?: string
+  readonly graphErrors?: string[]
+  readonly responseSnippet?: string
+  readonly timedOut?: boolean
+
+  constructor(message: string, meta: SubgraphFetchErrorMeta = {}) {
+    super(message)
+    this.name = 'SubgraphFetchError'
+    this.status = meta.status
+    this.subgraphUrl = meta.subgraphUrl
+    this.graphErrors = meta.graphErrors
+    this.responseSnippet = meta.responseSnippet
+    this.timedOut = meta.timedOut
+  }
+}
+
 const GRAPH_GATEWAY_PROXYABLE_REGEX =
   /^https:\/\/(?:gateway\.thegraph\.com|gateway-arbitrum\.network\.thegraph\.com)\/api\/(?:[^/]+\/)?subgraphs\/id\//
 const GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX =
   /^https:\/\/gateway\.thegraph\.com\/api\/subgraphs\/id\//
 const OP_GIVPOWER_PROXY_ENDPOINT = '/api/subgraph/op-givpower'
 const SUBGRAPH_FETCH_TIMEOUT_MS = 10_000
+const RESPONSE_SNIPPET_MAX_CHARS = 500
+
+function getGraphErrorMessages(errors?: Array<{ message?: string }>): string[] {
+  if (!Array.isArray(errors)) return []
+  return errors
+    .map(error => error?.message)
+    .filter((message): message is string => Boolean(message))
+}
+
+function getResponseSnippet(value: string): string | undefined {
+  if (!value) return undefined
+  const normalized = value.replace(/\s+/g, ' ').trim()
+  if (!normalized) return undefined
+  return normalized.slice(0, RESPONSE_SNIPPET_MAX_CHARS)
+}
 
 /**
  * Format a value to a human-readable format
@@ -76,7 +117,10 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
     GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX.test(subgraphUrl)
 
   if (isGraphGatewayRequiringHeader && !apiKey) {
-    throw new Error('Missing SUBGRAPH_API_KEY for The Graph gateway request')
+    throw new SubgraphFetchError(
+      'Missing SUBGRAPH_API_KEY for The Graph gateway request',
+      { subgraphUrl },
+    )
   }
 
   const id = `${lmAddress.toLowerCase()}-${userAddress.toLowerCase()}`
@@ -120,15 +164,20 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
       (error as { name?: string }).name === 'AbortError'
 
     if (isAbortError) {
-      throw new Error(
+      throw new SubgraphFetchError(
         `Subgraph request timed out after ${SUBGRAPH_FETCH_TIMEOUT_MS}ms`,
+        {
+          subgraphUrl,
+          timedOut: true,
+        },
       )
     }
 
-    throw new Error(
+    throw new SubgraphFetchError(
       error instanceof Error
         ? `Subgraph request failed: ${error.message}`
         : 'Subgraph request failed',
+      { subgraphUrl },
     )
   } finally {
     clearTimeout(timeoutId)
@@ -145,15 +194,28 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
   }
 
   if (!res.ok) {
-    const graphError = json?.errors?.[0]?.message
-    throw new Error(
+    const graphErrors = getGraphErrorMessages(json?.errors)
+    const graphError = graphErrors[0]
+    throw new SubgraphFetchError(
       graphError
         ? `Subgraph request failed: ${res.status} - ${graphError}`
         : `Subgraph request failed: ${res.status}`,
+      {
+        status: res.status,
+        subgraphUrl,
+        graphErrors,
+        responseSnippet: getResponseSnippet(responseText),
+      },
     )
   }
   if (json?.errors?.length) {
-    throw new Error(json.errors[0]?.message || 'Subgraph GraphQL error')
+    const graphErrors = getGraphErrorMessages(json?.errors)
+    throw new SubgraphFetchError(graphErrors[0] || 'Subgraph GraphQL error', {
+      status: res.status,
+      subgraphUrl,
+      graphErrors,
+      responseSnippet: getResponseSnippet(responseText),
+    })
   }
 
   const row = json?.data?.unipoolBalance
