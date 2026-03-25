@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import clsx from 'clsx'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -352,17 +353,22 @@ export default function QfApplyGatePageClient({
             </div>
 
             <div className="flex items-center gap-3">
-              <Button
+              <button
+                type="button"
                 onClick={() => gateMut.mutate()}
                 disabled={gateMut.isPending || noOpenOrUpcomingRounds}
+                className={clsx(
+                  'w-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                  'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
+                )}
               >
                 {gateMut.isPending && (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 )}
-                Check eligibility
-              </Button>
-              <Button
-                variant="outline"
+                Verify recipient addresses
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   setProjectInput('')
                   setRoundId(initialSelectedRoundId)
@@ -370,9 +376,13 @@ export default function QfApplyGatePageClient({
                   setResult(null)
                 }}
                 disabled={gateMut.isPending}
+                className={clsx(
+                  'w-auto py-2.5 px-8 bg-white" rounded-md text-sm font-bold text-giv-deep-blue-900 border border-giv-deep-blue-900',
+                  'flex items-center justify-center gap-2 hover:opacity-80 transition-colors cursor-pointer',
+                )}
               >
                 Reset
-              </Button>
+              </button>
             </div>
 
             {uiError && (
@@ -384,7 +394,7 @@ export default function QfApplyGatePageClient({
             {result?.kind === 'ok' && (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
                 <div className="font-medium">
-                  Eligible: {result.project.title}
+                  Ready to Apply: {result.project.title}
                 </div>
                 <div className="mt-1 text-sm">Round: {result.round.name}</div>
 
@@ -396,7 +406,7 @@ export default function QfApplyGatePageClient({
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Continue to Typeform
+                        Continue to Application
                       </a>
                     ) : (
                       <span>Typeform not configured</span>
