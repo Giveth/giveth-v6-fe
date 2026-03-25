@@ -61,10 +61,12 @@ export class SubgraphFetchError extends Error {
 const GRAPH_GATEWAY_PROXYABLE_REGEX =
   /^https:\/\/(?:gateway\.thegraph\.com|gateway-arbitrum\.network\.thegraph\.com)\/api\/(?:[^/]+\/)?subgraphs\/id\//
 const GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX =
-  /^https:\/\/gateway\.thegraph\.com\/api\/subgraphs\/id\//
+  /^https:\/\/(?:gateway\.thegraph\.com|gateway-arbitrum\.network\.thegraph\.com)\/api\/subgraphs\/id\//
 const OP_GIVPOWER_PROXY_ENDPOINT = '/api/subgraph/op-givpower'
 const SUBGRAPH_FETCH_TIMEOUT_MS = 10_000
 const RESPONSE_SNIPPET_MAX_CHARS = 500
+const GRAPH_GATEWAY_WITH_EMBEDDED_KEY_PATH_REGEX =
+  /^\/api\/[^/]+\/subgraphs\/id\/([A-Za-z0-9]+)$/
 
 function getGraphErrorMessages(errors?: Array<{ message?: string }>): string[] {
   if (!Array.isArray(errors)) return []
@@ -78,6 +80,28 @@ function getResponseSnippet(value: string): string | undefined {
   const normalized = value.replace(/\s+/g, ' ').trim()
   if (!normalized) return undefined
   return normalized.slice(0, RESPONSE_SNIPPET_MAX_CHARS)
+}
+
+function normalizeGraphGatewaySubgraphUrl(rawUrl: string): string {
+  try {
+    const url = new URL(rawUrl)
+    const isGraphGatewayHost =
+      url.hostname === 'gateway.thegraph.com' ||
+      url.hostname === 'gateway-arbitrum.network.thegraph.com'
+
+    if (!isGraphGatewayHost) return rawUrl
+
+    const embeddedKeyMatch = url.pathname.match(
+      GRAPH_GATEWAY_WITH_EMBEDDED_KEY_PATH_REGEX,
+    )
+    if (!embeddedKeyMatch) return rawUrl
+
+    const subgraphId = embeddedKeyMatch[1]
+    url.pathname = `/api/subgraphs/id/${subgraphId}`
+    return url.toString()
+  } catch {
+    return rawUrl
+  }
 }
 
 /**
@@ -113,13 +137,14 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
   userAddress,
   apiKey,
 }: FetchOpGivPowerDirectInput): Promise<FetchOpGivPowerOutput> {
+  const normalizedSubgraphUrl = normalizeGraphGatewaySubgraphUrl(subgraphUrl)
   const isGraphGatewayRequiringHeader =
-    GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX.test(subgraphUrl)
+    GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX.test(normalizedSubgraphUrl)
 
   if (isGraphGatewayRequiringHeader && !apiKey) {
     throw new SubgraphFetchError(
       'Missing NEXT_PUBLIC_SUBGRAPH_API_KEY for The Graph gateway request',
-      { subgraphUrl },
+      { subgraphUrl: normalizedSubgraphUrl },
     )
   }
 
@@ -147,7 +172,9 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
 
   let res: Response
   try {
-    res = await fetch(subgraphUrl, {
+    res = await fetch(normalizedSubgraphUrl, {
+      // For gateway URLs that include a key in the path, normalize to keyless
+      // endpoint and use Authorization header as the single key source.
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -167,7 +194,7 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
       throw new SubgraphFetchError(
         `Subgraph request timed out after ${SUBGRAPH_FETCH_TIMEOUT_MS}ms`,
         {
-          subgraphUrl,
+          subgraphUrl: normalizedSubgraphUrl,
           timedOut: true,
         },
       )
@@ -177,7 +204,7 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
       error instanceof Error
         ? `Subgraph request failed: ${error.message}`
         : 'Subgraph request failed',
-      { subgraphUrl },
+      { subgraphUrl: normalizedSubgraphUrl },
     )
   } finally {
     clearTimeout(timeoutId)
@@ -202,7 +229,7 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
         : `Subgraph request failed: ${res.status}`,
       {
         status: res.status,
-        subgraphUrl,
+        subgraphUrl: normalizedSubgraphUrl,
         graphErrors,
         responseSnippet: getResponseSnippet(responseText),
       },
@@ -212,7 +239,7 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
     const graphErrors = getGraphErrorMessages(json?.errors)
     throw new SubgraphFetchError(graphErrors[0] || 'Subgraph GraphQL error', {
       status: res.status,
-      subgraphUrl,
+      subgraphUrl: normalizedSubgraphUrl,
       graphErrors,
       responseSnippet: getResponseSnippet(responseText),
     })
