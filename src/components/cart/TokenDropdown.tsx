@@ -188,7 +188,7 @@ function TokenDropdownItems({
 
   return (
     <>
-      {filteredWalletTokens.map(t => {
+      {filteredWalletTokens.map((t, id) => {
         const balanceLabel = formatNumberWithTinyValueLabel(
           t.formattedBalance,
           {
@@ -199,7 +199,7 @@ function TokenDropdownItems({
 
         return (
           <DropdownMenu.Item
-            key={t.address}
+            key={`${t.chainId}:${t.address ?? 'native'}:${id}`}
             onSelect={() => {
               onSelectToken(t)
             }}
