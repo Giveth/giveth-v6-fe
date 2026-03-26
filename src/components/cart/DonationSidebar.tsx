@@ -296,8 +296,13 @@ export function DonationSidebar({
               const totalGroupAmount = Number(group.totalAmount)
               const givethAmount = (totalGroupAmount * givethPercentage) / 100
 
-              const totalGroupAmountWithGiveth =
-                totalGroupAmount + (totalGroupAmount * givethPercentage) / 100
+              const totalGroupAmountWithGiveth = totalGroupAmount + givethAmount
+
+              const totalGroupAmountUsd = Number(group.totalUsdValue)
+              const givethAmountUsd =
+                (totalGroupAmountUsd * givethPercentage) / 100
+              const totalGroupAmountWithGivethUsd =
+                totalGroupAmountUsd + givethAmountUsd
 
               return (
                 <div
@@ -346,7 +351,7 @@ export function DonationSidebar({
                         })}{' '}
                         {group.tokenSymbol}{' '}
                         <span className="font-normal">
-                          (~${formatNumber(totalGroupAmountWithGiveth)}) to
+                          (~${formatNumber(totalGroupAmountWithGivethUsd)}) to
                         </span>{' '}
                         {numberOfProjectsWithAmount} project
                         {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
