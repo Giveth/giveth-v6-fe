@@ -184,7 +184,7 @@ export function DonationSummary({
                   in <span className="font-medium">{round.roundName}</span>{' '}
                   {givethPercentage > 0 && (
                     <>
-                      and
+                      , and
                       <span className="font-medium"> Giveth</span>{' '}
                     </>
                   )}
