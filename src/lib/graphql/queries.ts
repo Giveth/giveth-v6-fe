@@ -811,6 +811,40 @@ export const fetchCurrentProjectBoostV6Query = `
   }
 `
 
+export const projectGivpowerCountQuery = `
+  query ProjectGivpowerCount($input: GetPowerBoostingInput!) {
+    getPowerBoosting(input: $input) {
+      totalCount
+    }
+  }
+`
+
+export const projectBoostersQuery = `
+  query ProjectBoosters($input: GetPowerBoostingInput!) {
+    getPowerBoosting(input: $input) {
+      totalCount
+      powerBoostings {
+        id
+        projectId
+        userId
+        percentage
+        powerRank
+        updatedAt
+        user {
+          id
+          name
+          firstName
+          lastName
+          wallets {
+            address
+            isPrimary
+          }
+        }
+      }
+    }
+  }
+`
+
 export const syncPowerBoostingTempMutation = `
   mutation SyncPowerBoostingTemp($input: SyncPowerBoostingBoostTempInput!) {
     syncPowerBoostingTemp(input: $input) {
