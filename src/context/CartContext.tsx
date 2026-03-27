@@ -116,21 +116,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const rounds = new Map<number, DonationRound>()
 
     cartItems.forEach(item => {
-      if (
-        item.roundId &&
-        item.roundName &&
-        item.chainId &&
-        item.tokenSymbol &&
-        item.tokenAddress
-      ) {
+      if (item.roundId && item.roundName && item.chainId) {
         if (!rounds.has(item.roundId)) {
           rounds.set(item.roundId, {
             roundId: item.roundId,
             roundName: item.roundName,
             selectedChainId: item.chainId,
             selectedToken: item.selectedToken,
-            tokenSymbol: item.tokenSymbol,
-            tokenAddress: item.tokenAddress,
+            tokenSymbol: item.tokenSymbol ?? '',
+            tokenAddress: item.tokenAddress ?? '',
             tokenDecimals:
               item.tokenDecimals ?? item.selectedToken?.decimals ?? 18,
             projects: [],
@@ -144,9 +138,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         const round = rounds.get(item.roundId)!
         round.projects.push(item)
-        round.selectedChainId = item.chainId
-        if (item.selectedToken) {
+        if (!round.selectedChainId) {
+          round.selectedChainId = item.chainId
+        } else if (round.selectedChainId !== item.chainId) {
+          console.warn(
+            `[CartContext] Inconsistent chainId detected for round ${item.roundId}: expected ${round.selectedChainId}, got ${item.chainId}`,
+          )
+        }
+        if (!round.selectedToken && item.selectedToken) {
           round.selectedToken = item.selectedToken
+        } else if (round.selectedToken && item.selectedToken) {
+          const sameToken =
+            round.selectedToken.chainId === item.selectedToken.chainId &&
+            round.selectedToken.address?.toLowerCase() ===
+              item.selectedToken.address?.toLowerCase() &&
+            round.selectedToken.symbol === item.selectedToken.symbol
+          if (!sameToken) {
+            console.warn(
+              `[CartContext] Inconsistent selectedToken detected for round ${item.roundId}`,
+            )
+          }
         }
 
         // Calculate total amount
