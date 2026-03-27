@@ -101,7 +101,9 @@ export const TokenDropdown = ({
   useEffect(() => {
     if (!currentSelectedToken) return
     if (currentSelectedToken.chainId === selectedChainId) return
-    if (!walletTokens) return
+    // On chain switch, walletTokens can be temporarily empty/stale.
+    // Wait for a populated list before reconciling or clearing round donations.
+    if (!walletTokens || walletTokens.length === 0) return
 
     const normalizedCurrentAddress = currentSelectedToken.address?.toLowerCase()
     const normalizedCurrentSymbol = currentSelectedToken.symbol.toLowerCase()

@@ -131,7 +131,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             selectedToken: item.selectedToken,
             tokenSymbol: item.tokenSymbol,
             tokenAddress: item.tokenAddress,
-            tokenDecimals: item.tokenDecimals ?? item.selectedToken?.decimals ?? 18,
+            tokenDecimals:
+              item.tokenDecimals ?? item.selectedToken?.decimals ?? 18,
             projects: [],
             totalAmount: '0',
             totalUsdValue: '0',
@@ -172,6 +173,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const round = donationRounds.find(r => r.roundId === project.roundId)
       if (round) {
         project.selectedToken = round.selectedToken
+        project.chainId = round.selectedChainId
+        project.tokenSymbol = round.tokenSymbol
+        project.tokenAddress = round.tokenAddress
+        project.tokenDecimals = round.tokenDecimals
+        project.isGivbackEligible = round.isGivbackEligible
+        project.walletAddress =
+          project.recipientAddresses?.find(
+            address => address.networkId === round.selectedChainId,
+          )?.address ?? project.walletAddress
       }
 
       if (project.roundId === undefined || project.roundId === null) {
