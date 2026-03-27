@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
@@ -26,15 +26,17 @@ export interface Token {
 export const TokenDropdown = ({
   selectedChainId,
   setRoundSelectedToken,
+  currentSelectedToken,
   roundId,
 }: {
   selectedChainId: number
-  setRoundSelectedToken: (token: WalletTokenWithBalance) => void
+  setRoundSelectedToken: (token: WalletTokenWithBalance | undefined) => void
+  currentSelectedToken?: WalletTokenWithBalance
   roundId: number
 }) => {
   const [hide0BalanceTokens, setHide0BalanceTokens] = useState(false)
 
-  const { updateSelectedToken } = useCart()
+  const { clearRoundTokenAndDonations, updateSelectedToken } = useCart()
 
   const account = useActiveAccount()
   const accountAddress = account?.address
@@ -46,10 +48,11 @@ export const TokenDropdown = ({
 
   const [selectedToken, setSelectedToken] = useState<
     WalletTokenWithBalance | undefined
-  >(undefined)
+  >(currentSelectedToken)
 
   // Select choosed token when clicking on the dropdown item
-  const handleSelectToken = async (token: WalletTokenWithBalance) => {
+  const handleSelectToken = useCallback(
+    async (token: WalletTokenWithBalance) => {
     // Set token price in USD
     let priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
 
@@ -76,7 +79,54 @@ export const TokenDropdown = ({
       token.decimals,
       token.isGivbackEligible,
     )
-  }
+    },
+    [roundId, selectedChainId, setRoundSelectedToken, updateSelectedToken],
+  )
+
+  useEffect(() => {
+    setSelectedToken(currentSelectedToken)
+    setRoundSelectedToken(currentSelectedToken)
+  }, [currentSelectedToken, setRoundSelectedToken])
+
+  useEffect(() => {
+    if (!currentSelectedToken) return
+    if (currentSelectedToken.chainId === selectedChainId) return
+    if (!walletTokens) return
+
+    const normalizedCurrentAddress = currentSelectedToken.address?.toLowerCase()
+    const matchingToken =
+      (currentSelectedToken.coingeckoId
+        ? walletTokens.find(
+            token => token.coingeckoId === currentSelectedToken.coingeckoId,
+          )
+        : undefined) ||
+      (normalizedCurrentAddress
+        ? walletTokens.find(
+            token => token.address?.toLowerCase() === normalizedCurrentAddress,
+          )
+        : undefined) ||
+      walletTokens.find(
+        token =>
+          token.symbol.toLowerCase() === currentSelectedToken.symbol.toLowerCase(),
+      )
+
+    if (!matchingToken) {
+      setSelectedToken(undefined)
+      setRoundSelectedToken(undefined)
+      clearRoundTokenAndDonations(roundId)
+      return
+    }
+
+    void handleSelectToken(matchingToken)
+  }, [
+    clearRoundTokenAndDonations,
+    currentSelectedToken,
+    handleSelectToken,
+    roundId,
+    selectedChainId,
+    setRoundSelectedToken,
+    walletTokens,
+  ])
 
   return (
     <DropdownMenu.Root>

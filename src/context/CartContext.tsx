@@ -66,6 +66,7 @@ interface CartContextType {
     tokenDecimals: number,
     isGivbackEligible?: boolean,
   ) => void
+  clearRoundTokenAndDonations: (roundId: number) => void
   removeFromCart: (roundId: number, projectId: string) => void
   pruneInactiveRoundProjects: (activeRoundIds: number[]) => void
   clearCart: () => void
@@ -241,6 +242,41 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
+  const clearRoundTokenAndDonations = (roundId: number) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.roundId === roundId
+          ? {
+              ...item,
+              selectedToken: undefined,
+              tokenSymbol: '',
+              tokenAddress: '',
+              tokenDecimals: 18,
+              donationAmount: '0',
+              isGivbackEligible: undefined,
+            }
+          : item,
+      ),
+    )
+
+    setDonationRounds(prev =>
+      prev.map(round =>
+        round.roundId === roundId
+          ? {
+              ...round,
+              selectedToken: undefined,
+              tokenSymbol: '',
+              tokenAddress: '',
+              tokenDecimals: 18,
+              totalAmount: '0',
+              totalUsdValue: '0',
+              isGivbackEligible: undefined,
+            }
+          : round,
+      ),
+    )
+  }
+
   const removeFromCart = useCallback((roundId: number, projectId: string) => {
     setCartItems(prev =>
       prev.filter(item => !(item.roundId === roundId && item.id === projectId)),
@@ -328,6 +364,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addToCart,
         updateSelectedChainId,
         updateSelectedToken,
+        clearRoundTokenAndDonations,
         removeFromCart,
         pruneInactiveRoundProjects,
         clearCart,
