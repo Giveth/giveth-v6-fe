@@ -130,6 +130,7 @@ type ProjectBoostersResponse = {
 }
 
 const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = [10, 100] as const
+const PROJECT_BOOSTERS_SUBGRAPH_CONCURRENCY = 6
 
 const formatUnitsFromWei = (value: string, decimals = 18): string => {
   const v = BigInt(value || '0')
@@ -142,6 +143,28 @@ const formatUnitsFromWei = (value: string, decimals = 18): string => {
     .replace(/0+$/, '')
 
   return fractionStr ? `${whole}.${fractionStr}` : whole.toString()
+}
+
+const runWithConcurrency = async <T>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T) => Promise<void>,
+) => {
+  const normalizedConcurrency = Math.max(
+    1,
+    Math.min(concurrency, items.length || 1),
+  )
+  let nextIndex = 0
+
+  await Promise.all(
+    Array.from({ length: normalizedConcurrency }, async () => {
+      while (nextIndex < items.length) {
+        const currentIndex = nextIndex
+        nextIndex += 1
+        await worker(items[currentIndex])
+      }
+    }),
+  )
 }
 
 export const useProjectGivpowerCount = (projectId?: number) => {
@@ -201,34 +224,53 @@ export const useProjectBoosters = ({
         ),
       )
       const walletGivpowerMap = new Map<string, number>()
+      const walletChainBalanceWeiCache = new Map<string, Promise<bigint>>()
 
-      await Promise.all(
-        uniqueWalletAddresses.map(async address => {
-          const totalBalanceWei = await BOOST_TOTAL_GIVPOWER_CHAIN_IDS.reduce<
-            Promise<bigint>
-          >(async (sumPromise, chainId) => {
-            const sum = await sumPromise
-            const config = STAKING_POOLS[chainId]
-            const subgraphUrl = config?.subgraphUrl
-            const lmAddress = config?.GIVPOWER?.LM_ADDRESS
+      const getWalletChainBalanceWei = (address: string, chainId: number) => {
+        const cacheKey = `${address}:${chainId}`
+        const cachedPromise = walletChainBalanceWeiCache.get(cacheKey)
+        if (cachedPromise) return cachedPromise
 
-            if (!subgraphUrl || !lmAddress) return sum
+        const balancePromise = (async () => {
+          const config = STAKING_POOLS[chainId]
+          const subgraphUrl = config?.subgraphUrl
+          const lmAddress = config?.GIVPOWER?.LM_ADDRESS
 
-            try {
-              const chainBalance = await fetchUserOpGivPowerFromSubgraph({
-                subgraphUrl,
-                lmAddress,
-                userAddress: address,
-              })
-              return sum + BigInt(chainBalance.balanceWei || '0')
-            } catch (error) {
-              console.warn(
-                `[ProjectBoosters] Failed to fetch GIVpower for wallet ${address} on chain ${chainId}`,
-                error,
-              )
-              return sum
-            }
-          }, Promise.resolve(0n))
+          if (!subgraphUrl || !lmAddress) return 0n
+
+          try {
+            const chainBalance = await fetchUserOpGivPowerFromSubgraph({
+              subgraphUrl,
+              lmAddress,
+              userAddress: address,
+            })
+            return BigInt(chainBalance.balanceWei || '0')
+          } catch (error) {
+            console.warn(
+              `[ProjectBoosters] Failed to fetch GIVpower for wallet ${address} on chain ${chainId}`,
+              error,
+            )
+            return 0n
+          }
+        })()
+
+        walletChainBalanceWeiCache.set(cacheKey, balancePromise)
+        return balancePromise
+      }
+
+      await runWithConcurrency(
+        uniqueWalletAddresses,
+        PROJECT_BOOSTERS_SUBGRAPH_CONCURRENCY,
+        async address => {
+          const chainBalancesWei = await Promise.all(
+            BOOST_TOTAL_GIVPOWER_CHAIN_IDS.map(chainId =>
+              getWalletChainBalanceWei(address, chainId),
+            ),
+          )
+          const totalBalanceWei = chainBalancesWei.reduce(
+            (sum, balanceWei) => sum + balanceWei,
+            0n,
+          )
 
           const totalBalance = Number(
             formatUnitsFromWei(totalBalanceWei.toString()),
@@ -237,7 +279,7 @@ export const useProjectBoosters = ({
             address,
             Number.isFinite(totalBalance) ? totalBalance : 0,
           )
-        }),
+        },
       )
 
       const boostersWithAmount = powerBoostings.map(boost => {
