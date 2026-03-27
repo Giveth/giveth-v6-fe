@@ -84,7 +84,17 @@ export const TokenDropdown = ({
   )
 
   useEffect(() => {
-    setSelectedToken(currentSelectedToken)
+    if (!currentSelectedToken) return
+
+    setSelectedToken(prev => {
+      const hasSameIdentity =
+        prev?.chainId === currentSelectedToken.chainId &&
+        prev?.address?.toLowerCase() ===
+          currentSelectedToken.address?.toLowerCase() &&
+        prev?.symbol === currentSelectedToken.symbol
+
+      return hasSameIdentity ? prev : currentSelectedToken
+    })
     setRoundSelectedToken(currentSelectedToken)
   }, [currentSelectedToken, setRoundSelectedToken])
 

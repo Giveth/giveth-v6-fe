@@ -127,21 +127,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           rounds.set(item.roundId, {
             roundId: item.roundId,
             roundName: item.roundName,
-            selectedChainId: 0,
-            selectedToken: undefined,
+            selectedChainId: item.chainId,
+            selectedToken: item.selectedToken,
             tokenSymbol: item.tokenSymbol,
             tokenAddress: item.tokenAddress,
-            tokenDecimals: item.tokenDecimals ?? 18,
+            tokenDecimals: item.tokenDecimals ?? item.selectedToken?.decimals ?? 18,
             projects: [],
             totalAmount: '0',
             totalUsdValue: '0',
-            isGivbackEligible: item.isGivbackEligible ?? false,
+            isGivbackEligible:
+              item.isGivbackEligible ?? item.selectedToken?.isGivbackEligible,
             estimatedMatchingValue: item.estimatedMatchingValue ?? 0,
           })
         }
 
         const round = rounds.get(item.roundId)!
         round.projects.push(item)
+        round.selectedChainId = item.chainId
+        if (item.selectedToken) {
+          round.selectedToken = item.selectedToken
+        }
 
         // Calculate total amount
         const total = round.projects.reduce((sum, project) => {
@@ -166,7 +171,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Get round data about selected token from the item inside that round
       const round = donationRounds.find(r => r.roundId === project.roundId)
       if (round) {
-        project.selectedToken = round.projects[0]?.selectedToken
+        project.selectedToken = round.selectedToken
       }
 
       if (project.roundId === undefined || project.roundId === null) {
