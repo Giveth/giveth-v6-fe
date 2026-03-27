@@ -77,6 +77,7 @@ export function DonationRound({
             <TokenDropdown
               selectedChainId={cartRoundData.selectedChainId}
               setRoundSelectedToken={setRoundSelectedToken}
+              currentSelectedToken={cartRoundData.selectedToken}
               roundId={Number(roundData.id) ?? 0}
             />
 
