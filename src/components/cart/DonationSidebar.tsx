@@ -304,6 +304,8 @@ export function DonationSidebar({
               const totalGroupAmountWithGivethUsd =
                 totalGroupAmountUsd + givethAmountUsd
 
+              const normalizedRoundName = group.roundName.trimEnd()
+
               return (
                 <div
                   key={group.roundId}
@@ -321,7 +323,7 @@ export function DonationSidebar({
                         {numberOfProjectsWithAmount} project
                         {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
                         <span className="font-normal">in</span>{' '}
-                        {group.roundName}
+                        {normalizedRoundName}
                         {givethPercentage > 0 && (
                           <>
                             <span className="font-normal">, and </span>
@@ -358,11 +360,11 @@ export function DonationSidebar({
                         <span className="font-normal">in</span>
                       </p>
                       <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
-                        {group.roundName}
+                        {normalizedRoundName}
                         {givethPercentage > 0 && (
                           <>
                             <span className="font-normal">, and </span>
-                            <span className="font-medium"> Giveth</span>{' '}
+                            <span className="font-medium">Giveth</span>{' '}
                           </>
                         )}{' '}
                         <span className="font-normal">on</span>{' '}
