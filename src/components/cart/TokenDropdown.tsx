@@ -53,32 +53,32 @@ export const TokenDropdown = ({
   // Select choosed token when clicking on the dropdown item
   const handleSelectToken = useCallback(
     async (token: WalletTokenWithBalance) => {
-    // Set token price in USD
-    let priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
+      // Set token price in USD
+      let priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
 
-    if (!priceInUSD || priceInUSD === 0) {
-      priceInUSD =
-        (await getPriceFromUniswapV2(
-          token.address as `0x${string}`,
-          token.decimals,
-          selectedChainId,
-        )) ?? 0
-    }
+      if (!priceInUSD || priceInUSD === 0) {
+        priceInUSD =
+          (await getPriceFromUniswapV2(
+            token.address as `0x${string}`,
+            token.decimals,
+            selectedChainId,
+          )) ?? 0
+      }
 
-    token.priceInUSD = priceInUSD
+      token.priceInUSD = priceInUSD
 
-    setSelectedToken(token)
-    setRoundSelectedToken(token)
+      setSelectedToken(token)
+      setRoundSelectedToken(token)
 
-    // Update to all projects in the round same token
-    updateSelectedToken(
-      roundId,
-      token,
-      token.symbol,
-      (token.address as `0x${string}`) ?? '',
-      token.decimals,
-      token.isGivbackEligible,
-    )
+      // Update to all projects in the round same token
+      updateSelectedToken(
+        roundId,
+        token,
+        token.symbol,
+        (token.address as `0x${string}`) ?? '',
+        token.decimals,
+        token.isGivbackEligible,
+      )
     },
     [roundId, selectedChainId, setRoundSelectedToken, updateSelectedToken],
   )
@@ -94,6 +94,13 @@ export const TokenDropdown = ({
     if (!walletTokens) return
 
     const normalizedCurrentAddress = currentSelectedToken.address?.toLowerCase()
+    const normalizedCurrentSymbol = currentSelectedToken.symbol.toLowerCase()
+    const symbolMatches = walletTokens.filter(
+      token => token.symbol.toLowerCase() === normalizedCurrentSymbol,
+    )
+    const uniqueSymbolMatch =
+      symbolMatches.length === 1 ? symbolMatches[0] : null
+
     const matchingToken =
       (currentSelectedToken.coingeckoId
         ? walletTokens.find(
@@ -105,10 +112,7 @@ export const TokenDropdown = ({
             token => token.address?.toLowerCase() === normalizedCurrentAddress,
           )
         : undefined) ||
-      walletTokens.find(
-        token =>
-          token.symbol.toLowerCase() === currentSelectedToken.symbol.toLowerCase(),
-      )
+      uniqueSymbolMatch
 
     if (!matchingToken) {
       setSelectedToken(undefined)

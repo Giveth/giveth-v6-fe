@@ -254,6 +254,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               tokenDecimals: 18,
               donationAmount: '0',
               isGivbackEligible: undefined,
+              estimatedMatchingValue: 0,
             }
           : item,
       ),
@@ -271,6 +272,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               totalAmount: '0',
               totalUsdValue: '0',
               isGivbackEligible: undefined,
+              estimatedMatchingValue: 0,
             }
           : round,
       ),
