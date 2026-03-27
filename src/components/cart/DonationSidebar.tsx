@@ -294,11 +294,15 @@ export function DonationSidebar({
               const numberOfProjectsWithAmount = projectsWithAmount.length
 
               const totalGroupAmount = Number(group.totalAmount)
-              const totalGroupAmountUsd = Number(group.totalUsdValue)
               const givethAmount = (totalGroupAmount * givethPercentage) / 100
 
-              const totalGroupAmountWithGiveth =
-                totalGroupAmount + (totalGroupAmount * givethPercentage) / 100
+              const totalGroupAmountWithGiveth = totalGroupAmount + givethAmount
+
+              const totalGroupAmountUsd = Number(group.totalUsdValue)
+              const givethAmountUsd =
+                (totalGroupAmountUsd * givethPercentage) / 100
+              const totalGroupAmountWithGivethUsd =
+                totalGroupAmountUsd + givethAmountUsd
 
               return (
                 <div
@@ -320,7 +324,7 @@ export function DonationSidebar({
                         {group.roundName}
                         {givethPercentage > 0 && (
                           <>
-                            <span className="font-normal"> and </span>
+                            <span className="font-normal">, and </span>
                             <span className="font-medium">Giveth</span>{' '}
                             <span className="font-normal">on</span>{' '}
                             {getChainName(group.selectedChainId)}
@@ -347,7 +351,7 @@ export function DonationSidebar({
                         })}{' '}
                         {group.tokenSymbol}{' '}
                         <span className="font-normal">
-                          (~${formatNumber(totalGroupAmountUsd)}) to
+                          (~${formatNumber(totalGroupAmountWithGivethUsd)}) to
                         </span>{' '}
                         {numberOfProjectsWithAmount} project
                         {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
@@ -357,7 +361,7 @@ export function DonationSidebar({
                         {group.roundName}
                         {givethPercentage > 0 && (
                           <>
-                            <span className="font-normal"> and </span>
+                            <span className="font-normal">, and </span>
                             <span className="font-medium"> Giveth</span>{' '}
                           </>
                         )}{' '}

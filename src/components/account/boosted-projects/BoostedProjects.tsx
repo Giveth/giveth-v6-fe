@@ -107,6 +107,7 @@ export const BoostedProjects = () => {
   const [sortBy, setSortBy] = useState<SortKey>('percent')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [actionError, setActionError] = useState<string | null>(null)
+  const [actionWarning, setActionWarning] = useState<string | null>(null)
   const [pendingProjectId, setPendingProjectId] = useState<number | null>(null)
 
   // Get the sync power boosting temp mutation
@@ -243,6 +244,7 @@ export const BoostedProjects = () => {
     setEditBoosts(freshEditBoosts)
     setInitialEditBoosts(cloneBoosts(freshEditBoosts))
     setActionError(null)
+    setActionWarning(null)
   }
 
   // Handle the reset all event, this is used to reset all the boosted projects
@@ -252,6 +254,7 @@ export const BoostedProjects = () => {
     const resetBoosts = cloneBoosts(initialEditBoosts)
     setEditBoosts(resetBoosts)
     setActionError(null)
+    setActionWarning(null)
   }
 
   // Handle the cancel editing event, this is used to cancel the editing mode
@@ -407,6 +410,7 @@ export const BoostedProjects = () => {
     if (!canApplyChanges || !editBoosts.length) return
 
     setActionError(null)
+    setActionWarning(null)
 
     try {
       const boostsToSave = cloneBoosts(editBoosts)
@@ -445,6 +449,13 @@ export const BoostedProjects = () => {
     if (isTableReadOnly || mode === 'EDITING') return
 
     setActionError(null)
+    if (viewRows.length <= 1) {
+      setActionWarning(
+        "You can't remove your GIVpower from this project because it is the only boost you have. Please boost another project with GIVpower before continuing.",
+      )
+      return
+    }
+    setActionWarning(null)
     setPendingProjectId(projectId)
 
     try {
@@ -774,6 +785,12 @@ export const BoostedProjects = () => {
       {showAllocationWarning && (
         <div className="mt-4 rounded-xl border border-giv-warning-400 bg-giv-warning-100 p-4 text-giv-warning-800">
           Total allocation must stay at 100% before applying changes.
+        </div>
+      )}
+
+      {actionWarning && (
+        <div className="mt-4 rounded-xl border border-giv-warning-400 bg-giv-warning-100 p-4 text-giv-warning-800">
+          {actionWarning}
         </div>
       )}
 

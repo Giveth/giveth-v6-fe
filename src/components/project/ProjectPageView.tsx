@@ -16,6 +16,7 @@ import {
   type ProjectBySlugQuery,
   type ProjectEntity,
 } from '@/lib/graphql/generated/graphql'
+import { ProjectPowerTab } from './ProjectPowerTab'
 
 type QfRoundSelection = NonNullable<
   NonNullable<ProjectBySlugQuery['projectBySlug']['projectQfRounds']>[number]
@@ -44,10 +45,12 @@ export type ProjectPageViewData = {
 export function ProjectPageView({
   project,
   updatesCount = null,
+  givpowerCount = null,
   isPreview = false,
 }: {
   project: ProjectPageViewData
   updatesCount?: number | null
+  givpowerCount?: number | null
   isPreview?: boolean
 }) {
   const [activeTab, setActiveTab] = useState(isPreview ? 'about' : 'donations')
@@ -86,6 +89,7 @@ export function ProjectPageView({
           activeTab={activeTab}
           onTabChange={setActiveTab}
           updatesCount={updatesCount}
+          givpowerCount={givpowerCount}
         />
       )}
 
@@ -133,16 +137,7 @@ export function ProjectPageView({
             )}
 
           {!isPreview && activeTab === 'givpower' && (
-            <div className="max-w-4xl">
-              <div className="text-center py-12">
-                <div className="text-giv-neutral-700 text-lg">
-                  GIVpower information will be displayed here.
-                </div>
-                <div className="text-giv-neutral-700 text-sm mt-2">
-                  This feature is coming soon.
-                </div>
-              </div>
-            </div>
+            <ProjectPowerTab projectId={projectId ?? 0} />
           )}
         </div>
       </div>
