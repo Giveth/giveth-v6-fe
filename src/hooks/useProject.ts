@@ -151,9 +151,9 @@ type ProjectBoostersResponse = {
 }
 
 // For production we use these chains, for development we use these chains
-const NEXT_PUBLIC_VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'local'
+const VERCEL_ENV = process.env.VERCEL_ENV ?? 'development'
 const BOOST_TOTAL_GIVPOWER_CHAIN_IDS =
-  NEXT_PUBLIC_VERCEL_ENV === 'production'
+  VERCEL_ENV === 'production'
     ? ([10, 100] as const)
     : ([100, 11155420] as const)
 
