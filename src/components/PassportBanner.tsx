@@ -188,9 +188,9 @@ export function PassportBanner() {
           <p className="text-giv-neutral-900">
             to make your donations eligible for QF (score{' '}
             <span className="font-bold">
-              {globalSettingScore.globalMinimumPassportScore}
+              {globalSettingScore.globalMinimumPassportScore}+
             </span>
-            +), then click
+            {'), then click'}
           </p>
           <button
             type="button"
