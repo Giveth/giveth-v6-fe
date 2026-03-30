@@ -2,9 +2,12 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
-import { UserRound } from 'lucide-react'
 import { type Route } from 'next'
+import { type Address } from 'thirdweb'
+import { EnsName } from '@/components/account/EnsName'
+import { ProjectImage } from '@/components/project/ProjectImage'
 import { useProjectBoosters } from '@/hooks/useProject'
+import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { shortenAddress } from '@/lib/helpers/userHelper'
 
@@ -16,7 +19,8 @@ const TABLE_GRID_COLUMNS = 'grid-cols-[minmax(0,2fr)_minmax(0,1fr)]'
 
 type BoosterRow = {
   id: number
-  userName: string
+  userName?: string
+  avatar?: string | null
   profileAddress?: string
   givpowerAmount: number
 }
@@ -38,19 +42,22 @@ export function ProjectPowerTab({ projectId }: ProjectPowerTabProps) {
         const fullName =
           `${boost.user?.firstName || ''} ${boost.user?.lastName || ''}`.trim() ||
           undefined
+        const ensName = boost.user?.primaryEns?.trim() || undefined
         const userName =
+          ensName ||
           boost.user?.name?.trim() ||
           fullName ||
-          shortenAddress(primaryAddress) ||
-          `User #${boost.userId}`
+          (primaryAddress ? undefined : `User #${boost.userId}`)
 
         return {
           id: boost.id,
           userName,
+          avatar: boost.user?.avatar,
           profileAddress: primaryAddress,
           givpowerAmount: Number(boost.givpowerAmount || 0),
         }
       })
+      .filter(row => row.givpowerAmount > 0)
       .sort((a, b) => b.givpowerAmount - a.givpowerAmount)
   }, [data?.getPowerBoosting?.powerBoostings])
 
@@ -113,20 +120,45 @@ export function ProjectPowerTab({ projectId }: ProjectPowerTabProps) {
             }`}
           >
             <div className="min-w-0 truncate">
-              {row.profileAddress ? (
-                <Link
-                  href={`/user/${row.profileAddress}` as Route}
-                  className="inline-flex items-center gap-2 hover:underline"
-                >
-                  <UserRound className="h-4 w-4 shrink-0 text-giv-neutral-700" />
-                  <span className="truncate">{row.userName}</span>
-                </Link>
-              ) : (
-                <div className="inline-flex items-center gap-2">
-                  <UserRound className="h-4 w-4 shrink-0 text-giv-neutral-700" />
-                  <span className="truncate">{row.userName}</span>
-                </div>
-              )}
+              {(() => {
+                const donorAddress = row.profileAddress
+                  ? (row.profileAddress as Address as `0x${string}`)
+                  : null
+                const donorAlt =
+                  row.userName ||
+                  (donorAddress
+                    ? shortenAddress(donorAddress)
+                    : `User #${row.id}`)
+
+                return donorAddress ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full overflow-hidden">
+                      <ProjectImage
+                        src={row.avatar || USER_AVATAR_FALLBACK_IMAGE}
+                        alt={donorAlt}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <Link
+                      href={`/user/${donorAddress}` as Route}
+                      className="text-base! hover:text-giv-brand-500! truncate"
+                    >
+                      {row.userName || <EnsName address={donorAddress} />}
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full overflow-hidden">
+                      <ProjectImage
+                        src={row.avatar || USER_AVATAR_FALLBACK_IMAGE}
+                        alt={donorAlt}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="truncate">{donorAlt}</span>
+                  </div>
+                )
+              })()}
             </div>
 
             <div className="tabular-nums">

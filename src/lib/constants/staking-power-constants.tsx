@@ -81,6 +81,25 @@ export const DEV_STAKING_POOLS: Record<number, StakingPoolConfig> = {
     subgraphUrl:
       'https://gateway.thegraph.com/api/subgraphs/id/2SDamh7QMqXtwMGEigKb6ofuuYthRo23dsru74uszcpM',
   },
+  // Gnosis chain ID for staging
+  100: {
+    GIVPOWER: {
+      network: 100, // Gnosis chain ID
+      LM_ADDRESS: '0xDAEa66Adc97833781139373DF5B3bcEd3fdda5b1',
+      POOL_ADDRESS: '0x83a8eea6427985C523a0c4d9d3E62C051B6580d3', // GIV token on Gnosis
+      type: 'GIV_GARDEN_LM',
+      platform: 'Staking',
+      title: 'GIV',
+      description: '100% GIV',
+      unit: 'GIV',
+      coingeckoId: 'giveth',
+      decimals: 18,
+    },
+    TOKEN_DISTRO_ADDRESS: '0x18a46865AAbAf416a970eaA8625CFC430D2364A1',
+    GIV_TOKEN_ADDRESS: '0x83a8eea6427985C523a0c4d9d3E62C051B6580d3',
+    subgraphUrl:
+      'https://api.studio.thegraph.com/query/76292/giveconomy-staging-gnosischain/version/latest',
+  },
 }
 
 export const PROD_STAKING_POOLS: Record<number, StakingPoolConfig> = {
@@ -169,9 +188,14 @@ export const PROD_STAKING_POOLS: Record<number, StakingPoolConfig> = {
   },
 }
 
+// For all chains we use these constants
 export const STAKING_POOLS =
   env.VERCEL_ENV === 'production'
     ? PROD_STAKING_POOLS
     : { ...DEV_STAKING_POOLS, ...PROD_STAKING_POOLS }
+
+// For boosting we use these chains
+export const STAKING_POOLS_FOR_BOOSTING =
+  env.VERCEL_ENV === 'production' ? PROD_STAKING_POOLS : DEV_STAKING_POOLS
 
 export const SUBGRAPH_POLLING_INTERVAL = 300_000 // 5 minutes

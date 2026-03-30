@@ -118,6 +118,8 @@ type ProjectBoostersResponse = {
         name?: string | null
         firstName?: string | null
         lastName?: string | null
+        avatar?: string | null
+        primaryEns?: string | null
         wallets: Array<{
           address: string
           isPrimary: boolean
@@ -191,9 +193,12 @@ export const useProjectBoosters = ({
       )
 
       const powerBoostings = response?.getPowerBoosting?.powerBoostings ?? []
+      const activePowerBoostings = powerBoostings.filter(
+        boost => Number(boost.percentage || 0) > 0,
+      )
       const uniqueWalletAddresses = Array.from(
         new Set(
-          powerBoostings.flatMap(boost =>
+          activePowerBoostings.flatMap(boost =>
             (boost.user?.wallets ?? [])
               .map(wallet => wallet.address?.toLowerCase())
               .filter((address): address is string => Boolean(address)),
@@ -241,6 +246,15 @@ export const useProjectBoosters = ({
       )
 
       const boostersWithAmount = powerBoostings.map(boost => {
+        const percentage = Number(boost.percentage || 0)
+        if (percentage <= 0) {
+          return {
+            ...boost,
+            givpowerAmount: 0,
+            userTotalGivpower: 0,
+          }
+        }
+
         const userWalletAddresses = Array.from(
           new Set(
             (boost.user?.wallets ?? [])
@@ -252,7 +266,6 @@ export const useProjectBoosters = ({
           (sum, address) => sum + (walletGivpowerMap.get(address) ?? 0),
           0,
         )
-        const percentage = Number(boost.percentage || 0)
         const givpowerAmount = (userTotalGivpower * percentage) / 100
 
         return {

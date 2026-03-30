@@ -835,6 +835,8 @@ export const projectBoostersQuery = `
           name
           firstName
           lastName
+          avatar
+          primaryEns
           wallets {
             address
             isPrimary

@@ -51,6 +51,19 @@ const parseGivpowerValue = (value?: string | null): number | null => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+const getBoostSubmitErrorMessage = (error: unknown): string => {
+  const rawMessage =
+    error instanceof Error ? error.message : 'Failed to submit boost'
+
+  if (
+    rawMessage.includes('First boosted project percentage must be exactly 100')
+  ) {
+    return 'For your first (or only) boosted project, allocation must be exactly 100%.'
+  }
+
+  return rawMessage
+}
+
 type ProjectBoostModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -106,6 +119,13 @@ export default function ProjectBoostModal({
     0,
     Math.min(100, Number(boostModalData?.currentProjectAllocation ?? 0) || 0),
   )
+  const displayBoostedProjects =
+    boostedProjects ?? boostModalData?.boostedProjectsCount ?? 0
+  const isFirstBoostForUser = displayBoostedProjects === 0
+  const isOnlyBoostedProjectCurrent =
+    displayBoostedProjects === 1 && fetchedAllocationPercent > 0
+  const requiresHundredPercentAllocation =
+    isFirstBoostForUser || isOnlyBoostedProjectCurrent
 
   const [allocationPercent, setAllocationPercent] = useState(0)
   const [hasUserAdjustedAllocation, setHasUserAdjustedAllocation] =
@@ -117,10 +137,19 @@ export default function ProjectBoostModal({
       setHasUserAdjustedAllocation(false)
       return
     }
+    if (requiresHundredPercentAllocation) {
+      setAllocationPercent(100)
+      return
+    }
     if (!hasUserAdjustedAllocation) {
       setAllocationPercent(fetchedAllocationPercent)
     }
-  }, [open, fetchedAllocationPercent, hasUserAdjustedAllocation])
+  }, [
+    open,
+    fetchedAllocationPercent,
+    hasUserAdjustedAllocation,
+    requiresHundredPercentAllocation,
+  ])
 
   // Handle the open change event
   const handleOpenChange = (nextOpen: boolean) => {
@@ -140,7 +169,10 @@ export default function ProjectBoostModal({
       setSubmitBoostError('Missing project id for boost submission')
       return
     }
-    if (allocationPercent <= 0) return
+    const percentageToSubmit = requiresHundredPercentAllocation
+      ? 100
+      : allocationPercent
+    if (percentageToSubmit <= 0) return
 
     setSubmitBoostError(null)
 
@@ -148,15 +180,13 @@ export default function ProjectBoostModal({
     try {
       await syncPowerBoostingTemp({
         projectId,
-        percentage: allocationPercent,
+        percentage: percentageToSubmit,
       })
-      setConfirmedAllocationPercent(allocationPercent)
+      setConfirmedAllocationPercent(percentageToSubmit)
       setShowBoostSuccess(true)
     } catch (error) {
       console.error('[Boost][Modal] confirm failed', error)
-      setSubmitBoostError(
-        error instanceof Error ? error.message : 'Failed to submit boost',
-      )
+      setSubmitBoostError(getBoostSubmitErrorMessage(error))
     }
   }
 
@@ -218,13 +248,16 @@ export default function ProjectBoostModal({
   }, [needsNetworkSwitch, switchChain])
 
   // Check if the confirm button is disabled
+  const effectiveAllocationPercent = requiresHundredPercentAllocation
+    ? 100
+    : allocationPercent
   const isConfirmDisabled =
-    allocationPercent <= 0 ||
+    effectiveAllocationPercent <= 0 ||
     isSwitchingNetwork ||
     needsNetworkSwitch ||
     isSubmittingBoost ||
     !isAuthenticated
-  const isFullAllocationWarning = allocationPercent === 100
+  const isFullAllocationWarning = effectiveAllocationPercent === 100
   const requiresAuth = Boolean(walletAddress) && !isAuthenticated
 
   // Display the total GIVpower
@@ -241,18 +274,15 @@ export default function ProjectBoostModal({
   const allocatedGivpowerValue =
     totalGivpowerValue == null
       ? null
-      : (totalGivpowerValue * allocationPercent) / 100
+      : (totalGivpowerValue * effectiveAllocationPercent) / 100
   const displayAllocationLabel =
-    allocationPercent > 0 && allocatedGivpowerValue != null
+    effectiveAllocationPercent > 0 && allocatedGivpowerValue != null
       ? `~${formatNumber(allocatedGivpowerValue, {
           minDecimals: 2,
           maxDecimals: 2,
           locale: 'en-US',
         })} GIVpower`
       : 'Drag to allocate.'
-  const displayBoostedProjects =
-    boostedProjects ?? boostModalData?.boostedProjectsCount ?? 0
-
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Content
@@ -461,18 +491,28 @@ export default function ProjectBoostModal({
                 </div>
 
                 <div className="mt-8">
+                  {requiresHundredPercentAllocation && (
+                    <p className="mb-3 text-sm font-medium text-giv-warning-800">
+                      For your first (or only) boosted project, allocation must
+                      be 100%.
+                    </p>
+                  )}
                   <input
                     type="range"
                     min={0}
                     max={100}
                     step={1}
-                    value={allocationPercent}
+                    value={effectiveAllocationPercent}
+                    disabled={requiresHundredPercentAllocation}
                     onChange={event => {
+                      if (requiresHundredPercentAllocation) return
                       setHasUserAdjustedAllocation(true)
                       setAllocationPercent(Number(event.target.value))
                     }}
                     style={
-                      { '--percent': `${allocationPercent}%` } as CSSProperties
+                      {
+                        '--percent': `${effectiveAllocationPercent}%`,
+                      } as CSSProperties
                     }
                     className="mt-3 w-full giv-range"
                     aria-label="Boost allocation percentage"
@@ -480,9 +520,9 @@ export default function ProjectBoostModal({
                   <p className="mt-8 text-center text-xl font-bold text-giv-neutral-600">
                     {displayAllocationLabel}
                   </p>
-                  {allocationPercent > 0 && (
+                  {effectiveAllocationPercent > 0 && (
                     <p className="mt-2 text-center text-lg font-medium text-giv-neutral-600">
-                      ({allocationPercent}%)
+                      ({effectiveAllocationPercent}%)
                     </p>
                   )}
                 </div>
