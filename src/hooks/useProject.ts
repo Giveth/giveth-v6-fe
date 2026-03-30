@@ -18,6 +18,12 @@ import {
 } from '@/lib/graphql/queries'
 import { fetchUserOpGivPowerFromSubgraph } from '@/lib/helpers/opGivPowerSubgraph'
 
+/**
+ * Hook to get a project by its slug
+ *
+ * @param slug - The slug of the project
+ * @returns The project
+ */
 export const useProjectBySlug = (slug: string) => {
   return useQuery({
     queryKey: ['projectBySlug', slug],
