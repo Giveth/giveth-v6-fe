@@ -1,4 +1,3 @@
-import { env } from 'process'
 import { useQuery } from '@tanstack/react-query'
 import {
   STAKING_POOLS,
@@ -29,6 +28,17 @@ export const useProjectBySlug = (slug: string) => {
   })
 }
 
+/**
+ * Hook to get the donations for a project
+ *
+ * @param projectId - The ID of the project
+ * @param skip - The number of donations to skip
+ * @param take - The number of donations to take
+ * @param qfRoundId - The ID of the QF round
+ * @param orderBy - The field to order by
+ * @param orderDirection - The direction to order by
+ * @returns The donations for the project
+ */
 export const useProjectDonations = (
   projectId: number,
   skip: number = 0,
@@ -64,6 +74,14 @@ export const useProjectDonations = (
   })
 }
 
+/**
+ * Hook to get the similar projects by slug
+ *
+ * @param slug - The slug of the project
+ * @param skip - The number of projects to skip
+ * @param take - The number of projects to take
+ * @returns The similar projects
+ */
 export const useSimilarProjectsBySlug = (
   slug: string,
   skip: number = 0,
@@ -133,8 +151,9 @@ type ProjectBoostersResponse = {
 }
 
 // For production we use these chains, for development we use these chains
+const NEXT_PUBLIC_VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'local'
 const BOOST_TOTAL_GIVPOWER_CHAIN_IDS =
-  env.VERCEL_ENV === 'production'
+  NEXT_PUBLIC_VERCEL_ENV === 'production'
     ? ([10, 100] as const)
     : ([100, 11155420] as const)
 
