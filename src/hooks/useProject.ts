@@ -28,6 +28,17 @@ export const useProjectBySlug = (slug: string) => {
   })
 }
 
+/**
+ * Hook to get the donations for a project
+ *
+ * @param projectId - The ID of the project
+ * @param skip - The number of donations to skip
+ * @param take - The number of donations to take
+ * @param qfRoundId - The ID of the QF round
+ * @param orderBy - The field to order by
+ * @param orderDirection - The direction to order by
+ * @returns The donations for the project
+ */
 export const useProjectDonations = (
   projectId: number,
   skip: number = 0,
@@ -63,6 +74,14 @@ export const useProjectDonations = (
   })
 }
 
+/**
+ * Hook to get the similar projects by slug
+ *
+ * @param slug - The slug of the project
+ * @param skip - The number of projects to skip
+ * @param take - The number of projects to take
+ * @returns The similar projects
+ */
 export const useSimilarProjectsBySlug = (
   slug: string,
   skip: number = 0,
@@ -118,6 +137,8 @@ type ProjectBoostersResponse = {
         name?: string | null
         firstName?: string | null
         lastName?: string | null
+        avatar?: string | null
+        primaryEns?: string | null
         wallets: Array<{
           address: string
           isPrimary: boolean
@@ -129,8 +150,20 @@ type ProjectBoostersResponse = {
   }
 }
 
-const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = [10, 100] as const
+// For production we use these chains, for development we use these chains
+const VERCEL_ENV = process.env.VERCEL_ENV ?? 'development'
+const BOOST_TOTAL_GIVPOWER_CHAIN_IDS =
+  VERCEL_ENV === 'production'
+    ? ([10, 100] as const)
+    : ([100, 11155420] as const)
 
+/**
+ * Format a value from wei to a string with decimals
+ *
+ * @param value - The value to format
+ * @param decimals - The number of decimals to format to
+ * @returns The formatted value
+ */
 const formatUnitsFromWei = (value: string, decimals = 18): string => {
   const v = BigInt(value || '0')
   const base = 10n ** BigInt(decimals)
@@ -144,6 +177,12 @@ const formatUnitsFromWei = (value: string, decimals = 18): string => {
   return fractionStr ? `${whole}.${fractionStr}` : whole.toString()
 }
 
+/**
+ * Hook to get the GIVpower count for a project
+ *
+ * @param projectId - The ID of the project
+ * @returns The GIVpower count for the project
+ */
 export const useProjectGivpowerCount = (projectId?: number) => {
   return useQuery({
     queryKey: ['projectGivpowerCount', projectId],
@@ -163,6 +202,14 @@ export const useProjectGivpowerCount = (projectId?: number) => {
   })
 }
 
+/**
+ * Hook to get the boosters for a project
+ *
+ * @param projectId - The ID of the project
+ * @param skip - The number of boosters to skip
+ * @param take - The number of boosters to take
+ * @returns The boosters for the project
+ */
 export const useProjectBoosters = ({
   projectId,
   skip = 0,
@@ -191,9 +238,12 @@ export const useProjectBoosters = ({
       )
 
       const powerBoostings = response?.getPowerBoosting?.powerBoostings ?? []
+      const activePowerBoostings = powerBoostings.filter(
+        boost => Number(boost.percentage || 0) > 0,
+      )
       const uniqueWalletAddresses = Array.from(
         new Set(
-          powerBoostings.flatMap(boost =>
+          activePowerBoostings.flatMap(boost =>
             (boost.user?.wallets ?? [])
               .map(wallet => wallet.address?.toLowerCase())
               .filter((address): address is string => Boolean(address)),
@@ -241,6 +291,15 @@ export const useProjectBoosters = ({
       )
 
       const boostersWithAmount = powerBoostings.map(boost => {
+        const percentage = Number(boost.percentage || 0)
+        if (percentage <= 0) {
+          return {
+            ...boost,
+            givpowerAmount: 0,
+            userTotalGivpower: 0,
+          }
+        }
+
         const userWalletAddresses = Array.from(
           new Set(
             (boost.user?.wallets ?? [])
@@ -252,7 +311,6 @@ export const useProjectBoosters = ({
           (sum, address) => sum + (walletGivpowerMap.get(address) ?? 0),
           0,
         )
-        const percentage = Number(boost.percentage || 0)
         const givpowerAmount = (userTotalGivpower * percentage) / 100
 
         return {
