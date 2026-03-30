@@ -72,7 +72,7 @@ If `staging` doesn't exist locally, use `origin/staging`. Read the diff to under
 
 Read the PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Fill in each section:
 
-- **Issue**: `#<number>` from Step 4. Do NOT use `Closes` or `Fixes` — just the reference. If the issue was provided as pasted text with no number, leave this section empty for the developer to fill in during review.
+- **Issue**: `#<number>` from Step 3. Do NOT use `Closes` or `Fixes` — just the reference. If the issue was provided as pasted text with no number, leave this section empty for the developer to fill in during review.
 - **Summary**: 2-3 sentences explaining what this PR does and why, based on the issue description and the diff. Focus on the motivation, not a list of files.
 - **Changes**: Bullet list of concrete changes derived from the diff. Group logically (e.g. "Added donation modal component", "Updated cart store to support batch transactions"). Not a file-by-file list — describe what was done at a meaningful level.
 - **How to Test**: Step-by-step manual verification instructions. Infer from the issue's acceptance criteria and the changes. Be specific: pages to visit, buttons to click, expected outcomes.
