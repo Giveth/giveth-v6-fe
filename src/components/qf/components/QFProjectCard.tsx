@@ -39,20 +39,18 @@ export function QFProjectCard({
   const projectId = String(project.id)
   const isInCart = checkIsInCart(projectId, roundId)
   const numericProjectId = Number(project.id)
-
- const formatCurrency = (value: number) => {
-  // Handle very small non-zero values
-  if (value > 0 && value < 0.005) {
-    return '<$0.00'
+  const formatCurrency = (value: number) => {
+    // Handle very small non-zero values
+    if (value > 0 && value < 0.005) {
+      return '<$0.00'
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value)
   }
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
-}
   // Find Round Specific Data for Stats
   const roundData =
     roundId && project.projectQfRounds
