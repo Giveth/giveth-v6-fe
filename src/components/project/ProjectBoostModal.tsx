@@ -119,11 +119,36 @@ export default function ProjectBoostModal({
     0,
     Math.min(100, Number(boostModalData?.currentProjectAllocation ?? 0) || 0),
   )
+  const normalizedProjectId = Number(projectId)
+  const hasValidProjectId =
+    Number.isFinite(normalizedProjectId) && normalizedProjectId > 0
+  const activeBoostedProjects =
+    boostModalData?.boostedProjects?.filter(
+      boost => Number(boost.percentage || 0) > 0,
+    ) ?? []
+  const activeBoostedProjectsCount = activeBoostedProjects.length
+  const hasLoadedBoostData = Boolean(boostModalData)
+  const hasCurrentProjectActiveBoost =
+    hasLoadedBoostData &&
+    hasValidProjectId &&
+    activeBoostedProjects.some(
+      boost => Number(boost.projectId) === normalizedProjectId,
+    )
+  const hasOtherActiveBoosts = hasLoadedBoostData
+    ? hasValidProjectId
+      ? activeBoostedProjects.some(
+          boost => Number(boost.projectId) !== normalizedProjectId,
+        )
+      : activeBoostedProjectsCount > 0
+    : false
   const displayBoostedProjects =
-    boostedProjects ?? boostModalData?.boostedProjectsCount ?? 0
-  const isFirstBoostForUser = displayBoostedProjects === 0
+    boostedProjects ?? (hasLoadedBoostData ? activeBoostedProjectsCount : 0)
+  const isFirstBoostForUser =
+    hasLoadedBoostData && activeBoostedProjectsCount === 0
   const isOnlyBoostedProjectCurrent =
-    displayBoostedProjects === 1 && fetchedAllocationPercent > 0
+    hasLoadedBoostData &&
+    activeBoostedProjectsCount === 1 &&
+    hasCurrentProjectActiveBoost
   const requiresHundredPercentAllocation =
     isFirstBoostForUser || isOnlyBoostedProjectCurrent
 
@@ -257,7 +282,8 @@ export default function ProjectBoostModal({
     needsNetworkSwitch ||
     isSubmittingBoost ||
     !isAuthenticated
-  const isFullAllocationWarning = effectiveAllocationPercent === 100
+  const isFullAllocationWarning =
+    effectiveAllocationPercent === 100 && hasOtherActiveBoosts
   const requiresAuth = Boolean(walletAddress) && !isAuthenticated
 
   // Display the total GIVpower

@@ -3,7 +3,6 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { type Route } from 'next'
-import { type Address } from 'thirdweb'
 import { EnsName } from '@/components/account/EnsName'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useProjectBoosters } from '@/hooks/useProject'
@@ -16,9 +15,11 @@ type ProjectPowerTabProps = {
 }
 
 const TABLE_GRID_COLUMNS = 'grid-cols-[minmax(0,2fr)_minmax(0,1fr)]'
+const EVM_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
 
 type BoosterRow = {
   id: number
+  userId: number | string
   userName?: string
   avatar?: string | null
   profileAddress?: string
@@ -51,6 +52,7 @@ export function ProjectPowerTab({ projectId }: ProjectPowerTabProps) {
 
         return {
           id: boost.id,
+          userId: boost.userId,
           userName,
           avatar: boost.user?.avatar,
           profileAddress: primaryAddress,
@@ -121,14 +123,17 @@ export function ProjectPowerTab({ projectId }: ProjectPowerTabProps) {
           >
             <div className="min-w-0 truncate">
               {(() => {
-                const donorAddress = row.profileAddress
-                  ? (row.profileAddress as Address as `0x${string}`)
-                  : null
+                const normalizedProfileAddress = row.profileAddress?.trim()
+                const donorAddress =
+                  normalizedProfileAddress &&
+                  EVM_ADDRESS_REGEX.test(normalizedProfileAddress)
+                    ? (normalizedProfileAddress as `0x${string}`)
+                    : null
                 const donorAlt =
                   row.userName ||
                   (donorAddress
                     ? shortenAddress(donorAddress)
-                    : `User #${row.id}`)
+                    : `User #${row.userId}`)
 
                 return donorAddress ? (
                   <div className="flex items-center gap-2">

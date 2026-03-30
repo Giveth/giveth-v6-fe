@@ -1,3 +1,4 @@
+import { env } from 'process'
 import { useQuery } from '@tanstack/react-query'
 import {
   STAKING_POOLS,
@@ -131,8 +132,19 @@ type ProjectBoostersResponse = {
   }
 }
 
-const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = [10, 100] as const
+// For production we use these chains, for development we use these chains
+const BOOST_TOTAL_GIVPOWER_CHAIN_IDS =
+  env.VERCEL_ENV === 'production'
+    ? ([10, 100] as const)
+    : ([100, 11155420] as const)
 
+/**
+ * Format a value from wei to a string with decimals
+ *
+ * @param value - The value to format
+ * @param decimals - The number of decimals to format to
+ * @returns The formatted value
+ */
 const formatUnitsFromWei = (value: string, decimals = 18): string => {
   const v = BigInt(value || '0')
   const base = 10n ** BigInt(decimals)
@@ -146,6 +158,12 @@ const formatUnitsFromWei = (value: string, decimals = 18): string => {
   return fractionStr ? `${whole}.${fractionStr}` : whole.toString()
 }
 
+/**
+ * Hook to get the GIVpower count for a project
+ *
+ * @param projectId - The ID of the project
+ * @returns The GIVpower count for the project
+ */
 export const useProjectGivpowerCount = (projectId?: number) => {
   return useQuery({
     queryKey: ['projectGivpowerCount', projectId],
@@ -165,6 +183,14 @@ export const useProjectGivpowerCount = (projectId?: number) => {
   })
 }
 
+/**
+ * Hook to get the boosters for a project
+ *
+ * @param projectId - The ID of the project
+ * @param skip - The number of boosters to skip
+ * @param take - The number of boosters to take
+ * @returns The boosters for the project
+ */
 export const useProjectBoosters = ({
   projectId,
   skip = 0,
