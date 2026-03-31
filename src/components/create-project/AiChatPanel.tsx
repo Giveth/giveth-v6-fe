@@ -131,6 +131,63 @@ export function AiChatPanel({
     ])
     scrollToBottom()
 
+    let pendingAssistantText = ''
+    let renderTimer: number | null = null
+    let resolveRenderedStream: (() => void) | null = null
+
+    const resolveIfRendered = () => {
+      if (
+        pendingAssistantText ||
+        renderTimer !== null ||
+        !resolveRenderedStream
+      )
+        return
+      resolveRenderedStream()
+      resolveRenderedStream = null
+    }
+
+    const scheduleAssistantRender = () => {
+      if (renderTimer !== null) return
+      if (!pendingAssistantText) {
+        resolveIfRendered()
+        return
+      }
+
+      renderTimer = window.setTimeout(() => {
+        renderTimer = null
+        const nextSize = Math.max(
+          1,
+          Math.min(24, Math.ceil(pendingAssistantText.length / 8)),
+        )
+        const nextChunk = pendingAssistantText.slice(0, nextSize)
+        pendingAssistantText = pendingAssistantText.slice(nextSize)
+
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: msg.content + nextChunk }
+              : msg,
+          ),
+        )
+        scrollToBottom()
+        scheduleAssistantRender()
+      }, 16)
+    }
+
+    const queueAssistantDelta = (delta: string) => {
+      if (!delta) return
+      pendingAssistantText += delta
+      scheduleAssistantRender()
+    }
+
+    const waitForRenderedStream = () =>
+      pendingAssistantText || renderTimer !== null
+        ? new Promise<void>(resolve => {
+            resolveRenderedStream = resolve
+            resolveIfRendered()
+          })
+        : Promise.resolve()
+
     try {
       const res = await fetch('/api/ai/create-project', {
         method: 'POST',
@@ -193,14 +250,7 @@ export function AiChatPanel({
             if (payload.type === 'assistant_delta') {
               const delta = payload.delta || ''
               if (!delta) continue
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === assistantMessageId
-                    ? { ...msg, content: msg.content + delta }
-                    : msg,
-                ),
-              )
-              scrollToBottom()
+              queueAssistantDelta(delta)
             } else if (payload.type === 'patch') {
               if (payload.patch) {
                 applyPatch(payload.patch)
@@ -223,8 +273,16 @@ export function AiChatPanel({
         if (buffer.trim()) {
           processSseChunks(buffer + '\n\n')
         }
+
+        await waitForRenderedStream()
       }
     } catch (e) {
+      pendingAssistantText = ''
+      if (renderTimer !== null) {
+        window.clearTimeout(renderTimer)
+        renderTimer = null
+      }
+      resolveRenderedStream = null
       setError(e instanceof Error ? e.message : 'Failed to send message')
       setMessages(prev =>
         prev.map(msg =>
