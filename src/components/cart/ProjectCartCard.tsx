@@ -65,12 +65,12 @@ export const ProjectCartCard = ({
           <Link
             href={`/project/${project.slug}`}
             target="_blank"
-            className="hover:opacity-80 transition-opacity duration-300"
+            className="hover:opacity-80 transition-opacity duration-300 w-14 h-[45px]"
           >
             <ProjectImage
               src={project.image}
               alt={project.title}
-              className="w-14 h-[45px] rounded-md overflow-hidden"
+              className="w-full h-full object-cover rounded-md overflow-hidden"
             />
           </Link>
           <Link href={`/project/${project.slug}`} target="_blank">
