@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import {
-  STAKING_POOLS,
+  STAKING_POOLS_FOR_BOOSTING,
   SUBGRAPH_POLLING_INTERVAL,
 } from '@/lib/constants/staking-power-constants'
 import { graphQLClient } from '@/lib/graphql/client'
@@ -264,7 +264,7 @@ export const useProjectBoosters = ({
             Promise<bigint>
           >(async (sumPromise, chainId) => {
             const sum = await sumPromise
-            const config = STAKING_POOLS[chainId]
+            const config = STAKING_POOLS_FOR_BOOSTING[chainId]
             const subgraphUrl = config?.subgraphUrl
             const lmAddress = config?.GIVPOWER?.LM_ADDRESS
 
