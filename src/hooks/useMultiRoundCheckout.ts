@@ -17,10 +17,11 @@ import { useState, useCallback } from 'react'
 import { defineChain } from 'thirdweb'
 import {
   useActiveAccount,
+  useActiveWallet,
   useActiveWalletChain,
   useSwitchActiveWalletChain,
 } from 'thirdweb/react'
-import { parseUnits } from 'viem'
+import { formatUnits, parseUnits } from 'viem'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import type { DonationRound } from '@/context/CartContext'
@@ -70,10 +71,12 @@ export interface UseMultiRoundCheckoutReturn {
  */
 export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
   const account = useActiveAccount()
+  const activeWallet = useActiveWallet()
   const activeChain = useActiveWalletChain()
   const switchChain = useSwitchActiveWalletChain()
+  const isSafeWallet = activeWallet?.id === 'global.safe'
   const { token } = useSiweAuth()
-  const { givethPercentage, setGivethPercentage } = useCart()
+  const { givethPercentage } = useCart()
   const { data: givethProjectData } = useProjectById(GIVETH_PROJECT_ID)
   const { batchDonate, reset: resetDonation } = useDonation()
 
@@ -251,11 +254,56 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
               return { ...prev, roundStatuses: newStatuses }
             })
 
-            await switchChain(defineChain(round.selectedChainId))
+            if (isSafeWallet) {
+              throw new Error(
+                `Safe wallet cannot switch networks programmatically. Please open Safe on chain ${round.selectedChainId} and retry.`,
+              )
+            }
+
+            try {
+              await switchChain(defineChain(round.selectedChainId))
+            } catch (switchError) {
+              const message =
+                switchError instanceof Error
+                  ? switchError.message
+                  : String(switchError)
+
+              if (
+                message.includes('wallet_addEthereumChain') ||
+                message.includes('wallet_switchEthereumChain')
+              ) {
+                throw new Error(
+                  `Could not switch network automatically to chain ${round.selectedChainId}. Please switch your wallet network manually and retry.`,
+                )
+              }
+
+              throw switchError
+            }
           }
 
-          // Prepare batch donation details
-          const tokenDecimals = getTokenDecimals(round.tokenSymbol)
+          // Resolve token metadata from selected token/list state.
+          const tokenDecimals =
+            round.selectedToken?.decimals ?? round.tokenDecimals
+          const tokenSymbol = round.selectedToken?.symbol || round.tokenSymbol
+          const tokenAddress =
+            round.selectedToken?.address ?? round.tokenAddress
+          const normalizedTokenAddress =
+            tokenAddress === '0x0000000000000000000000000000000000000000' ||
+            !tokenAddress
+              ? ''
+              : tokenAddress
+
+          if (!Number.isFinite(tokenDecimals) || tokenDecimals < 0) {
+            throw new Error(
+              `Invalid token decimals for round "${round.roundName}" on chain ${round.selectedChainId}`,
+            )
+          }
+
+          if (!tokenSymbol) {
+            throw new Error(
+              `Missing token symbol for round "${round.roundName}" on chain ${round.selectedChainId}`,
+            )
+          }
 
           const donations = round.projects.map(project => {
             const resolvedRecipient =
@@ -273,8 +321,8 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
             return {
               projectAddress: resolvedRecipient,
               amount: parseUnits(project.donationAmount || '0', tokenDecimals),
-              tokenAddress: round.tokenAddress,
-              tokenSymbol: round.tokenSymbol,
+              tokenAddress: normalizedTokenAddress,
+              tokenSymbol,
               chainId: round.selectedChainId,
             }
           })
@@ -282,27 +330,45 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           const shouldAddGivethDonation =
             givethPercentage > 0 && givethPercentage < 100
 
+          let givethDonation:
+            | {
+                recipient: string
+                amount: bigint
+              }
+            | undefined
+
           if (shouldAddGivethDonation) {
-            const givethRecipient = givethProjectData?.project?.addresses?.find(
-              address => address.networkId === round.selectedChainId,
-            )?.address
+            const givethRecipient = resolveGivethRecipient(
+              givethProjectData?.project?.addresses,
+              round.selectedChainId,
+            )
 
             if (!givethRecipient) {
               console.warn(
                 `Missing Giveth recipient address for chain ${round.selectedChainId}. Skipping Giveth percentage donation.`,
               )
             } else {
-              const roundTotalAmount = Number(round.totalAmount || '0')
-              const givethAmount = (roundTotalAmount * givethPercentage) / 100
+              const roundTotalBaseAmount = donations.reduce(
+                (sum, d) => sum + d.amount,
+                BigInt(0),
+              )
+              const givethAmount = calculatePercentageAmount(
+                roundTotalBaseAmount,
+                givethPercentage,
+              )
 
-              if (givethAmount > 0) {
+              if (givethAmount > BigInt(0)) {
                 donations.push({
                   projectAddress: givethRecipient,
-                  amount: parseUnits(givethAmount.toString(), tokenDecimals),
-                  tokenAddress: round.tokenAddress,
-                  tokenSymbol: round.tokenSymbol,
+                  amount: givethAmount,
+                  tokenAddress: normalizedTokenAddress,
+                  tokenSymbol,
                   chainId: round.selectedChainId,
                 })
+                givethDonation = {
+                  recipient: givethRecipient,
+                  amount: givethAmount,
+                }
               }
             }
           }
@@ -315,7 +381,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
           const batchDetails: BatchDonationDetails = {
             donations,
             chainId: round.selectedChainId,
-            tokenAddress: round.tokenAddress,
+            tokenAddress: normalizedTokenAddress,
             totalAmount,
           }
 
@@ -351,7 +417,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                   amount: Number(project.donationAmount || 0),
                   anonymous: options?.anonymous,
                   chainType: 'EVM',
-                  currency: round.tokenSymbol,
+                  currency: tokenSymbol,
                   fromWalletAddress: account.address,
                   projectId: Number(project.id),
                   qfRoundId: round.roundId,
@@ -361,45 +427,28 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
                       a => a.networkId === round.selectedChainId,
                     )?.address ??
                     '',
-                  tokenAddress:
-                    round.tokenAddress ===
-                      '0x0000000000000000000000000000000000000000' ||
-                    !round.tokenAddress
-                      ? undefined
-                      : round.tokenAddress,
+                  tokenAddress: normalizedTokenAddress || undefined,
                   transactionId: txHash,
                   transactionNetworkId: round.selectedChainId,
                 }),
               )
 
-              if (shouldAddGivethDonation) {
-                const givethRecipient =
-                  givethProjectData?.project?.addresses?.find(
-                    address => address.networkId === round.selectedChainId,
-                  )?.address
-                const roundTotalAmount = Number(round.totalAmount || '0')
-                const givethAmount = (roundTotalAmount * givethPercentage) / 100
-
-                if (givethRecipient && givethAmount > 0) {
-                  createInputs.push({
-                    amount: givethAmount,
-                    anonymous: options?.anonymous,
-                    chainType: 'EVM',
-                    currency: round.tokenSymbol,
-                    fromWalletAddress: account.address,
-                    projectId: GIVETH_PROJECT_ID,
-                    qfRoundId: undefined,
-                    toWalletAddress: givethRecipient,
-                    tokenAddress:
-                      round.tokenAddress ===
-                        '0x0000000000000000000000000000000000000000' ||
-                      !round.tokenAddress
-                        ? undefined
-                        : round.tokenAddress,
-                    transactionId: txHash,
-                    transactionNetworkId: round.selectedChainId,
-                  })
-                }
+              if (givethDonation) {
+                createInputs.push({
+                  amount: Number(
+                    formatUnits(givethDonation.amount, tokenDecimals),
+                  ),
+                  anonymous: options?.anonymous,
+                  chainType: 'EVM',
+                  currency: tokenSymbol,
+                  fromWalletAddress: account.address,
+                  projectId: GIVETH_PROJECT_ID,
+                  qfRoundId: undefined,
+                  toWalletAddress: givethDonation.recipient,
+                  tokenAddress: normalizedTokenAddress || undefined,
+                  transactionId: txHash,
+                  transactionNetworkId: round.selectedChainId,
+                })
               }
 
               const saveResults = await Promise.allSettled(
@@ -490,6 +539,7 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
     },
     [
       account,
+      isSafeWallet,
       activeChain,
       switchChain,
       batchDonate,
@@ -497,7 +547,6 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
       token,
       givethPercentage,
       givethProjectData?.project,
-      setGivethPercentage,
     ],
   )
 
@@ -509,21 +558,35 @@ export function useMultiRoundCheckout(): UseMultiRoundCheckoutReturn {
   }
 }
 
-/**
- * Helper to get token decimals
- * TODO: Get from backend or token contract
- */
-function getTokenDecimals(symbol: string): number {
-  const decimalsMap: Record<string, number> = {
-    USDT: 6,
-    USDC: 6,
-    DAI: 18,
-    WETH: 18,
-    ETH: 18,
-    MATIC: 18,
-    BTC: 8,
-    WBTC: 8,
+function calculatePercentageAmount(
+  totalAmount: bigint,
+  percentage: number,
+): bigint {
+  if (
+    totalAmount <= BigInt(0) ||
+    !Number.isFinite(percentage) ||
+    percentage <= 0
+  ) {
+    return BigInt(0)
   }
 
-  return decimalsMap[symbol.toUpperCase()] || 18
+  const boundedPercentage = Math.min(percentage, 100)
+  const basisPoints = BigInt(Math.round(boundedPercentage * 100))
+
+  return (totalAmount * basisPoints) / BigInt(10_000)
+}
+
+function resolveGivethRecipient(
+  addresses:
+    | Array<{ address: string; networkId: number; chainType: string }>
+    | null
+    | undefined,
+  chainId: number,
+): string | undefined {
+  if (!addresses || addresses.length === 0) return undefined
+
+  return (
+    addresses.find(address => address.networkId === chainId)?.address ??
+    addresses.find(address => address.chainType === 'EVM')?.address
+  )
 }

@@ -8,7 +8,13 @@ import { GivethLogo } from '@/components/icons/GivethLogo'
 import { LogoLink } from '@/lib/constants/menu-links'
 import type { Route } from 'next'
 
-export function DefaultHeader({ hideSearch }: { hideSearch?: boolean }) {
+export function DefaultHeader({
+  hideSearch,
+  createProjectMinimal,
+}: {
+  hideSearch?: boolean
+  createProjectMinimal?: boolean
+}) {
   const isExternalLogoLink = /^https?:\/\//.test(LogoLink)
 
   return (
@@ -30,21 +36,29 @@ export function DefaultHeader({ hideSearch }: { hideSearch?: boolean }) {
             </Link>
           )}
 
-          {/* Desktop Menu */}
-          <DesktopNavigation hideSearch={hideSearch} />
+          {!createProjectMinimal && (
+            <>
+              {/* Desktop Menu */}
+              <DesktopNavigation hideSearch={hideSearch} />
 
-          {/* Mobile Menu */}
-          <MobileNavigation hideSearch={hideSearch} />
+              {/* Mobile Menu */}
+              <MobileNavigation hideSearch={hideSearch} />
+            </>
+          )}
         </div>
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
-          <div className="hidden md:block pe-1">
-            <CreateProjectButton />
-          </div>
+          {!createProjectMinimal && (
+            <>
+              <div className="hidden md:block pe-1">
+                <CreateProjectButton />
+              </div>
 
-          {/* Cart */}
-          <CartButton />
+              {/* Cart */}
+              <CartButton />
+            </>
+          )}
 
           {/* Wallet */}
           <HeaderConnectWallet />

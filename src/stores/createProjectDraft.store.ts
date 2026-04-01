@@ -4,8 +4,13 @@ import { isAddress } from 'viem'
 import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
+import { looksLikeAiContextLeak } from '@/lib/create-project/ai-context'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
+
+export const CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY =
+  'giveth-create-project-chat-history'
 
 export type CreateProjectSocialType = 'website' | 'facebook' | 'x' | 'linkedin'
 
@@ -53,6 +58,11 @@ const createId = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2)
 
+const CREATE_PROJECT_MIN_TITLE_LENGTH = 3
+const CREATE_PROJECT_MAX_TITLE_LENGTH = 100
+const CREATE_PROJECT_MIN_DESCRIPTION_LENGTH = 50
+const CREATE_PROJECT_MAX_STELLAR_MEMO_LENGTH = 28
+
 const urlOrEmpty = z
   .string()
   .trim()
@@ -71,6 +81,27 @@ function safeIsUrl(value: string): boolean {
     return true
   } catch {
     return false
+  }
+}
+
+function normalizeUrl(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+
+  return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`
+}
+
+function sanitizeDraftDescription(description: string): string {
+  return looksLikeAiContextLeak(description) ? '' : description
+}
+
+function sanitizePersistedDraft(
+  draft: Partial<CreateProjectDraft> | undefined,
+): CreateProjectDraft {
+  return {
+    ...initialDraft,
+    ...draft,
+    description: sanitizeDraftDescription(String(draft?.description ?? '')),
   }
 }
 
@@ -97,13 +128,25 @@ export function validateCreateProjectDraft(
   const title = draft.title.trim()
   if (!title) {
     errors.title = 'Project name is required'
-  } else if (title.length > 60) {
-    errors.title = 'Max 60 letters'
+  } else if (title.length < CREATE_PROJECT_MIN_TITLE_LENGTH) {
+    errors.title = `Project name must be at least ${CREATE_PROJECT_MIN_TITLE_LENGTH} characters`
+  } else if (title.length > CREATE_PROJECT_MAX_TITLE_LENGTH) {
+    errors.title = `Project name must be at most ${CREATE_PROJECT_MAX_TITLE_LENGTH} characters`
   }
 
   const description = draft.description.trim()
   if (!description) {
     errors.description = 'Description is required'
+  } else if (description.length < CREATE_PROJECT_MIN_DESCRIPTION_LENGTH) {
+    errors.description = `Description must be at least ${CREATE_PROJECT_MIN_DESCRIPTION_LENGTH} characters`
+  } else if (looksLikeAiContextLeak(description)) {
+    errors.description = 'Description contains invalid AI-generated context'
+  }
+
+  const image = draft.image.trim()
+  const parsedImage = urlOrEmpty.safeParse(image)
+  if (!parsedImage.success) {
+    errors.image = parsedImage.error.issues[0]?.message
   }
 
   for (const type of ['website', 'facebook', 'x', 'linkedin'] as const) {
@@ -120,13 +163,20 @@ export function validateCreateProjectDraft(
     const invalid = draft.recipientAddresses.find(addr => {
       const a = addr.address.trim()
       if (!a) return true
+      if (!Number.isInteger(addr.networkId)) return true
+      if (
+        addr.memo &&
+        addr.memo.trim().length > CREATE_PROJECT_MAX_STELLAR_MEMO_LENGTH
+      )
+        return true
       if (addr.chainType === 'EVM') return !isAddress(a)
       if (addr.chainType === 'SOLANA') return !isSolanaAddress(a)
       if (addr.chainType === 'STELLAR') return !isStellarAddress(a)
       return true
     })
     if (invalid) {
-      errors.recipientAddresses = 'One or more recipient addresses are invalid'
+      errors.recipientAddresses =
+        'One or more recipient addresses are invalid or incomplete'
     }
   }
 
@@ -137,6 +187,7 @@ export type CreateProjectDraftState = {
   draft: CreateProjectDraft
   errors: CreateProjectDraftErrors
   isSubmitting: boolean
+  isRecipientAddressesAutoFilled: boolean
   submitError?: string
   applyPatch: (patch: Partial<CreateProjectDraft>) => void
   setTitle: (title: string) => void
@@ -151,6 +202,10 @@ export type CreateProjectDraftState = {
     patch: Partial<CreateProjectRecipientAddress>,
   ) => void
   removeRecipientAddress: (id: string) => void
+  setRecipientAddresses: (
+    addresses: CreateProjectRecipientAddress[],
+    options?: { autoFilled?: boolean },
+  ) => void
   validate: () => boolean
   submitCreateProject: () => Promise<{ id: string; slug: string }>
   reset: () => void
@@ -177,6 +232,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
       draft: initialDraft,
       errors: {},
       isSubmitting: false,
+      isRecipientAddressesAutoFilled: false,
       submitError: undefined,
 
       applyPatch: patch =>
@@ -184,6 +240,10 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
           const next: CreateProjectDraft = {
             ...state.draft,
             ...patch,
+          }
+
+          if (typeof patch.description === 'string') {
+            next.description = sanitizeDraftDescription(patch.description)
           }
 
           // Merge social media by type (avoid duplicates).
@@ -206,7 +266,19 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
             }))
           }
 
-          return { draft: next }
+          if (patch.categoryIds) {
+            next.categoryIds = patch.categoryIds
+              .map(id => Number(id))
+              .filter(id => Number.isInteger(id))
+              .slice(0, MAX_CATEGORIES)
+          }
+
+          return {
+            draft: next,
+            isRecipientAddressesAutoFilled: patch.recipientAddresses
+              ? false
+              : state.isRecipientAddressesAutoFilled,
+          }
         }),
 
       setTitle: title => set(state => ({ draft: { ...state.draft, title } })),
@@ -216,7 +288,15 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
       setImpactLocation: impactLocation =>
         set(state => ({ draft: { ...state.draft, impactLocation } })),
       setCategoryIds: categoryIds =>
-        set(state => ({ draft: { ...state.draft, categoryIds } })),
+        set(state => ({
+          draft: {
+            ...state.draft,
+            categoryIds: categoryIds
+              .map(id => Number(id))
+              .filter(id => Number.isInteger(id))
+              .slice(0, MAX_CATEGORIES),
+          },
+        })),
 
       setSocialLink: (type, link) =>
         set(state => ({
@@ -230,6 +310,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
       addRecipientAddress: input =>
         set(state => ({
+          isRecipientAddressesAutoFilled: false,
           draft: {
             ...state.draft,
             recipientAddresses: [
@@ -248,6 +329,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
       updateRecipientAddress: (id, patch) =>
         set(state => ({
+          isRecipientAddressesAutoFilled: false,
           draft: {
             ...state.draft,
             recipientAddresses: state.draft.recipientAddresses.map(addr =>
@@ -258,12 +340,25 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
       removeRecipientAddress: id =>
         set(state => ({
+          isRecipientAddressesAutoFilled: false,
           draft: {
             ...state.draft,
             recipientAddresses: state.draft.recipientAddresses.filter(
               addr => addr.id !== id,
             ),
           },
+        })),
+
+      setRecipientAddresses: (addresses, options) =>
+        set(state => ({
+          draft: {
+            ...state.draft,
+            recipientAddresses: addresses.map(addr => ({
+              ...addr,
+              id: addr.id || createId(),
+            })),
+          },
+          isRecipientAddressesAutoFilled: Boolean(options?.autoFilled),
         })),
 
       validate: () => {
@@ -295,11 +390,13 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
             input: {
               title: draft.title.trim(),
               description: draft.description.trim(),
-              image: draft.image.trim() ? draft.image.trim() : null,
+              image: draft.image.trim() ? normalizeUrl(draft.image) : undefined,
               impactLocation: draft.impactLocation.trim()
                 ? draft.impactLocation.trim()
-                : null,
-              categoryIds: draft.categoryIds.length ? draft.categoryIds : [],
+                : undefined,
+              categoryIds: draft.categoryIds.length
+                ? draft.categoryIds
+                : undefined,
               addresses: draft.recipientAddresses.map(a => ({
                 address: a.address.trim(),
                 networkId: a.networkId,
@@ -310,7 +407,7 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
               socialMedia: draft.socialMedia
                 .map(s => ({
                   type: s.type,
-                  link: s.link.trim(),
+                  link: normalizeUrl(s.link),
                 }))
                 .filter(s => s.link),
             },
@@ -342,9 +439,11 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
 
           // After successful publish, clear the draft
           localStorage.removeItem('giveth-create-project-draft')
+          localStorage.removeItem(CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY)
           set({
             draft: { ...initialDraft },
             errors: {},
+            isRecipientAddressesAutoFilled: false,
             submitError: undefined,
           })
 
@@ -359,23 +458,38 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
         }
       },
 
-      reset: () => set({ draft: initialDraft, errors: {} }),
+      reset: () =>
+        set({
+          draft: initialDraft,
+          errors: {},
+          isRecipientAddressesAutoFilled: false,
+        }),
     }),
     {
       name: 'giveth-create-project-draft',
       storage: createJSONStorage(() => localStorage),
       // Only persist the draft fields. Errors/submitError are UI state and
       // should not survive refreshes (avoid "stuck" error messages).
-      partialize: state => ({ draft: state.draft }),
-      version: 2,
+      partialize: state => ({
+        draft: state.draft,
+        isRecipientAddressesAutoFilled: state.isRecipientAddressesAutoFilled,
+      }),
+      version: 4,
       migrate: (persisted, version) => {
         // v1 stored the whole store shape (including errors). Drop everything
         // except the draft when rehydrating older persisted states.
+        const p = persisted as Partial<CreateProjectDraftState> | undefined
         if (version < 2) {
-          const p = persisted as Partial<CreateProjectDraftState> | undefined
-          return { draft: p?.draft ?? initialDraft }
+          return {
+            draft: sanitizePersistedDraft(p?.draft),
+            isRecipientAddressesAutoFilled: false,
+          }
         }
-        return persisted as unknown as Partial<CreateProjectDraftState>
+        return {
+          draft: sanitizePersistedDraft(p?.draft),
+          isRecipientAddressesAutoFilled:
+            p?.isRecipientAddressesAutoFilled ?? false,
+        }
       },
     },
   ),

@@ -86,6 +86,7 @@ export type CauseEntity = {
   sumDonationValueUsdForActiveQfRound?: Maybe<Scalars['Float']['output']>;
   title: Scalars['String']['output'];
   totalDonations: Scalars['Float']['output'];
+  totalPower?: Maybe<Scalars['Float']['output']>;
   totalProjectUpdates?: Maybe<Scalars['Int']['output']>;
   totalReactions: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -432,6 +433,22 @@ export type ManagingFundsInput = {
   relatedAddresses?: InputMaybe<Array<FormRelatedAddressInput>>;
 };
 
+export type MatchingFundDetails = {
+  __typename?: 'MatchingFundDetails';
+  /** Amount in native token */
+  amount?: Maybe<Scalars['Float']['output']>;
+  /** Amount in USD */
+  amountUsd: Scalars['Float']['output'];
+  /** Currency/token symbol */
+  currency?: Maybe<Scalars['String']['output']>;
+  /** Network/chain ID */
+  networkId?: Maybe<Scalars['Int']['output']>;
+  /** Transaction date */
+  txDate?: Maybe<Scalars['DateTime']['output']>;
+  /** Transaction hash on blockchain */
+  txHash?: Maybe<Scalars['String']['output']>;
+};
+
 export type MilestonesEntity = {
   __typename?: 'MilestonesEntity';
   achievedMilestones?: Maybe<Scalars['String']['output']>;
@@ -488,6 +505,7 @@ export type Mutation = {
   setMultiplePowerBoosting: Array<PowerBoostingEntity>;
   setPrimaryWallet: UserEntity;
   setSinglePowerBoosting: Array<PowerBoostingEntity>;
+  syncPowerBoostingTemp: SyncPowerBoostingBoostTempPayload;
   unlikeProject: Scalars['Boolean']['output'];
   unlikeProjectUpdate: Scalars['Boolean']['output'];
   updateCause: CauseEntity;
@@ -661,6 +679,11 @@ export type MutationSetPrimaryWalletArgs = {
 export type MutationSetSinglePowerBoostingArgs = {
   percentage: Scalars['Float']['input'];
   projectId: Scalars['Int']['input'];
+};
+
+
+export type MutationSyncPowerBoostingTempArgs = {
+  input: SyncPowerBoostingBoostTempInput;
 };
 
 
@@ -859,6 +882,7 @@ export type ProjectEntity = {
   sumDonationValueUsdForActiveQfRound?: Maybe<Scalars['Float']['output']>;
   title: Scalars['String']['output'];
   totalDonations: Scalars['Float']['output'];
+  totalPower?: Maybe<Scalars['Float']['output']>;
   totalProjectUpdates?: Maybe<Scalars['Int']['output']>;
   totalReactions: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -961,9 +985,9 @@ export type ProjectSocialMediaInput = {
 export enum ProjectSortField {
   CreatedAt = 'CreatedAt',
   QfDonations = 'QfDonations',
-  QualityScore = 'QualityScore',
   Relevance = 'Relevance',
   TotalDonations = 'TotalDonations',
+  TotalPower = 'TotalPower',
   UpdatedAt = 'UpdatedAt'
 }
 
@@ -1045,6 +1069,21 @@ export type QfRoundEntity = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type QfRoundHistoryEntity = {
+  __typename?: 'QfRoundHistoryEntity';
+  /** Whether the QF round uses USD as preferred currency for allocated fund */
+  allocatedFundUSDPreferred?: Maybe<Scalars['Boolean']['output']>;
+  /** Actual distributed matching funds - null until funds are distributed on-chain */
+  distributedFund?: Maybe<MatchingFundDetails>;
+  donationsCount?: Maybe<Scalars['Int']['output']>;
+  /** Estimated matching calculated by QF algorithm - available after matching calculation */
+  estimatedMatching?: Maybe<MatchingFundDetails>;
+  projectId: Scalars['Int']['output'];
+  qfRoundId: Scalars['Int']['output'];
+  raisedFundInUsd?: Maybe<Scalars['Float']['output']>;
+  uniqueDonors?: Maybe<Scalars['Int']['output']>;
+};
+
 export type QfRoundMatchingEntity = {
   __typename?: 'QfRoundMatchingEntity';
   calculatedAt: Scalars['DateTime']['output'];
@@ -1120,6 +1159,7 @@ export type Query = {
   getPassportEligibility?: Maybe<PassportEligibilityEntity>;
   getPowerBoosting: GivPowersEntity;
   getProjectReactions: Array<ReactionEntity>;
+  getQfRoundHistory?: Maybe<QfRoundHistoryEntity>;
   getTopPowerRank: Scalars['Float']['output'];
   globalConfiguration?: Maybe<GlobalConfigurationEntity>;
   globalConfigurations: Array<GlobalConfigurationEntity>;
@@ -1278,6 +1318,12 @@ export type QueryGetPowerBoostingArgs = {
 
 export type QueryGetProjectReactionsArgs = {
   projectId: Scalars['Int']['input'];
+};
+
+
+export type QueryGetQfRoundHistoryArgs = {
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
 };
 
 
@@ -1523,6 +1569,28 @@ export enum SybilDefenseType {
   PassportModel = 'PASSPORT_MODEL',
   PassportStamps = 'PASSPORT_STAMPS'
 }
+
+export type SyncPowerBoostingBoostTempInput = {
+  percentages: Array<Scalars['Float']['input']>;
+  projectIds: Array<Scalars['Int']['input']>;
+};
+
+export type SyncPowerBoostingBoostTempItem = {
+  __typename?: 'SyncPowerBoostingBoostTempItem';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['Int']['output'];
+  percentage: Scalars['Float']['output'];
+  powerRank?: Maybe<Scalars['Int']['output']>;
+  projectId: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['Int']['output'];
+};
+
+export type SyncPowerBoostingBoostTempPayload = {
+  __typename?: 'SyncPowerBoostingBoostTempPayload';
+  powerBoostings: Array<SyncPowerBoostingBoostTempItem>;
+  totalCount: Scalars['Int']['output'];
+};
 
 export type TokenEntity = {
   __typename?: 'TokenEntity';
@@ -1927,6 +1995,14 @@ export type DonationsByUserQueryVariables = Exact<{
 
 
 export type DonationsByUserQuery = { __typename?: 'Query', donationsByUser: { __typename?: 'PaginatedDonationsEntity', total: number, donations: Array<{ __typename?: 'DonationEntity', id: string, createdAt: any, amount: number, currency: string, valueUsd?: number | null, status: DonationStatus, transactionId?: string | null, transactionNetworkId: number, projectId: number, qfRoundId?: number | null, qfRoundName?: string | null, project?: { __typename?: 'ProjectEntity', id: string, title: string, slug: string } | null }> } };
+
+export type GetQfRoundHistoryQueryVariables = Exact<{
+  projectId: Scalars['Int']['input'];
+  qfRoundId: Scalars['Int']['input'];
+}>;
+
+
+export type GetQfRoundHistoryQuery = { __typename?: 'Query', getQfRoundHistory?: { __typename?: 'QfRoundHistoryEntity', projectId: number, qfRoundId: number, uniqueDonors?: number | null, donationsCount?: number | null, raisedFundInUsd?: number | null, allocatedFundUSDPreferred?: boolean | null, estimatedMatching?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null } | null, distributedFund?: { __typename?: 'MatchingFundDetails', amountUsd: number, amount?: number | null, currency?: string | null, txHash?: string | null, networkId?: number | null, txDate?: any | null } | null } | null };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -2715,3 +2791,27 @@ export const DonationsByUserDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<DonationsByUserQuery, DonationsByUserQueryVariables>;
+export const GetQfRoundHistoryDocument = new TypedDocumentString(`
+    query GetQfRoundHistory($projectId: Int!, $qfRoundId: Int!) {
+  getQfRoundHistory(projectId: $projectId, qfRoundId: $qfRoundId) {
+    projectId
+    qfRoundId
+    uniqueDonors
+    donationsCount
+    raisedFundInUsd
+    allocatedFundUSDPreferred
+    estimatedMatching {
+      amountUsd
+      amount
+    }
+    distributedFund {
+      amountUsd
+      amount
+      currency
+      txHash
+      networkId
+      txDate
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<GetQfRoundHistoryQuery, GetQfRoundHistoryQueryVariables>;

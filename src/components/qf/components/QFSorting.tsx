@@ -25,7 +25,7 @@ const SORT_OPTIONS: SortOption[] = [
   },
   {
     label: 'Highest GIVpower',
-    field: ProjectSortField.QualityScore,
+    field: ProjectSortField.TotalPower,
     direction: 'DESC',
     icon: <IconGIVPower className="w-4 h-4" />,
   },

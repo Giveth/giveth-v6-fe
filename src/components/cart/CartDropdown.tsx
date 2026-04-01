@@ -1,12 +1,13 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowRight, X } from 'lucide-react'
 import { IconUnstakeDonate } from '@/components/icons/IconUnstakeDonate'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
+import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 import { groupCartItemsByRound } from '@/lib/helpers/cartHelper'
 import type { Route } from 'next'
 
@@ -15,7 +16,43 @@ interface CartDropdownProps {
 }
 
 export function CartDropdown({ onClose }: CartDropdownProps) {
-  const { cartItems, removeFromCart } = useCart()
+  const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
+  const { cartItems, removeFromCart, pruneInactiveRoundProjects } = useCart()
+
+  const activeRoundIds = useMemo(
+    () =>
+      (activeRoundsData?.activeQfRounds || [])
+        .map(round => Number(round.id))
+        .filter(roundId => Number.isFinite(roundId)),
+    [activeRoundsData],
+  )
+
+  // Remove projects from the cart if they are in inactive rounds
+  // This is to prevent users from adding projects to the cart that are not active
+  useEffect(() => {
+    if (isLoading || error || !activeRoundsData) return
+    if (cartItems.length === 0) return
+
+    pruneInactiveRoundProjects(activeRoundIds)
+  }, [
+    activeRoundIds,
+    activeRoundsData,
+    cartItems.length,
+    error,
+    isLoading,
+    pruneInactiveRoundProjects,
+  ])
+
+  // Get the visible cart items, this is to prevent users from seeing projects that are not active
+  const visibleCartItems = useMemo(() => {
+    if (isLoading || error || !activeRoundsData) return cartItems
+
+    const activeRoundIdSet = new Set(activeRoundIds)
+    return cartItems.filter(item => {
+      if (item.roundId == null || item.roundId <= 0) return true
+      return activeRoundIdSet.has(item.roundId)
+    })
+  }, [activeRoundIds, activeRoundsData, cartItems, error, isLoading])
 
   const handleRemoveItem = (roundId: number, itemId: string) => {
     removeFromCart(roundId, itemId)
@@ -23,8 +60,8 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
 
   // Group cart items by round
   const { qfRoundGroups, nonQfProjects } = useMemo(
-    () => groupCartItemsByRound(cartItems),
-    [cartItems],
+    () => groupCartItemsByRound(visibleCartItems),
+    [visibleCartItems],
   )
 
   return (
@@ -41,7 +78,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
       </div>
 
       {/* Empty State */}
-      {cartItems.length === 0 && (
+      {visibleCartItems.length === 0 && (
         <div className="p-8 text-center flex flex-col items-center justify-center">
           <IconUnstakeDonate
             width={32}
@@ -55,7 +92,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
       )}
 
       {/* Content */}
-      {cartItems.length > 0 && (
+      {visibleCartItems.length > 0 && (
         <>
           <div className="py-4 max-h-[400px] overflow-y-auto">
             <div className="space-y-4">
@@ -153,7 +190,7 @@ export function CartDropdown({ onClose }: CartDropdownProps) {
               onClick={onClose}
               className={clsx(
                 'w-full py-3 bg-giv-brand-300! text-white! rounded-md text-xs font-bold',
-                'flex items-center justify-center gap-2 hover:bg-giv-brand-400 transition-colors cursor-pointer',
+                'flex items-center justify-center gap-2 hover:bg-giv-brand-400! transition-colors cursor-pointer',
               )}
             >
               Donate

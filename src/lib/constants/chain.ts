@@ -31,7 +31,7 @@ export const CHAINS: Record<number, ChainInfo> = {
     id: 10,
     name: 'Optimism',
     shortName: 'OP',
-    blockExplorerUrl: 'https://optimistic.etherscan.io/',
+    blockExplorerUrl: 'https://explorer.optimism.io/',
     iconKey: 'optimism',
     isTestnet: false,
     nativeCurrency: {
@@ -440,7 +440,7 @@ export const EXPLORER_BY_CHAIN_ID: Record<number, string> = {
   11155111: 'https://eth-sepolia.blockscout.com/',
 
   // Optimism
-  10: 'https://optimistic.blockscout.com/',
+  10: 'https://explorer.optimism.io/',
   11155420: 'https://optimism-sepolia.blockscout.com/',
 
   // Gnosis
@@ -512,6 +512,7 @@ export const cryptoWallets: Record<
   'im.argent': { icon: IconArgent, name: 'Argent' },
   'com.okex.wallet': { icon: IconOKX, name: 'OKX Wallet' },
   'io.gnosis.safe': { icon: IconSafe, name: 'Safe Wallet' },
+  'global.safe': { icon: IconSafe, name: 'Safe Wallet' },
   'io.rabby': { icon: IconRabby, name: 'Rabby' },
   'com.wallet.brave': { icon: IconBrave, name: 'Brave' },
   ledger: { icon: IconLedger, name: 'Ledger' },

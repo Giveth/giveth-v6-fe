@@ -31,7 +31,7 @@ export function ProjectHero({ project }: ProjectHeroProps) {
         style={{
           backgroundImage: project.image
             ? `url(${project.image})`
-            : `url('/abstract-purple-cosmic-waves.jpg')`,
+            : `url('/images/defaultProjectImages/3.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

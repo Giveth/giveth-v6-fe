@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
@@ -8,7 +8,7 @@ import { useActiveAccount } from 'thirdweb/react'
 import { TokenIcon } from '@/components/TokenIcon'
 import { useCart } from '@/context/CartContext'
 import {
-  formatNumber,
+  formatNumberWithTinyValueLabel,
   getPriceFromUniswapV2,
   getTokenPriceInUSDByCoingeckoId,
   useWalletTokens,
@@ -26,15 +26,17 @@ export interface Token {
 export const TokenDropdown = ({
   selectedChainId,
   setRoundSelectedToken,
+  currentSelectedToken,
   roundId,
 }: {
   selectedChainId: number
-  setRoundSelectedToken: (token: WalletTokenWithBalance) => void
+  setRoundSelectedToken: (token: WalletTokenWithBalance | undefined) => void
+  currentSelectedToken?: WalletTokenWithBalance
   roundId: number
 }) => {
   const [hide0BalanceTokens, setHide0BalanceTokens] = useState(false)
 
-  const { updateSelectedToken } = useCart()
+  const { clearRoundTokenAndDonations, updateSelectedToken } = useCart()
 
   const account = useActiveAccount()
   const accountAddress = account?.address
@@ -46,37 +48,101 @@ export const TokenDropdown = ({
 
   const [selectedToken, setSelectedToken] = useState<
     WalletTokenWithBalance | undefined
-  >(undefined)
+  >(currentSelectedToken)
 
   // Select choosed token when clicking on the dropdown item
-  const handleSelectToken = async (token: WalletTokenWithBalance) => {
-    // Set token price in USD
-    let priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
+  const handleSelectToken = useCallback(
+    async (token: WalletTokenWithBalance) => {
+      // Set token price in USD
+      let priceInUSD = await getTokenPriceInUSDByCoingeckoId(token.coingeckoId)
 
-    if (!priceInUSD || priceInUSD === 0) {
-      priceInUSD =
-        (await getPriceFromUniswapV2(
-          token.address as `0x${string}`,
-          token.decimals,
-          selectedChainId,
-        )) ?? 0
+      if (!priceInUSD || priceInUSD === 0) {
+        priceInUSD =
+          (await getPriceFromUniswapV2(
+            token.address as `0x${string}`,
+            token.decimals,
+            selectedChainId,
+          )) ?? 0
+      }
+
+      token.priceInUSD = priceInUSD
+
+      setSelectedToken(token)
+      setRoundSelectedToken(token)
+
+      // Update to all projects in the round same token
+      updateSelectedToken(
+        roundId,
+        token,
+        token.symbol,
+        (token.address as `0x${string}`) ?? '',
+        token.decimals,
+        token.isGivbackEligible,
+      )
+    },
+    [roundId, selectedChainId, setRoundSelectedToken, updateSelectedToken],
+  )
+
+  useEffect(() => {
+    if (!currentSelectedToken) return
+
+    setSelectedToken(prev => {
+      const hasSameIdentity =
+        prev?.chainId === currentSelectedToken.chainId &&
+        prev?.address?.toLowerCase() ===
+          currentSelectedToken.address?.toLowerCase() &&
+        prev?.symbol === currentSelectedToken.symbol
+
+      return hasSameIdentity ? prev : currentSelectedToken
+    })
+    setRoundSelectedToken(currentSelectedToken)
+  }, [currentSelectedToken, setRoundSelectedToken])
+
+  useEffect(() => {
+    if (!currentSelectedToken) return
+    if (currentSelectedToken.chainId === selectedChainId) return
+    // On chain switch, walletTokens can be temporarily empty/stale.
+    // Wait for a populated list before reconciling or clearing round donations.
+    if (!walletTokens || walletTokens.length === 0) return
+
+    const normalizedCurrentAddress = currentSelectedToken.address?.toLowerCase()
+    const normalizedCurrentSymbol = currentSelectedToken.symbol.toLowerCase()
+    const symbolMatches = walletTokens.filter(
+      token => token.symbol.toLowerCase() === normalizedCurrentSymbol,
+    )
+    const uniqueSymbolMatch =
+      symbolMatches.length === 1 ? symbolMatches[0] : null
+
+    const matchingToken =
+      (currentSelectedToken.coingeckoId
+        ? walletTokens.find(
+            token => token.coingeckoId === currentSelectedToken.coingeckoId,
+          )
+        : undefined) ||
+      (normalizedCurrentAddress
+        ? walletTokens.find(
+            token => token.address?.toLowerCase() === normalizedCurrentAddress,
+          )
+        : undefined) ||
+      uniqueSymbolMatch
+
+    if (!matchingToken) {
+      setSelectedToken(undefined)
+      setRoundSelectedToken(undefined)
+      clearRoundTokenAndDonations(roundId)
+      return
     }
 
-    token.priceInUSD = priceInUSD
-
-    setSelectedToken(token)
-    setRoundSelectedToken(token)
-
-    // Update to all projects in the round same token
-    updateSelectedToken(
-      roundId,
-      token,
-      token.symbol,
-      (token.address as `0x${string}`) ?? '',
-      token.decimals,
-      token.isGivbackEligible,
-    )
-  }
+    void handleSelectToken(matchingToken)
+  }, [
+    clearRoundTokenAndDonations,
+    currentSelectedToken,
+    handleSelectToken,
+    roundId,
+    selectedChainId,
+    setRoundSelectedToken,
+    walletTokens,
+  ])
 
   return (
     <DropdownMenu.Root>
@@ -188,38 +254,47 @@ function TokenDropdownItems({
 
   return (
     <>
-      {filteredWalletTokens.map(t => (
-        <DropdownMenu.Item
-          key={t.address}
-          onSelect={() => {
-            onSelectToken(t)
-          }}
-          className="
-            cursor-pointer rounded-lg px-3 py-2 text-sm
-            text-giv-deep-blue-800 outline-none
-            hover:bg-giv-neutral-200
-            focus:bg-giv-neutral-200
-          "
-        >
-          <div className="flex items-center justify-start gap-4">
-            <TokenIcon
-              tokenSymbol={t.symbol}
-              networkId={t.chainId}
-              address={t.address as `0x${string}`}
-              height={20}
-              width={20}
-              isGivbackEligible={t.isGivbackEligible}
-            />
-            <span className="font-medium text-giv-neutral-900">{t.symbol}</span>
-            <span className="text-giv-neutral-700 tabular-nums ml-auto">
-              {formatNumber(t.formattedBalance, {
-                minDecimals: 2,
-                maxDecimals: 2,
-              })}
-            </span>
-          </div>
-        </DropdownMenu.Item>
-      ))}
+      {filteredWalletTokens.map((t, id) => {
+        const balanceLabel = formatNumberWithTinyValueLabel(
+          t.formattedBalance,
+          {
+            minDecimals: 2,
+            maxDecimals: 2,
+          },
+        )
+
+        return (
+          <DropdownMenu.Item
+            key={`${t.chainId}:${t.address ?? 'native'}:${id}`}
+            onSelect={() => {
+              onSelectToken(t)
+            }}
+            className="
+              cursor-pointer rounded-lg px-3 py-2 text-sm
+              text-giv-deep-blue-800 outline-none
+              hover:bg-giv-neutral-200
+              focus:bg-giv-neutral-200
+            "
+          >
+            <div className="flex items-center justify-start gap-4">
+              <TokenIcon
+                tokenSymbol={t.symbol}
+                networkId={t.chainId}
+                address={t.address as `0x${string}`}
+                height={20}
+                width={20}
+                isGivbackEligible={t.isGivbackEligible}
+              />
+              <span className="font-medium text-giv-neutral-900">
+                {t.symbol}
+              </span>
+              <span className="text-giv-neutral-700 tabular-nums ml-auto">
+                {balanceLabel}
+              </span>
+            </div>
+          </DropdownMenu.Item>
+        )
+      })}
     </>
   )
 }

@@ -27,8 +27,9 @@ export function AboutTab({
   socialMedia,
   categories: _categories,
 }: AboutTabProps) {
-  const displayDescription =
+  const rawDescription =
     description || descriptionSummary || 'No description available.'
+  const displayDescription = formatDescriptionForReadonlyQuill(rawDescription)
 
   const modules = {
     toolbar: false, // Disable toolbar for read-only mode
@@ -99,4 +100,16 @@ export function AboutTab({
       )}
     </div>
   )
+}
+
+function formatDescriptionForReadonlyQuill(text: string): string {
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(text)
+  if (looksLikeHtml) return text
+
+  // Keep user-entered line breaks when showing plain text in Quill read-only mode.
+  const escaped = text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+  return `<p>${escaped.replaceAll('\n', '<br/>')}</p>`
 }

@@ -17,6 +17,7 @@ import {
 } from 'thirdweb/react'
 import { SiweService } from '@/lib/auth/siwe.service'
 import { ensureImpactGraphUserExists } from '@/lib/impact-graph/userSync'
+import { useAAWalletStore } from '@/store/aa-wallet'
 
 interface User {
   id: number
@@ -39,6 +40,8 @@ interface AuthContextValue extends AuthState {
   signOut: () => Promise<void>
   isConnected: boolean
   walletAddress: string | undefined
+  /** Whether the connected wallet is an AA (in-app) wallet */
+  isAAWallet: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -55,10 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const account = useActiveAccount()
   const connectionStatus = useActiveWalletConnectionStatus()
   const chain = useActiveWalletChain()
+  const { isAAWallet } = useAAWalletStore()
 
   const siweService = useMemo(() => new SiweService(), [])
   const lastWalletAddressRef = useRef<string | undefined>(undefined)
   const lastImpactGraphSyncRef = useRef<string | undefined>(undefined)
+  const autoSignInAttemptedRef = useRef<string | undefined>(undefined)
   const initRef = useRef(false)
 
   const setSignedOutState = useCallback((error: string | null = null) => {
@@ -116,12 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       walletAddress !== lastWalletAddressRef.current
     ) {
       localStorage.removeItem('giveth_token')
+      autoSignInAttemptedRef.current = undefined
       setSignedOutState(null)
     }
 
     lastWalletAddressRef.current = walletAddress
 
-    if (!isConnected) return
+    if (!isConnected) {
+      autoSignInAttemptedRef.current = undefined
+      return
+    }
 
     const syncImpactGraphUser = async () => {
       if (!walletAddress) return
@@ -230,12 +239,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('giveth_token')
   }, [setSignedOutState])
 
+  // Auto-sign-in for AA (in-app) wallets once React has re-rendered with a
+  // fresh `account`. Browser-wallet users still click "Sign Message" manually.
+  useEffect(() => {
+    if (
+      connectionStatus === 'connected' &&
+      account?.address &&
+      !authState.isAuthenticated &&
+      !authState.isLoading &&
+      isAAWallet &&
+      autoSignInAttemptedRef.current !== account.address
+    ) {
+      autoSignInAttemptedRef.current = account.address
+      signIn().catch(() => {})
+    }
+  }, [
+    connectionStatus,
+    account?.address,
+    authState.isAuthenticated,
+    authState.isLoading,
+    isAAWallet,
+    signIn,
+  ])
+
   const value: AuthContextValue = {
     ...authState,
+    isAuthenticated: authState.isAuthenticated,
     signIn,
     signOut,
     isConnected: connectionStatus === 'connected',
     walletAddress: account?.address,
+    isAAWallet,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

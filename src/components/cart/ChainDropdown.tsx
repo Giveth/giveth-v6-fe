@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
-import { useActiveWalletChain } from 'thirdweb/react'
+import { useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
 import { ChainIcon } from '@/components/ChainIcon'
 import { useCart } from '@/context/CartContext'
 import { getChainName } from '@/lib/helpers/chainHelper'
@@ -15,31 +15,61 @@ export const ChainDropdown = ({
   eligibleNetworks: number[]
   roundId: number
 }) => {
+  const activeWallet = useActiveWallet()
   // Get user wallet current chain id
   const chain = useActiveWalletChain()
   const chainId = chain?.id ?? 0
+  const isSafeWallet = activeWallet?.id === 'global.safe'
+  const availableNetworks = isSafeWallet
+    ? chainId > 0
+      ? [chainId]
+      : []
+    : eligibleNetworks
 
   const { updateSelectedChainId } = useCart()
   const [selectedChainIdState, setSelectedChainIdState] = useState<number>(
     selectedChainId && selectedChainId > 0 ? selectedChainId : chainId,
   )
 
+  // If the user is using a Safe wallet, the chain is set to the current chain
+  // Otherwise, the chain is set to the selected chain or the current chain
   useEffect(() => {
+    if (isSafeWallet) {
+      if (chainId > 0) {
+        setSelectedChainIdState(prev => (prev === chainId ? prev : chainId))
+        if (selectedChainId !== chainId) {
+          updateSelectedChainId(roundId, chainId)
+        }
+      }
+      return
+    }
+
     if (selectedChainId && selectedChainId > 0) {
-      setSelectedChainIdState(selectedChainId)
+      setSelectedChainIdState(prev =>
+        prev === selectedChainId ? prev : selectedChainId,
+      )
       return
     }
     if (chainId > 0) {
-      setSelectedChainIdState(chainId)
-      updateSelectedChainId(roundId, chainId)
+      setSelectedChainIdState(prev => (prev === chainId ? prev : chainId))
+      if (selectedChainId !== chainId) {
+        updateSelectedChainId(roundId, chainId)
+      }
     }
-  }, [chainId, selectedChainId, roundId, updateSelectedChainId])
+  }, [chainId, isSafeWallet, selectedChainId, roundId, updateSelectedChainId])
 
   return (
     <DropdownMenu.Root>
       {/* Trigger */}
       <DropdownMenu.Trigger asChild>
-        <button className="max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-neutral-100 px-3 py-2 transition-colors hover:bg-giv-neutral-200 cursor-pointer">
+        <button
+          disabled={isSafeWallet}
+          className={`max-[480px]:w-full md:w-auto flex items-center gap-2 rounded-md border border-giv-neutral-100 px-3 py-2 transition-colors ${
+            isSafeWallet
+              ? 'cursor-default opacity-90'
+              : 'hover:bg-giv-neutral-200 cursor-pointer'
+          }`}
+        >
           {selectedChainIdState > 0 && (
             <>
               <ChainIcon networkId={selectedChainIdState} />
@@ -53,7 +83,9 @@ export const ChainDropdown = ({
               Select a chain
             </span>
           )}
-          <ChevronDown className="w-7 h-5 mt-0.5 text-giv-neutral-900 max-[480px]:ml-auto" />
+          {!isSafeWallet && (
+            <ChevronDown className="w-7 h-5 mt-0.5 text-giv-neutral-900 max-[480px]:ml-auto" />
+          )}
         </button>
       </DropdownMenu.Trigger>
 
@@ -68,7 +100,7 @@ export const ChainDropdown = ({
             shadow-[0px_6px_24px_rgba(0,0,0,0.06)]
           "
         >
-          {eligibleNetworks.map(id => (
+          {availableNetworks.map(id => (
             <DropdownMenu.Item
               key={id}
               onSelect={() => {

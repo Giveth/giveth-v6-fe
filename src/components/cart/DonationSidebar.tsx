@@ -9,9 +9,10 @@ import { AnonymousOption } from '@/components/cart/AnonymousOption'
 import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
 import { IconWalletApproved } from '@/components/icons/IconWalletApproved'
 import { InsufficientFund } from '@/components/modals/InsufficientFund'
-import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
+import { SignInModal } from '@/components/modals/SignInModal'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
+import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
 import { useMultiRoundCheckout } from '@/hooks/useMultiRoundCheckout'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName } from '@/lib/helpers/chainHelper'
@@ -21,6 +22,7 @@ import {
   thirdwebClient,
 } from '@/lib/thirdweb/client'
 import { type GroupedProjects } from '@/lib/types/cart'
+import { useAAWalletStore } from '@/store/aa-wallet'
 
 export function DonationSidebar({
   qfRoundGroups,
@@ -33,9 +35,13 @@ export function DonationSidebar({
 }) {
   const router = useRouter()
 
-  const { signIn, isAuthenticated, token, walletAddress } = useSiweAuth()
+  const { signIn, isAuthenticated, token, walletAddress, isAAWallet } =
+    useSiweAuth()
   const { setShowMissingAmountErrors } = useCart()
+  const { setIsAAWallet, isSignInModalOpen, setSignInModalOpen } =
+    useAAWalletStore()
   const { reset } = useMultiRoundCheckout()
+  const { balanceNumber: aaBalanceUsd } = useAAWalletBalance()
   const account = useActiveAccount()
   const { connect } = useConnectModal()
 
@@ -53,52 +59,93 @@ export function DonationSidebar({
 
   const hasAnyItems = qfRoundGroups.length > 0 || nonQfProjects.length > 0
 
-  const handleDonateButtonClick = async () => {
-    // Check is cart group value match user wallet balance
-    const totalGroupCartValueUsd = qfRoundGroups.reduce((acc, group) => {
-      return acc + Number(group.totalUsdValue)
-    }, 0)
-
-    const totalGroupCartBalanceUsd = qfRoundGroups.reduce((acc, group) => {
-      return (
-        acc +
-        Number(group.selectedToken?.formattedBalance ?? 0) *
-          Number(group.selectedToken?.priceInUSD ?? 0)
-      )
-    }, 0)
-
-    const totalGroupCartValueWithGiveth =
-      totalGroupCartValueUsd + (totalGroupCartValueUsd * givethPercentage) / 100
-
-    if (totalGroupCartValueWithGiveth > totalGroupCartBalanceUsd) {
-      setIsInsufficientFund(true)
-      return
+  const handleDonateWithCryptoClick = async () => {
+    try {
+      await connect({
+        client: thirdwebClient,
+        wallets: primaryWallets,
+        chains: supportedChains,
+        size: 'compact',
+        showThirdwebBranding: false,
+      })
+      setIsAAWallet(false)
+    } catch {
+      // User dismissed the modal
     }
+  }
 
-    // Check is cart non-group value match user wallet balance
-    const totalNonGroupCartValueUsd = nonQfProjects.reduce((acc, project) => {
-      return (
-        acc +
-        Number(project.donationAmount) *
-          Number(project.selectedToken?.priceInUSD ?? 0)
+  const handleDonateButtonClick = async () => {
+    if (isAAWallet) {
+      const totalQfCartValueUsd = qfRoundGroups.reduce((acc, group) => {
+        const roundTotal = group.projects.reduce((projectAcc, project) => {
+          return projectAcc + Number(project.donationAmount || 0)
+        }, 0)
+        return acc + roundTotal
+      }, 0)
+
+      const totalNonQfCartValueUsd = nonQfProjects.reduce((acc, project) => {
+        return acc + Number(project.donationAmount || 0)
+      }, 0)
+
+      const totalCartValueUsd = totalQfCartValueUsd + totalNonQfCartValueUsd
+      const totalCartValueWithGiveth =
+        totalCartValueUsd + (totalCartValueUsd * givethPercentage) / 100
+
+      if (totalCartValueWithGiveth > aaBalanceUsd) {
+        setIsInsufficientFund(true)
+        return
+      }
+    } else {
+      // Check is cart group value match user wallet balance
+      const totalGroupCartValueUsd = qfRoundGroups.reduce((acc, group) => {
+        return acc + Number(group.totalUsdValue)
+      }, 0)
+
+      const totalGroupCartBalanceUsd = qfRoundGroups.reduce((acc, group) => {
+        return (
+          acc +
+          Number(group.selectedToken?.formattedBalance ?? 0) *
+            Number(group.selectedToken?.priceInUSD ?? 0)
+        )
+      }, 0)
+
+      const totalGroupCartValueWithGiveth =
+        totalGroupCartValueUsd +
+        (totalGroupCartValueUsd * givethPercentage) / 100
+
+      if (totalGroupCartValueWithGiveth > totalGroupCartBalanceUsd) {
+        setIsInsufficientFund(true)
+        return
+      }
+
+      // Check is cart non-group value match user wallet balance
+      const totalNonGroupCartValueUsd = nonQfProjects.reduce((acc, project) => {
+        return (
+          acc +
+          Number(project.donationAmount) *
+            Number(project.selectedToken?.priceInUSD ?? 0)
+        )
+      }, 0)
+
+      const totalNonGroupCartBalanceUsd = nonQfProjects.reduce(
+        (acc, project) => {
+          return (
+            acc +
+            Number(project.selectedToken?.formattedBalance ?? 0) *
+              Number(project.selectedToken?.priceInUSD ?? 0)
+          )
+        },
+        0,
       )
-    }, 0)
 
-    const totalNonGroupCartBalanceUsd = nonQfProjects.reduce((acc, project) => {
-      return (
-        acc +
-        Number(project.selectedToken?.formattedBalance ?? 0) *
-          Number(project.selectedToken?.priceInUSD ?? 0)
-      )
-    }, 0)
+      const totalNonGroupCartValueWithGiveth =
+        totalNonGroupCartValueUsd +
+        (totalNonGroupCartValueUsd * givethPercentage) / 100
 
-    const totalNonGroupCartValueWithGiveth =
-      totalNonGroupCartValueUsd +
-      (totalNonGroupCartValueUsd * givethPercentage) / 100
-
-    if (totalNonGroupCartValueWithGiveth > totalNonGroupCartBalanceUsd) {
-      setIsInsufficientFund(true)
-      return
+      if (totalNonGroupCartValueWithGiveth > totalNonGroupCartBalanceUsd) {
+        setIsInsufficientFund(true)
+        return
+      }
     }
 
     // Checko is cart empty
@@ -107,15 +154,17 @@ export function DonationSidebar({
     }
 
     // Check if round doesn't have any selected token
-    const roundsWithoutToken = qfRoundGroups.filter(
-      group => !group.selectedToken,
-    )
-    if (roundsWithoutToken.length > 0) {
-      console.error(
-        'No token selected for the following rounds:',
-        roundsWithoutToken.map(group => group.roundName),
+    if (!isAAWallet) {
+      const roundsWithoutToken = qfRoundGroups.filter(
+        group => !group.selectedToken,
       )
-      return
+      if (roundsWithoutToken.length > 0) {
+        console.error(
+          'No token selected for the following rounds:',
+          roundsWithoutToken.map(group => group.roundName),
+        )
+        return
+      }
     }
 
     // Check if some project inside the cart don't have amount
@@ -178,16 +227,19 @@ export function DonationSidebar({
 
   return (
     <div className="shrink-0 space-y-4 w-12/12 lg:w-4/12">
-      {/* Credit Card Option */}
-      {/* <div className="bg-white p-5 rounded-2xl">
-        <p className="text-base font-medium text-giv-neutral-900 mb-3">
-          New to crypto? REMOVE THIS PART
-        </p>
-        <button className="w-full px-4 py-3 rounded-lg border border-giv-brand-500 hover:border-giv-brand-900 text-giv-neutral-800 text-sm font-medium hover:bg-giv-brand-05 transition-colors flex items-center justify-center gap-1 cursor-pointer">
-          Donate with your credit card
-          <span className="text-giv-brand-400">New*</span>
-        </button>
-      </div> */}
+      {isAAWallet && (
+        <div className="bg-white p-5 rounded-2xl">
+          <p className="text-base font-medium text-giv-neutral-900 mb-3">
+            Already have a web3 wallet?
+          </p>
+          <button
+            onClick={handleDonateWithCryptoClick}
+            className="w-full px-4 py-3 rounded-lg bg-giv-brand-050 border border-giv-brand-100 hover:border-giv-brand-200 text-giv-brand-700 text-sm font-medium hover:bg-giv-brand-05 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          >
+            Donate with crypto
+          </button>
+        </div>
+      )}
 
       {/* Donation Summary */}
 
@@ -200,7 +252,19 @@ export function DonationSidebar({
             <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Connect your wallet to begin
             </div>
-            <ConnectWalletButton showIcon={true} backgroundColor="#8668FC" />
+            <button
+              type="button"
+              onClick={() => setSignInModalOpen(true)}
+              className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8668fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80 inline-flex items-center gap-2"
+            >
+              Connect Wallet
+            </button>
+            {isSignInModalOpen && (
+              <SignInModal
+                open={true}
+                onOpenChange={open => setSignInModalOpen(open)}
+              />
+            )}
           </div>
         )}
         {!isAuthenticated && walletAddress && (
@@ -230,40 +294,84 @@ export function DonationSidebar({
               const numberOfProjectsWithAmount = projectsWithAmount.length
 
               const totalGroupAmount = Number(group.totalAmount)
-              const totalGroupAmountUsd = Number(group.totalUsdValue)
+              const givethAmount = (totalGroupAmount * givethPercentage) / 100
 
-              const totalGroupAmountWithGiveth =
-                totalGroupAmount + (totalGroupAmount * givethPercentage) / 100
+              const totalGroupAmountWithGiveth = totalGroupAmount + givethAmount
+
+              const totalGroupAmountUsd = Number(group.totalUsdValue)
+              const givethAmountUsd =
+                (totalGroupAmountUsd * givethPercentage) / 100
+              const totalGroupAmountWithGivethUsd =
+                totalGroupAmountUsd + givethAmountUsd
+
+              const normalizedRoundName = group.roundName.trimEnd()
 
               return (
                 <div
                   key={group.roundId}
                   className="p-3 rounded-lg border border-giv-neutral-300"
                 >
-                  <p className="text-base text-giv-neutral-900 font-medium">
-                    {formatNumber(totalGroupAmountWithGiveth, {
-                      minDecimals: 2,
-                      maxDecimals: 2,
-                    })}{' '}
-                    {group.tokenSymbol}{' '}
-                    <span className="font-normal">
-                      (~${formatNumber(totalGroupAmountUsd)}) to
-                    </span>{' '}
-                    {numberOfProjectsWithAmount} project
-                    {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
-                    <span className="font-normal">in</span>
-                  </p>
-                  <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
-                    {group.roundName}
-                    {givethPercentage > 0 && (
-                      <>
-                        <span className="font-normal"> and </span>
-                        <span className="font-medium"> Giveth</span>{' '}
-                      </>
-                    )}{' '}
-                    <span className="font-normal">on</span>{' '}
-                    {getChainName(group.selectedChainId)}
-                  </p>
+                  {isAAWallet ? (
+                    <>
+                      <p className="text-base text-giv-neutral-900 font-medium">
+                        ${' '}
+                        {formatNumber(totalGroupAmountWithGiveth, {
+                          minDecimals: 2,
+                          maxDecimals: 2,
+                        })}{' '}
+                        <span className="font-normal">to</span>{' '}
+                        {numberOfProjectsWithAmount} project
+                        {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
+                        <span className="font-normal">in</span>{' '}
+                        {normalizedRoundName}
+                        {givethPercentage > 0 && (
+                          <>
+                            <span className="font-normal">, and </span>
+                            <span className="font-medium">Giveth</span>{' '}
+                            <span className="font-normal">on</span>{' '}
+                            {getChainName(group.selectedChainId)}
+                          </>
+                        )}
+                      </p>
+                      {givethPercentage > 0 && (
+                        <p className="text-sm text-giv-neutral-700 mt-0.5">
+                          ${' '}
+                          {formatNumber(givethAmount, {
+                            minDecimals: 2,
+                            maxDecimals: 2,
+                          })}{' '}
+                          to Giveth
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-base text-giv-neutral-900 font-medium">
+                        {formatNumber(totalGroupAmountWithGiveth, {
+                          minDecimals: 2,
+                          maxDecimals: 2,
+                        })}{' '}
+                        {group.tokenSymbol}{' '}
+                        <span className="font-normal">
+                          (~${formatNumber(totalGroupAmountWithGivethUsd)}) to
+                        </span>{' '}
+                        {numberOfProjectsWithAmount} project
+                        {numberOfProjectsWithAmount > 1 ? 's' : ''}{' '}
+                        <span className="font-normal">in</span>
+                      </p>
+                      <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
+                        {normalizedRoundName}
+                        {givethPercentage > 0 && (
+                          <>
+                            <span className="font-normal">, and </span>
+                            <span className="font-medium">Giveth</span>{' '}
+                          </>
+                        )}{' '}
+                        <span className="font-normal">on</span>{' '}
+                        {getChainName(group.selectedChainId)}
+                      </p>
+                    </>
+                  )}
                 </div>
               )
             })}
@@ -278,15 +386,27 @@ export function DonationSidebar({
                   {project.title}
                 </p>
                 <p className="text-base text-giv-neutral-900 font-medium mt-0.5">
-                  {project.donationAmount} {project.tokenSymbol}{' '}
-                  <span className="font-normal">
-                    (~$
-                    {formatNumber(
-                      Number(project.donationAmount) *
-                        (project.selectedToken?.priceInUSD ?? 0),
-                    )}
-                    )
-                  </span>
+                  {isAAWallet ? (
+                    <>
+                      ${' '}
+                      {formatNumber(Number(project.donationAmount || 0), {
+                        minDecimals: 2,
+                        maxDecimals: 2,
+                      })}
+                    </>
+                  ) : (
+                    <>
+                      {project.donationAmount} {project.tokenSymbol}{' '}
+                      <span className="font-normal">
+                        (~$
+                        {formatNumber(
+                          Number(project.donationAmount) *
+                            (project.selectedToken?.priceInUSD ?? 0),
+                        )}
+                        )
+                      </span>
+                    </>
+                  )}
                 </p>
               </div>
             ))}

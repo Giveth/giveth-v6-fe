@@ -5,10 +5,12 @@ import { X } from 'lucide-react'
 import { ProjectBadges } from '@/components/cart/ProjectBadges'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { TokenIcon } from '@/components/TokenIcon'
+import { useSiweAuth } from '@/context/AuthContext'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { type ActiveQfRoundsQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { normalizeDecimalInput } from '@/lib/helpers/numbersHelper'
+import { OPTIMISM_CHAIN_ID, OPTIMISM_USDC_ADDRESS } from '@/lib/thirdweb/client'
 
 export const ProjectCartCard = ({
   roundData,
@@ -21,10 +23,13 @@ export const ProjectCartCard = ({
   selectedAmountVsDollars: number
   showMissingAmountErrors: boolean
 }) => {
+  const { isAAWallet } = useSiweAuth()
   const { updateProjectDonation, removeFromCart } = useCart()
   const hasMissingAmount = Number(project.donationAmount) <= 0
   const shouldShowMissingAmount = showMissingAmountErrors && hasMissingAmount
   const [usdInputValue, setUsdInputValue] = useState('')
+  const [isUsdInputFocused, setIsUsdInputFocused] = useState(false)
+  const isUsdEntry = isAAWallet || selectedAmountVsDollars === 1
   const normalizeAmount = (value: number, decimals = 18) => {
     if (!Number.isFinite(value)) return '0'
     return value.toFixed(decimals).replace(/\.?0+$/, '')
@@ -32,16 +37,18 @@ export const ProjectCartCard = ({
   const conversionDecimals = Math.min(project.selectedToken?.decimals ?? 18, 6)
   const formatUsdInputValue = () => {
     const normalizedAmount = Number(project.donationAmount ?? 0)
-    const priceInUSD = project.selectedToken?.priceInUSD ?? 0
+    const priceInUSD = isAAWallet ? 1 : (project.selectedToken?.priceInUSD ?? 0)
     if (!Number.isFinite(normalizedAmount) || !priceInUSD) return '0'
     return normalizeAmount(normalizedAmount * priceInUSD, 6)
   }
 
   useEffect(() => {
-    if (selectedAmountVsDollars !== 1) return
+    if (!isUsdEntry || isUsdInputFocused) return
     setUsdInputValue(formatUsdInputValue())
   }, [
-    selectedAmountVsDollars,
+    isAAWallet,
+    isUsdEntry,
+    isUsdInputFocused,
     project.donationAmount,
     project.selectedToken?.priceInUSD,
   ])
@@ -58,12 +65,12 @@ export const ProjectCartCard = ({
           <Link
             href={`/project/${project.slug}`}
             target="_blank"
-            className="hover:opacity-80 transition-opacity duration-300"
+            className="hover:opacity-80 transition-opacity duration-300 w-14 h-[45px]"
           >
             <ProjectImage
               src={project.image}
               alt={project.title}
-              className="w-14 h-[45px] rounded-md overflow-hidden"
+              className="w-full h-full object-cover rounded-md overflow-hidden"
             />
           </Link>
           <Link href={`/project/${project.slug}`} target="_blank">
@@ -99,19 +106,21 @@ export const ProjectCartCard = ({
               : 'border-giv-neutral-100'
           }`}
         >
-          {project.selectedToken?.symbol && project.selectedToken?.address && (
-            <TokenIcon
-              tokenSymbol={project.selectedToken.symbol}
-              networkId={project.selectedToken.chainId}
-              address={project.selectedToken.address}
-              height={20}
-              width={20}
-              isGivbackEligible={project.selectedToken?.isGivbackEligible}
-            />
-          )}
+          {!isAAWallet &&
+            project.selectedToken?.symbol &&
+            project.selectedToken?.address && (
+              <TokenIcon
+                tokenSymbol={project.selectedToken.symbol}
+                networkId={project.selectedToken.chainId}
+                address={project.selectedToken.address}
+                height={20}
+                width={20}
+                isGivbackEligible={project.selectedToken?.isGivbackEligible}
+              />
+            )}
 
-          {/* If selectedAmountVsDollars is 0, show the amount input */}
-          {selectedAmountVsDollars === 0 && (
+          {/* If selectedAmountVsDollars is 0, show token amount input */}
+          {!isUsdEntry && (
             <>
               <span className="text-giv-neutral-700">
                 {project.selectedToken?.symbol ?? ''}
@@ -138,16 +147,31 @@ export const ProjectCartCard = ({
               />
             </>
           )}
-          {/* If selectedAmountVsDollars is 1, show the amount input in dollars */}
-          {selectedAmountVsDollars === 1 && (
+          {/* If selectedAmountVsDollars is 1 (or AA mode), show amount input in dollars */}
+          {isUsdEntry && (
             <>
               $
               <input
                 type="text"
                 value={usdInputValue}
+                onFocus={() => setIsUsdInputFocused(true)}
+                onBlur={() => setIsUsdInputFocused(false)}
                 onChange={e => {
                   const normalized = normalizeDecimalInput(e.target.value)
                   setUsdInputValue(normalized)
+                  if (isAAWallet) {
+                    updateProjectDonation(
+                      Number(roundData?.id ?? 0),
+                      project.id,
+                      normalized,
+                      project.tokenSymbol ?? 'USDC',
+                      project.tokenAddress ??
+                        (OPTIMISM_USDC_ADDRESS as `0x${string}`),
+                      project.chainId ?? OPTIMISM_CHAIN_ID,
+                    )
+                    return
+                  }
+
                   const parsed = Number(normalized)
                   if (!Number.isFinite(parsed)) return
                   const priceInUSD = project.selectedToken?.priceInUSD ?? 0
@@ -171,7 +195,16 @@ export const ProjectCartCard = ({
             </>
           )}
           <span className="px-2 py-1 bg-giv-neutral-300 rounded-lg text-xs text-giv-neutral-700">
-            {selectedAmountVsDollars === 1 && (
+            {isAAWallet && (
+              <>
+                ${' '}
+                {formatNumber(Number(project.donationAmount ?? 0), {
+                  minDecimals: 2,
+                  maxDecimals: 2,
+                })}
+              </>
+            )}
+            {!isAAWallet && selectedAmountVsDollars === 1 && (
               <>
                 <span className="text-giv-neutral-700">
                   {project.selectedToken?.symbol ?? ''}
@@ -179,7 +212,7 @@ export const ProjectCartCard = ({
                 {formatNumber(Number(project.donationAmount ?? 0))}
               </>
             )}
-            {selectedAmountVsDollars === 0 && (
+            {!isAAWallet && selectedAmountVsDollars === 0 && (
               <>
                 ${' '}
                 {formatNumber(
