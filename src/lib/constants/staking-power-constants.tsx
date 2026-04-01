@@ -1,4 +1,3 @@
-import { env } from 'process'
 import { type StakingPoolConfig } from '@/lib/types/subgraph'
 
 // For local or developemnt we use these chains
@@ -59,7 +58,9 @@ export const CLAIM_REWARDS_CHAINS = [
 
 // For all chains we use these constants
 export const STAKING_CHAINS =
-  env.VERCEL_ENV === 'production' ? PROD_STAKING_CHAINS : DEV_STAKING_CHAINS
+  process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+    ? PROD_STAKING_CHAINS
+    : DEV_STAKING_CHAINS
 
 export const DEV_STAKING_POOLS: Record<number, StakingPoolConfig> = {
   // Optimism Sepolia chain ID
@@ -190,12 +191,14 @@ export const PROD_STAKING_POOLS: Record<number, StakingPoolConfig> = {
 
 // For all chains we use these constants
 export const STAKING_POOLS =
-  env.VERCEL_ENV === 'production'
+  process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
     ? PROD_STAKING_POOLS
     : { ...DEV_STAKING_POOLS, ...PROD_STAKING_POOLS }
 
 // For boosting we use these chains
 export const STAKING_POOLS_FOR_BOOSTING =
-  env.VERCEL_ENV === 'production' ? PROD_STAKING_POOLS : DEV_STAKING_POOLS
+  process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+    ? PROD_STAKING_POOLS
+    : DEV_STAKING_POOLS
 
 export const SUBGRAPH_POLLING_INTERVAL = 300_000 // 5 minutes
