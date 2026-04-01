@@ -12,8 +12,7 @@ function resolveImpactGraphUrl(): string {
     process.env.NEXT_PUBLIC_IMPACT_GRAPH_URL?.trim()
   if (explicitUrl) return explicitUrl
 
-  const environment =
-    process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV
+  const environment = process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development'
   return environment === 'production'
     ? PRODUCTION_IMPACT_GRAPH_URL
     : NON_PRODUCTION_IMPACT_GRAPH_URL
