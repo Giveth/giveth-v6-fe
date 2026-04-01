@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   useActiveAccount,
   useActiveWalletConnectionStatus,
@@ -35,7 +35,7 @@ export function useSiweAuth() {
   const account = useActiveAccount()
   const connectionStatus = useActiveWalletConnectionStatus()
 
-  const siweService = new SiweService()
+  const siweService = useMemo(() => new SiweService(), [])
 
   // Initialize auth state from localStorage
   useEffect(() => {
@@ -79,7 +79,7 @@ export function useSiweAuth() {
     }
 
     initializeAuth()
-  }, [])
+  }, [siweService])
 
   const signIn = useCallback(async () => {
     if (!account?.address) {
@@ -103,11 +103,7 @@ export function useSiweAuth() {
           throw new Error('No active account')
         }
 
-        // This will need to be implemented based on thirdweb's signing API
-        // For now, using a placeholder - you'll need to implement this properly
-        const signature = await account.signMessage({
-          message: { raw: message as `0x${string}` },
-        })
+        const signature = await account.signMessage({ message })
         return signature as string
       }
 

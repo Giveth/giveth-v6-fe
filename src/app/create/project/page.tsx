@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { type Route } from 'next'
 import { useActiveWalletConnectionStatus } from 'thirdweb/react'
 import { AiChatPanel } from '@/components/create-project/AiChatPanel'
@@ -14,11 +14,15 @@ import { useAAWalletStore } from '@/store/aa-wallet'
 
 export default function CreateProjectPage() {
   const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+  const router = useRouter()
 
-  // If it is production redirect to old create project page
-  if (isProduction) {
-    redirect(oldCreateProjectLink.href as Route)
-  }
+  // Client-side guard for hydrated navigations in production.
+  useEffect(() => {
+    if (!isProduction) return
+    router.push(oldCreateProjectLink.href as Route)
+  }, [isProduction, router])
+
+  if (isProduction) return null
 
   const { isAuthenticated, isLoading, signIn } = useSiweAuth()
   const connectionStatus = useActiveWalletConnectionStatus()
