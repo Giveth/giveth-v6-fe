@@ -1,15 +1,25 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { redirect } from 'next/navigation'
+import { type Route } from 'next'
 import { useActiveWalletConnectionStatus } from 'thirdweb/react'
 import { AiChatPanel } from '@/components/create-project/AiChatPanel'
 import { CreateProjectLayout } from '@/components/create-project/CreateProjectLayout'
 import { ManualSidebarForm } from '@/components/create-project/ManualSidebarForm'
 import { ProjectOwnerSignInButton } from '@/components/create-project/ProjectOwnerSignInButton'
 import { useSiweAuth } from '@/context/AuthContext'
+import { createProjectLink as oldCreateProjectLink } from '@/lib/constants/menu-links'
 import { useAAWalletStore } from '@/store/aa-wallet'
 
 export default function CreateProjectPage() {
+  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+
+  // If it is production redirect to old create project page
+  if (isProduction) {
+    redirect(oldCreateProjectLink.href as Route)
+  }
+
   const { isAuthenticated, isLoading, signIn } = useSiweAuth()
   const connectionStatus = useActiveWalletConnectionStatus()
   const [isInitializing, setIsInitializing] = useState(false)
