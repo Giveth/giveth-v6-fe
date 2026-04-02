@@ -9,6 +9,8 @@ import {
   fetchCurrentProjectBoostV6Query,
   fetchPowerBoostingInfoV6Query,
   fetchUserBoostForProjectQuery,
+  setMultiplePowerBoostingMutation,
+  setSinglePowerBoostingMutation,
   syncPowerBoostingTempMutation,
 } from '@/lib/graphql/queries'
 import { fetchUserOpGivPowerFromSubgraph } from '@/lib/helpers/opGivPowerSubgraph'
@@ -104,18 +106,28 @@ type CurrentProjectBoostV6Response = {
   }
 }
 
+type PowerBoostingMutationItem = {
+  id: string | number
+  userId: number
+  projectId: number
+  percentage: number
+  powerRank: number | null
+  updatedAt: string
+}
+
 type SyncPowerBoostingTempResponse = {
   syncPowerBoostingTemp: {
     totalCount: number
-    powerBoostings: Array<{
-      id: string
-      userId: number
-      projectId: number
-      percentage: number
-      powerRank: number
-      updatedAt: string
-    }>
+    powerBoostings: PowerBoostingMutationItem[]
   }
+}
+
+type SetSinglePowerBoostingResponse = {
+  setSinglePowerBoosting: PowerBoostingMutationItem[]
+}
+
+type SetMultiplePowerBoostingResponse = {
+  setMultiplePowerBoosting: PowerBoostingMutationItem[]
 }
 
 type TotalGivpowerAcrossBoostNetworksResponse = {
@@ -151,6 +163,122 @@ const formatUnitsFromWei = (value: string, decimals = 18): string => {
     .replace(/0+$/, '')
 
   return fractionStr ? `${whole}.${fractionStr}` : whole.toString()
+}
+
+const shouldFallbackBoostMutation = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false
+
+  const gqlError = error as Error & {
+    response?: {
+      errors?: Array<{
+        code?: string
+        message?: string
+        path?: string[]
+      }>
+    }
+  }
+
+  const errors = gqlError.response?.errors ?? []
+  const hasSyncInternalError = errors.some(
+    err =>
+      err.code === 'INTERNAL_SERVER_ERROR' &&
+      (err.path?.includes('syncPowerBoostingTemp') ||
+        err.message?.toLowerCase().includes('internal server error')),
+  )
+
+  return hasSyncInternalError
+}
+
+type BoostAllocation = {
+  projectId: number
+  percentage: number
+}
+
+const roundToSix = (value: number): number => Number(value.toFixed(6))
+
+const buildLegacyRebalancedAllocations = ({
+  currentBoosts,
+  targetProjectId,
+  targetPercentage,
+}: {
+  currentBoosts: BoostAllocation[]
+  targetProjectId: number
+  targetPercentage: number
+}): { projectIds: number[]; percentages: number[] } => {
+  const normalizedTargetPercentage = Math.max(
+    0,
+    Math.min(100, targetPercentage),
+  )
+  const positiveBoosts = currentBoosts.filter(
+    boost => Number(boost.percentage) > 0 && Number.isFinite(boost.projectId),
+  )
+  const otherBoosts = positiveBoosts.filter(
+    boost => Number(boost.projectId) !== Number(targetProjectId),
+  )
+
+  if (normalizedTargetPercentage === 0) {
+    return {
+      projectIds: [
+        targetProjectId,
+        ...otherBoosts.map(boost => boost.projectId),
+      ],
+      percentages: [
+        0,
+        ...otherBoosts.map(boost => roundToSix(Number(boost.percentage))),
+      ],
+    }
+  }
+
+  if (!otherBoosts.length) {
+    return {
+      projectIds: [targetProjectId],
+      percentages: [normalizedTargetPercentage],
+    }
+  }
+
+  const remainingPercentage = 100 - normalizedTargetPercentage
+  const otherTotal = otherBoosts.reduce(
+    (acc, boost) => acc + Number(boost.percentage),
+    0,
+  )
+
+  if (otherTotal <= 0) {
+    return {
+      projectIds: [targetProjectId],
+      percentages: [normalizedTargetPercentage],
+    }
+  }
+
+  const rebalancedOthers = otherBoosts.map(boost => ({
+    projectId: boost.projectId,
+    percentage: roundToSix(
+      (Number(boost.percentage) / otherTotal) * remainingPercentage,
+    ),
+  }))
+
+  const sumRebalancedOthers = rebalancedOthers.reduce(
+    (acc, boost) => acc + boost.percentage,
+    0,
+  )
+  const remainder = roundToSix(remainingPercentage - sumRebalancedOthers)
+  if (rebalancedOthers.length > 0 && Math.abs(remainder) > 0) {
+    rebalancedOthers[0].percentage = roundToSix(
+      rebalancedOthers[0].percentage + remainder,
+    )
+  }
+
+  const filteredOthers = rebalancedOthers.filter(boost => boost.percentage > 0)
+
+  return {
+    projectIds: [
+      targetProjectId,
+      ...filteredOthers.map(boost => boost.projectId),
+    ],
+    percentages: [
+      roundToSix(normalizedTargetPercentage),
+      ...filteredOthers.map(boost => boost.percentage),
+    ],
+  }
 }
 
 /**
@@ -432,7 +560,13 @@ export function useTotalGivpowerAcrossBoostNetworks({
  * @param token - The token of the user
  * @returns The sync power boosting temp
  */
-export function useSyncPowerBoostingTemp({ token }: { token?: string | null }) {
+export function useSyncPowerBoostingTemp({
+  token,
+  userId,
+}: {
+  token?: string | null
+  userId?: number
+}) {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -482,15 +616,102 @@ export function useSyncPowerBoostingTemp({ token }: { token?: string | null }) {
         },
       })
 
-      return client.request<SyncPowerBoostingTempResponse>(
-        syncPowerBoostingTempMutation,
-        {
-          input: {
-            projectIds,
-            percentages,
+      try {
+        return await client.request<SyncPowerBoostingTempResponse>(
+          syncPowerBoostingTempMutation,
+          {
+            input: {
+              projectIds,
+              percentages,
+            },
           },
-        },
-      )
+        )
+      } catch (error) {
+        if (!shouldFallbackBoostMutation(error)) throw error
+
+        console.warn(
+          '[Boost][Mutation] syncPowerBoostingTemp failed; using legacy fallback mutation',
+          error,
+        )
+
+        if (projectIds.length === 1 && percentages.length === 1) {
+          if (Number.isFinite(userId) && (userId ?? 0) > 0) {
+            const currentBoostsResult =
+              await client.request<CurrentProjectBoostV6Response>(
+                fetchCurrentProjectBoostV6Query,
+                {
+                  input: {
+                    userId: userId as number,
+                    skip: 0,
+                    take: 500,
+                  },
+                },
+              )
+
+            const currentBoosts =
+              currentBoostsResult.getPowerBoosting.powerBoostings.map(
+                boost => ({
+                  projectId: Number(boost.projectId),
+                  percentage: Number(boost.percentage) || 0,
+                }),
+              )
+
+            const rebalanced = buildLegacyRebalancedAllocations({
+              currentBoosts,
+              targetProjectId: projectIds[0],
+              targetPercentage: percentages[0],
+            })
+
+            const rebalancedResult =
+              await client.request<SetMultiplePowerBoostingResponse>(
+                setMultiplePowerBoostingMutation,
+                {
+                  projectIds: rebalanced.projectIds,
+                  percentages: rebalanced.percentages,
+                },
+              )
+
+            return {
+              syncPowerBoostingTemp: {
+                totalCount: rebalancedResult.setMultiplePowerBoosting.length,
+                powerBoostings: rebalancedResult.setMultiplePowerBoosting,
+              },
+            }
+          }
+
+          const singleResult =
+            await client.request<SetSinglePowerBoostingResponse>(
+              setSinglePowerBoostingMutation,
+              {
+                projectId: projectIds[0],
+                percentage: percentages[0],
+              },
+            )
+
+          return {
+            syncPowerBoostingTemp: {
+              totalCount: singleResult.setSinglePowerBoosting.length,
+              powerBoostings: singleResult.setSinglePowerBoosting,
+            },
+          }
+        }
+
+        const multiResult =
+          await client.request<SetMultiplePowerBoostingResponse>(
+            setMultiplePowerBoostingMutation,
+            {
+              projectIds,
+              percentages,
+            },
+          )
+
+        return {
+          syncPowerBoostingTemp: {
+            totalCount: multiResult.setMultiplePowerBoosting.length,
+            powerBoostings: multiResult.setMultiplePowerBoosting,
+          },
+        }
+      }
     },
     onSuccess: async () => {
       await Promise.all([
