@@ -112,7 +112,7 @@ export const BoostedProjects = () => {
 
   // Get the sync power boosting temp mutation
   const { mutateAsync: syncPowerBoostingTemp, isPending: isSyncingBoost } =
-    useSyncPowerBoostingTemp({ token })
+    useSyncPowerBoostingTemp({ token, userId: connectedUserId })
   const {
     data: totalGivpowerData,
     isLoading: isLoadingTotalGivpower,
