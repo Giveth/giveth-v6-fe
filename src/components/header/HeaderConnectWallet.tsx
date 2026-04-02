@@ -18,6 +18,7 @@ import { ChainIcon } from '@/components/ChainIcon'
 import { CryptoWalletIcon } from '@/components/CryptoWalletIcon'
 import { DepositModal } from '@/components/modals/DepositModal'
 import { SignInModal } from '@/components/modals/SignInModal'
+import { CustomConnectWallet } from '@/components/wallet/CustomConnectWallet'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
 import { useProfile } from '@/hooks/useAccount'
@@ -31,6 +32,8 @@ import { getUserName } from '@/lib/helpers/userHelper'
 import { useAAWalletStore } from '@/store/aa-wallet'
 
 export function HeaderConnectWallet() {
+  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+
   const account = useActiveAccount()
   const wallet = useActiveWallet()
   const isSafeWallet = wallet?.id === 'global.safe'
@@ -284,31 +287,35 @@ export function HeaderConnectWallet() {
   // If wallet is not connected, show Sign In button that opens the modal
   return (
     <>
-      <button
-        onClick={() => setSignInModalOpen(true)}
-        disabled={isConnectingWallet}
-        aria-busy={isConnectingWallet}
-        className={clsx(
-          'rounded-xl transition-all duration-200',
-          'inline-flex items-center gap-2',
-          'bg-giv-brand-300 text-white',
-          'px-5 py-3 text-sm font-semibold',
-          isConnectingWallet
-            ? 'opacity-80 cursor-not-allowed'
-            : 'hover:opacity-80 cursor-pointer',
-        )}
-      >
-        {isConnectingWallet ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Connecting...
-          </>
-        ) : (
-          'Sign In'
-        )}
-      </button>
+      {!isProduction && (
+        <button
+          onClick={() => setSignInModalOpen(true)}
+          disabled={isConnectingWallet}
+          aria-busy={isConnectingWallet}
+          className={clsx(
+            'rounded-xl transition-all duration-200',
+            'inline-flex items-center gap-2',
+            'bg-giv-brand-300 text-white',
+            'px-5 py-3 text-sm font-semibold',
+            isConnectingWallet
+              ? 'opacity-80 cursor-not-allowed'
+              : 'hover:opacity-80 cursor-pointer',
+          )}
+        >
+          {isConnectingWallet ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Connecting...
+            </>
+          ) : (
+            'Sign In'
+          )}
+        </button>
+      )}
 
-      {isSignInModalOpen && (
+      {isProduction && <CustomConnectWallet />}
+
+      {isSignInModalOpen && !isProduction && (
         <SignInModal
           open={true}
           onOpenChange={open => {

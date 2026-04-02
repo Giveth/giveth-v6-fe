@@ -10,6 +10,7 @@ import { DonateToGiveth } from '@/components/cart/DonateToGiveth'
 import { IconWalletApproved } from '@/components/icons/IconWalletApproved'
 import { InsufficientFund } from '@/components/modals/InsufficientFund'
 import { SignInModal } from '@/components/modals/SignInModal'
+import ConnectWalletButton from '@/components/wallet/ConnectWalletButton'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCart, type ProjectCartItem } from '@/context/CartContext'
 import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
@@ -33,6 +34,8 @@ export function DonationSidebar({
   nonQfProjects: ProjectCartItem[]
   givethPercentage: number
 }) {
+  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+
   const router = useRouter()
 
   const { signIn, isAuthenticated, token, walletAddress, isAAWallet } =
@@ -252,13 +255,17 @@ export function DonationSidebar({
             <div className="text-base font-medium text-giv-neutral-800 pb-2">
               Connect your wallet to begin
             </div>
-            <button
-              type="button"
-              onClick={() => setSignInModalOpen(true)}
-              className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8668fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80 inline-flex items-center gap-2"
-            >
-              Connect Wallet
-            </button>
+            {isProduction ? (
+              <ConnectWalletButton />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setSignInModalOpen(true)}
+                className="rounded-full transition-all duration-200 shadow-sm cursor-pointer bg-[#8666fc] text-white px-5 py-3 text-sm font-semibold hover:opacity-80 inline-flex items-center gap-2"
+              >
+                Connect Wallet
+              </button>
+            )}
             {isSignInModalOpen && (
               <SignInModal
                 open={true}
