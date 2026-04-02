@@ -84,6 +84,11 @@ export const givpowerDocLink = {
   href: 'https://docs.giveth.io/givpower',
 }
 
+export const getGIVpowerLink = {
+  label: 'Get GIVpower',
+  href: oldFrontendPath('/givfarm', '/givfarm'),
+}
+
 export const givBacksLink = {
   label: 'GIVBacks',
   href: oldFrontendPath('/givbacks', '/givbacks'),

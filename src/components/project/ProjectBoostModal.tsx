@@ -20,7 +20,11 @@ import {
   useTotalGivpowerAcrossBoostNetworks,
 } from '@/hooks/projectHooks'
 import { useUserByAddress } from '@/hooks/useAccount'
-import { givpowerDocLink, myGIVPowerLink } from '@/lib/constants/menu-links'
+import {
+  getGIVpowerLink,
+  givpowerDocLink,
+  myGIVPowerLink,
+} from '@/lib/constants/menu-links'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 
 // Chain IDs with active GIVpower staking support for boost modal gating
@@ -101,7 +105,13 @@ export default function ProjectBoostModal({
     Number(user?.id) ||
     Number(userByAddressData?.userByAddress?.id) ||
     undefined
-  const { data: totalGivpowerData } = useTotalGivpowerAcrossBoostNetworks({
+  const {
+    data: totalGivpowerData,
+    isLoading: isLoadingTotalGivpower,
+    isError: isTotalGivpowerError,
+    error: totalGivpowerError,
+    refetch: refetchTotalGivpower,
+  } = useTotalGivpowerAcrossBoostNetworks({
     walletAddress,
     enabled: open && !totalGivpower,
   })
@@ -272,29 +282,47 @@ export default function ProjectBoostModal({
     }
   }, [needsNetworkSwitch, switchChain])
 
+  const requiresAuth = Boolean(walletAddress) && !isAuthenticated
+  const shouldResolveTotalGivpower = open && !requiresAuth && !totalGivpower
+  const resolvedTotalGivpower = totalGivpower ?? totalGivpowerData?.totalBalance
+  const hasTotalGivpowerQueryError =
+    shouldResolveTotalGivpower &&
+    !resolvedTotalGivpower &&
+    !isLoadingTotalGivpower &&
+    isTotalGivpowerError
+  const isResolvingTotalGivpower =
+    shouldResolveTotalGivpower &&
+    !resolvedTotalGivpower &&
+    !hasTotalGivpowerQueryError &&
+    isLoadingTotalGivpower
+
+  // Display the total GIVpower
+  const displayTotalGivpower = formatGivpowerDisplay(resolvedTotalGivpower)
+
+  // Parse the total GIVpower value
+  const totalGivpowerValue = parseGivpowerValue(resolvedTotalGivpower)
+  const hasNoGivpower =
+    !requiresAuth &&
+    !isResolvingTotalGivpower &&
+    !isLoadingTotalGivpower &&
+    totalGivpowerValue != null &&
+    totalGivpowerValue <= 0
+
   // Check if the confirm button is disabled
   const effectiveAllocationPercent = requiresHundredPercentAllocation
     ? 100
     : allocationPercent
   const isConfirmDisabled =
     effectiveAllocationPercent <= 0 ||
+    isResolvingTotalGivpower ||
+    hasTotalGivpowerQueryError ||
+    hasNoGivpower ||
     isSwitchingNetwork ||
     needsNetworkSwitch ||
     isSubmittingBoost ||
     !isAuthenticated
   const isFullAllocationWarning =
     effectiveAllocationPercent === 100 && hasOtherActiveBoosts
-  const requiresAuth = Boolean(walletAddress) && !isAuthenticated
-
-  // Display the total GIVpower
-  const displayTotalGivpower = formatGivpowerDisplay(
-    totalGivpower ?? totalGivpowerData?.totalBalance,
-  )
-
-  // Parse the total GIVpower value
-  const totalGivpowerValue = parseGivpowerValue(
-    totalGivpower ?? totalGivpowerData?.totalBalance,
-  )
 
   // Calculate the allocated GIVpower value
   const allocatedGivpowerValue =
@@ -422,6 +450,73 @@ export default function ProjectBoostModal({
                 >
                   {isSigningIn || isLoading ? 'Signing in...' : 'Sign wallet'}
                 </button>
+              </div>
+            ) : isResolvingTotalGivpower ? (
+              <div className="mt-12 overflow-y-auto flex-1">
+                <div className="rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-6 text-center">
+                  <p className="text-xl font-bold text-giv-neutral-900">
+                    Checking your GIVpower...
+                  </p>
+                  <p className="mt-2 text-base text-giv-neutral-700">
+                    We are loading your balance before enabling boost.
+                  </p>
+                </div>
+              </div>
+            ) : hasTotalGivpowerQueryError ? (
+              <div className="mt-12 overflow-y-auto flex-1">
+                <div className="rounded-xl border border-giv-error-400 bg-giv-error-100 p-6 text-center">
+                  <p className="text-xl font-bold text-giv-neutral-900">
+                    Couldn&apos;t load your GIVpower
+                  </p>
+                  <p className="mt-2 text-base text-giv-neutral-700">
+                    {totalGivpowerError instanceof Error
+                      ? totalGivpowerError.message
+                      : 'Please try again.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void refetchTotalGivpower()}
+                  className={clsx(
+                    'w-full mt-8 py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                    'border-none! focus:outline-none!',
+                    'flex items-center justify-center gap-2 transition-colors cursor-pointer',
+                    'hover:bg-giv-brand-400!',
+                    'hover:opacity-80!',
+                  )}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : hasNoGivpower ? (
+              <div className="mt-10 overflow-y-auto flex-1 text-center">
+                <p className="text-3xl font-bold text-giv-neutral-900">
+                  You don&apos;t have any GIVpower!
+                </p>
+                <p className="mt-3 text-xl leading-relaxed text-giv-neutral-900">
+                  Stake and lock your GIV to get GIVpower.
+                </p>
+                <div className="mt-10">
+                  <a
+                    href={getGIVpowerLink.href}
+                    className={clsx(
+                      'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                      'border-none! focus:outline-none!',
+                      'flex items-center justify-center gap-2 transition-colors cursor-pointer',
+                      'hover:bg-giv-brand-400!',
+                      'hover:opacity-80!',
+                    )}
+                  >
+                    {getGIVpowerLink.label}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenChange(false)}
+                    className="mt-6 inline-flex w-full items-center justify-center text-giv-brand-300! text-sm font-bold hover:opacity-80 cursor-pointer"
+                  >
+                    Not Now
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="mt-6 overflow-y-auto">
@@ -555,36 +650,39 @@ export default function ProjectBoostModal({
               </div>
             )}
 
-            {!requiresAuth && (
-              <div className="pt-10">
-                {submitBoostError && (
-                  <div className="mb-4 rounded-xl border border-giv-error-400 bg-giv-error-100 p-4 text-sm text-giv-error-400">
-                    {submitBoostError}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  disabled={isConfirmDisabled}
-                  onClick={handleConfirmBoost}
-                  className={clsx(
-                    'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
-                    'border-none! focus:outline-none!',
-                    'flex items-center justify-center gap-2 transition-colors cursor-pointer',
-                    !isConfirmDisabled && 'hover:bg-giv-brand-400!',
-                    isConfirmDisabled && 'opacity-60 cursor-not-allowed',
+            {!requiresAuth &&
+              !isResolvingTotalGivpower &&
+              !hasTotalGivpowerQueryError &&
+              !hasNoGivpower && (
+                <div className="pt-10">
+                  {submitBoostError && (
+                    <div className="mb-4 rounded-xl border border-giv-error-400 bg-giv-error-100 p-4 text-sm text-giv-error-400">
+                      {submitBoostError}
+                    </div>
                   )}
-                >
-                  {isSubmittingBoost ? 'Confirming...' : 'Confirm'}
-                </button>
-                <Link
-                  href={myGIVPowerLink.href as Route}
-                  target={myGIVPowerLink.target}
-                  className="mt-4 inline-flex w-full items-center justify-center text-giv-brand-500! text-sm font-bold hover:opacity-80!"
-                >
-                  Manage your GIVpower
-                </Link>
-              </div>
-            )}
+                  <button
+                    type="button"
+                    disabled={isConfirmDisabled}
+                    onClick={handleConfirmBoost}
+                    className={clsx(
+                      'w-full mt-auto py-3 px-8 bg-giv-brand-300! text-white! rounded-md text-sm font-bold',
+                      'border-none! focus:outline-none!',
+                      'flex items-center justify-center gap-2 transition-colors cursor-pointer',
+                      !isConfirmDisabled && 'hover:bg-giv-brand-400!',
+                      isConfirmDisabled && 'opacity-60 cursor-not-allowed',
+                    )}
+                  >
+                    {isSubmittingBoost ? 'Confirming...' : 'Confirm'}
+                  </button>
+                  <Link
+                    href={myGIVPowerLink.href as Route}
+                    target={myGIVPowerLink.target}
+                    className="mt-4 inline-flex w-full items-center justify-center text-giv-brand-500! text-sm font-bold hover:opacity-80!"
+                  >
+                    Manage your GIVpower
+                  </Link>
+                </div>
+              )}
           </>
         )}
       </Dialog.Content>
