@@ -96,8 +96,6 @@ export default function ProjectBoostModal({
   const [switchNetworkError, setSwitchNetworkError] = useState<string | null>(
     null,
   )
-  const { mutateAsync: syncPowerBoostingTemp, isPending: isSubmittingBoost } =
-    useSyncPowerBoostingTemp({ token })
   const { data: userByAddressData } = useUserByAddress(
     open ? walletAddress : undefined,
   )
@@ -105,6 +103,8 @@ export default function ProjectBoostModal({
     Number(user?.id) ||
     Number(userByAddressData?.userByAddress?.id) ||
     undefined
+  const { mutateAsync: syncPowerBoostingTemp, isPending: isSubmittingBoost } =
+    useSyncPowerBoostingTemp({ token, userId: connectedUserId })
   const {
     data: totalGivpowerData,
     isLoading: isLoadingTotalGivpower,

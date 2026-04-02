@@ -862,3 +862,32 @@ export const syncPowerBoostingTempMutation = `
     }
   }
 `
+
+export const setSinglePowerBoostingMutation = `
+  mutation SetSinglePowerBoosting($projectId: Int!, $percentage: Float!) {
+    setSinglePowerBoosting(projectId: $projectId, percentage: $percentage) {
+      id
+      userId
+      projectId
+      percentage
+      powerRank
+      updatedAt
+    }
+  }
+`
+
+export const setMultiplePowerBoostingMutation = `
+  mutation SetMultiplePowerBoosting(
+    $projectIds: [Int!]!
+    $percentages: [Float!]!
+  ) {
+    setMultiplePowerBoosting(projectIds: $projectIds, percentages: $percentages) {
+      id
+      userId
+      projectId
+      percentage
+      powerRank
+      updatedAt
+    }
+  }
+`
