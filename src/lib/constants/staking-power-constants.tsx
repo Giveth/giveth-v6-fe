@@ -167,22 +167,19 @@ export const PROD_STAKING_POOLS: Record<number, StakingPoolConfig> = {
   },
   // POLYGON ZKEVM - GIVstreams & GIVbacks only (NO GIVpower staking)
   1101: {
-    // NO GIVPOWER - staking not available on Polygon zkEVM
-    // Users can only claim GIVstream rewards and view GIVbacks history
-    TOKEN_DISTRO_ADDRESS: '0xE3Ac7b3e6B4065f4765d76fDc215606483BF3bD1',
+    TOKEN_DISTRO_ADDRESS: '0x4fB9B10ECDe1b048DBC79aBEAB3793edc93a0d54',
     GIV_TOKEN_ADDRESS: '0xddAFB91475bBf6210a151FA911AC8fdA7dE46Ec2',
     subgraphUrl:
-      'https://gateway-arbitrum.network.thegraph.com/api/720ca27934ee17d259dc2975d9a6d714/subgraphs/id/2vCbDTY8yM27SgxUXZHf1YLWHjX5cCc2LtJpEix6NWVq',
-
+      'https://gateway-arbitrum.network.thegraph.com/api/720ca27934ee17d259dc2975d9a6d714/subgraphs/id/5C3jLrWc5L1jr6CXtVHsTB7VUCNhVyqVJv7obuFrskWY',
     GIVPOWER: {
       network: 1101,
-      LM_ADDRESS: '',
-      POOL_ADDRESS: '',
-      type: '',
-      platform: '',
-      title: '',
-      description: '',
-      unit: '',
+      LM_ADDRESS: '0xc790f82bf6f8709aa4a56dc11afad7af7c2a9867',
+      POOL_ADDRESS: '0xddAFB91475bBf6210a151FA911AC8fdA7dE46Ec2',
+      type: 'GIV_UNIPOOL_LM',
+      platform: 'Staking',
+      title: 'GIV',
+      description: '100% GIV',
+      unit: 'GIV',
       coingeckoId: 'giveth',
       decimals: 18,
     },
