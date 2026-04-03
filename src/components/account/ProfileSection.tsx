@@ -1,13 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import Image from 'next/image'
 // import { Copy, Sparkle } from 'lucide-react'
 import { Copy } from 'lucide-react'
 import { EnsName } from '@/components/account/EnsName'
 // import { IconBoost } from '@/components/icons/IconBoost'
 // import { IconDonation } from '@/components/icons/IconDonation'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
+import { UserImage } from '@/components/user/UserImage'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile, useUserStats } from '@/hooks/useAccount'
 import { formatNumber } from '@/lib/helpers/cartHelper'
@@ -79,20 +79,15 @@ export function ProfileSection() {
         <div className="flex items-start justify-between">
           <div className="flex gap-4">
             {/* Avatar */}
-            <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-              {user?.avatar ? (
-                <Image
-                  src={user.avatar}
-                  width={128}
-                  height={128}
-                  alt="Profile avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 text-3xl font-bold">
-                  {displayName[0]}
-                </div>
-              )}
+            <div className="w-28 h-28 overflow-hidden shrink-0">
+              <UserImage
+                src={user?.avatar}
+                alt={displayName}
+                userAddress={user?.wallets?.[0]?.address}
+                className="w-full h-full object-cover rounded-lg "
+                width={128}
+                height={128}
+              />
             </div>
 
             {/* Info */}
