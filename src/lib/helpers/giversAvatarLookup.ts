@@ -9,6 +9,8 @@ type NormalizeIpfsHash = (value: string | null | undefined) => string | null
 
 const GIVERS_PFP_SUBGRAPH_ID = '9QK3vLoWF69TXSenUzQkkLhessaViu4naE58gRyKCxU7'
 const GIVERS_PFP_GATEWAY_HOST = 'https://giveth.mypinata.cloud/ipfs/'
+const ADDRESS_CACHE_WAIT_TIMEOUT_MS = 5_000
+const ADDRESS_CACHE_WAIT_POLL_MS = 10
 
 const tokensByAddressCache = new Map<string, IGiversPFPToken[]>()
 const tokensByAddressInFlight = new Map<string, Promise<IGiversPFPToken[]>>()
@@ -147,12 +149,22 @@ const ensureAddressTokens = async (
     queuedAddresses.add(address)
     if (!flushTimer) {
       flushTimer = setTimeout(() => {
-        void flushQueuedAddresses()
+        void flushQueuedAddresses().catch(() => {
+          // Consumers will fail via bounded wait timeout if cache never materializes.
+        })
       }, 0)
     }
 
+    const waitStart = Date.now()
     while (!tokensByAddressCache.has(address)) {
-      await new Promise(resolve => setTimeout(resolve, 0))
+      if (Date.now() - waitStart > ADDRESS_CACHE_WAIT_TIMEOUT_MS) {
+        throw new Error(
+          `Timed out waiting for avatar tokens cache for address ${address}`,
+        )
+      }
+      await new Promise(resolve =>
+        setTimeout(resolve, ADDRESS_CACHE_WAIT_POLL_MS),
+      )
     }
 
     return tokensByAddressCache.get(address) ?? []
