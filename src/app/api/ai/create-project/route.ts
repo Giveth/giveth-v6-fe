@@ -205,26 +205,12 @@ export async function POST(req: Request) {
     },
   } as const
 
-  const chatSystem = [
-    'You are an AI assistant helping a user create a Giveth project.',
-    'Be conversational and supportive, not a rigid form checker.',
-    'Ask at most one short follow-up question if absolutely needed.',
-    'Avoid asking for multiple form fields in one message.',
-    'Do not mention internal rules or schemas.',
-    'Do not invent unverifiable facts.',
-  ].join('\n')
-
-  const extractionSystem = [
+  const structuredSystem = [
     'You are an AI assistant helping a user create a Giveth project.',
     '',
-    'You must output JSON only and it must match the provided JSON schema.',
-    'Because the schema is strict, you MUST return null for any field you are NOT patching.',
-    '',
-    'DEFAULT behavior: extract facts into form fields from BOTH the user message AND the ASSISTANT_MESSAGE.',
-    'This includes values the assistant recommended, selected, or generated on behalf of the user.',
-    'Treat CURRENT_DRAFT_JSON as context only. Do not copy it into patched fields unless the user explicitly asks to replace that field.',
-    'Never set any field to raw JSON, chat-history scaffolding, schema text, or meta-conversation text.',
-    'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
+    'You must return ONE JSON object only, and it must match the provided JSON schema.',
+    'Do not wrap the JSON in markdown fences.',
+    'Put the user-facing chat reply in assistantMessage.',
     '',
     'assistantMessage behavior (this is what the user will see in chat):',
     '- Write a natural, supportive reply, not a checklist.',
@@ -234,6 +220,15 @@ export async function POST(req: Request) {
     '- Prefer helping with wording, structure, and next best step over raw field prompts.',
     '- Do NOT mention JSON, schemas, or internal rules.',
     '- Do NOT claim you updated something unless it is present in the patch.',
+    '',
+    'You must output JSON only and it must match the provided JSON schema.',
+    'Because the schema is strict, you MUST return null for any field you are NOT patching.',
+    '',
+    'DEFAULT behavior: extract facts into form fields from the user message and the choices you make in assistantMessage.',
+    'This includes values you recommended, selected, or generated on behalf of the user.',
+    'Treat CURRENT_DRAFT_JSON as context only. Do not copy it into patched fields unless the user explicitly asks to replace that field.',
+    'Never set any field to raw JSON, chat-history scaffolding, schema text, or meta-conversation text.',
+    'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
     '',
     'Reset / clear behavior:',
     '- If the user asks to reset/clear/wipe/remove a specific field, you MUST set that field to its empty value in the patch (and set other fields to null).',
@@ -272,8 +267,8 @@ export async function POST(req: Request) {
     '',
     'Category behavior:',
     '- You will receive CATEGORY_OPTIONS_JSON in the prompt (id/name/group).',
-    '- If the user OR the ASSISTANT_MESSAGE mentions, recommends, or selects category names, map them to IDs and set categoryIds.',
-    '- When the user asks the assistant to choose/pick/suggest categories, the ASSISTANT_MESSAGE will contain the chosen categories — you MUST extract those into categoryIds.',
+    '- If the user or assistantMessage mentions, recommends, or selects category names, map them to IDs and set categoryIds.',
+    '- When the user asks you to choose/pick/suggest categories, if assistantMessage contains the chosen categories, you MUST extract those into categoryIds.',
     '- categoryIds must only include IDs from CATEGORY_OPTIONS_JSON.',
     `- categoryIds must include at most ${MAX_CATEGORIES} IDs.`,
     '- If no category clearly matches user intent, leave categoryIds as null and ask one concise follow-up.',
@@ -310,8 +305,7 @@ export async function POST(req: Request) {
     apiKey,
     model: serverEnv.OPENAI_MODEL || 'gpt-5-mini',
     baseUrl: openAiBaseUrl,
-    chatSystem,
-    extractionSystem,
+    structuredSystem,
     userContext,
     schema,
     allowedCategoryIds,
@@ -410,98 +404,6 @@ function safeJsonParse(text: string): unknown | null {
   }
 }
 
-/**
- * When the conversational model outputs a raw JSON object that matches the
- * draft / patch shape, we can skip the extraction API call entirely and build
- * the patch directly.
- */
-function tryParseAssistantJsonAsPatch(
-  text: string,
-  allowedCategoryIds: Set<number>,
-): PatchOut | undefined {
-  const raw = safeJsonParse(text.trim())
-  if (!isRecord(raw)) return undefined
-
-  const out: PatchOut = {}
-
-  if (typeof raw.title === 'string' && raw.title) out.title = raw.title
-  if (typeof raw.description === 'string' && raw.description)
-    out.description = raw.description
-  if (typeof raw.image === 'string') out.image = raw.image
-  if (typeof raw.impactLocation === 'string' && raw.impactLocation)
-    out.impactLocation = raw.impactLocation
-
-  if (Array.isArray(raw.categoryIds)) {
-    const ids = raw.categoryIds
-      .map((id: unknown) => Number(id))
-      .filter(
-        (id: number) =>
-          Number.isInteger(id) &&
-          (allowedCategoryIds.size === 0 || allowedCategoryIds.has(id)),
-      )
-    if (ids.length) {
-      out.categoryIds = Array.from(new Set(ids)).slice(0, MAX_CATEGORIES)
-    }
-  }
-
-  if (Array.isArray(raw.socialMedia)) {
-    const valid = raw.socialMedia.filter(
-      (s: unknown) =>
-        isRecord(s) && typeof s.type === 'string' && typeof s.link === 'string',
-    ) as { type: string; link: string }[]
-    if (valid.length) out.socialMedia = valid
-  }
-
-  if (Array.isArray(raw.recipientAddresses)) {
-    const valid = raw.recipientAddresses
-      .filter(
-        (a: unknown) =>
-          isRecord(a) &&
-          typeof a.address === 'string' &&
-          typeof a.networkId === 'number',
-      )
-      .map((a: Record<string, unknown>) => {
-        const ct = String(a.chainType ?? '').toUpperCase()
-        const chainType: DraftChainType =
-          ct === 'SOLANA'
-            ? ChainType.Solana
-            : ct === 'STELLAR'
-              ? ChainType.Stellar
-              : ChainType.Evm
-        return {
-          chainType,
-          networkId: Number(a.networkId),
-          address: String(a.address),
-        }
-      })
-    if (valid.length) out.recipientAddresses = valid
-  }
-
-  // Only return if we actually extracted something meaningful.
-  return Object.keys(out).length > 0 ? out : undefined
-}
-
-function extractFirstJsonText(payload: unknown): string | null {
-  // OpenAI Responses API usually returns: { output: [{ content: [{ type: "output_text", text: "..." }] }] }
-  if (!isRecord(payload)) return null
-  const out = payload.output
-  if (!Array.isArray(out)) return null
-  for (const item of out) {
-    const content = isRecord(item) ? item.content : undefined
-    if (!Array.isArray(content)) continue
-    for (const c of content) {
-      if (!isRecord(c)) continue
-      if (c.type === 'output_text' && typeof c.text === 'string') {
-        return c.text
-      }
-    }
-  }
-  // Fallbacks
-  if (typeof payload.output_text === 'string') return payload.output_text
-  if (typeof payload.text === 'string') return payload.text
-  return null
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -555,8 +457,7 @@ function createOpenAiBackedEventStreamResponse({
   apiKey,
   model,
   baseUrl,
-  chatSystem,
-  extractionSystem,
+  structuredSystem,
   userContext,
   schema,
   allowedCategoryIds,
@@ -565,8 +466,7 @@ function createOpenAiBackedEventStreamResponse({
   apiKey: string
   model: string
   baseUrl: string
-  chatSystem: string
-  extractionSystem: string
+  structuredSystem: string
   userContext: string
   schema: {
     name: string
@@ -594,13 +494,21 @@ function createOpenAiBackedEventStreamResponse({
               input: [
                 {
                   role: 'system',
-                  content: [{ type: 'input_text', text: chatSystem }],
+                  content: [{ type: 'input_text', text: structuredSystem }],
                 },
                 {
                   role: 'user',
                   content: [{ type: 'input_text', text: userContext }],
                 },
               ],
+              text: {
+                format: {
+                  type: 'json_schema',
+                  name: schema.name,
+                  schema: schema.schema,
+                  strict: schema.strict,
+                },
+              },
             }),
           })
 
@@ -612,7 +520,8 @@ function createOpenAiBackedEventStreamResponse({
           const reader = conversationRes.body.getReader()
           const decoder = new TextDecoder()
           let buffer = ''
-          let assistantMessage = ''
+          let structuredOutput = ''
+          let emittedAssistantMessage = ''
 
           while (true) {
             const { done, value } = await reader.read()
@@ -635,40 +544,58 @@ function createOpenAiBackedEventStreamResponse({
                   : null
               if (!delta) continue
 
-              assistantMessage += delta
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({ type: 'assistant_delta', delta })}\n\n`,
-                ),
-              )
+              structuredOutput += delta
+
+              const assistantMessage =
+                extractAssistantMessageFromPartialJson(structuredOutput)
+              if (
+                assistantMessage.startsWith(emittedAssistantMessage) &&
+                assistantMessage.length > emittedAssistantMessage.length
+              ) {
+                const nextDelta = assistantMessage.slice(
+                  emittedAssistantMessage.length,
+                )
+                emittedAssistantMessage = assistantMessage
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: 'assistant_delta', delta: nextDelta })}\n\n`,
+                  ),
+                )
+              }
             }
           }
 
-          // Try to parse the assistant message directly as JSON (the model
-          // sometimes outputs a raw JSON draft instead of conversational text).
-          const directPatch = tryParseAssistantJsonAsPatch(
-            assistantMessage,
-            allowedCategoryIds,
+          const parsed = modelResponseSchema.safeParse(
+            safeJsonParse(structuredOutput.trim()) ?? null,
           )
+          if (!parsed.success) {
+            throw new Error('Structured AI response did not match schema')
+          }
 
-          // Fall back to a second extraction API call when the message is
-          // conversational text rather than raw JSON.
-          const extractedPatch =
-            directPatch ??
-            (await extractPatchFromOpenAi({
-              apiKey,
-              model,
-              baseUrl,
-              extractionSystem,
-              userContext: `${userContext}\n\nASSISTANT_MESSAGE:\n${assistantMessage}`,
-              schema,
-              allowedCategoryIds,
-            }))
+          const assistantMessage = parsed.data.assistantMessage
+          if (
+            assistantMessage.startsWith(emittedAssistantMessage) &&
+            assistantMessage.length > emittedAssistantMessage.length
+          ) {
+            const nextDelta = assistantMessage.slice(
+              emittedAssistantMessage.length,
+            )
+            emittedAssistantMessage = assistantMessage
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: 'assistant_delta', delta: nextDelta })}\n\n`,
+              ),
+            )
+          }
+
+          const extractedPatch = parsed.data.patch
+            ? normalizePatch(parsed.data.patch, allowedCategoryIds)
+            : undefined
 
           // If categories are still missing, attempt regex / name-based extraction.
           const fallbackCategoryIds = !extractedPatch?.categoryIds?.length
             ? extractCategoryIdsFromText(
-                assistantMessage,
+                parsed.data.assistantMessage,
                 allowedCategoryIds,
                 categoryOptions,
               )
@@ -717,64 +644,6 @@ function createOpenAiBackedEventStreamResponse({
   })
 }
 
-async function extractPatchFromOpenAi({
-  apiKey,
-  model,
-  baseUrl,
-  extractionSystem,
-  userContext,
-  schema,
-  allowedCategoryIds,
-}: {
-  apiKey: string
-  model: string
-  baseUrl: string
-  extractionSystem: string
-  userContext: string
-  schema: {
-    name: string
-    strict: true
-    schema: Record<string, unknown>
-  }
-  allowedCategoryIds: Set<number>
-}): Promise<PatchOut | undefined> {
-  const url = new URL('/v1/responses', baseUrl).toString()
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      input: [
-        {
-          role: 'system',
-          content: [{ type: 'input_text', text: extractionSystem }],
-        },
-        { role: 'user', content: [{ type: 'input_text', text: userContext }] },
-      ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: schema.name,
-          schema: schema.schema,
-          strict: schema.strict,
-        },
-      },
-    }),
-  })
-
-  if (!res.ok) return undefined
-  const payload = (await res.json().catch(() => null)) as unknown
-  const jsonText = extractFirstJsonText(payload)
-  if (!jsonText) return undefined
-  const parsed = modelResponseSchema.safeParse(safeJsonParse(jsonText) ?? null)
-  if (!parsed.success) return undefined
-  const patchRaw = parsed.data.patch
-  return patchRaw ? normalizePatch(patchRaw, allowedCategoryIds) : undefined
-}
-
 function parseSseData(rawEvent: string): string | null {
   const lines = rawEvent
     .split('\n')
@@ -820,4 +689,69 @@ function extractCategoryIdsFromText(
   }
 
   return null
+}
+
+function extractAssistantMessageFromPartialJson(text: string): string {
+  const keyIdx = text.indexOf('"assistantMessage"')
+  if (keyIdx === -1) return ''
+
+  const colonIdx = text.indexOf(':', keyIdx)
+  if (colonIdx === -1) return ''
+
+  let i = colonIdx + 1
+  while (i < text.length && /\s/.test(text[i] ?? '')) i++
+  if (text[i] !== '"') return ''
+
+  i += 1
+  let out = ''
+
+  while (i < text.length) {
+    const char = text[i]
+    if (char === '"') return out
+
+    if (char !== '\\') {
+      out += char
+      i += 1
+      continue
+    }
+
+    const escaped = text[i + 1]
+    if (!escaped) return out
+
+    if (escaped === 'u') {
+      const hex = text.slice(i + 2, i + 6)
+      if (hex.length < 4 || !/^[0-9a-fA-F]{4}$/.test(hex)) return out
+      out += String.fromCharCode(parseInt(hex, 16))
+      i += 6
+      continue
+    }
+
+    const decoded = decodeJsonEscape(escaped)
+    if (decoded == null) return out
+    out += decoded
+    i += 2
+  }
+
+  return out
+}
+
+function decodeJsonEscape(char: string): string | null {
+  switch (char) {
+    case '"':
+    case '\\':
+    case '/':
+      return char
+    case 'b':
+      return '\b'
+    case 'f':
+      return '\f'
+    case 'n':
+      return '\n'
+    case 'r':
+      return '\r'
+    case 't':
+      return '\t'
+    default:
+      return null
+  }
 }
