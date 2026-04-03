@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
+import { resolveGiversAvatarGatewayUrl } from '@/lib/helpers/giversAvatarLookup'
 
 interface UserImageProps extends Omit<
   React.ImgHTMLAttributes<HTMLImageElement>,
@@ -13,103 +14,61 @@ interface UserImageProps extends Omit<
   userAddress?: string | null
 }
 
-interface IGiversPFPToken {
-  id: string
-  tokenId: string
-  imageIpfs: string
-}
-
-type TokensCacheValue = IGiversPFPToken[] | Promise<IGiversPFPToken[]>
-
-const GIVERS_PFP_SUBGRAPH_ID = '9QK3vLoWF69TXSenUzQkkLhessaViu4naE58gRyKCxU7'
-const GIVERS_PFP_GATEWAY_HOST = 'https://giveth.mypinata.cloud/ipfs/'
-const giversTokensByAddressCache = new Map<string, TokensCacheValue>()
-
-const getMainnetSubgraphUrl = () => {
-  const graphApiKey = process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY
-  return graphApiKey
-    ? `https://gateway-arbitrum.network.thegraph.com/api/${graphApiKey}/subgraphs/id/${GIVERS_PFP_SUBGRAPH_ID}`
-    : `https://gateway-arbitrum.network.thegraph.com/api/subgraphs/id/${GIVERS_PFP_SUBGRAPH_ID}`
-}
-
 const normalizeIpfsHash = (value: string | null | undefined): string | null => {
   if (!value) return null
 
   const trimmed = value.trim()
   if (!trimmed) return null
 
-  const noProtocol = trimmed.replace(/^ipfs:\/\//i, '').replace(/^ipfs\//i, '')
-
-  if (/^[A-Za-z0-9]+$/.test(noProtocol)) {
-    return noProtocol
-  }
-
   try {
     const parsed = new URL(trimmed)
+    if (parsed.protocol.toLowerCase() === 'ipfs:') {
+      const combined = `${parsed.hostname}${parsed.pathname}`.replace(
+        /^\/+/,
+        '',
+      )
+      const segments = combined.split('/').filter(Boolean)
+      const ipfsIndex = segments.findIndex(
+        segment => segment.toLowerCase() === 'ipfs',
+      )
+      return (
+        (ipfsIndex >= 0
+          ? segments.slice(ipfsIndex + 1).join('/')
+          : segments.join('/')) || null
+      )
+    }
+
     const segments = parsed.pathname.split('/').filter(Boolean)
-    const ipfsIndex = segments.findIndex(segment => segment === 'ipfs')
+    const ipfsIndex = segments.findIndex(
+      segment => segment.toLowerCase() === 'ipfs',
+    )
     if (ipfsIndex >= 0 && segments[ipfsIndex + 1]) {
-      return segments[ipfsIndex + 1]
+      return segments.slice(ipfsIndex + 1).join('/')
     }
-    return segments.at(-1) ?? null
+    return null
   } catch {
-    const segments = trimmed.split('/').filter(Boolean)
-    return segments.at(-1) ?? null
-  }
-}
+    const hasIpfsPrefix =
+      /^ipfs:\/\//i.test(trimmed) || /^ipfs\//i.test(trimmed)
+    const hasIpfsSegment = /(^|\/)ipfs(\/|$)/i.test(trimmed)
+    if (!hasIpfsPrefix && !hasIpfsSegment) return null
 
-const buildGatewayUrlFromIpfsHash = (ipfsHash: string) =>
-  `${GIVERS_PFP_GATEWAY_HOST}${ipfsHash}`
+    const normalized = trimmed
+      .replace(/^ipfs:\/\//i, '')
+      .replace(/^ipfs\//i, '')
+      .replace(/^\/+/, '')
 
-const fetchGiversTokensByAddress = async (
-  walletAddress: string,
-): Promise<IGiversPFPToken[]> => {
-  const normalizedAddress = walletAddress.toLowerCase()
-  const cached = giversTokensByAddressCache.get(normalizedAddress)
-  if (cached) return await cached
+    const segments = normalized.split('/').filter(Boolean)
+    const ipfsIndex = segments.findIndex(
+      segment => segment.toLowerCase() === 'ipfs',
+    )
 
-  const pendingRequest = (async () => {
-    const response = await fetch(getMainnetSubgraphUrl(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          query GetGiversPFPTokens($user: String!) {
-            giversPFPTokens(where: { user: $user }) {
-              id
-              tokenId
-              imageIpfs
-            }
-          }
-        `,
-        variables: {
-          user: normalizedAddress,
-        },
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Subgraph request failed: ${response.status}`)
+    if (ipfsIndex >= 0 && segments[ipfsIndex + 1]) {
+      return segments.slice(ipfsIndex + 1).join('/')
     }
 
-    const json = (await response.json()) as {
-      data?: { giversPFPTokens?: IGiversPFPToken[] }
-    }
+    if (hasIpfsPrefix) return segments.join('/') || null
 
-    return json?.data?.giversPFPTokens ?? []
-  })()
-
-  giversTokensByAddressCache.set(normalizedAddress, pendingRequest)
-
-  try {
-    const tokens = await pendingRequest
-    giversTokensByAddressCache.set(normalizedAddress, tokens)
-    return tokens
-  } catch (error) {
-    giversTokensByAddressCache.delete(normalizedAddress)
-    throw error
+    return null
   }
 }
 
@@ -144,20 +103,14 @@ export function UserImage({
 
     const resolveGiversAvatar = async () => {
       try {
-        const tokens = await fetchGiversTokensByAddress(normalizedAddress)
-        if (isCancelled || !tokens.length) return
-
-        const matchedToken = tokens.find(token => {
-          const tokenHash = normalizeIpfsHash(token.imageIpfs)
-          return tokenHash === avatarHash
+        const resolvedGatewayUrl = await resolveGiversAvatarGatewayUrl({
+          normalizedAddress,
+          avatarHash,
+          normalizeIpfsHash,
         })
+        if (!resolvedGatewayUrl || isCancelled) return
 
-        if (!matchedToken) return
-
-        const matchedHash = normalizeIpfsHash(matchedToken.imageIpfs)
-        if (!matchedHash || isCancelled) return
-
-        setResolvedImgSrc(buildGatewayUrlFromIpfsHash(matchedHash))
+        setResolvedImgSrc(resolvedGatewayUrl)
         setIsGiversNftAvatar(true)
       } catch {
         // Ignore lookup failures and keep the existing avatar/fallback.

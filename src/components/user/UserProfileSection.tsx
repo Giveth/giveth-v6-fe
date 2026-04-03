@@ -19,7 +19,10 @@ export function UserProfileSection({
 }) {
   const [copied, setCopied] = useState(false)
   const copyTimerRef = useRef<number | null>(null)
-  const addressToCopy = user?.wallets?.[0]?.address || 'No address'
+  const primaryWalletAddress =
+    user?.wallets?.find(wallet => wallet.isPrimary)?.address ||
+    user?.wallets?.[0]?.address
+  const addressToCopy = primaryWalletAddress || 'No address'
   const { data: userStatsData, isLoading: isUserStatsLoading } = useUserStats(
     user?.id ? Number(user.id) : undefined,
     undefined,
@@ -69,7 +72,7 @@ export function UserProfileSection({
               <UserImage
                 src={user?.avatar}
                 alt={displayName}
-                userAddress={user?.wallets?.[0]?.address}
+                userAddress={primaryWalletAddress}
                 className="w-full h-full object-cover rounded-lg "
                 width={128}
                 height={128}
@@ -84,9 +87,7 @@ export function UserProfileSection({
               <div className="flex items-center gap-2 text-base">
                 <span className="text-giv-neutral-900">
                   <EnsName
-                    address={
-                      user?.wallets?.[0]?.address as Address as `0x${string}`
-                    }
+                    address={primaryWalletAddress as Address as `0x${string}`}
                   />
                 </span>
                 <button

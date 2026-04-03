@@ -54,8 +54,10 @@ export function ProfileSection() {
   const displayName = user?.name || user?.firstName || 'Anonymous User'
   const displayEmail =
     user?.email || (isAAWallet ? authenticatedEmail : undefined) || 'No email'
-  const addressToCopy =
-    user?.wallets?.[0]?.address || walletAddress || 'No address'
+  const primaryWalletAddress =
+    user?.wallets?.find(wallet => wallet.isPrimary)?.address ||
+    user?.wallets?.[0]?.address
+  const addressToCopy = primaryWalletAddress || walletAddress || 'No address'
 
   const handleCopyAddress = async () => {
     try {
@@ -83,7 +85,7 @@ export function ProfileSection() {
               <UserImage
                 src={user?.avatar}
                 alt={displayName}
-                userAddress={user?.wallets?.[0]?.address}
+                userAddress={primaryWalletAddress}
                 className="w-full h-full object-cover rounded-lg "
                 width={128}
                 height={128}
@@ -99,9 +101,7 @@ export function ProfileSection() {
               <div className="flex items-center gap-2 text-base">
                 <span className="text-giv-neutral-900">
                   <EnsName
-                    address={
-                      user?.wallets?.[0]?.address as Address as `0x${string}`
-                    }
+                    address={primaryWalletAddress as Address as `0x${string}`}
                   />
                 </span>
                 <button
