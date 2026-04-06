@@ -1,10 +1,10 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import Image from 'next/image'
 import { Copy } from 'lucide-react'
 import { EnsName } from '@/components/account/EnsName'
 import { IconPraiseHand } from '@/components/icons/IconPraiseHand'
+import { UserImage } from '@/components/user/UserImage'
 import { useUserStats } from '@/hooks/useAccount'
 import { type UserEntity } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
@@ -19,7 +19,10 @@ export function UserProfileSection({
 }) {
   const [copied, setCopied] = useState(false)
   const copyTimerRef = useRef<number | null>(null)
-  const addressToCopy = user?.wallets?.[0]?.address || 'No address'
+  const primaryWalletAddress =
+    user?.wallets?.find(wallet => wallet.isPrimary)?.address ||
+    user?.wallets?.[0]?.address
+  const addressToCopy = primaryWalletAddress || 'No address'
   const { data: userStatsData, isLoading: isUserStatsLoading } = useUserStats(
     user?.id ? Number(user.id) : undefined,
     undefined,
@@ -65,20 +68,15 @@ export function UserProfileSection({
         <div className="flex items-start justify-between">
           <div className="flex gap-4">
             {/* Avatar */}
-            <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-              {user?.avatar ? (
-                <Image
-                  src={user.avatar}
-                  width={128}
-                  height={128}
-                  alt="Profile avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 text-3xl font-bold">
-                  {displayName[0]}
-                </div>
-              )}
+            <div className="w-28 h-28 overflow-hidden shrink-0">
+              <UserImage
+                src={user?.avatar}
+                alt={displayName}
+                userAddress={primaryWalletAddress}
+                className="w-full h-full object-cover rounded-lg "
+                width={128}
+                height={128}
+              />
             </div>
 
             {/* Info */}
@@ -89,9 +87,7 @@ export function UserProfileSection({
               <div className="flex items-center gap-2 text-base">
                 <span className="text-giv-neutral-900">
                   <EnsName
-                    address={
-                      user?.wallets?.[0]?.address as Address as `0x${string}`
-                    }
+                    address={primaryWalletAddress as Address as `0x${string}`}
                   />
                 </span>
                 <button
