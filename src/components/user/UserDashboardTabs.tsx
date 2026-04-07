@@ -3,6 +3,7 @@
 import { cloneElement, isValidElement } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type Route } from 'next'
+import { IconBoost } from '@/components/icons/IconBoost'
 import { IconPraiseHandBold } from '@/components/icons/IconPraiseHandBold'
 
 interface DashboardTabsProps {
@@ -23,6 +24,12 @@ export const UserDashboardTabs = ({
       id: 'donations',
       label: 'Donations',
       icon: <IconPraiseHandBold width={24} height={24} />,
+      href: null,
+    },
+    {
+      id: 'boosted',
+      label: 'Boosted Projects',
+      icon: <IconBoost width={24} height={24} />,
       href: null,
     },
   ]
