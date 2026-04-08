@@ -88,15 +88,12 @@ export const ClaimRewardsBanner = ({
   }, [fetchData])
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  useEffect(() => {
     currentContextRef.current = {
       address: account?.address as `0x${string}` | undefined,
       chainId: selectedChain,
     }
-  }, [account?.address, selectedChain])
+    fetchData()
+  }, [account?.address, selectedChain, fetchData])
 
   useEffect(() => {
     return () => {
@@ -143,11 +140,14 @@ export const ClaimRewardsBanner = ({
   const givbacksAmount = givbacksLiquid
   const givstreamAmount = data?.givbacks?.streamableAmount ?? 0n
   const totalClaimableRaw = givbacksAmount + givfarmAmount + givstreamAmount
-  latestTotalClaimableRef.current = totalClaimableRaw
   const totalClaimable = isClaimOptimistic ? 0n : totalClaimableRaw
   const givstreamRate = data?.givbacks?.streaming ?? 0n
   const givbacksRate = data?.givbacks?.givbackStream ?? 0n
   const givfarmRate = data?.staking?.streaming ?? 0n
+
+  useEffect(() => {
+    latestTotalClaimableRef.current = totalClaimableRaw
+  }, [totalClaimableRaw])
 
   // Convert once to human units
   const totalClaimableGiv = parseFloat(
