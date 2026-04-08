@@ -75,13 +75,17 @@
     "pino-elasticsearch": "^8.1.0",
     "playwright": "^1.58.2",
     "tailwindcss": "^4.2.1",
-    "tap": "^21.6.2",
-    "tape": "^5.9.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
   "engines": {
     "node": ">=20.11.0"
   },
-  "packageManager": "pnpm@9.15.3+sha1.120e76442c589bb9a3267dbbefa5658c9943fcae"
+  "packageManager": "pnpm@9.15.3+sha1.120e76442c589bb9a3267dbbefa5658c9943fcae",
+  "pnpm": {
+    "overrides": {
+      "abitype": "^1.2.3",
+      "use-sync-external-store": "^1.6.0"
+    }
+  }
 }
