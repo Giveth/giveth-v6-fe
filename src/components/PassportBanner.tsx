@@ -186,11 +186,11 @@ export function PassportBanner() {
             <ExternalLink className="w-3.5 h-3.5 text-giv-brand-500" />
           </Link>
           <p className="text-giv-neutral-900">
-            to increase your score above{' '}
+            to make your donations eligible for QF (score{' '}
             <span className="font-bold">
-              {globalSettingScore.globalMinimumPassportScore}
-            </span>{' '}
-            and then click to{' '}
+              {globalSettingScore.globalMinimumPassportScore}+
+            </span>
+            {'), then click'}
           </p>
           <button
             type="button"

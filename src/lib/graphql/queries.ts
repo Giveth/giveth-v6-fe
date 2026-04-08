@@ -758,3 +758,136 @@ export const getQfRoundHistoryQuery = graphql(`
     }
   }
 `)
+
+export const fetchUserBoostForProjectQuery = `
+  query FetchUserBoostForProject($userId: Int!, $projectId: Int!) {
+    getPowerBoosting(
+      input: { userId: $userId, projectId: $projectId, skip: 0, take: 1 }
+    ) {
+      totalCount
+      powerBoostings {
+        projectId
+        percentage
+        updatedAt
+      }
+    }
+  }
+`
+
+export const fetchPowerBoostingInfoV6Query = `
+  query FetchPowerBoostingInfoV6($input: GetPowerBoostingInput!) {
+    getPowerBoosting(input: $input) {
+      totalCount
+      powerBoostings {
+        id
+        userId
+        projectId
+        percentage
+        updatedAt
+        user {
+          id
+        }
+        project {
+          id
+          title
+          slug
+          reviewStatus
+          powerRank
+        }
+      }
+    }
+  }
+`
+
+export const fetchCurrentProjectBoostV6Query = `
+  query FetchCurrentProjectBoostV6($input: GetPowerBoostingInput!) {
+    getPowerBoosting(input: $input) {
+      totalCount
+      powerBoostings {
+        projectId
+        percentage
+      }
+    }
+  }
+`
+
+export const projectGivpowerCountQuery = `
+  query ProjectGivpowerCount($input: GetPowerBoostingInput!) {
+    getPowerBoosting(input: $input) {
+      totalCount
+    }
+  }
+`
+
+export const projectBoostersQuery = `
+  query ProjectBoosters($input: GetPowerBoostingInput!) {
+    getPowerBoosting(input: $input) {
+      totalCount
+      powerBoostings {
+        id
+        projectId
+        userId
+        percentage
+        powerRank
+        updatedAt
+        user {
+          id
+          name
+          firstName
+          lastName
+          avatar
+          primaryEns
+          wallets {
+            address
+            isPrimary
+          }
+        }
+      }
+    }
+  }
+`
+
+export const syncPowerBoostingTempMutation = `
+  mutation SyncPowerBoostingTemp($input: SyncPowerBoostingBoostTempInput!) {
+    syncPowerBoostingTemp(input: $input) {
+      totalCount
+      powerBoostings {
+        id
+        userId
+        projectId
+        percentage
+        powerRank
+        updatedAt
+      }
+    }
+  }
+`
+
+export const setSinglePowerBoostingMutation = `
+  mutation SetSinglePowerBoosting($projectId: Int!, $percentage: Float!) {
+    setSinglePowerBoosting(projectId: $projectId, percentage: $percentage) {
+      id
+      userId
+      projectId
+      percentage
+      powerRank
+      updatedAt
+    }
+  }
+`
+
+export const setMultiplePowerBoostingMutation = `
+  mutation SetMultiplePowerBoosting(
+    $projectIds: [Int!]!
+    $percentages: [Float!]!
+  ) {
+    setMultiplePowerBoosting(projectIds: $projectIds, percentages: $percentages) {
+      id
+      userId
+      projectId
+      percentage
+      powerRank
+      updatedAt
+    }
+  }
+`

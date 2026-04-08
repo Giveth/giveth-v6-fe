@@ -6,8 +6,10 @@ import clsx from 'clsx'
 import { Plus, X } from 'lucide-react'
 import { type Route } from 'next'
 import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
+import { IconBoost } from '@/components/icons/IconBoost'
 import { IconVerified } from '@/components/icons/IconVerified'
 import { DonateTimeModal } from '@/components/project/DonateTimeModal'
+import ProjectBoostModal from '@/components/project/ProjectBoostModal'
 import { ProjectImage } from '@/components/project/ProjectImage'
 import { useCart } from '@/context/CartContext'
 import { useIsMobile } from '@/hooks/useMediaQuery'
@@ -31,18 +33,24 @@ export function QFProjectCard({
   roundBeginDate,
 }: QFProjectCardProps) {
   const [showDonateTimeModal, setShowDonateTimeModal] = useState(false)
+  const [showBoostModal, setShowBoostModal] = useState(false)
   const isMobile = useIsMobile()
   const { addToCart, removeFromCart, isInCart: checkIsInCart } = useCart()
   const projectId = String(project.id)
   const isInCart = checkIsInCart(projectId, roundId)
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', {
+  const numericProjectId = Number(project.id)
+  const formatCurrency = (value: number) => {
+    // Handle very small non-zero values
+    if (value > 0 && value < 0.005) {
+      return '<$0.00'
+    }
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(value)
-
+  }
   // Find Round Specific Data for Stats
   const roundData =
     roundId && project.projectQfRounds
@@ -117,6 +125,19 @@ export function QFProjectCard({
             href={projectLink as unknown as Route}
             className="absolute inset-0 z-10"
           />
+          <button
+            type="button"
+            onClick={() => setShowBoostModal(true)}
+            className={clsx(
+              'absolute top-3 right-3 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white',
+              'hover:bg-giv-neutral-100 transition-colors',
+              'cursor-pointer',
+            )}
+            aria-label={`Boost ${project.title}`}
+            title="Boost project"
+          >
+            <IconBoost width={16} height={16} fill="var(--giv-neutral-900)" />
+          </button>
         </div>
 
         {/* Content Body */}
@@ -259,6 +280,15 @@ export function QFProjectCard({
           projectSlug={project.slug}
         />
       )}
+      <ProjectBoostModal
+        open={showBoostModal}
+        onOpenChange={setShowBoostModal}
+        projectId={
+          Number.isFinite(numericProjectId) && numericProjectId > 0
+            ? numericProjectId
+            : undefined
+        }
+      />
     </>
   )
 }

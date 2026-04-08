@@ -28,11 +28,11 @@ export function DefaultHeader({
               className="flex items-center"
               rel="noopener noreferrer"
             >
-              <GivethLogo width={66} height={66} />
+              <GivethLogo width={58} height={58} />
             </a>
           ) : (
             <Link href={LogoLink as Route} className="flex items-center">
-              <GivethLogo width={66} height={66} />
+              <GivethLogo width={58} height={58} />
             </Link>
           )}
 

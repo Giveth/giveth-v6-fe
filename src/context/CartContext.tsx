@@ -1,6 +1,12 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
 export interface ProjectCartItem {
@@ -60,7 +66,9 @@ interface CartContextType {
     tokenDecimals: number,
     isGivbackEligible?: boolean,
   ) => void
+  clearRoundTokenAndDonations: (roundId: number) => void
   removeFromCart: (roundId: number, projectId: string) => void
+  pruneInactiveRoundProjects: (activeRoundIds: number[]) => void
   clearCart: () => void
   isInCart: (projectId: string, roundId?: number) => boolean
   updateProjectDonation: (
@@ -108,32 +116,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const rounds = new Map<number, DonationRound>()
 
     cartItems.forEach(item => {
-      if (
-        item.roundId &&
-        item.roundName &&
-        item.chainId &&
-        item.tokenSymbol &&
-        item.tokenAddress
-      ) {
+      if (item.roundId && item.roundName && item.chainId) {
         if (!rounds.has(item.roundId)) {
           rounds.set(item.roundId, {
             roundId: item.roundId,
             roundName: item.roundName,
-            selectedChainId: 0,
-            selectedToken: undefined,
-            tokenSymbol: item.tokenSymbol,
-            tokenAddress: item.tokenAddress,
-            tokenDecimals: item.tokenDecimals ?? 18,
+            selectedChainId: item.chainId,
+            selectedToken: item.selectedToken,
+            tokenSymbol: item.tokenSymbol ?? '',
+            tokenAddress: item.tokenAddress ?? '',
+            tokenDecimals:
+              item.tokenDecimals ?? item.selectedToken?.decimals ?? 18,
             projects: [],
             totalAmount: '0',
             totalUsdValue: '0',
-            isGivbackEligible: item.isGivbackEligible ?? false,
+            isGivbackEligible:
+              item.isGivbackEligible ?? item.selectedToken?.isGivbackEligible,
             estimatedMatchingValue: item.estimatedMatchingValue ?? 0,
           })
         }
 
         const round = rounds.get(item.roundId)!
         round.projects.push(item)
+        if (!round.selectedChainId) {
+          round.selectedChainId = item.chainId
+        } else if (round.selectedChainId !== item.chainId) {
+          console.warn(
+            `[CartContext] Inconsistent chainId detected for round ${item.roundId}: expected ${round.selectedChainId}, got ${item.chainId}`,
+          )
+        }
+        if (!round.selectedToken && item.selectedToken) {
+          round.selectedToken = item.selectedToken
+        } else if (round.selectedToken && item.selectedToken) {
+          const sameToken =
+            round.selectedToken.chainId === item.selectedToken.chainId &&
+            round.selectedToken.address?.toLowerCase() ===
+              item.selectedToken.address?.toLowerCase() &&
+            round.selectedToken.symbol === item.selectedToken.symbol
+          if (!sameToken) {
+            console.warn(
+              `[CartContext] Inconsistent selectedToken detected for round ${item.roundId}`,
+            )
+          }
+        }
 
         // Calculate total amount
         const total = round.projects.reduce((sum, project) => {
@@ -158,7 +183,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Get round data about selected token from the item inside that round
       const round = donationRounds.find(r => r.roundId === project.roundId)
       if (round) {
-        project.selectedToken = round.projects[0]?.selectedToken
+        project.selectedToken = round.selectedToken
+        project.chainId = round.selectedChainId
+        project.tokenSymbol = round.tokenSymbol
+        project.tokenAddress = round.tokenAddress
+        project.tokenDecimals = round.tokenDecimals
+        project.isGivbackEligible = round.isGivbackEligible
+        project.walletAddress =
+          project.recipientAddresses?.find(
+            address => address.networkId === round.selectedChainId,
+          )?.address ?? project.walletAddress
       }
 
       if (project.roundId === undefined || project.roundId === null) {
@@ -234,11 +268,63 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const removeFromCart = (roundId: number, projectId: string) => {
+  const clearRoundTokenAndDonations = (roundId: number) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.roundId === roundId
+          ? {
+              ...item,
+              selectedToken: undefined,
+              tokenSymbol: '',
+              tokenAddress: '',
+              tokenDecimals: 18,
+              donationAmount: '0',
+              isGivbackEligible: undefined,
+              estimatedMatchingValue: 0,
+            }
+          : item,
+      ),
+    )
+
+    setDonationRounds(prev =>
+      prev.map(round =>
+        round.roundId === roundId
+          ? {
+              ...round,
+              selectedToken: undefined,
+              tokenSymbol: '',
+              tokenAddress: '',
+              tokenDecimals: 18,
+              totalAmount: '0',
+              totalUsdValue: '0',
+              isGivbackEligible: undefined,
+              estimatedMatchingValue: 0,
+            }
+          : round,
+      ),
+    )
+  }
+
+  const removeFromCart = useCallback((roundId: number, projectId: string) => {
     setCartItems(prev =>
       prev.filter(item => !(item.roundId === roundId && item.id === projectId)),
     )
-  }
+  }, [])
+
+  const pruneInactiveRoundProjects = useCallback((activeRoundIds: number[]) => {
+    const activeRoundIdSet = new Set(
+      activeRoundIds.filter(roundId => Number.isFinite(roundId)),
+    )
+
+    setCartItems(prev => {
+      const filtered = prev.filter(item => {
+        if (item.roundId == null || item.roundId <= 0) return true
+        return activeRoundIdSet.has(item.roundId)
+      })
+
+      return filtered.length === prev.length ? prev : filtered
+    })
+  }, [])
 
   const clearCart = () => {
     setCartItems([])
@@ -306,7 +392,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addToCart,
         updateSelectedChainId,
         updateSelectedToken,
+        clearRoundTokenAndDonations,
         removeFromCart,
+        pruneInactiveRoundProjects,
         clearCart,
         isInCart,
         updateProjectDonation,

@@ -2,13 +2,26 @@ import { env } from '@/lib/env'
 
 const oldFrontend = env.OLD_FRONTEND_URL
 
+type MenuSubItem = {
+  label: string
+  href: string
+  target?: string
+}
+
+type MenuItem = {
+  label: string
+  href: string
+  submenu?: MenuSubItem[]
+  target?: string
+}
+
 const oldFrontendPath = (path: string, fallback: string) =>
   oldFrontend ? `${oldFrontend}${path}` : fallback
 
 export const LogoLink = oldFrontend ?? '/'
 
 // Menu items for the navigation
-export const menuItems = [
+export const menuItems: MenuItem[] = [
   {
     label: 'Donate',
     href: '/qf',
@@ -45,7 +58,8 @@ export const menuItems = [
       },
       {
         label: 'Vote',
-        href: oldFrontendPath('/vote', '/vote'),
+        href: 'https://snapshot.org/#/giv.eth',
+        target: '_blank',
       },
       {
         label: 'Join Us',
@@ -53,7 +67,8 @@ export const menuItems = [
       },
       {
         label: 'Leave Feedback',
-        href: oldFrontendPath('/feedback', '/feedback'),
+        href: 'https://giveth.typeform.com/feedback',
+        target: '_blank',
       },
     ],
   },
@@ -67,6 +82,11 @@ export const createProjectLink = {
 export const givpowerDocLink = {
   label: 'GIVpower Documentation',
   href: 'https://docs.giveth.io/givpower',
+}
+
+export const getGIVpowerLink = {
+  label: 'Get GIVpower',
+  href: oldFrontendPath('/givfarm', '/givfarm'),
 }
 
 export const givBacksLink = {
@@ -208,7 +228,8 @@ export const myCausesLink = {
 
 export const myGIVPowerLink = {
   label: 'My GIVPower',
-  href: oldFrontendPath('/account?tab=givpower', '/account?tab=givpower'),
+  href: '/account?tab=boosted',
+  target: '_self',
 }
 
 export const myRecurringDonationsLink = {

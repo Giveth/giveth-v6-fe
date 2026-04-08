@@ -3,12 +3,34 @@ import clsx from 'clsx'
 import { ShoppingCart } from 'lucide-react'
 import { CartDropdown } from '@/components/cart/CartDropdown'
 import { useCart } from '@/context/CartContext'
+import { useActiveQfRounds } from '@/hooks/useActiveQfRounds'
 
 export function CartButton() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const cartRef = useRef<HTMLDivElement>(null)
-  const { cartItems } = useCart()
+  const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
+  const { cartItems, pruneInactiveRoundProjects } = useCart()
 
+  // Remove projects from the cart if they are in inactive rounds
+  // This is to prevent users from adding projects to the cart that are not active
+  useEffect(() => {
+    if (isLoading || error || !activeRoundsData) return
+    if (cartItems.length === 0) return
+
+    const activeRoundIds = (activeRoundsData.activeQfRounds || [])
+      .map(round => Number(round.id))
+      .filter(roundId => Number.isFinite(roundId))
+
+    pruneInactiveRoundProjects(activeRoundIds)
+  }, [
+    activeRoundsData,
+    cartItems.length,
+    error,
+    isLoading,
+    pruneInactiveRoundProjects,
+  ])
+
+  // Handle click outside of the cart dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (cartRef.current && !cartRef.current.contains(event.target as Node)) {

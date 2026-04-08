@@ -263,7 +263,7 @@ export function ManualSidebarForm() {
                 aria-invalid={Boolean(errors.title)}
                 className={MANUAL_FIELD_BASE_CLASSES}
               />
-              <p className="text-xs text-[#9ca3af]">Max 60 letters</p>
+              <p className="text-xs text-[#9ca3af]">3-100 characters</p>
               {errors.title && (
                 <p className="text-xs font-medium text-red-600">
                   {errors.title}
@@ -472,6 +472,11 @@ export function ManualSidebarForm() {
               {imageUploadError && (
                 <p className="text-xs font-medium text-red-600">
                   {imageUploadError}
+                </p>
+              )}
+              {errors.image && (
+                <p className="text-xs font-medium text-red-600">
+                  {errors.image}
                 </p>
               )}
             </div>

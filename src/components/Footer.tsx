@@ -243,7 +243,7 @@ export function Footer() {
                 Support us
               </span>
               <Link
-                href="https://staging.giveth.io/donate/giveth-2021:-retreat-to-the-future"
+                href="https://giveth.io/project/the-giveth-community-of-makers"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-bold text-giv-pink-500! hover:text-giv-pink-200!"

@@ -14,12 +14,20 @@ import { normalizeDecimalInput } from '@/lib/helpers/numbersHelper'
 import { OPTIMISM_CHAIN_ID, OPTIMISM_USDC_ADDRESS } from '@/lib/thirdweb/client'
 import { type WalletTokenWithBalance } from '@/lib/types/chain'
 
+function isInactiveQfRoundItem(
+  roundId: number | undefined,
+  activeRoundIds: Set<number>,
+): boolean {
+  return roundId != null && roundId > 0 && !activeRoundIds.has(roundId)
+}
+
 export default function CartPage() {
   const { data: activeRoundsData, isLoading, error } = useActiveQfRounds()
   const {
     cartItems,
     givethPercentage,
     showMissingAmountErrors,
+    pruneInactiveRoundProjects,
     updateProjectDonation,
     updateSelectedChainId,
     updateSelectedToken,
@@ -27,10 +35,28 @@ export default function CartPage() {
   const { isAAWallet } = useSiweAuth()
   const [aaAmountToDonate, setAaAmountToDonate] = useState('10')
 
+  const activeRoundIds = useMemo(
+    () =>
+      new Set(
+        (activeRoundsData?.activeQfRounds || [])
+          .map(round => Number(round.id))
+          .filter(roundId => Number.isFinite(roundId)),
+      ),
+    [activeRoundsData],
+  )
+
+  const filteredCartItems = useMemo(() => {
+    if (isLoading || error || !activeRoundsData) return cartItems
+
+    return cartItems.filter(
+      item => !isInactiveQfRoundItem(item.roundId, activeRoundIds),
+    )
+  }, [activeRoundIds, activeRoundsData, cartItems, error, isLoading])
+
   // Group cart items by round
   const { qfRoundGroups, nonQfProjects } = useMemo(
-    () => groupCartItemsByRound(cartItems),
-    [cartItems],
+    () => groupCartItemsByRound(filteredCartItems),
+    [filteredCartItems],
   )
 
   const aaUsdcToken = useMemo<WalletTokenWithBalance>(
@@ -49,7 +75,7 @@ export default function CartPage() {
   )
 
   useEffect(() => {
-    if (!isAAWallet || cartItems.length === 0) return
+    if (!isAAWallet || filteredCartItems.length === 0) return
 
     qfRoundGroups.forEach(group => {
       if (group.selectedChainId !== OPTIMISM_CHAIN_ID) {
@@ -103,7 +129,7 @@ export default function CartPage() {
     }
   }, [
     aaUsdcToken,
-    cartItems.length,
+    filteredCartItems.length,
     isAAWallet,
     nonQfProjects,
     qfRoundGroups,
@@ -111,11 +137,28 @@ export default function CartPage() {
     updateSelectedToken,
   ])
 
-  const handleApplyAAAmountToAll = () => {
+  // Remove projects from the cart if they are in inactive rounds
+  // This is to prevent users from adding projects to the cart that are not active
+  useEffect(() => {
+    if (isLoading || error || !activeRoundsData) return
+    if (cartItems.length === 0) return
+
+    pruneInactiveRoundProjects(Array.from(activeRoundIds))
+  }, [
+    activeRoundIds,
+    activeRoundsData,
+    cartItems,
+    error,
+    isLoading,
+    pruneInactiveRoundProjects,
+  ])
+
+  // Apply the amount to all projects in the cart
+  const handleApplyAmountToAll = () => {
     const normalizedAmount = normalizeDecimalInput(aaAmountToDonate) || '0'
     setAaAmountToDonate(normalizedAmount)
 
-    cartItems.forEach(project => {
+    filteredCartItems.forEach(project => {
       updateProjectDonation(
         project.roundId ?? 0,
         project.id,
@@ -143,7 +186,7 @@ export default function CartPage() {
         <div className="flex flex-wrap gap-6">
           {/* Left Column - Donation Rounds */}
           <div className="flex-1 space-y-5 w-12/12 lg:w-8/12">
-            {isAAWallet && cartItems.length > 0 && (
+            {isAAWallet && filteredCartItems.length > 0 && (
               <div className="bg-white p-4 rounded-2xl border-4 border-giv-neutral-500 overflow-hidden">
                 <div className="bg-giv-neutral-300 px-5 py-3 rounded-xl text-base font-medium text-giv-neutral-800">
                   Amount to donate
@@ -188,7 +231,7 @@ export default function CartPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={handleApplyAAAmountToAll}
+                      onClick={handleApplyAmountToAll}
                       className="ml-1 text-base font-medium text-giv-brand-500 hover:text-giv-brand-700 transition-colors cursor-pointer"
                     >
                       Apply to all
@@ -197,7 +240,7 @@ export default function CartPage() {
                 </div>
               </div>
             )}
-            {cartItems.length > 0 &&
+            {filteredCartItems.length > 0 &&
               qfRoundGroups.map(group => {
                 const roundId = group.roundId
                 const round =
@@ -252,7 +295,7 @@ export default function CartPage() {
                 showMissingAmountErrors={showMissingAmountErrors}
               />
             )}
-            {cartItems.length === 0 && (
+            {filteredCartItems.length === 0 && (
               <div className="text-center py-12 text-giv-neutral-700">
                 Your cart is empty. Add projects to your cart to get started.
               </div>

@@ -512,6 +512,7 @@ export const cryptoWallets: Record<
   'im.argent': { icon: IconArgent, name: 'Argent' },
   'com.okex.wallet': { icon: IconOKX, name: 'OKX Wallet' },
   'io.gnosis.safe': { icon: IconSafe, name: 'Safe Wallet' },
+  'global.safe': { icon: IconSafe, name: 'Safe Wallet' },
   'io.rabby': { icon: IconRabby, name: 'Rabby' },
   'com.wallet.brave': { icon: IconBrave, name: 'Brave' },
   ledger: { icon: IconLedger, name: 'Ledger' },

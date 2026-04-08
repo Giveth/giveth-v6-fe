@@ -79,7 +79,7 @@ export function QFRoundSidebar({
           })}
         </span>
         <p className="text-base text-giv-neutral-700">
-          Raised from
+          Raised from{' '}
           <span className="text-giv-neutral-900 font-medium">
             {countUniqueDonors || 0}
           </span>{' '}

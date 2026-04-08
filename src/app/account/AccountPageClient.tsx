@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AuthGate } from '@/components/account/AuthGate'
+import { BoostedProjects } from '@/components/account/boosted-projects/BoostedProjects'
 import { CtaSection } from '@/components/account/CtaGivBacks'
 import { DashboardTabs } from '@/components/account/DashboardTabs'
 import { DonationsTable } from '@/components/account/DonationsTable'
@@ -10,6 +11,7 @@ import { ProfileSection } from '@/components/account/ProfileSection'
 import { StakingRewards } from '@/components/account/staking-rewards/StakingRewards'
 
 export default function AccountPageClient() {
+  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
   const searchParams = useSearchParams()
 
   const allowedTabs = useMemo(
@@ -32,10 +34,10 @@ export default function AccountPageClient() {
           <ProfileSection />
           <DashboardTabs activeTab={activeTab} />
 
-          {activeTab === 'staking' && <StakingRewards />}
+          {!isProduction && activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
-          {activeTab === 'boosted' && <DonationsTable />}
-          {activeTab === 'projects' && <DonationsTable />}
+          {activeTab === 'boosted' && <BoostedProjects />}
+          {isProduction && activeTab === 'projects' && <DonationsTable />}
         </main>
         <CtaSection />
       </div>
