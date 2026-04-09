@@ -5,7 +5,7 @@ export function HubHero() {
   const mobileHeroSrc = '/images/hub/hub-hero-mobile.png'
 
   return (
-    <div className="mt-2 py-7">
+    <div className="mt-0 sm:mt-2 py-7 px-6 sm:px-0">
       <div className="max-w-7xl mx-auto">
         <Image
           src={desktopHeroSrc}

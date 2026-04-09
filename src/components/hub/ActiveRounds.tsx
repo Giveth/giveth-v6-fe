@@ -25,7 +25,7 @@ export function ActiveRounds() {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-giv-deep-blue-900">
+      <h2 className="px-6 sm:px-0 text-2xl font-bold text-giv-deep-blue-900">
         Active Rounds
       </h2>
       {isLoading && (
