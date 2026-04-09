@@ -19,7 +19,7 @@ export const CartHeader = () => {
   title = pathname.startsWith('/cart/pending') ? 'Donation Cart' : title
 
   return (
-    <header className="bg-white border-b border-giv-neutral-300 px-6 py-4">
+    <header className="bg-white border-b border-giv-neutral-300 px-4 sm:px-6 py-4">
       <div className="max-w-[1442px] mx-auto flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-4">

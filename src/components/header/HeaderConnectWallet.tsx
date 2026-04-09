@@ -103,7 +103,9 @@ export function HeaderConnectWallet() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={clsx(
-              'flex items-center gap-1 md:gap-3 px-2 md:px-4 py-[6px] md:py-[10px] lg:py-3 bg-white rounded-md',
+              'flex items-center gap-1 md:gap-3',
+              'px-4 md:px-4 py-3 md:py-[10px] lg:py-3',
+              'bg-white rounded-md',
               'hover:opacity-85 transition-all duration-200',
               'border border-giv-brand-100 cursor-pointer',
               'text-xs lg:text-sm text-giv-brand-600! font-bold',
@@ -113,7 +115,9 @@ export function HeaderConnectWallet() {
             {wallet && <CryptoWalletIcon walletId={wallet?.id || ''} />}
 
             {/* Cain Icon */}
-            <ChainIcon networkId={chain?.id || 0} />
+            <span className="inline-block position-relative ms:position-normal ms-[-5px] sm:ms-0">
+              <ChainIcon networkId={chain?.id || 0} />
+            </span>
 
             {/* Address and Network Info */}
             <div className="hidden md:flex flex-col items-start">

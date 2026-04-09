@@ -18,23 +18,25 @@ export function DefaultHeader({
   const isExternalLogoLink = /^https?:\/\//.test(LogoLink)
 
   return (
-    <header className="bg-white border-b border-giv-neutral-300 px-6 py-4">
+    <header className="bg-white border-b border-giv-neutral-300 px-4 sm:px-6 py-4">
       <div className="relative max-w-[1442px] mx-auto flex flex-wrap lg:flex-nowrap items-center justify-between">
         {/* Logo and Nav */}
         <div className="flex items-center gap-1 lg:gap-8">
-          {isExternalLogoLink ? (
-            <a
-              href={LogoLink}
-              className="flex items-center"
-              rel="noopener noreferrer"
-            >
-              <GivethLogo width={58} height={58} />
-            </a>
-          ) : (
-            <Link href={LogoLink as Route} className="flex items-center">
-              <GivethLogo width={58} height={58} />
-            </Link>
-          )}
+          <div className="hidden sm:block">
+            {isExternalLogoLink ? (
+              <a
+                href={LogoLink}
+                className="flex items-center"
+                rel="noopener noreferrer"
+              >
+                <GivethLogo width={58} height={58} />
+              </a>
+            ) : (
+              <Link href={LogoLink as Route} className="flex items-center">
+                <GivethLogo width={58} height={58} />
+              </Link>
+            )}
+          </div>
 
           {!createProjectMinimal && (
             <>
@@ -48,10 +50,10 @@ export function DefaultHeader({
         </div>
 
         {/* Right Side */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-4">
           {!createProjectMinimal && (
             <>
-              <div className="hidden md:block pe-1">
+              <div className="pe-0 sm:pe-1">
                 <CreateProjectButton />
               </div>
 
