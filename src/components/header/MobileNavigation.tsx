@@ -19,7 +19,9 @@ export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
     <>
       {/* Open button */}
       <button
+        type="button"
         onClick={() => setIsMenuOpen(true)}
+        aria-label="Open menu"
         className={clsx(
           'md:hidden flex items-center gap-2 p-3 px-4 rounded-lg',
           'border sm:border-none border-giv-brand-100 rounded-md',

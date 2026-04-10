@@ -115,7 +115,7 @@ export function HeaderConnectWallet() {
             {wallet && <CryptoWalletIcon walletId={wallet?.id || ''} />}
 
             {/* Cain Icon */}
-            <span className="inline-block position-relative ms:position-normal ms-[-5px] sm:ms-0">
+            <span className="inline-block relative ms:normal ms-[-5px] sm:ms-0">
               <ChainIcon networkId={chain?.id || 0} />
             </span>
 

@@ -45,7 +45,7 @@ export function QFStats({
             <p className="text-lg mb-1"># of Donations</p>
             <p className="text-xl font-bold">{donationsCount}</p>
           </div>
-          <div className="flex h-full mt-4 texrt-center sm:text-right">
+          <div className="flex h-full mt-4 text-center sm:text-right">
             <p className="text-lg sm:text-2xl font-bold">
               {formatDate(beginDate)} - {formatDate(endDate)}
             </p>
