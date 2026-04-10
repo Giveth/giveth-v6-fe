@@ -20,6 +20,7 @@ import { useSiweAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useAccount'
 import {
   createProjectLink,
+  myGIVPowerLink,
   myProjectsLink,
   reportBugLink,
   supportLink,
@@ -181,13 +182,13 @@ export function CustomConnectWallet() {
               My Donations
             </Link>
 
-            {/* <Link
+            <Link
               href={myGIVPowerLink.href as Route}
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
               {myGIVPowerLink.label}
-            </Link> */}
+            </Link>
 
             <Link
               href={createProjectLink.href as Route}

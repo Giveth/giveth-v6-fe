@@ -410,7 +410,6 @@ export default function ProjectBoostModal({
               </a>
               <Link
                 href={myGIVPowerLink.href as Route}
-                target={myGIVPowerLink.target}
                 className="mt-6 inline-flex w-full items-center justify-center text-giv-brand-500! text-sm font-bold hover:opacity-80!"
               >
                 See Your GIVpower Allocations
@@ -603,7 +602,6 @@ export default function ProjectBoostModal({
                     You can review and manage your GIVpower allocations in{' '}
                     <Link
                       href={myGIVPowerLink.href as Route}
-                      target={myGIVPowerLink.target}
                       className="font-bold hover:underline"
                     >
                       My GIVpower
@@ -676,7 +674,6 @@ export default function ProjectBoostModal({
                   </button>
                   <Link
                     href={myGIVPowerLink.href as Route}
-                    target={myGIVPowerLink.target}
                     className="mt-4 inline-flex w-full items-center justify-center text-giv-brand-500! text-sm font-bold hover:opacity-80!"
                   >
                     Manage your GIVpower
