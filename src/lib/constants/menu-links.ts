@@ -227,9 +227,13 @@ export const myCausesLink = {
 }
 
 export const myGIVPowerLink = {
-  label: 'My GIVPower',
+  label: 'My GIVpower',
   href: '/account?tab=boosted',
-  target: '_self',
+}
+
+export const myGIVRewardsLink = {
+  label: 'My GIV Rewards',
+  href: '/account?tab=staking',
 }
 
 export const myRecurringDonationsLink = {
