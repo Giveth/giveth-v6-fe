@@ -90,7 +90,7 @@ export function QFProjectsGrid({
           <div
             className={clsx(
               'relative overflow-hidden transition-[width] duration-200 ease-out bg-white rounded-sm',
-              isSearchOpen ? 'w-full md:w-[320px]' : 'w-12 md:w-12',
+              isSearchOpen ? 'w-full md:w-[320px]' : ' w-[15%] sm:w-12 md:w-12',
             )}
           >
             <button
@@ -139,6 +139,7 @@ export function QFProjectsGrid({
             onSortChange={onSortChange}
             isSearchActive={isSearchActive}
           />
+
           <QFProjectFilters
             currentFilters={currentFilters}
             onFilterChange={onFilterChange}
@@ -181,8 +182,8 @@ export function QFProjectsGrid({
                 onClick={onLoadMore}
                 disabled={isLoadingMore}
                 className={clsx(
-                  'px-10 py-6',
-                  'rounded-[2.25rem] bg-giv-brand-100 text-giv-brand-700',
+                  'px-8 py-5',
+                  'rounded-lg bg-giv-brand-100 text-giv-brand-700',
                   'text-sm leading-none font-bold tracking-tight',
                   'hover:bg-giv-brand-200 hover:opacity-85 transition-all duration-200',
                   'cursor-pointer',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import clsx from 'clsx'
 import { Check, SlidersHorizontal } from 'lucide-react'
 import { NETWROKS_FILTERS } from '@/lib/constants/round-constants'
 
@@ -54,17 +55,23 @@ export function QFProjectFilters({
     currentFilters.networks.length
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative w-full sm:w-auto" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-sm text-base font-medium bg-white transition-colors cursor-pointer`}
-      >
-        Filters
-        {activeCount > 0 && (
-          <span className="bg-giv-brand-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[18px] text-center">
-            {activeCount}
-          </span>
+        className={clsx(
+          'w-full sm:w-auto min-w-[200px]',
+          'flex items-center justify-between sm:justify-start gap-2 px-4 py-2',
+          'rounded-sm text-base font-medium bg-white transition-colors cursor-pointer',
         )}
+      >
+        <div className="flex items-center gap-2">
+          Filters
+          {activeCount > 0 && (
+            <span className="bg-giv-brand-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[18px] text-center">
+              {activeCount}
+            </span>
+          )}
+        </div>
         <SlidersHorizontal className="w-4 h-4 ml-8" />
       </button>
 
