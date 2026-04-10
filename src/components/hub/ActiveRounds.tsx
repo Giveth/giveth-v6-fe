@@ -23,6 +23,12 @@ export function ActiveRounds() {
     }
   }, [rounds, activeRoundsData])
 
+  useEffect(() => {
+    if (!error) return
+
+    console.error('Failed to load active rounds', error)
+  }, [error])
+
   return (
     <div className="space-y-8">
       <h2 className="px-6 sm:px-0 text-2xl font-bold text-giv-deep-blue-900">
@@ -35,10 +41,10 @@ export function ActiveRounds() {
       )}
       {error && (
         <div className="text-center py-12 text-giv-neutral-700">
-          Failed to load active rounds. Please try again later. {error.message}
+          Failed to load active rounds. Please try again later.
         </div>
       )}
-      {rounds.length === 0 && (
+      {!isLoading && !error && rounds.length === 0 && (
         <div className="text-center py-12 text-giv-neutral-700">
           No active rounds at the moment.
         </div>
