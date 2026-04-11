@@ -83,20 +83,16 @@ export function PassportBanner() {
     globalMinimumPassportScoreData?.globalConfiguration?.value ?? 0,
   )
 
-  let isUserEligible = false // By default, user is not eligible
   const userMBDScore = Number(userPassportData?.mbdScore ?? 0)
   const userPassportScore = Number(userPassportData?.passportScore ?? 0)
 
-  // First we check MBD Score
-  if (userMBDScore >= globalSettingScore.globalMinimumMBDScore) {
-    isUserEligible = true
-  }
-  // Second if MBD score less than global minimum, we check Passport Score
-  else if (userPassportScore >= globalSettingScore.globalMinimumPassportScore) {
-    isUserEligible = true
-  } else {
-    isUserEligible = false
-  }
+  const meetsScoreThresholds =
+    userMBDScore >= globalSettingScore.globalMinimumMBDScore ||
+    userPassportScore >= globalSettingScore.globalMinimumPassportScore
+
+  // Backend `isEligible` covers NFT-based eligibility and other rules; score
+  // checks mirror thresholds when the API flag is not set the same way.
+  const isUserEligible = userPassportData.isEligible || meetsScoreThresholds
 
   const showLoading = useMemo(
     () => isEligibilityLoading || isAuthLoading,
@@ -206,7 +202,11 @@ export function PassportBanner() {
       {account && data && isUserEligible && !showLoading && (
         <div className="bg-giv-success-200 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <BadgeCheck className="w-6 h-6 text-giv-success-600" />
-          <p>You donations are eligible to be matched!</p>
+          <p>
+            {data.checkPassportEligibility.message?.trim().includes('NFT')
+              ? 'You donations are eligible to be matched because you hold the configured NFT!'
+              : 'Your donations are eligible to be matched!'}
+          </p>
         </div>
       )}
     </>
