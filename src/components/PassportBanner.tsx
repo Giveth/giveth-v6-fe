@@ -202,11 +202,7 @@ export function PassportBanner() {
       {account && data && isUserEligible && !showLoading && (
         <div className="bg-giv-success-200 py-2.5 px-4 flex items-center justify-center gap-2 text-base">
           <BadgeCheck className="w-6 h-6 text-giv-success-600" />
-          <p>
-            {data.checkPassportEligibility.message?.trim().includes('NFT')
-              ? 'You donations are eligible to be matched because you hold the configured NFT!'
-              : 'Your donations are eligible to be matched!'}
-          </p>
+          <p>Your donations are eligible to be matched!</p>
         </div>
       )}
     </>
