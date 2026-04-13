@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { useActiveAccount } from 'thirdweb/react'
 import { type Address, formatUnits } from 'viem'
@@ -6,6 +6,10 @@ import RewardsClaimModal from '@/components/account/staking-rewards/RewardsClaim
 import { STAKING_POOLS } from '@/lib/constants/staking-power-constants'
 import { getTokenPriceInUSDByCoingeckoId } from '@/lib/helpers/cartHelper'
 import { fetchUserOverview, formatToken } from '@/lib/helpers/stakeHelper'
+
+const CLAIM_SYNC_DELAY_MS = 12_000
+const CLAIM_SYNC_RETRY_MS = 10_000
+const CLAIM_SYNC_MAX_ATTEMPTS = 9
 
 export const ClaimRewardsBanner = ({
   selectedChain,
@@ -17,28 +21,95 @@ export const ClaimRewardsBanner = ({
   const [data, setData] = useState<Awaited<
     ReturnType<typeof fetchUserOverview>
   > | null>(null)
-  const [isLoading, _setIsLoading] = useState(false)
-  const [error, _setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [tokenPriceUsd, setTokenPriceUsd] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isClaimOptimistic, setIsClaimOptimistic] = useState(false)
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const syncSessionIdRef = useRef(0)
+  const currentContextRef = useRef<{
+    address: `0x${string}` | undefined
+    chainId: number
+  }>({
+    address: undefined,
+    chainId: selectedChain,
+  })
+  const latestTotalClaimableRef = useRef<bigint>(0n)
+  const latestFetchDataRef = useRef<
+    (() => Promise<Awaited<ReturnType<typeof fetchUserOverview>> | null>) | null
+  >(null)
 
   const account = useActiveAccount()
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!account?.address) return
-      try {
-        const data = await fetchUserOverview(
-          account.address as `0x${string}`,
-          // '0xD5db3F8B0a236176587460dC85F0fC5705D78477' as `0x${string}`,
-          selectedChain,
-        )
-        setData(data)
-      } catch (err) {
-        _setError(err instanceof Error ? err.message : 'Failed to load rewards')
+  const fetchData = useCallback(async () => {
+    const address = account?.address as `0x${string}` | undefined
+    if (!address) {
+      setData(null)
+      return null
+    }
+
+    const requestContext = {
+      address,
+      chainId: selectedChain,
+    }
+
+    try {
+      const rewardsData = await fetchUserOverview(
+        requestContext.address,
+        requestContext.chainId,
+      )
+      const activeContext = currentContextRef.current
+      const isSameContext =
+        activeContext.address === requestContext.address &&
+        activeContext.chainId === requestContext.chainId
+
+      if (!isSameContext) {
+        return null
       }
+
+      setData(rewardsData)
+      setError(null)
+      return rewardsData
+    } catch (err) {
+      const activeContext = currentContextRef.current
+      const isSameContext =
+        activeContext.address === requestContext.address &&
+        activeContext.chainId === requestContext.chainId
+      if (!isSameContext) {
+        return null
+      }
+      setError(err instanceof Error ? err.message : 'Failed to load rewards')
+      return null
+    }
+  }, [account?.address, selectedChain])
+
+  useEffect(() => {
+    latestFetchDataRef.current = fetchData
+  }, [fetchData])
+
+  useEffect(() => {
+    currentContextRef.current = {
+      address: account?.address as `0x${string}` | undefined,
+      chainId: selectedChain,
     }
     fetchData()
+  }, [account?.address, selectedChain, fetchData])
+
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    syncSessionIdRef.current += 1
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = null
+    }
+    setIsClaimOptimistic(false)
   }, [account?.address, selectedChain])
 
   // Fetch token price
@@ -57,10 +128,6 @@ export const ClaimRewardsBanner = ({
     fetchPrice()
   }, [selectedChain])
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
-
   if (error) {
     console.error(error)
   }
@@ -72,10 +139,15 @@ export const ClaimRewardsBanner = ({
   const givfarmAmount = stakingClaimable
   const givbacksAmount = givbacksLiquid
   const givstreamAmount = data?.givbacks?.streamableAmount ?? 0n
-  const totalClaimable = givbacksAmount + givfarmAmount + givstreamAmount
+  const totalClaimableRaw = givbacksAmount + givfarmAmount + givstreamAmount
+  const totalClaimable = isClaimOptimistic ? 0n : totalClaimableRaw
   const givstreamRate = data?.givbacks?.streaming ?? 0n
   const givbacksRate = data?.givbacks?.givbackStream ?? 0n
   const givfarmRate = data?.staking?.streaming ?? 0n
+
+  useEffect(() => {
+    latestTotalClaimableRef.current = totalClaimableRaw
+  }, [totalClaimableRaw])
 
   // Convert once to human units
   const totalClaimableGiv = parseFloat(
@@ -109,6 +181,55 @@ export const ClaimRewardsBanner = ({
     STAKING_POOLS[selectedChain]?.GIVPOWER?.LM_ADDRESS || undefined
   const stakedAmount = data?.staking?.staked ?? 0n
 
+  const handleClaimSuccess = useCallback(() => {
+    // Show zero immediately after successful claim; backend/indexer sync can lag.
+    setIsClaimOptimistic(true)
+    const baselineClaimable = latestTotalClaimableRef.current
+    const claimSessionId = syncSessionIdRef.current + 1
+    syncSessionIdRef.current = claimSessionId
+
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = null
+    }
+
+    const runSync = async (attempt: number) => {
+      if (syncSessionIdRef.current !== claimSessionId) {
+        return
+      }
+
+      const refreshed = await latestFetchDataRef.current?.()
+      if (syncSessionIdRef.current !== claimSessionId) {
+        return
+      }
+
+      if (refreshed) {
+        const refreshedClaimable =
+          (refreshed.staking?.claimable ?? 0n) +
+          (refreshed.givbacks?.givbackLiquidPart ?? 0n) +
+          (refreshed.givbacks?.streamableAmount ?? 0n)
+
+        if (refreshedClaimable < baselineClaimable) {
+          setIsClaimOptimistic(false)
+          return
+        }
+      }
+
+      if (attempt >= CLAIM_SYNC_MAX_ATTEMPTS) {
+        setIsClaimOptimistic(false)
+        return
+      }
+
+      syncTimeoutRef.current = setTimeout(() => {
+        void runSync(attempt + 1)
+      }, CLAIM_SYNC_RETRY_MS)
+    }
+
+    syncTimeoutRef.current = setTimeout(() => {
+      void runSync(0)
+    }, CLAIM_SYNC_DELAY_MS)
+  }, [])
+
   return (
     <div
       className={clsx(
@@ -141,6 +262,7 @@ export const ClaimRewardsBanner = ({
       <RewardsClaimModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        onClaimSuccess={handleClaimSuccess}
         account={account}
         chainId={selectedChain}
         tokenDistroAddress={tokenDistroAddress as Address | undefined}
