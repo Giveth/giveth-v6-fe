@@ -8,7 +8,7 @@ import { type Route } from 'next'
 import { useSiweAuth } from '@/context/AuthContext'
 import {
   useBoostModalData,
-  useSyncPowerBoostingTemp,
+  useSetPowerBoosting,
   useTotalGivpowerAcrossBoostNetworks,
 } from '@/hooks/projectHooks'
 import { useUserByAddress } from '@/hooks/useAccount'
@@ -110,8 +110,8 @@ export const BoostedProjects = () => {
   const [pendingProjectId, setPendingProjectId] = useState<number | null>(null)
 
   // Get the sync power boosting temp mutation
-  const { mutateAsync: syncPowerBoostingTemp, isPending: isSyncingBoost } =
-    useSyncPowerBoostingTemp({ token })
+  const { mutateAsync: setPowerBoosting, isPending: isSyncingBoost } =
+    useSetPowerBoosting({ token })
   const {
     data: totalGivpowerData,
     isLoading: isLoadingTotalGivpower,
@@ -425,7 +425,7 @@ export const BoostedProjects = () => {
         percentages[indexOfMax] += floatingError
       }
 
-      await syncPowerBoostingTemp({
+      await setPowerBoosting({
         projectIds,
         percentages,
       })
@@ -448,7 +448,7 @@ export const BoostedProjects = () => {
     setPendingProjectId(projectId)
 
     try {
-      await syncPowerBoostingTemp({
+      await setPowerBoosting({
         projectIds: [projectId],
         percentages: [0],
       })

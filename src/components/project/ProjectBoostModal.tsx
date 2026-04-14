@@ -16,7 +16,7 @@ import { IconBoost } from '@/components/icons/IconBoost'
 import { useSiweAuth } from '@/context/AuthContext'
 import {
   useBoostModalData,
-  useSyncPowerBoostingTemp,
+  useSetPowerBoosting,
   useTotalGivpowerAcrossBoostNetworks,
 } from '@/hooks/projectHooks'
 import { useUserByAddress } from '@/hooks/useAccount'
@@ -79,8 +79,8 @@ export default function ProjectBoostModal({
   const [switchNetworkError, setSwitchNetworkError] = useState<string | null>(
     null,
   )
-  const { mutateAsync: syncPowerBoostingTemp, isPending: isSubmittingBoost } =
-    useSyncPowerBoostingTemp({ token })
+  const { mutateAsync: setPowerBoosting, isPending: isSubmittingBoost } =
+    useSetPowerBoosting({ token })
   const { data: userByAddressData } = useUserByAddress(
     open ? walletAddress : undefined,
   )
@@ -144,9 +144,8 @@ export default function ProjectBoostModal({
 
     setSubmitBoostError(null)
 
-    // Sync the power boosting temp
     try {
-      await syncPowerBoostingTemp({
+      await setPowerBoosting({
         projectId,
         percentage: allocationPercent,
       })

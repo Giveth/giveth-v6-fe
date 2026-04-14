@@ -9,7 +9,8 @@ import {
   fetchCurrentProjectBoostV6Query,
   fetchPowerBoostingInfoV6Query,
   fetchUserBoostForProjectQuery,
-  syncPowerBoostingTempMutation,
+  setMultiplePowerBoostingMutation,
+  setSinglePowerBoostingMutation,
 } from '@/lib/graphql/queries'
 import { fetchUserOpGivPowerFromSubgraph } from '@/lib/helpers/opGivPowerSubgraph'
 
@@ -104,18 +105,24 @@ type CurrentProjectBoostV6Response = {
   }
 }
 
-type SyncPowerBoostingTempResponse = {
-  syncPowerBoostingTemp: {
-    totalCount: number
-    powerBoostings: Array<{
-      id: string
-      userId: number
-      projectId: number
-      percentage: number
-      powerRank: number
-      updatedAt: string
-    }>
-  }
+type SetSinglePowerBoostingResponse = {
+  setSinglePowerBoosting: Array<{
+    id: string
+    userId: number
+    projectId: number
+    percentage: number
+    updatedAt: string
+  }>
+}
+
+type SetMultiplePowerBoostingResponse = {
+  setMultiplePowerBoosting: Array<{
+    id: string
+    userId: number
+    projectId: number
+    percentage: number
+    updatedAt: string
+  }>
 }
 
 type TotalGivpowerAcrossBoostNetworksResponse = {
@@ -420,11 +427,11 @@ export function useTotalGivpowerAcrossBoostNetworks({
 }
 
 /**
- * Hook to sync the power boosting temp
+ * Hook to set power boosting allocations
  * @param token - The token of the user
- * @returns The sync power boosting temp
+ * @returns The boost mutation state
  */
-export function useSyncPowerBoostingTemp({ token }: { token?: string | null }) {
+export function useSetPowerBoosting({ token }: { token?: string | null }) {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -441,11 +448,34 @@ export function useSyncPowerBoostingTemp({ token }: { token?: string | null }) {
     ) => {
       if (!token) throw new Error('Missing authentication token')
 
-      const projectIds =
-        'projectIds' in input ? input.projectIds : [input.projectId]
-      const percentages =
-        'percentages' in input ? input.percentages : [input.percentage]
+      const client = createGraphQLClient({
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
+      if ('projectId' in input) {
+        if (!Number.isInteger(input.projectId) || input.projectId <= 0) {
+          throw new Error('Invalid project id')
+        }
+        if (
+          !Number.isFinite(input.percentage) ||
+          input.percentage < 0 ||
+          input.percentage > 100
+        ) {
+          throw new Error('Invalid percentage value')
+        }
+
+        return client.request<SetSinglePowerBoostingResponse>(
+          setSinglePowerBoostingMutation,
+          {
+            projectId: input.projectId,
+            percentage: input.percentage,
+          },
+        )
+      }
+
+      const { projectIds, percentages } = input
       if (!projectIds.length || !percentages.length) {
         throw new Error('Missing projectIds or percentages')
       }
@@ -468,19 +498,11 @@ export function useSyncPowerBoostingTemp({ token }: { token?: string | null }) {
         throw new Error('Invalid percentage value')
       }
 
-      const client = createGraphQLClient({
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      return client.request<SyncPowerBoostingTempResponse>(
-        syncPowerBoostingTempMutation,
+      return client.request<SetMultiplePowerBoostingResponse>(
+        setMultiplePowerBoostingMutation,
         {
-          input: {
-            projectIds,
-            percentages,
-          },
+          projectIds,
+          percentages,
         },
       )
     },
@@ -491,7 +513,7 @@ export function useSyncPowerBoostingTemp({ token }: { token?: string | null }) {
       ])
     },
     onError: error => {
-      console.error('[Boost][Mutation] syncPowerBoostingTemp failed', error)
+      console.error('[Boost][Mutation] setPowerBoosting failed', error)
     },
   })
 }
