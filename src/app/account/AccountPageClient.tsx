@@ -11,6 +11,7 @@ import { ProfileSection } from '@/components/account/ProfileSection'
 import { StakingRewards } from '@/components/account/staking-rewards/StakingRewards'
 
 export default function AccountPageClient() {
+  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
   const searchParams = useSearchParams()
 
   const allowedTabs = useMemo(
@@ -33,10 +34,10 @@ export default function AccountPageClient() {
           <ProfileSection />
           <DashboardTabs activeTab={activeTab} />
 
-          {activeTab === 'staking' && <StakingRewards />}
+          {!isProduction && activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
           {activeTab === 'boosted' && <BoostedProjects />}
-          {activeTab === 'projects' && <DonationsTable />}
+          {isProduction && activeTab === 'projects' && <DonationsTable />}
         </main>
         <CtaSection />
       </div>

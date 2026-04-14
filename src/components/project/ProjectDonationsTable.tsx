@@ -17,7 +17,6 @@ import {
   DonationTableDropdown,
   type FilterType,
 } from '@/components/project/DonationTableDropdown'
-import { ProjectImage } from '@/components/project/ProjectImage'
 import { useProjectDonations } from '@/hooks/useProject'
 import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import {
@@ -28,6 +27,7 @@ import type { ProjectBySlugQuery } from '@/lib/graphql/generated/graphql'
 import { formatNumber } from '@/lib/helpers/cartHelper'
 import { getChainName, getTransactionUrl } from '@/lib/helpers/chainHelper'
 import { shortenAddress } from '@/lib/helpers/userHelper'
+import { UserImage } from '../user/UserImage'
 
 interface ProjectDonationsTableProps {
   projectId: number
@@ -329,10 +329,11 @@ export function ProjectDonationsTable({
                         <td className="px-1 py-4">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full overflow-hidden">
-                              <ProjectImage
+                              <UserImage
                                 src={
                                   donation.avatar || USER_AVATAR_FALLBACK_IMAGE
                                 }
+                                userAddress={donorAddress}
                                 alt={donorAlt}
                                 className="w-full h-full object-cover"
                               />

@@ -9,6 +9,7 @@ import { GIVStreamHistoryModal } from '@/components/account/GIVStreamHistoryModa
 import { DropdownStakeNetworks } from '@/components/account/staking-rewards/DropdownStakeNetworks'
 import { IconFlash } from '@/components/icons/IconFlash'
 import {
+  CLAIM_REWARDS_CHAINS,
   STAKING_CHAINS,
   STAKING_POOLS,
 } from '@/lib/constants/staking-power-constants'
@@ -126,7 +127,7 @@ export const GIVStreamSection = ({
           </div>
           <DropdownStakeNetworks
             selectedChain={activeChain}
-            chains={STAKING_CHAINS}
+            chains={CLAIM_REWARDS_CHAINS}
             onSelectChain={handleSelectChain}
           />
         </div>

@@ -162,6 +162,8 @@ export function DonationSummary({
           )
           const numberOfProjectsWithAmount = projectsWithAmount.length
 
+          const normalizedRoundName = round.roundName.trimEnd()
+
           return (
             <div
               key={roundKey}
@@ -181,10 +183,11 @@ export function DonationSummary({
                   <span className="font-medium">
                     {numberOfProjectsWithAmount} projects
                   </span>{' '}
-                  in <span className="font-medium">{round.roundName}</span>{' '}
+                  in <span className="font-medium">{normalizedRoundName}</span>
+                  {givethPercentage === 0 && <span> </span>}
                   {givethPercentage > 0 && (
                     <>
-                      and
+                      <span className="font-normal">, and </span>
                       <span className="font-medium"> Giveth</span>{' '}
                     </>
                   )}

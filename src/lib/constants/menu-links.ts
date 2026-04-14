@@ -84,6 +84,11 @@ export const givpowerDocLink = {
   href: 'https://docs.giveth.io/givpower',
 }
 
+export const getGIVpowerLink = {
+  label: 'Get GIVpower',
+  href: oldFrontendPath('/givfarm', '/givfarm'),
+}
+
 export const givBacksLink = {
   label: 'GIVBacks',
   href: oldFrontendPath('/givbacks', '/givbacks'),
@@ -222,9 +227,13 @@ export const myCausesLink = {
 }
 
 export const myGIVPowerLink = {
-  label: 'My GIVPower',
+  label: 'My GIVpower',
   href: '/account?tab=boosted',
-  target: '_self',
+}
+
+export const myGIVRewardsLink = {
+  label: 'My GIV Rewards',
+  href: '/account?tab=staking',
 }
 
 export const myRecurringDonationsLink = {

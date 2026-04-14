@@ -86,12 +86,9 @@ export async function POST(req: Request) {
     )
   }
 
-  if (
-    !EVM_ADDRESS_REGEX.test(lmAddress) ||
-    !EVM_ADDRESS_REGEX.test(userAddress)
-  ) {
+  if (!EVM_ADDRESS_REGEX.test(lmAddress)) {
     return NextResponse.json(
-      { error: 'Invalid address format', requestId },
+      { error: 'Invalid lmAddress format', requestId },
       { status: 400 },
     )
   }

@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation'
 import { ProjectDraftPreview } from '@/components/create-project/ProjectDraftPreview'
 import { ProjectPageView } from '@/components/project/ProjectPageView'
-import { useProjectBySlug } from '@/hooks/useProject'
+import { useProjectBySlug, useProjectGivpowerCount } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
 
 export default function ProjectPage() {
@@ -16,6 +16,8 @@ export default function ProjectPage() {
   const projectId = project?.id ? parseInt(project.id) : undefined
   const { data: updatesCountData } = useProjectUpdatesCount(projectId)
   const updatesCount = updatesCountData?.projectUpdates?.totalCount ?? null
+  const { data: givpowerCountData } = useProjectGivpowerCount(projectId)
+  const givpowerCount = givpowerCountData?.getPowerBoosting?.totalCount ?? null
 
   if (isLoading)
     return (
@@ -30,5 +32,11 @@ export default function ProjectPage() {
       </div>
     )
 
-  return <ProjectPageView project={project} updatesCount={updatesCount} />
+  return (
+    <ProjectPageView
+      project={project}
+      updatesCount={updatesCount}
+      givpowerCount={givpowerCount}
+    />
+  )
 }

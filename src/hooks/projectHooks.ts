@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  STAKING_POOLS,
+  STAKING_POOLS_FOR_BOOSTING,
   SUBGRAPH_POLLING_INTERVAL,
 } from '@/lib/constants/staking-power-constants'
 import { createGraphQLClient, graphQLClient } from '@/lib/graphql/client'
@@ -105,24 +105,21 @@ type CurrentProjectBoostV6Response = {
   }
 }
 
+type PowerBoostingMutationItem = {
+  id: string | number
+  userId: number
+  projectId: number
+  percentage: number
+  powerRank: number | null
+  updatedAt: string
+}
+
 type SetSinglePowerBoostingResponse = {
-  setSinglePowerBoosting: Array<{
-    id: string
-    userId: number
-    projectId: number
-    percentage: number
-    updatedAt: string
-  }>
+  setSinglePowerBoosting: PowerBoostingMutationItem[]
 }
 
 type SetMultiplePowerBoostingResponse = {
-  setMultiplePowerBoosting: Array<{
-    id: string
-    userId: number
-    projectId: number
-    percentage: number
-    updatedAt: string
-  }>
+  setMultiplePowerBoosting: PowerBoostingMutationItem[]
 }
 
 type TotalGivpowerAcrossBoostNetworksResponse = {
@@ -137,7 +134,15 @@ type TotalGivpowerAcrossBoostNetworksResponse = {
 }
 
 // Only include networks with active GIVpower staking configuration.
-const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = [10, 100] as const
+const BOOST_TOTAL_GIVPOWER_CHAIN_IDS = Object.entries(
+  STAKING_POOLS_FOR_BOOSTING,
+)
+  .filter(
+    ([, config]) =>
+      Boolean(config?.subgraphUrl) && Boolean(config?.GIVPOWER?.LM_ADDRESS),
+  )
+  .map(([chainId]) => Number(chainId))
+  .filter(Number.isFinite)
 
 const formatUnitsFromWei = (value: string, decimals = 18): string => {
   const v = BigInt(value || '0')
@@ -375,7 +380,7 @@ export function useTotalGivpowerAcrossBoostNetworks({
 
       const perChain = await Promise.all(
         BOOST_TOTAL_GIVPOWER_CHAIN_IDS.map(async chainId => {
-          const config = STAKING_POOLS[chainId]
+          const config = STAKING_POOLS_FOR_BOOSTING[chainId]
           const subgraphUrl = config?.subgraphUrl
           const lmAddress = config?.GIVPOWER?.LM_ADDRESS
 
@@ -506,10 +511,23 @@ export function useSetPowerBoosting({ token }: { token?: string | null }) {
         },
       )
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
+      const affectedProjectIds =
+        'projectId' in variables ? [variables.projectId] : variables.projectIds
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['boostModalData'] }),
         queryClient.invalidateQueries({ queryKey: ['userBoostForProject'] }),
+        ...affectedProjectIds.map(projectId =>
+          Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: ['projectGivpowerCount', projectId],
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ['projectBoosters', projectId],
+            }),
+          ]),
+        ),
       ])
     },
     onError: error => {
