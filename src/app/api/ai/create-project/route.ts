@@ -255,14 +255,30 @@ export async function POST(req: Request) {
     message,
   ].join('\n')
 
-  return createOpenAiBackedEventStreamResponse({
-    apiKey,
-    model: serverEnv.OPENAI_MODEL || 'gpt-5.4-mini',
-    baseUrl: openAiBaseUrl,
-    structuredSystem,
-    userContext,
-    schema,
-  })
+  try {
+    return await createOpenAiBackedEventStreamResponse({
+      apiKey,
+      model: serverEnv.OPENAI_MODEL || 'gpt-5.4-mini',
+      baseUrl: openAiBaseUrl,
+      structuredSystem,
+      userContext,
+      schema,
+    })
+  } catch (error) {
+    console.error('OpenAI create-project request failed:', error)
+
+    return new NextResponse(
+      error instanceof Error && error.message.trim()
+        ? error.message
+        : 'AI request failed before streaming started. Please try again.',
+      {
+        status: 502,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+        },
+      },
+    )
+  }
 }
 
 function sanitizeDraft(input: unknown): Draft {
@@ -397,7 +413,10 @@ async function createOpenAiBackedEventStreamResponse({
 
   if (!conversationRes.ok || !conversationRes.body) {
     const t = await conversationRes.text().catch(() => '')
-    throw new Error(t || 'OpenAI streaming request failed')
+    throw new Error(
+      extractOpenAiErrorMessage(t) ||
+        'AI request failed before streaming started. Please try again.',
+    )
   }
 
   const decoder = new TextDecoder()
@@ -463,4 +482,31 @@ function parseSseData(rawEvent: string): string | null {
 
   if (!lines.length) return null
   return lines.join('\n')
+}
+
+function extractOpenAiErrorMessage(rawText: string): string | undefined {
+  const trimmed = rawText.trim()
+  if (!trimmed) return undefined
+
+  try {
+    const parsed = JSON.parse(trimmed) as {
+      error?: { message?: string }
+      message?: string
+    }
+
+    if (
+      typeof parsed.error?.message === 'string' &&
+      parsed.error.message.trim()
+    ) {
+      return parsed.error.message.trim()
+    }
+
+    if (typeof parsed.message === 'string' && parsed.message.trim()) {
+      return parsed.message.trim()
+    }
+  } catch {
+    // Fall back to the raw text response if it is not JSON.
+  }
+
+  return trimmed
 }
