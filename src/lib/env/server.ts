@@ -22,7 +22,7 @@ const raw = {
 }
 
 const defaults: Partial<ServerEnv> = {
-  OPENAI_MODEL: 'gpt-5-mini',
+  OPENAI_MODEL: 'gpt-5.4-mini',
   OPENAI_BASE_URL: 'https://api.openai.com',
 }
 

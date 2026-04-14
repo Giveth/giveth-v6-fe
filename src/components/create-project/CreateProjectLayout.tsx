@@ -38,7 +38,7 @@ export function CreateProjectLayout({
             <div className="shrink-0 flex items-center justify-end gap-3 px-4 pt-3 sm:px-5 z-10">
               {isPreviewEnabled ? (
                 <Link
-                  href={'/project/preview' as Route}
+                  href={'/create/project/preview' as Route}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
@@ -89,18 +89,17 @@ export function CreateProjectLayout({
 
           <aside
             className={cn(
-              'relative min-w-0 overflow-hidden rounded-md bg-transparent transition-[width,opacity,transform] duration-300 ease-out',
-              'xl:block',
+              'relative min-w-0 overflow-hidden rounded-md bg-transparent transition-[max-height,width,opacity,transform] duration-300 ease-out',
               'xl:sticky xl:top-24',
               isSidebarOpen
-                ? 'w-full opacity-100 translate-x-0 xl:w-[420px]'
-                : 'w-0 opacity-0 translate-x-4',
+                ? 'max-h-[4000px] w-full opacity-100 translate-y-0 xl:max-h-none xl:w-[420px] xl:translate-x-0'
+                : 'max-h-0 w-full opacity-0 translate-y-2 xl:max-h-none xl:w-0 xl:translate-x-4 xl:translate-y-0',
             )}
             aria-hidden={!isSidebarOpen}
           >
             <div
               className={cn(
-                'min-h-[calc(100vh-220px)] transition-opacity duration-200 xl:h-[calc(100vh-128px)] xl:min-h-0',
+                'transition-opacity duration-200 xl:h-[calc(100vh-128px)] xl:min-h-0',
                 isSidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
               )}
             >

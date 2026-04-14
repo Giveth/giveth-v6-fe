@@ -3,7 +3,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { ArrowRight, Paperclip, X } from 'lucide-react'
+import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { useSiweAuth } from '@/context/AuthContext'
+import { looksLikeAiContextLeak } from '@/lib/create-project/ai-context'
+import {
+  getCreateProjectAiOverwriteFieldLabel,
+  mergeCreateProjectAiOverwriteConfirmations,
+  partitionCreateProjectAiPatch,
+  type CreateProjectAiOverwriteConfirmation,
+} from '@/lib/create-project/ai-patch'
 import { uploadImageFile } from '@/lib/graphql/upload'
 import { cn } from '@/lib/utils'
 import {
@@ -33,6 +41,8 @@ export function AiChatPanel({
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [attachedImageUrl, setAttachedImageUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pendingOverwrite, setPendingOverwrite] =
+    useState<CreateProjectAiOverwriteConfirmation | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
   const composerRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -108,6 +118,32 @@ export function AiChatPanel({
     }
   }, [messages])
 
+  const handleIncomingAiPatch = (
+    incomingPatch?: Partial<CreateProjectDraft>,
+  ) => {
+    if (!incomingPatch) return
+
+    const latestDraft = useCreateProjectDraftStore.getState().draft
+    const { autoApplyPatch, confirmation } = partitionCreateProjectAiPatch(
+      latestDraft,
+      incomingPatch,
+    )
+
+    if (autoApplyPatch) {
+      applyPatch(autoApplyPatch)
+      onAiFormUpdated?.()
+    }
+
+    if (confirmation) {
+      setPendingOverwrite(currentConfirmation =>
+        mergeCreateProjectAiOverwriteConfirmations(
+          currentConfirmation,
+          confirmation,
+        ),
+      )
+    }
+  }
+
   const send = async () => {
     const raw = input
     const text = raw.trim()
@@ -130,6 +166,63 @@ export function AiChatPanel({
       { id: assistantMessageId, role: 'assistant', content: '' },
     ])
     scrollToBottom()
+
+    let pendingAssistantText = ''
+    let renderTimer: number | null = null
+    let resolveRenderedStream: (() => void) | null = null
+
+    const resolveIfRendered = () => {
+      if (
+        pendingAssistantText ||
+        renderTimer !== null ||
+        !resolveRenderedStream
+      )
+        return
+      resolveRenderedStream()
+      resolveRenderedStream = null
+    }
+
+    const scheduleAssistantRender = () => {
+      if (renderTimer !== null) return
+      if (!pendingAssistantText) {
+        resolveIfRendered()
+        return
+      }
+
+      renderTimer = window.setTimeout(() => {
+        renderTimer = null
+        const nextSize = Math.max(
+          1,
+          Math.min(24, Math.ceil(pendingAssistantText.length / 8)),
+        )
+        const nextChunk = pendingAssistantText.slice(0, nextSize)
+        pendingAssistantText = pendingAssistantText.slice(nextSize)
+
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: msg.content + nextChunk }
+              : msg,
+          ),
+        )
+        scrollToBottom()
+        scheduleAssistantRender()
+      }, 16)
+    }
+
+    const queueAssistantDelta = (delta: string) => {
+      if (!delta) return
+      pendingAssistantText += delta
+      scheduleAssistantRender()
+    }
+
+    const waitForRenderedStream = () =>
+      pendingAssistantText || renderTimer !== null
+        ? new Promise<void>(resolve => {
+            resolveRenderedStream = resolve
+            resolveIfRendered()
+          })
+        : Promise.resolve()
 
     try {
       const res = await fetch('/api/ai/create-project', {
@@ -154,8 +247,7 @@ export function AiChatPanel({
           assistantMessage: string
           patch?: Partial<CreateProjectDraft>
         }
-        if (data.patch) applyPatch(data.patch)
-        if (data.patch) onAiFormUpdated?.()
+        handleIncomingAiPatch(data.patch)
         setMessages(prev =>
           prev.map(msg =>
             msg.id === assistantMessageId
@@ -169,45 +261,44 @@ export function AiChatPanel({
         if (!reader) throw new Error('Unable to read AI stream')
         const decoder = new TextDecoder()
         let buffer = ''
+        let structuredOutput = ''
+        let emittedAssistantMessage = ''
 
         const processSseChunks = (raw: string) => {
           const chunks = raw.split('\n\n')
           buffer = chunks.pop() ?? ''
 
           for (const chunk of chunks) {
-            const line = chunk
-              .split('\n')
-              .find(l => l.toLowerCase().startsWith('data:'))
-            if (!line) continue
-            const payloadText = line.slice(5).trim()
+            const payloadText = parseSseData(chunk)
             if (!payloadText) continue
 
             const payload = safeJsonParse(payloadText) as {
-              type?: 'assistant_delta' | 'patch' | 'done' | 'error' | string
+              type?: string
               delta?: string
-              patch?: Partial<CreateProjectDraft>
               message?: string
             } | null
             if (!payload?.type) continue
 
-            if (payload.type === 'assistant_delta') {
-              const delta = payload.delta || ''
-              if (!delta) continue
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === assistantMessageId
-                    ? { ...msg, content: msg.content + delta }
-                    : msg,
-                ),
-              )
-              scrollToBottom()
-            } else if (payload.type === 'patch') {
-              if (payload.patch) {
-                applyPatch(payload.patch)
-                onAiFormUpdated?.()
+            if (
+              payload.type === 'response.output_text.delta' &&
+              typeof payload.delta === 'string'
+            ) {
+              structuredOutput += payload.delta
+              const assistantMessage =
+                extractAssistantMessageFromPartialJson(structuredOutput)
+              if (
+                assistantMessage.startsWith(emittedAssistantMessage) &&
+                assistantMessage.length > emittedAssistantMessage.length
+              ) {
+                const delta = assistantMessage.slice(
+                  emittedAssistantMessage.length,
+                )
+                emittedAssistantMessage = assistantMessage
+                queueAssistantDelta(delta)
               }
             } else if (payload.type === 'error') {
-              throw new Error(payload.message || 'AI stream failed')
+              const delta = payload.delta || ''
+              throw new Error(payload.message || delta || 'AI stream failed')
             }
           }
         }
@@ -223,8 +314,35 @@ export function AiChatPanel({
         if (buffer.trim()) {
           processSseChunks(buffer + '\n\n')
         }
+
+        const parsedResponse = parseStructuredAiResponse(structuredOutput)
+        if (!parsedResponse) {
+          throw new Error('Structured AI response did not match schema')
+        }
+
+        if (
+          parsedResponse.assistantMessage.startsWith(emittedAssistantMessage) &&
+          parsedResponse.assistantMessage.length >
+            emittedAssistantMessage.length
+        ) {
+          const delta = parsedResponse.assistantMessage.slice(
+            emittedAssistantMessage.length,
+          )
+          emittedAssistantMessage = parsedResponse.assistantMessage
+          queueAssistantDelta(delta)
+        }
+
+        handleIncomingAiPatch(parsedResponse.patch)
+
+        await waitForRenderedStream()
       }
     } catch (e) {
+      pendingAssistantText = ''
+      if (renderTimer !== null) {
+        window.clearTimeout(renderTimer)
+        renderTimer = null
+      }
+      resolveRenderedStream = null
       setError(e instanceof Error ? e.message : 'Failed to send message')
       setMessages(prev =>
         prev.map(msg =>
@@ -295,6 +413,60 @@ export function AiChatPanel({
           {!hasUserStartedChat && (
             <div className="text-center text-2xl font-semibold text-[#4b5563] mb-4">
               {heading}
+            </div>
+          )}
+
+          {pendingOverwrite && (
+            <div className="mt-5 rounded-md border border-[#f0e7ff] bg-[#fbf8ff] p-4">
+              <div className="text-sm font-semibold text-[#4b5563]">
+                Review AI changes
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-[#6b7280]">
+                AI suggested replacing existing values for{' '}
+                {pendingOverwrite.fields
+                  .map(getCreateProjectAiOverwriteFieldLabel)
+                  .join(', ')}
+                . Your current values will stay unchanged unless you apply these
+                updates.
+              </p>
+              <div className="mt-3 space-y-2">
+                {pendingOverwrite.fields.map(field => (
+                  <div
+                    key={field}
+                    className="rounded-md border border-[#ececf4] bg-white px-3 py-2"
+                  >
+                    <div className="text-xs font-semibold text-[#4b5563]">
+                      {getCreateProjectAiOverwriteFieldLabel(field)}
+                    </div>
+                    <div className="mt-1 text-xs text-[#6b7280]">
+                      {renderPendingOverwritePreview(
+                        field,
+                        pendingOverwrite.patch,
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  className="inline-flex h-[34px] items-center justify-center rounded-md border border-[#dfe1ef] bg-white px-4 text-xs font-semibold text-[#4b5563] transition hover:bg-[#f9fafb]"
+                  onClick={() => setPendingOverwrite(null)}
+                >
+                  Keep my values
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex h-[34px] items-center justify-center rounded-md border border-[#dfe1ef] bg-[#f3f2ff] px-4 text-xs font-semibold text-[#4f3de8] transition hover:bg-[#ebe9ff]"
+                  onClick={() => {
+                    applyPatch(pendingOverwrite.patch)
+                    onAiFormUpdated?.()
+                    setPendingOverwrite(null)
+                  }}
+                >
+                  Apply AI changes
+                </button>
+              </div>
             </div>
           )}
 
@@ -494,4 +666,193 @@ function safeJsonParse(text: string): unknown | null {
   } catch {
     return null
   }
+}
+
+function parseSseData(rawEvent: string): string | null {
+  const lines = rawEvent
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('data:'))
+    .map(line => line.slice(5).trim())
+
+  if (!lines.length) return null
+  return lines.join('\n')
+}
+
+function parseStructuredAiResponse(
+  text: string,
+): { assistantMessage: string; patch?: Partial<CreateProjectDraft> } | null {
+  const parsed = safeJsonParse(text.trim())
+  if (!isRecord(parsed) || typeof parsed.assistantMessage !== 'string') {
+    return null
+  }
+
+  return {
+    assistantMessage: parsed.assistantMessage,
+    patch: normalizeAiPatch(parsed.patch),
+  }
+}
+
+function normalizeAiPatch(
+  input: unknown,
+): Partial<CreateProjectDraft> | undefined {
+  if (!isRecord(input)) return undefined
+
+  const patch: Partial<CreateProjectDraft> = {}
+
+  if (typeof input.title === 'string') patch.title = input.title
+  if (typeof input.description === 'string') {
+    if (!looksLikeAiContextLeak(input.description)) {
+      patch.description = input.description
+    }
+  }
+  if (typeof input.image === 'string') patch.image = input.image
+  if (typeof input.impactLocation === 'string') {
+    patch.impactLocation = input.impactLocation
+  }
+
+  if (Array.isArray(input.categoryIds)) {
+    patch.categoryIds = input.categoryIds
+      .map(id => Number(id))
+      .filter(id => Number.isInteger(id))
+      .slice(0, MAX_CATEGORIES)
+  }
+
+  if (Array.isArray(input.socialMedia)) {
+    patch.socialMedia = input.socialMedia
+      .filter(
+        item =>
+          isRecord(item) &&
+          typeof item.type === 'string' &&
+          typeof item.link === 'string',
+      )
+      .map(item => ({
+        type: item.type,
+        link: item.link,
+      }))
+  }
+
+  if (Array.isArray(input.recipientAddresses)) {
+    patch.recipientAddresses = input.recipientAddresses
+      .filter(
+        item =>
+          isRecord(item) &&
+          typeof item.chainType === 'string' &&
+          typeof item.networkId === 'number' &&
+          typeof item.address === 'string',
+      )
+      .map(item => ({
+        id: cryptoId(),
+        chainType:
+          item.chainType === 'SOLANA'
+            ? 'SOLANA'
+            : item.chainType === 'STELLAR'
+              ? 'STELLAR'
+              : 'EVM',
+        networkId: item.networkId,
+        address: item.address,
+      }))
+  }
+
+  return Object.keys(patch).length ? patch : undefined
+}
+
+function extractAssistantMessageFromPartialJson(text: string): string {
+  const keyIdx = text.indexOf('"assistantMessage"')
+  if (keyIdx === -1) return ''
+
+  const colonIdx = text.indexOf(':', keyIdx)
+  if (colonIdx === -1) return ''
+
+  let i = colonIdx + 1
+  while (i < text.length && /\s/.test(text[i] ?? '')) i++
+  if (text[i] !== '"') return ''
+
+  i += 1
+  let out = ''
+
+  while (i < text.length) {
+    const char = text[i]
+    if (char === '"') return out
+
+    if (char !== '\\') {
+      out += char
+      i += 1
+      continue
+    }
+
+    const escaped = text[i + 1]
+    if (!escaped) return out
+
+    if (escaped === 'u') {
+      const hex = text.slice(i + 2, i + 6)
+      if (hex.length < 4 || !/^[0-9a-fA-F]{4}$/.test(hex)) return out
+      out += String.fromCharCode(parseInt(hex, 16))
+      i += 6
+      continue
+    }
+
+    const decoded = decodeJsonEscape(escaped)
+    if (decoded == null) return out
+    out += decoded
+    i += 2
+  }
+
+  return out
+}
+
+function decodeJsonEscape(char: string): string | null {
+  switch (char) {
+    case '"':
+    case '\\':
+    case '/':
+      return char
+    case 'b':
+      return '\b'
+    case 'f':
+      return '\f'
+    case 'n':
+      return '\n'
+    case 'r':
+      return '\r'
+    case 't':
+      return '\t'
+    default:
+      return null
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function renderPendingOverwritePreview(
+  field: CreateProjectAiOverwriteConfirmation['fields'][number],
+  patch: Partial<CreateProjectDraft>,
+): string {
+  switch (field) {
+    case 'title':
+    case 'description':
+    case 'image':
+    case 'impactLocation':
+      return truncatePreview(patch[field] ?? '')
+    case 'categoryIds':
+      return `${patch.categoryIds?.length ?? 0} selected categor${patch.categoryIds?.length === 1 ? 'y' : 'ies'}`
+    case 'socialMedia':
+      return (
+        patch.socialMedia
+          ?.map(item => `${item.type}: ${truncatePreview(item.link, 80)}`)
+          .join(' | ') ?? ''
+      )
+    case 'recipientAddresses':
+      return `${patch.recipientAddresses?.length ?? 0} suggested recipient address${patch.recipientAddresses?.length === 1 ? '' : 'es'}`
+  }
+}
+
+function truncatePreview(value: string, maxLength = 120): string {
+  const normalized = value.trim()
+  if (!normalized) return 'Clear this field'
+  return normalized.length > maxLength
+    ? `${normalized.slice(0, maxLength - 1)}...`
+    : normalized
 }
