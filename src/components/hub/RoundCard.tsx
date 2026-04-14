@@ -8,6 +8,7 @@ import type {
   ArchivedQfRoundsQuery,
 } from '@/lib/graphql/generated/graphql'
 import { getDateRange } from '@/lib/helpers/dateHelper'
+import { formatMatchingPool } from '@/lib/helpers/matchingPoolHelper'
 import { truncateText } from '@/lib/helpers/textHelper'
 import type { Route } from 'next'
 
@@ -143,32 +144,4 @@ const ExploreButton = ({
       <ChevronRight className="w-4 h-4" />
     </Link>
   )
-}
-
-const formatMatchingPool = (
-  allocatedFundUSD?: number | null,
-  allocatedFundUSDPreferred?: boolean | null,
-  allocatedFund?: number,
-  allocatedTokenSymbol?: string | null,
-): string => {
-  // If allocatedFundUSDPreferred is true, show USD with dollar sign
-  if (allocatedFundUSDPreferred && allocatedFundUSD != null) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(allocatedFundUSD)
-  }
-
-  // Otherwise show token amount with symbol
-  if (allocatedFund != null) {
-    const formattedAmount = new Intl.NumberFormat('en-US', {
-      maximumFractionDigits: 0,
-    }).format(allocatedFund)
-    return allocatedTokenSymbol
-      ? `${formattedAmount} ${allocatedTokenSymbol}`
-      : formattedAmount
-  }
-
-  return '$0'
 }

@@ -1809,7 +1809,7 @@ export type QfRoundBySlugQueryVariables = Exact<{
 }>;
 
 
-export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedTokenSymbol?: string | null, maximumReward: number, isActive: boolean } };
+export type QfRoundBySlugQuery = { __typename?: 'Query', qfRoundBySlug: { __typename?: 'QfRoundEntity', id: string, name: string, title?: string | null, description?: string | null, slug: string, bannerFull?: string | null, bannerBgImage?: string | null, bannerMobile?: string | null, sponsorsImgs: Array<string>, beginDate: any, endDate: any, allocatedFundUSD?: number | null, allocatedFundUSDPreferred?: boolean | null, allocatedFund: number, allocatedTokenSymbol?: string | null, maximumReward: number, isActive: boolean } };
 
 export type ActiveQfRoundsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2253,6 +2253,7 @@ export const QfRoundBySlugDocument = new TypedDocumentString(`
     endDate
     allocatedFundUSD
     allocatedFundUSDPreferred
+    allocatedFund
     allocatedTokenSymbol
     maximumReward
     isActive
