@@ -135,6 +135,7 @@ export const qfRoundBySlugQuery = graphql(`
       endDate
       allocatedFundUSD
       allocatedFundUSDPreferred
+      allocatedFund
       allocatedTokenSymbol
       maximumReward
       isActive
