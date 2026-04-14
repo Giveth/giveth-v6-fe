@@ -848,22 +848,6 @@ export const projectBoostersQuery = `
   }
 `
 
-export const syncPowerBoostingTempMutation = `
-  mutation SyncPowerBoostingTemp($input: SyncPowerBoostingBoostTempInput!) {
-    syncPowerBoostingTemp(input: $input) {
-      totalCount
-      powerBoostings {
-        id
-        userId
-        projectId
-        percentage
-        powerRank
-        updatedAt
-      }
-    }
-  }
-`
-
 export const setSinglePowerBoostingMutation = `
   mutation SetSinglePowerBoosting($projectId: Int!, $percentage: Float!) {
     setSinglePowerBoosting(projectId: $projectId, percentage: $percentage) {
