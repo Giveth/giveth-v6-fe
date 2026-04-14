@@ -118,13 +118,16 @@ export function DonationRound({
               fill="var(--giv-success-500)"
             />
             <span className="text-giv-success-500 text-base font-medium">
-              $
+              {roundData.allocatedFundUSDPreferred ? '$' : ''}
               {formatNumber(
                 calculateRoundTotalMatchingValue(
                   cartRoundData.roundId,
                   cartRoundData.projects,
                 ),
               )}
+              {roundData.allocatedTokenSymbol &&
+                !roundData.allocatedFundUSDPreferred &&
+                ` ${roundData.allocatedTokenSymbol}`}
             </span>
           </span>
           <span className="hidden md:block text-giv-neutral-500 text-lg font-normal">
