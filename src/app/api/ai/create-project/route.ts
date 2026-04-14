@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { CHAINS } from '@/lib/constants/chain'
-import { looksLikeAiContextLeak } from '@/lib/create-project/ai-context'
+import { createEmptyCreateProjectSocialMedia } from '@/lib/create-project/types'
 import { serverEnv } from '@/lib/env/server'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { ChainType } from '@/lib/graphql/generated/graphql'
@@ -46,54 +46,6 @@ const requestSchema = z.object({
 
 // NOTE: With OpenAI Structured Outputs + strict=true, all object keys must be required.
 // We model optional fields as nullable, then normalize nulls away.
-const patchSchema = z
-  .object({
-    title: z.string().nullable(),
-    description: z.string().nullable(),
-    image: z.string().nullable(),
-    impactLocation: z.string().nullable(),
-    categoryIds: z.array(z.number().int()).max(MAX_CATEGORIES).nullable(),
-    socialMedia: z
-      .array(z.object({ type: z.string(), link: z.string() }))
-      .nullable(),
-    recipientAddresses: z
-      .array(
-        z.object({
-          chainType: z.enum([
-            ChainType.Evm,
-            ChainType.Solana,
-            ChainType.Stellar,
-          ]),
-          networkId: z.number().int(),
-          address: z.string(),
-        }),
-      )
-      .nullable(),
-  })
-  .strict()
-
-const modelResponseSchema = z
-  .object({
-    patch: patchSchema.nullable(),
-    assistantMessage: z.string(),
-    updatedFields: z.array(z.string()),
-  })
-  .strict()
-
-type PatchOut = {
-  title?: string
-  description?: string
-  image?: string
-  impactLocation?: string
-  categoryIds?: number[]
-  socialMedia?: { type: string; link: string }[]
-  recipientAddresses?: {
-    chainType: Draft['recipientAddresses'][number]['chainType']
-    networkId: number
-    address: string
-  }[]
-}
-
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
@@ -129,7 +81,6 @@ export async function POST(req: Request) {
     .filter(id => id !== 101 && id !== 1500 && id !== 3000)
     .sort((a, b) => a - b)
   const categoryOptions = await getCategoryOptions().catch(() => [])
-  const allowedCategoryIds = new Set(categoryOptions.map(c => c.id))
 
   const schema = {
     name: 'CreateProjectAssistantExtraction',
@@ -205,42 +156,40 @@ export async function POST(req: Request) {
     },
   } as const
 
-  const chatSystem = [
-    'You are an AI assistant helping a user create a Giveth project.',
-    'Be conversational and supportive, not a rigid form checker.',
-    'Ask at most one short follow-up question if absolutely needed.',
-    'Avoid asking for multiple form fields in one message.',
-    'Do not mention internal rules or schemas.',
-    'Do not invent unverifiable facts.',
-  ].join('\n')
-
-  const extractionSystem = [
+  const structuredSystem = [
     'You are an AI assistant helping a user create a Giveth project.',
     '',
-    'You must output JSON only and it must match the provided JSON schema.',
-    'Because the schema is strict, you MUST return null for any field you are NOT patching.',
-    '',
-    'DEFAULT behavior: extract facts into form fields from BOTH the user message AND the ASSISTANT_MESSAGE.',
-    'This includes values the assistant recommended, selected, or generated on behalf of the user.',
-    'Treat CURRENT_DRAFT_JSON as context only. Do not copy it into patched fields unless the user explicitly asks to replace that field.',
-    'Never set any field to raw JSON, chat-history scaffolding, schema text, or meta-conversation text.',
-    'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
+    'You must return ONE JSON object only, and it must match the provided JSON schema.',
+    'Do not wrap the JSON in markdown fences.',
+    'Put the user-facing chat reply in assistantMessage.',
     '',
     'assistantMessage behavior (this is what the user will see in chat):',
     '- Write a natural, supportive reply, not a checklist.',
     '- Guide the user conversationally instead of requesting many form fields at once.',
-    '- If you applied any patch fields, briefly confirm what changed (no need to list everything).',
+    '- If you filled empty fields, you may briefly confirm what changed (no need to list everything).',
+    '- If you are suggesting a replacement for information already present in CURRENT_DRAFT_JSON, describe it as a suggestion the user can confirm instead of saying it was already updated.',
     '- Ask at most ONE short follow-up question, and only when truly necessary.',
     '- Prefer helping with wording, structure, and next best step over raw field prompts.',
     '- Do NOT mention JSON, schemas, or internal rules.',
     '- Do NOT claim you updated something unless it is present in the patch.',
+    '',
+    'You must output JSON only and it must match the provided JSON schema.',
+    'Because the schema is strict, you MUST return null for any field you are NOT patching.',
+    '',
+    'DEFAULT behavior: extract facts into form fields from the user message and the choices you make in assistantMessage.',
+    'This includes values you recommended, selected, or generated on behalf of the user.',
+    'Treat CURRENT_DRAFT_JSON as context only. Do not copy it into patched fields unless the user explicitly asks to replace that field.',
+    'Never set any field to raw JSON, chat-history scaffolding, schema text, or meta-conversation text.',
+    'Do NOT invent factual details (numbers, partners, locations, outcomes, claims).',
     '',
     'Reset / clear behavior:',
     '- If the user asks to reset/clear/wipe/remove a specific field, you MUST set that field to its empty value in the patch (and set other fields to null).',
     '- Empty values:',
     '  - title/description/image/impactLocation: empty string ""',
     '  - recipientAddresses: empty array []',
-    '  - socialMedia: keep types but clear links, e.g. [{type:"website",link:""}, {type:"facebook",link:""}, {type:"x",link:""}, {type:"linkedin",link:""}]',
+    `  - socialMedia: keep types but clear links, e.g. ${JSON.stringify(
+      createEmptyCreateProjectSocialMedia(),
+    )}`,
     '- If the user asks to reset everything / start over, clear all fields above.',
     '',
     'EVM recipient address behavior:',
@@ -272,8 +221,8 @@ export async function POST(req: Request) {
     '',
     'Category behavior:',
     '- You will receive CATEGORY_OPTIONS_JSON in the prompt (id/name/group).',
-    '- If the user OR the ASSISTANT_MESSAGE mentions, recommends, or selects category names, map them to IDs and set categoryIds.',
-    '- When the user asks the assistant to choose/pick/suggest categories, the ASSISTANT_MESSAGE will contain the chosen categories — you MUST extract those into categoryIds.',
+    '- If the user or assistantMessage mentions, recommends, or selects category names, map them to IDs and set categoryIds.',
+    '- When the user asks you to choose/pick/suggest categories, if assistantMessage contains the chosen categories, you MUST extract those into categoryIds.',
     '- categoryIds must only include IDs from CATEGORY_OPTIONS_JSON.',
     `- categoryIds must include at most ${MAX_CATEGORIES} IDs.`,
     '- If no category clearly matches user intent, leave categoryIds as null and ask one concise follow-up.',
@@ -310,48 +259,10 @@ export async function POST(req: Request) {
     apiKey,
     model: serverEnv.OPENAI_MODEL || 'gpt-5-mini',
     baseUrl: openAiBaseUrl,
-    chatSystem,
-    extractionSystem,
+    structuredSystem,
     userContext,
     schema,
-    allowedCategoryIds,
-    categoryOptions,
   })
-}
-
-function normalizePatch(
-  patch: z.infer<typeof patchSchema>,
-  allowedCategoryIds: Set<number>,
-): PatchOut {
-  const out: PatchOut = {}
-
-  if (typeof patch.title === 'string') out.title = patch.title
-  if (typeof patch.description === 'string') out.description = patch.description
-  if (typeof patch.image === 'string') out.image = patch.image
-  if (typeof patch.impactLocation === 'string')
-    out.impactLocation = patch.impactLocation
-  if (Array.isArray(patch.categoryIds)) {
-    const unique = Array.from(
-      new Set(
-        patch.categoryIds
-          .map(id => Number(id))
-          .filter(id => Number.isInteger(id) && allowedCategoryIds.has(id)),
-      ),
-    )
-    out.categoryIds = unique.map(id => Number(id)).slice(0, MAX_CATEGORIES)
-  }
-
-  if (Array.isArray(patch.socialMedia)) out.socialMedia = patch.socialMedia
-
-  if (Array.isArray(patch.recipientAddresses)) {
-    out.recipientAddresses = patch.recipientAddresses.map(a => ({
-      chainType: a.chainType,
-      networkId: a.networkId,
-      address: a.address,
-    }))
-  }
-
-  return out
 }
 
 function sanitizeDraft(input: unknown): Draft {
@@ -402,129 +313,12 @@ function sanitizeDraft(input: unknown): Draft {
   }
 }
 
-function safeJsonParse(text: string): unknown | null {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
-}
-
-/**
- * When the conversational model outputs a raw JSON object that matches the
- * draft / patch shape, we can skip the extraction API call entirely and build
- * the patch directly.
- */
-function tryParseAssistantJsonAsPatch(
-  text: string,
-  allowedCategoryIds: Set<number>,
-): PatchOut | undefined {
-  const raw = safeJsonParse(text.trim())
-  if (!isRecord(raw)) return undefined
-
-  const out: PatchOut = {}
-
-  if (typeof raw.title === 'string' && raw.title) out.title = raw.title
-  if (typeof raw.description === 'string' && raw.description)
-    out.description = raw.description
-  if (typeof raw.image === 'string') out.image = raw.image
-  if (typeof raw.impactLocation === 'string' && raw.impactLocation)
-    out.impactLocation = raw.impactLocation
-
-  if (Array.isArray(raw.categoryIds)) {
-    const ids = raw.categoryIds
-      .map((id: unknown) => Number(id))
-      .filter(
-        (id: number) =>
-          Number.isInteger(id) &&
-          (allowedCategoryIds.size === 0 || allowedCategoryIds.has(id)),
-      )
-    if (ids.length) {
-      out.categoryIds = Array.from(new Set(ids)).slice(0, MAX_CATEGORIES)
-    }
-  }
-
-  if (Array.isArray(raw.socialMedia)) {
-    const valid = raw.socialMedia.filter(
-      (s: unknown) =>
-        isRecord(s) && typeof s.type === 'string' && typeof s.link === 'string',
-    ) as { type: string; link: string }[]
-    if (valid.length) out.socialMedia = valid
-  }
-
-  if (Array.isArray(raw.recipientAddresses)) {
-    const valid = raw.recipientAddresses
-      .filter(
-        (a: unknown) =>
-          isRecord(a) &&
-          typeof a.address === 'string' &&
-          typeof a.networkId === 'number',
-      )
-      .map((a: Record<string, unknown>) => {
-        const ct = String(a.chainType ?? '').toUpperCase()
-        const chainType: DraftChainType =
-          ct === 'SOLANA'
-            ? ChainType.Solana
-            : ct === 'STELLAR'
-              ? ChainType.Stellar
-              : ChainType.Evm
-        return {
-          chainType,
-          networkId: Number(a.networkId),
-          address: String(a.address),
-        }
-      })
-    if (valid.length) out.recipientAddresses = valid
-  }
-
-  // Only return if we actually extracted something meaningful.
-  return Object.keys(out).length > 0 ? out : undefined
-}
-
-function extractFirstJsonText(payload: unknown): string | null {
-  // OpenAI Responses API usually returns: { output: [{ content: [{ type: "output_text", text: "..." }] }] }
-  if (!isRecord(payload)) return null
-  const out = payload.output
-  if (!Array.isArray(out)) return null
-  for (const item of out) {
-    const content = isRecord(item) ? item.content : undefined
-    if (!Array.isArray(content)) continue
-    for (const c of content) {
-      if (!isRecord(c)) continue
-      if (c.type === 'output_text' && typeof c.text === 'string') {
-        return c.text
-      }
-    }
-  }
-  // Fallbacks
-  if (typeof payload.output_text === 'string') return payload.output_text
-  if (typeof payload.text === 'string') return payload.text
-  return null
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
 function toStringOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
-}
-
-function sanitizeExtractedPatch(
-  patch: PatchOut | undefined,
-): PatchOut | undefined {
-  if (!patch) return undefined
-
-  const next = { ...patch }
-  if (
-    typeof next.description === 'string' &&
-    next.description.trim() &&
-    looksLikeAiContextLeak(next.description)
-  ) {
-    delete next.description
-  }
-
-  return Object.keys(next).length ? next : undefined
 }
 
 async function getCategoryOptions(): Promise<CategoryOption[]> {
@@ -551,195 +345,27 @@ async function getCategoryOptions(): Promise<CategoryOption[]> {
   return options
 }
 
-function createOpenAiBackedEventStreamResponse({
+async function createOpenAiBackedEventStreamResponse({
   apiKey,
   model,
   baseUrl,
-  chatSystem,
-  extractionSystem,
+  structuredSystem,
   userContext,
   schema,
-  allowedCategoryIds,
-  categoryOptions,
 }: {
   apiKey: string
   model: string
   baseUrl: string
-  chatSystem: string
-  extractionSystem: string
+  structuredSystem: string
   userContext: string
   schema: {
     name: string
     strict: true
     schema: Record<string, unknown>
   }
-  allowedCategoryIds: Set<number>
-  categoryOptions: CategoryOption[]
 }) {
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      void (async () => {
-        try {
-          const conversationUrl = new URL('/v1/responses', baseUrl).toString()
-          const conversationRes = await fetch(conversationUrl, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model,
-              stream: true,
-              input: [
-                {
-                  role: 'system',
-                  content: [{ type: 'input_text', text: chatSystem }],
-                },
-                {
-                  role: 'user',
-                  content: [{ type: 'input_text', text: userContext }],
-                },
-              ],
-            }),
-          })
-
-          if (!conversationRes.ok || !conversationRes.body) {
-            const t = await conversationRes.text().catch(() => '')
-            throw new Error(t || 'OpenAI streaming request failed')
-          }
-
-          const reader = conversationRes.body.getReader()
-          const decoder = new TextDecoder()
-          let buffer = ''
-          let assistantMessage = ''
-
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-
-            buffer += decoder.decode(value, { stream: true })
-            const events = buffer.split('\n\n')
-            buffer = events.pop() ?? ''
-
-            for (const event of events) {
-              const data = parseSseData(event)
-              if (!data || data === '[DONE]') continue
-              const payload = safeJsonParse(data)
-              if (!isRecord(payload)) continue
-
-              const delta =
-                payload.type === 'response.output_text.delta' &&
-                typeof payload.delta === 'string'
-                  ? payload.delta
-                  : null
-              if (!delta) continue
-
-              assistantMessage += delta
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({ type: 'assistant_delta', delta })}\n\n`,
-                ),
-              )
-            }
-          }
-
-          // Try to parse the assistant message directly as JSON (the model
-          // sometimes outputs a raw JSON draft instead of conversational text).
-          const directPatch = tryParseAssistantJsonAsPatch(
-            assistantMessage,
-            allowedCategoryIds,
-          )
-
-          // Fall back to a second extraction API call when the message is
-          // conversational text rather than raw JSON.
-          const extractedPatch =
-            directPatch ??
-            (await extractPatchFromOpenAi({
-              apiKey,
-              model,
-              baseUrl,
-              extractionSystem,
-              userContext: `${userContext}\n\nASSISTANT_MESSAGE:\n${assistantMessage}`,
-              schema,
-              allowedCategoryIds,
-            }))
-
-          // If categories are still missing, attempt regex / name-based extraction.
-          const fallbackCategoryIds = !extractedPatch?.categoryIds?.length
-            ? extractCategoryIdsFromText(
-                assistantMessage,
-                allowedCategoryIds,
-                categoryOptions,
-              )
-            : null
-          const finalPatch: PatchOut | undefined = extractedPatch
-            ? fallbackCategoryIds
-              ? { ...extractedPatch, categoryIds: fallbackCategoryIds }
-              : extractedPatch
-            : fallbackCategoryIds
-              ? { categoryIds: fallbackCategoryIds }
-              : undefined
-          const safePatch = sanitizeExtractedPatch(finalPatch)
-
-          if (safePatch) {
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({ type: 'patch', patch: safePatch })}\n\n`,
-              ),
-            )
-          }
-
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`),
-          )
-          controller.close()
-        } catch (e) {
-          const message =
-            e instanceof Error ? e.message : 'Streaming response failed'
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ type: 'error', message })}\n\n`,
-            ),
-          )
-          controller.close()
-        }
-      })()
-    },
-  })
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Cache-Control': 'no-cache, no-transform',
-      Connection: 'keep-alive',
-    },
-  })
-}
-
-async function extractPatchFromOpenAi({
-  apiKey,
-  model,
-  baseUrl,
-  extractionSystem,
-  userContext,
-  schema,
-  allowedCategoryIds,
-}: {
-  apiKey: string
-  model: string
-  baseUrl: string
-  extractionSystem: string
-  userContext: string
-  schema: {
-    name: string
-    strict: true
-    schema: Record<string, unknown>
-  }
-  allowedCategoryIds: Set<number>
-}): Promise<PatchOut | undefined> {
-  const url = new URL('/v1/responses', baseUrl).toString()
-  const res = await fetch(url, {
+  const conversationUrl = new URL('/v1/responses', baseUrl).toString()
+  const conversationRes = await fetch(conversationUrl, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -747,12 +373,16 @@ async function extractPatchFromOpenAi({
     },
     body: JSON.stringify({
       model,
+      stream: true,
       input: [
         {
           role: 'system',
-          content: [{ type: 'input_text', text: extractionSystem }],
+          content: [{ type: 'input_text', text: structuredSystem }],
         },
-        { role: 'user', content: [{ type: 'input_text', text: userContext }] },
+        {
+          role: 'user',
+          content: [{ type: 'input_text', text: userContext }],
+        },
       ],
       text: {
         format: {
@@ -765,16 +395,65 @@ async function extractPatchFromOpenAi({
     }),
   })
 
-  if (!res.ok) return undefined
-  const payload = (await res.json().catch(() => null)) as unknown
-  const jsonText = extractFirstJsonText(payload)
-  if (!jsonText) return undefined
-  const parsed = modelResponseSchema.safeParse(safeJsonParse(jsonText) ?? null)
-  if (!parsed.success) return undefined
-  const patchRaw = parsed.data.patch
-  return patchRaw ? normalizePatch(patchRaw, allowedCategoryIds) : undefined
-}
+  if (!conversationRes.ok || !conversationRes.body) {
+    const t = await conversationRes.text().catch(() => '')
+    throw new Error(t || 'OpenAI streaming request failed')
+  }
 
+  const decoder = new TextDecoder()
+  let logBuffer = ''
+  const upstreamReader = conversationRes.body.getReader()
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      void (async () => {
+        try {
+          while (true) {
+            const { done, value } = await upstreamReader.read()
+            if (done) break
+            if (!value) continue
+
+            controller.enqueue(value)
+            logBuffer += decoder.decode(value, { stream: true })
+            const events = logBuffer.split('\n\n')
+            logBuffer = events.pop() ?? ''
+
+            for (const event of events) {
+              const data = parseSseData(event)
+              if (!data || data === '[DONE]') continue
+              console.warn('OpenAI create-project stream event:', data)
+            }
+          }
+
+          logBuffer += decoder.decode()
+          if (logBuffer.trim()) {
+            const data = parseSseData(logBuffer)
+            if (data && data !== '[DONE]') {
+              console.warn('OpenAI create-project stream event:', data)
+            }
+          }
+          controller.close()
+        } catch (e) {
+          controller.error(e)
+        }
+      })()
+    },
+    cancel() {
+      void upstreamReader.cancel()
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type':
+        conversationRes.headers.get('content-type') ||
+        'text/event-stream; charset=utf-8',
+      'Cache-Control':
+        conversationRes.headers.get('cache-control') ||
+        'no-cache, no-transform',
+      Connection: 'keep-alive',
+    },
+  })
+}
 function parseSseData(rawEvent: string): string | null {
   const lines = rawEvent
     .split('\n')
@@ -784,40 +463,4 @@ function parseSseData(rawEvent: string): string | null {
 
   if (!lines.length) return null
   return lines.join('\n')
-}
-
-function extractCategoryIdsFromText(
-  text: string,
-  allowedCategoryIds: Set<number>,
-  categoryOptions?: CategoryOption[],
-): number[] | null {
-  // Strategy 1: Look for a JSON-style "categoryIds":[...] pattern in the text.
-  const jsonMatch = text.match(/"?categoryIds"?\s*:\s*\[([^\]]*)\]/i)
-  if (jsonMatch?.[1]) {
-    const ids = jsonMatch[1]
-      .split(',')
-      .map(part => Number(part.trim().replace(/['"]/g, '')))
-      .filter(id => Number.isInteger(id) && allowedCategoryIds.has(id))
-
-    if (ids.length) {
-      return Array.from(new Set(ids)).slice(0, MAX_CATEGORIES)
-    }
-  }
-
-  // Strategy 2: Match known category names mentioned in the text.
-  if (categoryOptions?.length) {
-    const lowerText = text.toLowerCase()
-    const matched = categoryOptions.filter(opt =>
-      lowerText.includes(opt.name.toLowerCase()),
-    )
-    if (matched.length) {
-      const ids = Array.from(new Set(matched.map(opt => opt.id))).slice(
-        0,
-        MAX_CATEGORIES,
-      )
-      return ids
-    }
-  }
-
-  return null
 }
