@@ -91,7 +91,7 @@ Server-side only (`src/app/api/ai/create-project/route.ts`). Streams conversatio
 | ------------- | ------------------------------------- |
 | Endpoint      | `POST {OPENAI_BASE_URL}/v1/responses` |
 | Default base  | `https://api.openai.com`              |
-| Default model | `gpt-5-mini`                          |
+| Default model | `gpt-5.4-mini`                          |
 | Auth          | `Bearer {OPENAI_API_KEY}`             |
 
 Server-only env vars: `OPENAI_API_KEY` (required), `OPENAI_MODEL`, `OPENAI_BASE_URL` (optional).

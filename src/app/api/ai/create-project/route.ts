@@ -257,7 +257,7 @@ export async function POST(req: Request) {
 
   return createOpenAiBackedEventStreamResponse({
     apiKey,
-    model: serverEnv.OPENAI_MODEL || 'gpt-5-mini',
+    model: serverEnv.OPENAI_MODEL || 'gpt-5.4-mini',
     baseUrl: openAiBaseUrl,
     structuredSystem,
     userContext,
