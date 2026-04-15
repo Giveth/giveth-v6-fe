@@ -366,8 +366,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   }, [fireSideCannons, flowStep])
 
   useEffect(() => {
-    updateRange(roundsRangeRef.current)
-  }, [roundsToLock])
+    if (flowStep === 'input') {
+      updateRange(roundsRangeRef.current)
+    }
+  }, [roundsToLock, flowStep])
 
   const hasStake = availableToLock + lockedAmount > 0n
   // Format APR value
