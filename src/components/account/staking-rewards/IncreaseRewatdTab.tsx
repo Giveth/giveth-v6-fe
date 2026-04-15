@@ -783,6 +783,12 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                     )}
                   </button>
 
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
+                  )}
+
                   <RewardCard
                     multiplier={multiplier}
                     boostedApr={boostedApr}
