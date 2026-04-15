@@ -28,12 +28,7 @@ export const usePassportEligibility = (
   const jwt = token ?? undefined
 
   return useQuery<CheckPassportEligibilityResponse>({
-    queryKey: [
-      'checkPassportEligibility',
-      input?.address,
-      input?.qfRoundId,
-      jwt,
-    ],
+    queryKey: ['checkPassportEligibility', input ?? null, jwt],
     queryFn: async () => {
       if (!input) throw new Error('Missing input for checkPassportEligibility')
       if (!jwt) throw new Error('Missing JWT token')
