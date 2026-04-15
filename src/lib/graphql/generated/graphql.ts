@@ -506,6 +506,7 @@ export type Mutation = {
   /** Upload a project image and return a public URL (no side effects). */
   createProjectImageUploadUrl: Scalars['String']['output'];
   createQfRound: QfRoundEntity;
+  deleteBoosting: Array<PowerBoostingEntity>;
   deleteProjectUpdate: Scalars['Boolean']['output'];
   editProjectUpdate: ProjectUpdateEntity;
   givbacksEligibilityConfirmEmail: GivbacksEligibilityFormEntity;
@@ -611,6 +612,11 @@ export type MutationCreateProjectImageUploadUrlArgs = {
 
 export type MutationCreateQfRoundArgs = {
   input: CreateQfRoundInput;
+};
+
+
+export type MutationDeleteBoostingArgs = {
+  projectId: Scalars['Int']['input'];
 };
 
 

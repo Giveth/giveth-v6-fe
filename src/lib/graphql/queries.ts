@@ -903,3 +903,16 @@ export const setMultiplePowerBoostingMutation = `
     }
   }
 `
+
+export const deleteBoostingMutation = `
+  mutation DeleteBoosting($projectId: Int!) {
+    deleteBoosting(projectId: $projectId) {
+      id
+      userId
+      projectId
+      percentage
+      powerRank
+      updatedAt
+    }
+  }
+`
