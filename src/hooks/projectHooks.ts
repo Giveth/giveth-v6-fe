@@ -5,6 +5,7 @@ import {
 } from '@/lib/constants/staking-power-constants'
 import { createGraphQLClient, graphQLClient } from '@/lib/graphql/client'
 import {
+  deleteBoostingMutation,
   estimatedMatchingQuery,
   fetchCurrentProjectBoostV6Query,
   fetchPowerBoostingInfoV6Query,
@@ -120,6 +121,10 @@ type SetSinglePowerBoostingResponse = {
 
 type SetMultiplePowerBoostingResponse = {
   setMultiplePowerBoosting: PowerBoostingMutationItem[]
+}
+
+type DeleteBoostingResponse = {
+  deleteBoosting: PowerBoostingMutationItem | PowerBoostingMutationItem[]
 }
 
 type TotalGivpowerAcrossBoostNetworksResponse = {
@@ -532,6 +537,49 @@ export function useSetPowerBoosting({ token }: { token?: string | null }) {
     },
     onError: error => {
       console.error('[Boost][Mutation] setPowerBoosting failed', error)
+    },
+  })
+}
+
+/**
+ * Hook to delete a single power boosting allocation by project id
+ * @param token - The token of the user
+ * @returns The delete mutation state
+ */
+export function useDeleteBoosting({ token }: { token?: string | null }) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (projectId: number) => {
+      if (!token) throw new Error('Missing authentication token')
+      if (!Number.isInteger(projectId) || projectId <= 0) {
+        throw new Error('Invalid project id')
+      }
+
+      const client = createGraphQLClient({
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      return client.request<DeleteBoostingResponse>(deleteBoostingMutation, {
+        projectId,
+      })
+    },
+    onSuccess: async (_data, projectId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['boostModalData'] }),
+        queryClient.invalidateQueries({ queryKey: ['userBoostForProject'] }),
+        queryClient.invalidateQueries({
+          queryKey: ['projectGivpowerCount', projectId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['projectBoosters', projectId],
+        }),
+      ])
+    },
+    onError: error => {
+      console.error('[Boost][Mutation] deleteBoosting failed', error)
     },
   })
 }
