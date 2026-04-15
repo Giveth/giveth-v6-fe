@@ -401,6 +401,19 @@ export const currentGivbacksRoundQuery = graphql(`
   }
 `)
 
+export const currentGivbacksRoundPublicQuery = graphql(`
+  query GetCurrentGivbacksRoundPublic {
+    currentGivbacksRound {
+      prizePool
+      prizePoolCap
+      imageUrl
+      roundNumber
+      startsAt
+      endsAt
+    }
+  }
+`)
+
 export const userProfileQuery = graphql(`
   query UserProfile {
     me {

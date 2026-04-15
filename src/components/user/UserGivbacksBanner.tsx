@@ -1,29 +1,29 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import clsx from 'clsx'
 import { ArrowRight, Ticket } from 'lucide-react'
+import { type Route } from 'next'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCurrentGivbacksRound } from '@/hooks/useCurrentGivbacksRound'
+import { projectsLink } from '@/lib/constants/menu-links'
 
-const DEFAULT_ROUND_NUMBER = 89
-const DEFAULT_PRIZE_POOL = '2,800,000 GIV'
-const DEFAULT_TICKETS = '197'
-const DEFAULT_START_DATE = 'Tue 25 Feb 2025'
-const DEFAULT_ENDS_IN = '5 days, 11 hours, 47 minutes'
+const EMPTY_VALUE = '--'
+const COUNTDOWN_TICK_MS = 30_000
 
 const formatTokenAmount = (value?: number | string | null) => {
   const amount = Number(value)
-  if (!Number.isFinite(amount)) return DEFAULT_PRIZE_POOL
+  if (!Number.isFinite(amount)) return EMPTY_VALUE
   return `${amount.toLocaleString()} GIV`
 }
 
 const formatCount = (
   value?: number | string | null,
-  fallback = DEFAULT_TICKETS,
+  fallback = EMPTY_VALUE,
 ) => {
   const count = Number(value)
   if (!Number.isFinite(count)) return fallback
@@ -31,9 +31,9 @@ const formatCount = (
 }
 
 const formatDate = (value?: string | null) => {
-  if (!value) return DEFAULT_START_DATE
+  if (!value) return EMPTY_VALUE
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return DEFAULT_START_DATE
+  if (Number.isNaN(date.getTime())) return EMPTY_VALUE
 
   const formatted = new Intl.DateTimeFormat('en-GB', {
     weekday: 'short',
@@ -45,13 +45,13 @@ const formatDate = (value?: string | null) => {
   return formatted.replace(',', '')
 }
 
-const formatEndsIn = (value?: string | null) => {
-  if (!value) return DEFAULT_ENDS_IN
+const formatEndsIn = (value?: string | null, nowMs: number = Date.now()) => {
+  if (!value) return EMPTY_VALUE
 
   const endDate = new Date(value)
-  if (Number.isNaN(endDate.getTime())) return DEFAULT_ENDS_IN
+  if (Number.isNaN(endDate.getTime())) return EMPTY_VALUE
 
-  const diffMs = endDate.getTime() - Date.now()
+  const diffMs = endDate.getTime() - nowMs
   if (diffMs <= 0) return 'Ended'
 
   const totalMinutes = Math.floor(diffMs / 1000 / 60)
@@ -63,15 +63,53 @@ const formatEndsIn = (value?: string | null) => {
 }
 
 export const UserGivbacksBanner = () => {
-  const { token } = useSiweAuth()
-  const { data } = useCurrentGivbacksRound(token ?? undefined)
+  const { token, user, walletAddress } = useSiweAuth()
+  const authCacheKey = user?.id ?? walletAddress
+  const { data, isLoading } = useCurrentGivbacksRound(
+    token ?? undefined,
+    authCacheKey,
+  )
+  const [nowMs, setNowMs] = useState(() => Date.now())
   const currentRound = data?.currentGivbacksRound
-  const roundNumber = currentRound?.roundNumber ?? DEFAULT_ROUND_NUMBER
+  const hasRoundData = Boolean(currentRound)
+  const showRoundPlaceholder = isLoading && !hasRoundData
+
+  useEffect(() => {
+    if (!currentRound?.endsAt) return
+
+    const endAtMs = new Date(currentRound.endsAt).getTime()
+    if (Number.isNaN(endAtMs)) return
+    if (endAtMs <= Date.now()) return
+
+    const interval = window.setInterval(() => {
+      const nextNowMs = Date.now()
+      setNowMs(nextNowMs)
+
+      if (nextNowMs >= endAtMs) {
+        window.clearInterval(interval)
+      }
+    }, COUNTDOWN_TICK_MS)
+
+    return () => window.clearInterval(interval)
+  }, [currentRound?.endsAt])
+
+  const roundNumber = currentRound?.roundNumber
+  const roundLabel =
+    typeof roundNumber === 'number' ? String(roundNumber) : EMPTY_VALUE
   const prizePool = formatTokenAmount(currentRound?.prizePool)
   const startedAt = formatDate(currentRound?.startsAt)
-  const endsIn = formatEndsIn(currentRound?.endsAt)
-  const ticketCount = formatCount(currentRound?.ticketCount)
+  const endsIn = formatEndsIn(currentRound?.endsAt, nowMs)
+  const rawTicketCount =
+    currentRound && 'ticketCount' in currentRound
+      ? currentRound.ticketCount
+      : undefined
+  const ticketCount = token ? formatCount(rawTicketCount) : EMPTY_VALUE
   const badgeImage = currentRound?.imageUrl
+  const bannerTitle =
+    roundLabel === EMPTY_VALUE
+      ? 'GIVbacks Round'
+      : `GIVbacks Round ${roundLabel}`
+  const userTickets = token ? ticketCount : EMPTY_VALUE
 
   return (
     <div>
@@ -81,7 +119,7 @@ export const UserGivbacksBanner = () => {
             {badgeImage && (
               <Image
                 src={badgeImage}
-                alt={`GIVbacks Round ${roundNumber}`}
+                alt={bannerTitle}
                 width={80}
                 height={80}
               />
@@ -90,7 +128,7 @@ export const UserGivbacksBanner = () => {
               <>
                 <Image
                   src="/images/givbacks/round-badge.png"
-                  alt={`GIVbacks Round ${roundNumber}`}
+                  alt={bannerTitle}
                   width={80}
                   height={80}
                 />
@@ -101,7 +139,7 @@ export const UserGivbacksBanner = () => {
                     'drop-shadow-[0_6px_6px_rgba(0,0,0,0.25)] [text-shadow: 0_2px_0_rgba(255,255,255,0.6),0_6px_12px_rgba(0,0,0,0.25)]',
                   )}
                 >
-                  {roundNumber}
+                  {showRoundPlaceholder ? EMPTY_VALUE : roundLabel}
                 </span>
               </>
             )}
@@ -114,7 +152,7 @@ export const UserGivbacksBanner = () => {
                 fill="var(--giv-neutral-900)"
               />
               <h3 className="text-lg font-bold text-giv-neutral-900 pt-1">
-                {`GIVbacks Round ${roundNumber}`}
+                {bannerTitle}
               </h3>
             </div>
             <h4
@@ -123,7 +161,7 @@ export const UserGivbacksBanner = () => {
                 'bg-[linear-gradient(135.74deg,#E1458D_18.49%,#8668FC_65.93%)] bg-clip-text text-transparent',
               )}
             >
-              {prizePool}
+              {showRoundPlaceholder ? EMPTY_VALUE : prizePool}
             </h4>
             <div className="text-sm text-giv-neutral-800 font-medium">
               Prize pool
@@ -139,7 +177,7 @@ export const UserGivbacksBanner = () => {
                   Ends in
                 </div>
                 <div className="text-lg font-bold text-giv-neutral-900">
-                  {endsIn}
+                  {showRoundPlaceholder ? EMPTY_VALUE : endsIn}
                 </div>
               </div>
               <div className="flex flex-col gap-2">
@@ -147,7 +185,7 @@ export const UserGivbacksBanner = () => {
                   Started
                 </div>
                 <div className="text-lg font-bold text-giv-neutral-900">
-                  {startedAt}
+                  {showRoundPlaceholder ? EMPTY_VALUE : startedAt}
                 </div>
               </div>
             </div>
@@ -164,13 +202,13 @@ export const UserGivbacksBanner = () => {
               </div>
               <div className="flex items-center gap-2 text-lg font-bold text-giv-neutral-900">
                 <Ticket className="w-6 h-6 text-giv-neutral-900" />
-                {ticketCount}
+                {showRoundPlaceholder ? EMPTY_VALUE : userTickets}
               </div>
             </div>
           </div>
           <div className="flex flex-col gap-2 items-center">
             <Link
-              href="/qf"
+              href={projectsLink.href as unknown as Route}
               type="button"
               className={clsx(
                 'flex items-center justify-center gap-3',

@@ -1905,6 +1905,11 @@ export type GetCurrentGivbacksRoundQueryVariables = Exact<{ [key: string]: never
 
 export type GetCurrentGivbacksRoundQuery = { __typename?: 'Query', currentGivbacksRound: { __typename?: 'CurrentGivbacksRoundEntity', prizePool: number, prizePoolCap: number, ticketCount: number, imageUrl?: string | null, roundNumber?: number | null, startsAt?: any | null, endsAt?: any | null } };
 
+export type GetCurrentGivbacksRoundPublicQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentGivbacksRoundPublicQuery = { __typename?: 'Query', currentGivbacksRound: { __typename?: 'CurrentGivbacksRoundEntity', prizePool: number, prizePoolCap: number, imageUrl?: string | null, roundNumber?: number | null, startsAt?: any | null, endsAt?: any | null } };
+
 export type UserProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2526,6 +2531,18 @@ export const GetCurrentGivbacksRoundDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<GetCurrentGivbacksRoundQuery, GetCurrentGivbacksRoundQueryVariables>;
+export const GetCurrentGivbacksRoundPublicDocument = new TypedDocumentString(`
+    query GetCurrentGivbacksRoundPublic {
+  currentGivbacksRound {
+    prizePool
+    prizePoolCap
+    imageUrl
+    roundNumber
+    startsAt
+    endsAt
+  }
+}
+    `) as unknown as TypedDocumentString<GetCurrentGivbacksRoundPublicQuery, GetCurrentGivbacksRoundPublicQueryVariables>;
 export const UserProfileDocument = new TypedDocumentString(`
     query UserProfile {
   me {
