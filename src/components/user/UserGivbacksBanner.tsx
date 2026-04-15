@@ -89,8 +89,15 @@ export const UserGivbacksBanner = () => {
         window.clearInterval(interval)
       }
     }, COUNTDOWN_TICK_MS)
+    const endTimeout = window.setTimeout(() => {
+      setNowMs(Date.now())
+      window.clearInterval(interval)
+    }, endAtMs - Date.now())
 
-    return () => window.clearInterval(interval)
+    return () => {
+      window.clearInterval(interval)
+      window.clearTimeout(endTimeout)
+    }
   }, [currentRound?.endsAt])
 
   const roundNumber = currentRound?.roundNumber

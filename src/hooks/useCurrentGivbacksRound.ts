@@ -58,5 +58,6 @@ export const useCurrentGivbacksRound = (
 
       return client.request(query)
     },
+    placeholderData: previousData => previousData,
   })
 }
