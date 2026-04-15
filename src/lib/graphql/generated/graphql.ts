@@ -74,6 +74,7 @@ export type CauseEntity = {
   powerRank?: Maybe<Scalars['Int']['output']>;
   projectQfRounds: Array<ProjectQfRoundEntity>;
   projectType: ProjectType;
+  publishedAt?: Maybe<Scalars['DateTime']['output']>;
   qfRoundMatchingProjects?: Maybe<Array<QfRoundMatchingProjectEntity>>;
   qualityScore: Scalars['Float']['output'];
   reviewStatus: ReviewStatus;
@@ -112,7 +113,6 @@ export type CheckEligibilityResultEntity = {
 
 export type CheckPassportEligibilityInput = {
   address: Scalars['String']['input'];
-  qfRoundId?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type CommentEntity = {
@@ -194,10 +194,28 @@ export type CreateQfRoundInput = {
   minimumPassportScore: Scalars['Float']['input'];
   minimumValidUsdValue?: InputMaybe<Scalars['Float']['input']>;
   name: Scalars['String']['input'];
+  nftEligibilityContractAddress?: InputMaybe<Scalars['String']['input']>;
+  nftEligibilityEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  nftEligibilityNetworkId?: InputMaybe<Scalars['Int']['input']>;
   priority?: InputMaybe<Scalars['Int']['input']>;
   qfStrategy?: InputMaybe<Scalars['String']['input']>;
   sponsorsImgs?: InputMaybe<Array<Scalars['String']['input']>>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CurrentGivbacksRoundEntity = {
+  __typename?: 'CurrentGivbacksRoundEntity';
+  endsAt?: Maybe<Scalars['DateTime']['output']>;
+  imageUrl?: Maybe<Scalars['String']['output']>;
+  prizePool: Scalars['Float']['output'];
+  prizePoolCap: Scalars['Float']['output'];
+  /** @deprecated Use endsAt instead */
+  roundEnd?: Maybe<Scalars['DateTime']['output']>;
+  roundNumber?: Maybe<Scalars['Int']['output']>;
+  /** @deprecated Use startsAt instead */
+  roundStart?: Maybe<Scalars['DateTime']['output']>;
+  startsAt?: Maybe<Scalars['DateTime']['output']>;
+  ticketCount: Scalars['Float']['output'];
 };
 
 export enum DisplaySize {
@@ -339,6 +357,7 @@ export type GivPowersEntity = {
 
 export type GivbacksEligibilityFormEntity = {
   __typename?: 'GivbacksEligibilityFormEntity';
+  adminReviewComment?: Maybe<Scalars['String']['output']>;
   commentsSection?: Maybe<CommentsSectionEntity>;
   createdAt: Scalars['DateTime']['output'];
   email?: Maybe<Scalars['String']['output']>;
@@ -505,7 +524,6 @@ export type Mutation = {
   setMultiplePowerBoosting: Array<PowerBoostingEntity>;
   setPrimaryWallet: UserEntity;
   setSinglePowerBoosting: Array<PowerBoostingEntity>;
-  syncPowerBoostingTemp: SyncPowerBoostingBoostTempPayload;
   unlikeProject: Scalars['Boolean']['output'];
   unlikeProjectUpdate: Scalars['Boolean']['output'];
   updateCause: CauseEntity;
@@ -679,11 +697,6 @@ export type MutationSetPrimaryWalletArgs = {
 export type MutationSetSinglePowerBoostingArgs = {
   percentage: Scalars['Float']['input'];
   projectId: Scalars['Int']['input'];
-};
-
-
-export type MutationSyncPowerBoostingTempArgs = {
-  input: SyncPowerBoostingBoostTempInput;
 };
 
 
@@ -870,6 +883,7 @@ export type ProjectEntity = {
   powerRank?: Maybe<Scalars['Int']['output']>;
   projectQfRounds: Array<ProjectQfRoundEntity>;
   projectType: ProjectType;
+  publishedAt?: Maybe<Scalars['DateTime']['output']>;
   qfRoundMatchingProjects?: Maybe<Array<QfRoundMatchingProjectEntity>>;
   qualityScore: Scalars['Float']['output'];
   reviewStatus: ReviewStatus;
@@ -1060,6 +1074,9 @@ export type QfRoundEntity = {
   minimumPassportScore: Scalars['Float']['output'];
   minimumValidUsdValue: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  nftEligibilityContractAddress?: Maybe<Scalars['String']['output']>;
+  nftEligibilityEnabled: Scalars['Boolean']['output'];
+  nftEligibilityNetworkId?: Maybe<Scalars['Int']['output']>;
   priority: Scalars['Int']['output'];
   qfStrategy: QfStrategy;
   slug: Scalars['String']['output'];
@@ -1143,6 +1160,7 @@ export type Query = {
   causes: Array<CauseEntity>;
   /** Check Passport eligibility for an address. Returns cached data if not expired, otherwise fetches from Passport API. */
   checkPassportEligibility: CheckEligibilityResultEntity;
+  currentGivbacksRound: CurrentGivbacksRoundEntity;
   doesDonatedToProjectInQfRound: Scalars['Boolean']['output'];
   donation: DonationEntity;
   donationMetrics: DonationMetricsEntity;
@@ -1170,6 +1188,7 @@ export type Query = {
   me: UserEntity;
   myDonations: PaginatedDonationsEntity;
   myProjects: PaginatedProjectsEntity;
+  myRaffleTicketsForCurrentRound: CurrentGivbacksRoundEntity;
   project: ProjectEntity;
   projectAddressesBySlug: ProjectAddressesBySlugEntity;
   projectBySlug: ProjectEntity;
@@ -1193,6 +1212,7 @@ export type Query = {
   totalDonorsCountPerDate?: Maybe<ResourcePerDateRangeEntity>;
   user?: Maybe<UserEntity>;
   userByAddress?: Maybe<UserEntity>;
+  userRaffleTicketsForCurrentRound: CurrentGivbacksRoundEntity;
   userStats?: Maybe<UserStatsEntity>;
   validateEmail: Scalars['Boolean']['output'];
   walletAddressIsPurpleListed: Scalars['Boolean']['output'];
@@ -1494,6 +1514,11 @@ export type QueryUserByAddressArgs = {
 };
 
 
+export type QueryUserRaffleTicketsForCurrentRoundArgs = {
+  userId: Scalars['Int']['input'];
+};
+
+
 export type QueryUserStatsArgs = {
   id: Scalars['Int']['input'];
 };
@@ -1570,28 +1595,6 @@ export enum SybilDefenseType {
   PassportStamps = 'PASSPORT_STAMPS'
 }
 
-export type SyncPowerBoostingBoostTempInput = {
-  percentages: Array<Scalars['Float']['input']>;
-  projectIds: Array<Scalars['Int']['input']>;
-};
-
-export type SyncPowerBoostingBoostTempItem = {
-  __typename?: 'SyncPowerBoostingBoostTempItem';
-  createdAt: Scalars['DateTime']['output'];
-  id: Scalars['Int']['output'];
-  percentage: Scalars['Float']['output'];
-  powerRank?: Maybe<Scalars['Int']['output']>;
-  projectId: Scalars['Int']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-  userId: Scalars['Int']['output'];
-};
-
-export type SyncPowerBoostingBoostTempPayload = {
-  __typename?: 'SyncPowerBoostingBoostTempPayload';
-  powerBoostings: Array<SyncPowerBoostingBoostTempItem>;
-  totalCount: Scalars['Int']['output'];
-};
-
 export type TokenEntity = {
   __typename?: 'TokenEntity';
   address?: Maybe<Scalars['String']['output']>;
@@ -1648,6 +1651,9 @@ export type UpdateQfRoundInput = {
   minimumPassportScore?: InputMaybe<Scalars['Float']['input']>;
   minimumValidUsdValue?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  nftEligibilityContractAddress?: InputMaybe<Scalars['String']['input']>;
+  nftEligibilityEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  nftEligibilityNetworkId?: InputMaybe<Scalars['Int']['input']>;
   priority?: InputMaybe<Scalars['Int']['input']>;
   qfStrategy?: InputMaybe<Scalars['String']['input']>;
   sponsorsImgs?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -1736,6 +1742,14 @@ export type WalletAddressUsedEntity = {
   hasDonated: Scalars['Boolean']['output'];
   hasRelatedProject: Scalars['Boolean']['output'];
 };
+
+export type QfRoundsForApplyQueryVariables = Exact<{
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  take?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type QfRoundsForApplyQuery = { __typename?: 'Query', qfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, beginDate: any, endDate: any, eligibleNetworks: Array<number>, applicationTypeformUrl?: string | null }> } };
 
 export type CreateProjectMutationVariables = Exact<{
   input: CreateProjectInput;
@@ -1886,6 +1900,16 @@ export type QfRoundStatsQueryVariables = Exact<{
 
 export type QfRoundStatsQuery = { __typename?: 'Query', qfRoundStats: { __typename?: 'QfRoundStatsEntity', totalDonationsUsd: number, donationsCount: number, uniqueDonors: number, qfRound: { __typename?: 'QfRoundEntity', id: string, name: string, slug: string } } };
 
+export type GetCurrentGivbacksRoundQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentGivbacksRoundQuery = { __typename?: 'Query', currentGivbacksRound: { __typename?: 'CurrentGivbacksRoundEntity', prizePool: number, prizePoolCap: number, ticketCount: number, imageUrl?: string | null, roundNumber?: number | null, startsAt?: any | null, endsAt?: any | null } };
+
+export type GetCurrentGivbacksRoundPublicQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentGivbacksRoundPublicQuery = { __typename?: 'Query', currentGivbacksRound: { __typename?: 'CurrentGivbacksRoundEntity', prizePool: number, prizePoolCap: number, imageUrl?: string | null, roundNumber?: number | null, startsAt?: any | null, endsAt?: any | null } };
+
 export type UserProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2023,6 +2047,22 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
+export const QfRoundsForApplyDocument = new TypedDocumentString(`
+    query QfRoundsForApply($skip: Int = 0, $take: Int = 100) {
+  qfRounds(skip: $skip, take: $take) {
+    total
+    rounds {
+      id
+      name
+      slug
+      beginDate
+      endDate
+      eligibleNetworks
+      applicationTypeformUrl
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<QfRoundsForApplyQuery, QfRoundsForApplyQueryVariables>;
 export const CreateProjectDocument = new TypedDocumentString(`
     mutation CreateProject($input: CreateProjectInput!) {
   createProject(input: $input) {
@@ -2478,6 +2518,31 @@ export const QfRoundStatsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<QfRoundStatsQuery, QfRoundStatsQueryVariables>;
+export const GetCurrentGivbacksRoundDocument = new TypedDocumentString(`
+    query GetCurrentGivbacksRound {
+  currentGivbacksRound {
+    prizePool
+    prizePoolCap
+    ticketCount
+    imageUrl
+    roundNumber
+    startsAt
+    endsAt
+  }
+}
+    `) as unknown as TypedDocumentString<GetCurrentGivbacksRoundQuery, GetCurrentGivbacksRoundQueryVariables>;
+export const GetCurrentGivbacksRoundPublicDocument = new TypedDocumentString(`
+    query GetCurrentGivbacksRoundPublic {
+  currentGivbacksRound {
+    prizePool
+    prizePoolCap
+    imageUrl
+    roundNumber
+    startsAt
+    endsAt
+  }
+}
+    `) as unknown as TypedDocumentString<GetCurrentGivbacksRoundPublicQuery, GetCurrentGivbacksRoundPublicQueryVariables>;
 export const UserProfileDocument = new TypedDocumentString(`
     query UserProfile {
   me {

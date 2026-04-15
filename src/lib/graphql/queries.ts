@@ -387,6 +387,33 @@ export const qfRoundStatsQuery = graphql(`
   }
 `)
 
+export const currentGivbacksRoundQuery = graphql(`
+  query GetCurrentGivbacksRound {
+    currentGivbacksRound {
+      prizePool
+      prizePoolCap
+      ticketCount
+      imageUrl
+      roundNumber
+      startsAt
+      endsAt
+    }
+  }
+`)
+
+export const currentGivbacksRoundPublicQuery = graphql(`
+  query GetCurrentGivbacksRoundPublic {
+    currentGivbacksRound {
+      prizePool
+      prizePoolCap
+      imageUrl
+      roundNumber
+      startsAt
+      endsAt
+    }
+  }
+`)
+
 export const userProfileQuery = graphql(`
   query UserProfile {
     me {
