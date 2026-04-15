@@ -28,17 +28,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     label: 'GIVeconomy',
-    href: oldFrontendPath('/givfarm', '/givfarm'),
-    submenu: [
-      {
-        label: 'Stake GIV',
-        href: oldFrontendPath('/givfarm', '/givfarm'),
-      },
-      {
-        label: 'GIVbacks',
-        href: oldFrontendPath('/givbacks', '/givbacks'),
-      },
-    ],
+    href: '/account?tab=staking',
   },
   {
     label: 'Community',
