@@ -34,7 +34,7 @@ export default function AccountPageClient() {
           <ProfileSection />
           <DashboardTabs activeTab={activeTab} />
 
-          {!isProduction && activeTab === 'staking' && <StakingRewards />}
+          {activeTab === 'staking' && <StakingRewards />}
           {activeTab === 'donations' && <DonationsTable />}
           {activeTab === 'boosted' && <BoostedProjects />}
           {isProduction && activeTab === 'projects' && <DonationsTable />}
