@@ -747,7 +747,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                     <div className="mt-4 text-center">
                       <button
                         type="button"
-                        onClick={() => setFlowStep('input')}
+                        onClick={() => {
+                          setErrorMessage(null)
+                          setFlowStep('input')
+                        }}
                         className={clsx(
                           'inline-flex items-center justify-center gap-2 px-10 py-3',
                           'rounded-md border border-giv-brand-100 bg-giv-brand-050',
