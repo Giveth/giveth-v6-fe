@@ -215,7 +215,10 @@ export const UserGivbacksBanner = () => {
           </div>
           <div className="flex flex-col gap-2 items-center">
             <Link
-              href={projectsLink.href as unknown as Route}
+              href={
+                (projectsLink.href +
+                  '?filter=IsGivbackEligible') as unknown as Route
+              }
               type="button"
               className={clsx(
                 'flex items-center justify-center gap-3',
