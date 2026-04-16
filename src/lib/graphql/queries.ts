@@ -856,6 +856,8 @@ export const projectBoostersQuery = `
         projectId
         userId
         percentage
+        givpowerAmount
+        userTotalGivpower
         powerRank
         updatedAt
         user {
