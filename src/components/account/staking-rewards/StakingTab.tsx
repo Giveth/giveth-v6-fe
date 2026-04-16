@@ -227,7 +227,9 @@ export function StakingTab({ id }: { id: string }) {
     } catch (error) {
       console.error('Approve failed:', error)
       const message =
-        error instanceof Error ? error.message : 'Approve failed. Try again.'
+        error instanceof Error && error.message
+          ? error.message
+          : 'Approve failed. Try again.'
       setErrorMessage(message)
       setFlowStep('input')
     }
@@ -255,7 +257,9 @@ export function StakingTab({ id }: { id: string }) {
     } catch (error) {
       console.error('Stake failed:', error)
       const message =
-        error instanceof Error ? error.message : 'Stake failed. Try again.'
+        error instanceof Error && error.message
+          ? error.message
+          : 'Stake failed. Try again.'
       setErrorMessage(message)
       setFlowStep('approved')
     }
