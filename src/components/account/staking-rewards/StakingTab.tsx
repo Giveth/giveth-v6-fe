@@ -211,6 +211,7 @@ export function StakingTab({ id }: { id: string }) {
     }
 
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
+    setErrorMessage(null)
     setFlowStep('approving')
     try {
       // Change user network to the chainId
@@ -225,6 +226,9 @@ export function StakingTab({ id }: { id: string }) {
       setFlowStep('approved')
     } catch (error) {
       console.error('Approve failed:', error)
+      const message =
+        error instanceof Error ? error.message : 'Approve failed. Try again.'
+      setErrorMessage(message)
       setFlowStep('input')
     }
   }
@@ -239,6 +243,7 @@ export function StakingTab({ id }: { id: string }) {
       return
     }
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
+    setErrorMessage(null)
     setFlowStep('staking')
     try {
       // Change user network to the chainId
@@ -249,6 +254,9 @@ export function StakingTab({ id }: { id: string }) {
       setFlowStep('staked')
     } catch (error) {
       console.error('Stake failed:', error)
+      const message =
+        error instanceof Error ? error.message : 'Stake failed. Try again.'
+      setErrorMessage(message)
       setFlowStep('approved')
     }
   }
