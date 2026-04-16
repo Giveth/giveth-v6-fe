@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useSiweAuth } from '@/context/AuthContext'
 import {
-  validateCreateProjectRecipientAddressRemotely,
+  validateCreateProjectRecipientAddressesRemotely,
   validateCreateProjectTitleRemotely,
 } from '@/lib/create-project/backend-validation'
 import {
@@ -142,6 +142,21 @@ export function ManualSidebarForm() {
     [activeWallet, activeAccount],
   )
   const normalizedTitleForSalt = normalizeTitleForSalt(draft.title)
+  const recipientValidationSignature = useMemo(
+    () =>
+      draft.recipientAddresses
+        .map(recipientAddress =>
+          [
+            recipientAddress.id,
+            recipientAddress.chainType,
+            recipientAddress.networkId,
+            recipientAddress.address.trim(),
+            recipientAddress.memo?.trim() || '',
+          ].join(':'),
+        )
+        .join('|'),
+    [draft.recipientAddresses],
+  )
   const titleErrorMessage = useMemo(
     () =>
       errors.title ||
@@ -234,16 +249,16 @@ export function ManualSidebarForm() {
   ])
 
   useEffect(() => {
-    // Only auto-fill when the user has not manually customized addresses.
+    // Only auto-fill the initial empty state. After that, the user can
+    // explicitly regenerate addresses, but title edits should not silently
+    // mutate recipient addresses or trigger recipient re-validation.
     if (!ownerAdminAccount) return
     if (!normalizedTitleForSalt) return
-    if (draft.recipientAddresses.length > 0 && !isRecipientAddressesAutoFilled)
-      return
+    if (draft.recipientAddresses.length > 0) return
     void autofillRecipientAddresses()
   }, [
     autofillRecipientAddresses,
     draft.recipientAddresses.length,
-    isRecipientAddressesAutoFilled,
     normalizedTitleForSalt,
     ownerAdminAccount,
   ])
@@ -255,54 +270,12 @@ export function ManualSidebarForm() {
 
   const runRemoteRecipientValidation = useCallback(
     async (addresses: CreateProjectRecipientAddress[]) => {
-      const results = await Promise.all(
-        addresses.map(async recipientAddress => {
-          if (validateCreateProjectRecipientAddress(recipientAddress)) {
-            return { id: recipientAddress.id }
-          }
-
-          const result =
-            await validateCreateProjectRecipientAddressRemotely(
-              recipientAddress,
-            )
-
-          return {
-            id: recipientAddress.id,
-            ...result,
-          }
-        }),
+      return validateCreateProjectRecipientAddressesRemotely(
+        addresses.filter(
+          recipientAddress =>
+            !validateCreateProjectRecipientAddress(recipientAddress),
+        ),
       )
-
-      return {
-        errors: Object.fromEntries(
-          results
-            .filter(
-              (
-                result,
-              ): result is {
-                id: string
-                error: string
-                resolvedAddress?: string
-              } => typeof result.error === 'string' && result.error.length > 0,
-            )
-            .map(result => [result.id, result.error]),
-        ),
-        resolvedAddresses: Object.fromEntries(
-          results
-            .filter(
-              (
-                result,
-              ): result is {
-                id: string
-                resolvedAddress: string
-                error?: string
-              } =>
-                typeof result.resolvedAddress === 'string' &&
-                result.resolvedAddress.length > 0,
-            )
-            .map(result => [result.id, result.resolvedAddress]),
-        ),
-      }
     },
     [],
   )
@@ -319,8 +292,9 @@ export function ManualSidebarForm() {
       return
     }
 
+    setIsTitleValidating(true)
+
     const timeoutId = window.setTimeout(() => {
-      setIsTitleValidating(true)
       void runRemoteTitleValidation(title)
         .then(error => {
           if (titleValidationRequestRef.current !== requestId) return
@@ -330,7 +304,7 @@ export function ManualSidebarForm() {
           if (titleValidationRequestRef.current !== requestId) return
           setIsTitleValidating(false)
         })
-    }, 350)
+    }, 3000)
 
     return () => window.clearTimeout(timeoutId)
   }, [draft.title, runRemoteTitleValidation])
@@ -370,7 +344,7 @@ export function ManualSidebarForm() {
     }, 350)
 
     return () => window.clearTimeout(timeoutId)
-  }, [draft.recipientAddresses, runRemoteRecipientValidation])
+  }, [recipientValidationSignature, runRemoteRecipientValidation])
 
   const { data: mainCategoriesData } = useQuery({
     queryKey: ['mainCategories'],
@@ -403,7 +377,8 @@ export function ManualSidebarForm() {
   const sectionStatus = {
     projectDetails:
       !validateCreateProjectTitle(draft.title) &&
-      !validateCreateProjectDescription(draft.description)
+      !validateCreateProjectDescription(draft.description) &&
+      !titleValidationError
         ? 'Completed'
         : 'To do',
     categories: draft.categoryIds.length > 0 ? 'Completed' : 'To do',
@@ -418,7 +393,8 @@ export function ManualSidebarForm() {
       draft.recipientAddresses.every(
         recipientAddress =>
           !validateCreateProjectRecipientAddress(recipientAddress),
-      )
+      ) &&
+      !hasRecipientAsyncErrors
         ? 'Completed'
         : 'To do',
   } as const
@@ -469,7 +445,14 @@ export function ManualSidebarForm() {
 
       router.push(`/project/${slug}`)
     } catch {
-      // submitCreateProject already stores the user-facing error message.
+      const [nextTitleValidationError, nextRecipientValidation] =
+        await Promise.all([
+          runRemoteTitleValidation(draft.title),
+          runRemoteRecipientValidation(draft.recipientAddresses),
+        ])
+
+      setTitleValidationError(nextTitleValidationError ?? null)
+      setRecipientValidation(nextRecipientValidation)
     }
   }, [
     draft,

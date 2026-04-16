@@ -164,6 +164,13 @@ export type CreateProjectInput = {
   title: Scalars['String']['input'];
 };
 
+export type CreateProjectRecipientAddressValidationResultEntity = {
+  __typename?: 'CreateProjectRecipientAddressValidationResultEntity';
+  clientId: Scalars['String']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  isValid: Scalars['Boolean']['output'];
+};
+
 export type CreateProjectUpdateInput = {
   content: Scalars['String']['input'];
   contentSummary?: InputMaybe<Scalars['String']['input']>;
@@ -1220,6 +1227,12 @@ export type Query = {
   userByAddress?: Maybe<UserEntity>;
   userRaffleTicketsForCurrentRound: CurrentGivbacksRoundEntity;
   userStats?: Maybe<UserStatsEntity>;
+  /** Return null when the recipient address is valid for create-project, otherwise a validation message. */
+  validateCreateProjectRecipientAddress?: Maybe<Scalars['String']['output']>;
+  /** Validate multiple recipient addresses for create-project in one request. */
+  validateCreateProjectRecipientAddresses: Array<CreateProjectRecipientAddressValidationResultEntity>;
+  /** Return null when the create-project title is valid, otherwise a validation message. */
+  validateCreateProjectTitle?: Maybe<Scalars['String']['output']>;
   validateEmail: Scalars['Boolean']['output'];
   walletAddressIsPurpleListed: Scalars['Boolean']['output'];
   walletAddressUsed: WalletAddressUsedEntity;
@@ -1530,6 +1543,26 @@ export type QueryUserStatsArgs = {
 };
 
 
+export type QueryValidateCreateProjectRecipientAddressArgs = {
+  address: Scalars['String']['input'];
+  chainType?: InputMaybe<ChainType>;
+  memo?: InputMaybe<Scalars['String']['input']>;
+  projectId?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryValidateCreateProjectRecipientAddressesArgs = {
+  addresses: Array<ValidateCreateProjectRecipientAddressInput>;
+  projectId?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryValidateCreateProjectTitleArgs = {
+  projectId?: InputMaybe<Scalars['Int']['input']>;
+  title: Scalars['String']['input'];
+};
+
+
 export type QueryValidateEmailArgs = {
   email: Scalars['String']['input'];
 };
@@ -1739,6 +1772,13 @@ export type UserWalletEntity = {
   userId: Scalars['Int']['output'];
 };
 
+export type ValidateCreateProjectRecipientAddressInput = {
+  address: Scalars['String']['input'];
+  chainType?: InputMaybe<ChainType>;
+  clientId: Scalars['String']['input'];
+  memo?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type VerifyDonationInput = {
   donationId: Scalars['Int']['input'];
 };
@@ -1756,6 +1796,29 @@ export type QfRoundsForApplyQueryVariables = Exact<{
 
 
 export type QfRoundsForApplyQuery = { __typename?: 'Query', qfRounds: { __typename?: 'PaginatedQfRoundsEntity', total: number, rounds: Array<{ __typename?: 'QfRoundEntity', id: string, name: string, slug: string, beginDate: any, endDate: any, eligibleNetworks: Array<number>, applicationTypeformUrl?: string | null }> } };
+
+export type ValidateCreateProjectTitleQueryVariables = Exact<{
+  title: Scalars['String']['input'];
+}>;
+
+
+export type ValidateCreateProjectTitleQuery = { __typename?: 'Query', validateCreateProjectTitle?: string | null };
+
+export type ValidateCreateProjectRecipientAddressQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  chainType?: InputMaybe<ChainType>;
+  memo?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type ValidateCreateProjectRecipientAddressQuery = { __typename?: 'Query', validateCreateProjectRecipientAddress?: string | null };
+
+export type ValidateCreateProjectRecipientAddressesQueryVariables = Exact<{
+  addresses: Array<ValidateCreateProjectRecipientAddressInput> | ValidateCreateProjectRecipientAddressInput;
+}>;
+
+
+export type ValidateCreateProjectRecipientAddressesQuery = { __typename?: 'Query', validateCreateProjectRecipientAddresses: Array<{ __typename?: 'CreateProjectRecipientAddressValidationResultEntity', clientId: string, isValid: boolean, error?: string | null }> };
 
 export type CreateProjectMutationVariables = Exact<{
   input: CreateProjectInput;
@@ -2069,6 +2132,29 @@ export const QfRoundsForApplyDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<QfRoundsForApplyQuery, QfRoundsForApplyQueryVariables>;
+export const ValidateCreateProjectTitleDocument = new TypedDocumentString(`
+    query ValidateCreateProjectTitle($title: String!) {
+  validateCreateProjectTitle(title: $title)
+}
+    `) as unknown as TypedDocumentString<ValidateCreateProjectTitleQuery, ValidateCreateProjectTitleQueryVariables>;
+export const ValidateCreateProjectRecipientAddressDocument = new TypedDocumentString(`
+    query ValidateCreateProjectRecipientAddress($address: String!, $chainType: ChainType, $memo: String) {
+  validateCreateProjectRecipientAddress(
+    address: $address
+    chainType: $chainType
+    memo: $memo
+  )
+}
+    `) as unknown as TypedDocumentString<ValidateCreateProjectRecipientAddressQuery, ValidateCreateProjectRecipientAddressQueryVariables>;
+export const ValidateCreateProjectRecipientAddressesDocument = new TypedDocumentString(`
+    query ValidateCreateProjectRecipientAddresses($addresses: [ValidateCreateProjectRecipientAddressInput!]!) {
+  validateCreateProjectRecipientAddresses(addresses: $addresses) {
+    clientId
+    isValid
+    error
+  }
+}
+    `) as unknown as TypedDocumentString<ValidateCreateProjectRecipientAddressesQuery, ValidateCreateProjectRecipientAddressesQueryVariables>;
 export const CreateProjectDocument = new TypedDocumentString(`
     mutation CreateProject($input: CreateProjectInput!) {
   createProject(input: $input) {
