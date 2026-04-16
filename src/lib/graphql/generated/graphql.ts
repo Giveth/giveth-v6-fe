@@ -1030,8 +1030,8 @@ export enum ProjectStatus {
 }
 
 export enum ProjectType {
-  Cause = 'CAUSE',
-  Project = 'PROJECT'
+  Cause = 'cause',
+  Project = 'project'
 }
 
 export type ProjectUpdateEntity = {
