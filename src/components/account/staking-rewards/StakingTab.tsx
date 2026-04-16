@@ -211,6 +211,7 @@ export function StakingTab({ id }: { id: string }) {
     }
 
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
+    setErrorMessage(null)
     setFlowStep('approving')
     try {
       // Change user network to the chainId
@@ -225,6 +226,11 @@ export function StakingTab({ id }: { id: string }) {
       setFlowStep('approved')
     } catch (error) {
       console.error('Approve failed:', error)
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Approve failed. Try again.'
+      setErrorMessage(message)
       setFlowStep('input')
     }
   }
@@ -239,6 +245,7 @@ export function StakingTab({ id }: { id: string }) {
       return
     }
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
+    setErrorMessage(null)
     setFlowStep('staking')
     try {
       // Change user network to the chainId
@@ -249,11 +256,17 @@ export function StakingTab({ id }: { id: string }) {
       setFlowStep('staked')
     } catch (error) {
       console.error('Stake failed:', error)
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Stake failed. Try again.'
+      setErrorMessage(message)
       setFlowStep('approved')
     }
   }
 
   const handleCancel = () => {
+    setErrorMessage(null)
     setFlowStep('input')
   }
 
@@ -620,7 +633,9 @@ export function StakingTab({ id }: { id: string }) {
                       ))}
                       <button
                         type="button"
-                        disabled={isControlsDisabled}
+                        disabled={
+                          flowStep === 'approving' || isControlsDisabled
+                        }
                         onClick={() => {
                           setAmountToStake(
                             formatBigintDown(walletBalance, tokenDecimals, 1),
@@ -631,8 +646,10 @@ export function StakingTab({ id }: { id: string }) {
                           'bg-giv-brand-050 text-giv-brand-700 transition-colors',
                           'border border-giv-brand-100',
                           !isControlsDisabled &&
+                            flowStep !== 'approving' &&
                             'hover:bg-giv-brand-200 cursor-pointer',
-                          isControlsDisabled && 'cursor-not-allowed opacity-50',
+                          (flowStep === 'approving' || isControlsDisabled) &&
+                            'cursor-not-allowed opacity-50',
                         )}
                       >
                         Max
@@ -747,11 +764,6 @@ export function StakingTab({ id }: { id: string }) {
                       'Stake'
                     )}
                   </button>
-                  {errorMessage && (
-                    <div className="mt-4 text-sm text-red-500 text-center">
-                      {errorMessage}
-                    </div>
-                  )}
                   <button
                     type="button"
                     onClick={handleCancel}
@@ -763,6 +775,11 @@ export function StakingTab({ id }: { id: string }) {
                   >
                     Cancel
                   </button>
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
