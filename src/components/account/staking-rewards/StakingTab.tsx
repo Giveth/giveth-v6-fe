@@ -262,6 +262,7 @@ export function StakingTab({ id }: { id: string }) {
   }
 
   const handleCancel = () => {
+    setErrorMessage(null)
     setFlowStep('input')
   }
 
@@ -628,7 +629,9 @@ export function StakingTab({ id }: { id: string }) {
                       ))}
                       <button
                         type="button"
-                        disabled={isControlsDisabled}
+                        disabled={
+                          flowStep === 'approving' || isControlsDisabled
+                        }
                         onClick={() => {
                           setAmountToStake(
                             formatBigintDown(walletBalance, tokenDecimals, 1),
@@ -639,8 +642,10 @@ export function StakingTab({ id }: { id: string }) {
                           'bg-giv-brand-050 text-giv-brand-700 transition-colors',
                           'border border-giv-brand-100',
                           !isControlsDisabled &&
+                            flowStep !== 'approving' &&
                             'hover:bg-giv-brand-200 cursor-pointer',
-                          isControlsDisabled && 'cursor-not-allowed opacity-50',
+                          (flowStep === 'approving' || isControlsDisabled) &&
+                            'cursor-not-allowed opacity-50',
                         )}
                       >
                         Max
