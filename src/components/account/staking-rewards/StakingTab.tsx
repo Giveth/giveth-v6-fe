@@ -755,11 +755,6 @@ export function StakingTab({ id }: { id: string }) {
                       'Stake'
                     )}
                   </button>
-                  {errorMessage && (
-                    <div className="mt-4 text-sm text-red-500 text-center">
-                      {errorMessage}
-                    </div>
-                  )}
                   <button
                     type="button"
                     onClick={handleCancel}
@@ -771,6 +766,11 @@ export function StakingTab({ id }: { id: string }) {
                   >
                     Cancel
                   </button>
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
