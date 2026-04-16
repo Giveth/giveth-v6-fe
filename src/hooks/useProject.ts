@@ -1,8 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  STAKING_POOLS_FOR_BOOSTING,
-  SUBGRAPH_POLLING_INTERVAL,
-} from '@/lib/constants/staking-power-constants'
 import { graphQLClient } from '@/lib/graphql/client'
 import {
   DonationSortField,
@@ -16,7 +12,6 @@ import {
   projectBySlugQuery,
   similarProjectsBySlugQuery,
 } from '@/lib/graphql/queries'
-import { fetchUserOpGivPowerFromSubgraph } from '@/lib/helpers/opGivPowerSubgraph'
 
 /**
  * Hook to get a project by its slug
@@ -156,33 +151,6 @@ type ProjectBoostersResponse = {
   }
 }
 
-// For production we use these chains, for development we use these chains
-const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development'
-const BOOST_TOTAL_GIVPOWER_CHAIN_IDS =
-  VERCEL_ENV === 'production'
-    ? ([10, 100] as const)
-    : ([100, 11155420] as const)
-
-/**
- * Format a value from wei to a string with decimals
- *
- * @param value - The value to format
- * @param decimals - The number of decimals to format to
- * @returns The formatted value
- */
-const formatUnitsFromWei = (value: string, decimals = 18): string => {
-  const v = BigInt(value || '0')
-  const base = 10n ** BigInt(decimals)
-  const whole = v / base
-  const fraction = v % base
-  const fractionStr = fraction
-    .toString()
-    .padStart(decimals, '0')
-    .replace(/0+$/, '')
-
-  return fractionStr ? `${whole}.${fractionStr}` : whole.toString()
-}
-
 /**
  * Hook to get the GIVpower count for a project
  *
@@ -228,7 +196,7 @@ export const useProjectBoosters = ({
   return useQuery({
     queryKey: ['projectBoosters', projectId, skip, take],
     queryFn: async () => {
-      const response = await graphQLClient.request<ProjectBoostersResponse>(
+      return graphQLClient.request<ProjectBoostersResponse>(
         projectBoostersQuery,
         {
           input: {
@@ -242,99 +210,7 @@ export const useProjectBoosters = ({
           },
         },
       )
-
-      const powerBoostings = response?.getPowerBoosting?.powerBoostings ?? []
-      const activePowerBoostings = powerBoostings.filter(
-        boost => Number(boost.percentage || 0) > 0,
-      )
-      const uniqueWalletAddresses = Array.from(
-        new Set(
-          activePowerBoostings.flatMap(boost =>
-            (boost.user?.wallets ?? [])
-              .map(wallet => wallet.address?.toLowerCase())
-              .filter((address): address is string => Boolean(address)),
-          ),
-        ),
-      )
-      const walletGivpowerMap = new Map<string, number>()
-
-      await Promise.all(
-        uniqueWalletAddresses.map(async address => {
-          const totalBalanceWei = await BOOST_TOTAL_GIVPOWER_CHAIN_IDS.reduce<
-            Promise<bigint>
-          >(async (sumPromise, chainId) => {
-            const sum = await sumPromise
-            const config = STAKING_POOLS_FOR_BOOSTING[chainId]
-            const subgraphUrl = config?.subgraphUrl
-            const lmAddress = config?.GIVPOWER?.LM_ADDRESS
-
-            if (!subgraphUrl || !lmAddress) return sum
-
-            try {
-              const chainBalance = await fetchUserOpGivPowerFromSubgraph({
-                subgraphUrl,
-                lmAddress,
-                userAddress: address,
-              })
-              return sum + BigInt(chainBalance.balanceWei || '0')
-            } catch (error) {
-              console.warn(
-                `[ProjectBoosters] Failed to fetch GIVpower for wallet ${address} on chain ${chainId}`,
-                error,
-              )
-              return sum
-            }
-          }, Promise.resolve(0n))
-
-          const totalBalance = Number(
-            formatUnitsFromWei(totalBalanceWei.toString()),
-          )
-          walletGivpowerMap.set(
-            address,
-            Number.isFinite(totalBalance) ? totalBalance : 0,
-          )
-        }),
-      )
-
-      const boostersWithAmount = powerBoostings.map(boost => {
-        const percentage = Number(boost.percentage || 0)
-        if (percentage <= 0) {
-          return {
-            ...boost,
-            givpowerAmount: 0,
-            userTotalGivpower: 0,
-          }
-        }
-
-        const userWalletAddresses = Array.from(
-          new Set(
-            (boost.user?.wallets ?? [])
-              .map(wallet => wallet.address?.toLowerCase())
-              .filter((address): address is string => Boolean(address)),
-          ),
-        )
-        const userTotalGivpower = userWalletAddresses.reduce(
-          (sum, address) => sum + (walletGivpowerMap.get(address) ?? 0),
-          0,
-        )
-        const givpowerAmount = (userTotalGivpower * percentage) / 100
-
-        return {
-          ...boost,
-          givpowerAmount,
-          userTotalGivpower,
-        }
-      })
-
-      return {
-        ...response,
-        getPowerBoosting: {
-          ...response.getPowerBoosting,
-          powerBoostings: boostersWithAmount,
-        },
-      }
     },
     enabled: typeof projectId === 'number' && projectId > 0,
-    staleTime: SUBGRAPH_POLLING_INTERVAL,
   })
 }
