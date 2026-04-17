@@ -59,13 +59,38 @@ const getBoostSubmitErrorMessage = (error: unknown): string => {
   const rawMessage =
     error instanceof Error ? error.message : 'Failed to submit boost'
 
+  const extractGraphqlMessage = (message: string): string | null => {
+    const jsonStart = message.indexOf('{')
+    if (jsonStart === -1) return null
+
+    try {
+      const parsed = JSON.parse(message.slice(jsonStart))
+      const gqlMessage =
+        parsed?.response?.errors?.[0]?.message ??
+        parsed?.errors?.[0]?.message ??
+        parsed?.message
+
+      return typeof gqlMessage === 'string' ? gqlMessage : null
+    } catch {
+      return null
+    }
+  }
+
+  const simplifiedMessage = extractGraphqlMessage(rawMessage) ?? rawMessage
+
   if (
-    rawMessage.includes('First boosted project percentage must be exactly 100')
+    simplifiedMessage.includes(
+      'First boosted project percentage must be exactly 100',
+    )
   ) {
     return 'For your first (or only) boosted project, allocation must be exactly 100%.'
   }
 
-  return rawMessage
+  if (simplifiedMessage.includes('A user can boost at most 20 projects')) {
+    return 'A user can boost at most 20 projects'
+  }
+
+  return simplifiedMessage
 }
 
 type ProjectBoostModalProps = {
