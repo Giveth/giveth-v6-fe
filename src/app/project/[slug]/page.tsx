@@ -5,10 +5,14 @@ import { ProjectDraftPreview } from '@/components/create-project/ProjectDraftPre
 import { ProjectPageView } from '@/components/project/ProjectPageView'
 import { useProjectBySlug, useProjectGivpowerCount } from '@/hooks/useProject'
 import { useProjectUpdatesCount } from '@/hooks/useProjectUpdates'
+import { safeDecodeURIComponent } from '@/lib/helpers/url'
 
 export default function ProjectPage() {
   const params = useParams()
-  const slug = params.slug as string
+  const rawSlug = params.slug as string
+  // Next.js App Router may surface URL-encoded dynamic segments (e.g. when
+  // slugs contain reserved chars like ":"), so decode defensively before use.
+  const slug = rawSlug ? safeDecodeURIComponent(rawSlug) : rawSlug
   if (slug === 'preview') return <ProjectDraftPreview />
 
   const { data, isLoading, error } = useProjectBySlug(slug)
