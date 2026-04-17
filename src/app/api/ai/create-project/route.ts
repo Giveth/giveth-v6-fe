@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { CHAINS } from '@/lib/constants/chain'
-import { createEmptyCreateProjectSocialMedia } from '@/lib/create-project/types'
+import {
+  CREATE_PROJECT_MIN_DESCRIPTION_LENGTH,
+  createEmptyCreateProjectSocialMedia,
+} from '@/lib/create-project/types'
 import { serverEnv } from '@/lib/env/server'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { ChainType } from '@/lib/graphql/generated/graphql'
@@ -200,15 +203,19 @@ export async function POST(req: Request) {
     '- If the user implies different addresses per EVM network but does not provide a mapping, do NOT guess. Leave recipientAddresses as null and ask which address should be used for which EVM network.',
     '',
     'EXCEPTION (opt-in generation): If the user explicitly asks you to "generate / draft / write" a project description, you MAY create a neutral draft description.',
-    '- Aim for ~300–500 words.',
+    `- Any description you generate MUST contain at least ${CREATE_PROJECT_MIN_DESCRIPTION_LENGTH} characters (the product rejects shorter submissions). Count characters, not words, and include whitespace.`,
+    `- Target roughly ${CREATE_PROJECT_MIN_DESCRIPTION_LENGTH}–2000 characters (about 250–400 words). If your draft is shorter than ${CREATE_PROJECT_MIN_DESCRIPTION_LENGTH} characters, expand it (add context about mission, who it serves, how it works, expected impact) until it clears that floor before returning.`,
+    '- Structure the draft into 3–5 short paragraphs separated by blank lines for readability.',
     '- Base it only on the project title and any facts in the current draft/user message.',
-    '- Avoid unverifiable specifics; keep wording general.',
+    '- Avoid unverifiable specifics; keep wording general but substantive.',
     '- If title is missing, ask for it and do not draft.',
     '',
     'Description behavior:',
     '- Only patch description when the latest user message clearly provides description content, asks to edit it, asks to clear it, or explicitly asks you to draft/write/generate it.',
     '- Description must be plain project prose only.',
     '- Do NOT copy CURRENT_DRAFT_JSON, RECENT_CHAT_HISTORY, USER_MESSAGE labels, ASSISTANT_MESSAGE, or helper text such as follow-up questions into description.',
+    `- When the description in the patch is AI-generated (opt-in generation above), it MUST be at least ${CREATE_PROJECT_MIN_DESCRIPTION_LENGTH} characters long. If you cannot reach that length without fabricating facts, instead leave description as null and ask the user one short follow-up question for the missing context you need.`,
+    "- When the user provides description content directly, pass it through as-is. Do not expand or pad the user's own wording to meet the length floor.",
     '',
     'Fields you may patch:',
     '- title',

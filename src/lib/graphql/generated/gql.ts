@@ -16,6 +16,9 @@ import * as types from './graphql';
  */
 type Documents = {
     "\n  query QfRoundsForApply($skip: Int = 0, $take: Int = 100) {\n    qfRounds(skip: $skip, take: $take) {\n      total\n      rounds {\n        id\n        name\n        slug\n        beginDate\n        endDate\n        eligibleNetworks\n        applicationTypeformUrl\n      }\n    }\n  }\n": typeof types.QfRoundsForApplyDocument,
+    "\n  query ValidateCreateProjectTitle($title: String!) {\n    validateCreateProjectTitle(title: $title)\n  }\n": typeof types.ValidateCreateProjectTitleDocument,
+    "\n  query ValidateCreateProjectRecipientAddress(\n    $address: String!\n    $chainType: ChainType\n    $memo: String\n  ) {\n    validateCreateProjectRecipientAddress(\n      address: $address\n      chainType: $chainType\n      memo: $memo\n    )\n  }\n": typeof types.ValidateCreateProjectRecipientAddressDocument,
+    "\n  query ValidateCreateProjectRecipientAddresses(\n    $addresses: [ValidateCreateProjectRecipientAddressInput!]!\n  ) {\n    validateCreateProjectRecipientAddresses(addresses: $addresses) {\n      clientId\n      isValid\n      error\n    }\n  }\n": typeof types.ValidateCreateProjectRecipientAddressesDocument,
     "\n  mutation CreateProject($input: CreateProjectInput!) {\n    createProject(input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      createdAt\n      updatedAt\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n        chainType\n        memo\n      }\n      socialMedia {\n        id\n        type\n        link\n      }\n    }\n  }\n": typeof types.CreateProjectDocument,
     "\n  mutation UpdateProject($projectId: Int!, $input: UpdateProjectInput!) {\n    updateProject(projectId: $projectId, input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n        chainType\n        memo\n      }\n      socialMedia {\n        id\n        type\n        link\n      }\n    }\n  }\n": typeof types.UpdateProjectDocument,
     "\n  mutation RequestEmailVerification($input: RequestEmailVerificationInput!) {\n    requestEmailVerification(input: $input) {\n      status\n      email\n      expiresAt\n    }\n  }\n": typeof types.RequestEmailVerificationDocument,
@@ -57,6 +60,9 @@ type Documents = {
 };
 const documents: Documents = {
     "\n  query QfRoundsForApply($skip: Int = 0, $take: Int = 100) {\n    qfRounds(skip: $skip, take: $take) {\n      total\n      rounds {\n        id\n        name\n        slug\n        beginDate\n        endDate\n        eligibleNetworks\n        applicationTypeformUrl\n      }\n    }\n  }\n": types.QfRoundsForApplyDocument,
+    "\n  query ValidateCreateProjectTitle($title: String!) {\n    validateCreateProjectTitle(title: $title)\n  }\n": types.ValidateCreateProjectTitleDocument,
+    "\n  query ValidateCreateProjectRecipientAddress(\n    $address: String!\n    $chainType: ChainType\n    $memo: String\n  ) {\n    validateCreateProjectRecipientAddress(\n      address: $address\n      chainType: $chainType\n      memo: $memo\n    )\n  }\n": types.ValidateCreateProjectRecipientAddressDocument,
+    "\n  query ValidateCreateProjectRecipientAddresses(\n    $addresses: [ValidateCreateProjectRecipientAddressInput!]!\n  ) {\n    validateCreateProjectRecipientAddresses(addresses: $addresses) {\n      clientId\n      isValid\n      error\n    }\n  }\n": types.ValidateCreateProjectRecipientAddressesDocument,
     "\n  mutation CreateProject($input: CreateProjectInput!) {\n    createProject(input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      createdAt\n      updatedAt\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n        chainType\n        memo\n      }\n      socialMedia {\n        id\n        type\n        link\n      }\n    }\n  }\n": types.CreateProjectDocument,
     "\n  mutation UpdateProject($projectId: Int!, $input: UpdateProjectInput!) {\n    updateProject(projectId: $projectId, input: $input) {\n      id\n      title\n      slug\n      description\n      image\n      impactLocation\n      categories {\n        id\n        name\n        value\n      }\n      addresses {\n        id\n        address\n        networkId\n        chainType\n        memo\n      }\n      socialMedia {\n        id\n        type\n        link\n      }\n    }\n  }\n": types.UpdateProjectDocument,
     "\n  mutation RequestEmailVerification($input: RequestEmailVerificationInput!) {\n    requestEmailVerification(input: $input) {\n      status\n      email\n      expiresAt\n    }\n  }\n": types.RequestEmailVerificationDocument,
@@ -101,6 +107,18 @@ const documents: Documents = {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query QfRoundsForApply($skip: Int = 0, $take: Int = 100) {\n    qfRounds(skip: $skip, take: $take) {\n      total\n      rounds {\n        id\n        name\n        slug\n        beginDate\n        endDate\n        eligibleNetworks\n        applicationTypeformUrl\n      }\n    }\n  }\n"): typeof import('./graphql').QfRoundsForApplyDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidateCreateProjectTitle($title: String!) {\n    validateCreateProjectTitle(title: $title)\n  }\n"): typeof import('./graphql').ValidateCreateProjectTitleDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidateCreateProjectRecipientAddress(\n    $address: String!\n    $chainType: ChainType\n    $memo: String\n  ) {\n    validateCreateProjectRecipientAddress(\n      address: $address\n      chainType: $chainType\n      memo: $memo\n    )\n  }\n"): typeof import('./graphql').ValidateCreateProjectRecipientAddressDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidateCreateProjectRecipientAddresses(\n    $addresses: [ValidateCreateProjectRecipientAddressInput!]!\n  ) {\n    validateCreateProjectRecipientAddresses(addresses: $addresses) {\n      clientId\n      isValid\n      error\n    }\n  }\n"): typeof import('./graphql').ValidateCreateProjectRecipientAddressesDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

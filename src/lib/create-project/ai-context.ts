@@ -31,6 +31,7 @@ export function looksLikeAiContextLeak(value: string): boolean {
   ]
 
   return (
-    jsonFieldHints.filter(hint => lower.includes(hint.toLowerCase())).length >= 3
+    jsonFieldHints.filter(hint => lower.includes(hint.toLowerCase())).length >=
+    3
   )
 }

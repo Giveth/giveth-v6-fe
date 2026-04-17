@@ -5,10 +5,27 @@ import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import { useActiveAccount, useActiveWallet } from 'thirdweb/react'
+import { ImpactLocationAutocomplete } from '@/components/create-project/ImpactLocationAutocomplete'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useSiweAuth } from '@/context/AuthContext'
+import {
+  validateCreateProjectRecipientAddressesRemotely,
+  validateCreateProjectTitleRemotely,
+} from '@/lib/create-project/backend-validation'
+import {
+  CREATE_PROJECT_SOCIAL_FIELDS,
+  type CreateProjectRecipientAddress,
+} from '@/lib/create-project/types'
+import {
+  isLikelyEnsName,
+  validateCreateProjectDescription,
+  validateCreateProjectImage,
+  validateCreateProjectRecipientAddress,
+  validateCreateProjectSocialLink,
+  validateCreateProjectTitle,
+} from '@/lib/create-project/validation'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import {
   type CategoriesQuery,
@@ -40,26 +57,18 @@ type FormSectionKey =
 type Category = CategoriesQuery['categories'][number]
 type MainCategory = MainCategoriesQuery['mainCategories'][number]
 
-const socialSections: {
-  key: CreateProjectSocialType
-  label: string
-  placeholder: string
-}[] = [
-  { key: 'website', label: 'Website', placeholder: 'Enter website link' },
-  { key: 'facebook', label: 'Facebook', placeholder: 'Enter Facebook link' },
-  { key: 'x', label: 'X / Twitter', placeholder: 'Enter X link' },
-  { key: 'linkedin', label: 'LinkedIn', placeholder: 'Enter LinkedIn link' },
-]
-
 const MANUAL_FIELD_BASE_CLASSES =
   'rounded-md border-[#D7DDEA] bg-white shadow-none focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 const MANUAL_TEXTAREA_CLASSES =
   'min-h-28 w-full resize-none rounded-md border border-[#D7DDEA] bg-white px-3 py-2 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] placeholder:text-[#9ca3af] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
-const MANUAL_SELECT_CLASSES =
-  'h-10 w-full rounded-md border border-[#D7DDEA] bg-white px-3 text-sm text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]'
 
 const normalizeTitleForSalt = (title: string) =>
   title.trim().toLowerCase().replace(/\s+/g, ' ')
+
+type RemoteRecipientValidationState = {
+  errors: Record<string, string>
+  resolvedAddresses: Record<string, string>
+}
 
 export function ManualSidebarForm() {
   const router = useRouter()
@@ -82,8 +91,20 @@ export function ManualSidebarForm() {
     null,
   )
   const [imageUploadError, setImageUploadError] = useState<string | null>(null)
+  const [titleValidationError, setTitleValidationError] = useState<
+    string | null
+  >(null)
+  const [isTitleValidating, setIsTitleValidating] = useState(false)
+  const [recipientValidation, setRecipientValidation] =
+    useState<RemoteRecipientValidationState>({
+      errors: {},
+      resolvedAddresses: {},
+    })
+  const [isRecipientValidating, setIsRecipientValidating] = useState(false)
   const imageFileInputRef = useRef<HTMLInputElement | null>(null)
   const pendingProjectSaltRef = useRef<string | null>(null)
+  const titleValidationRequestRef = useRef(0)
+  const recipientValidationRequestRef = useRef(0)
 
   const draft = useCreateProjectDraftStore(s => s.draft)
   const errors = useCreateProjectDraftStore(s => s.errors)
@@ -116,12 +137,63 @@ export function ManualSidebarForm() {
   )
 
   const liveErrors = useMemo(() => validateCreateProjectDraft(draft), [draft])
-  const canPublish = Object.keys(liveErrors).length === 0
   const ownerAdminAccount = useMemo(
     () => resolveProjectOwnerAdminAccount(activeWallet, activeAccount),
     [activeWallet, activeAccount],
   )
   const normalizedTitleForSalt = normalizeTitleForSalt(draft.title)
+  const recipientValidationSignature = useMemo(
+    () =>
+      draft.recipientAddresses
+        .map(recipientAddress =>
+          [
+            recipientAddress.id,
+            recipientAddress.chainType,
+            recipientAddress.networkId,
+            recipientAddress.address.trim(),
+            recipientAddress.memo?.trim() || '',
+          ].join(':'),
+        )
+        .join('|'),
+    [draft.recipientAddresses],
+  )
+  const titleErrorMessage = useMemo(
+    () =>
+      errors.title ||
+      titleValidationError ||
+      (draft.title.trim() ? liveErrors.title : undefined),
+    [draft.title, errors.title, liveErrors.title, titleValidationError],
+  )
+  const descriptionErrorMessage = useMemo(
+    () =>
+      errors.description ||
+      (draft.description.trim() ? liveErrors.description : undefined),
+    [draft.description, errors.description, liveErrors.description],
+  )
+  const imageErrorMessage = useMemo(
+    () => errors.image || (draft.image.trim() ? liveErrors.image : undefined),
+    [draft.image, errors.image, liveErrors.image],
+  )
+  const recipientErrorMessage = useMemo(
+    () =>
+      errors.recipientAddresses ||
+      (draft.recipientAddresses.length
+        ? liveErrors.recipientAddresses
+        : undefined),
+    [
+      draft.recipientAddresses.length,
+      errors.recipientAddresses,
+      liveErrors.recipientAddresses,
+    ],
+  )
+  const hasRecipientAsyncErrors =
+    Object.keys(recipientValidation.errors).length > 0
+  const canPublish =
+    Object.keys(liveErrors).length === 0 &&
+    !titleValidationError &&
+    !hasRecipientAsyncErrors &&
+    !isTitleValidating &&
+    !isRecipientValidating
 
   const autofillRecipientAddresses = useCallback(async () => {
     if (!ownerAdminAccount) return
@@ -177,19 +249,102 @@ export function ManualSidebarForm() {
   ])
 
   useEffect(() => {
-    // Only auto-fill when the user has not manually customized addresses.
+    // Only auto-fill the initial empty state. After that, the user can
+    // explicitly regenerate addresses, but title edits should not silently
+    // mutate recipient addresses or trigger recipient re-validation.
     if (!ownerAdminAccount) return
     if (!normalizedTitleForSalt) return
-    if (draft.recipientAddresses.length > 0 && !isRecipientAddressesAutoFilled)
-      return
+    if (draft.recipientAddresses.length > 0) return
     void autofillRecipientAddresses()
   }, [
     autofillRecipientAddresses,
     draft.recipientAddresses.length,
-    isRecipientAddressesAutoFilled,
     normalizedTitleForSalt,
     ownerAdminAccount,
   ])
+
+  const runRemoteTitleValidation = useCallback(async (title: string) => {
+    if (validateCreateProjectTitle(title)) return undefined
+    return validateCreateProjectTitleRemotely(title.trim())
+  }, [])
+
+  const runRemoteRecipientValidation = useCallback(
+    async (addresses: CreateProjectRecipientAddress[]) => {
+      return validateCreateProjectRecipientAddressesRemotely(
+        addresses.filter(
+          recipientAddress =>
+            !validateCreateProjectRecipientAddress(recipientAddress),
+        ),
+      )
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const title = draft.title.trim()
+    const localTitleError = validateCreateProjectTitle(draft.title)
+    titleValidationRequestRef.current += 1
+    const requestId = titleValidationRequestRef.current
+
+    if (!title || localTitleError) {
+      setIsTitleValidating(false)
+      setTitleValidationError(null)
+      return
+    }
+
+    setIsTitleValidating(true)
+
+    const timeoutId = window.setTimeout(() => {
+      void runRemoteTitleValidation(title)
+        .then(error => {
+          if (titleValidationRequestRef.current !== requestId) return
+          setTitleValidationError(error ?? null)
+        })
+        .finally(() => {
+          if (titleValidationRequestRef.current !== requestId) return
+          setIsTitleValidating(false)
+        })
+    }, 3000)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [draft.title, runRemoteTitleValidation])
+
+  useEffect(() => {
+    const addresses = draft.recipientAddresses
+    recipientValidationRequestRef.current += 1
+    const requestId = recipientValidationRequestRef.current
+
+    if (!addresses.length) {
+      setIsRecipientValidating(false)
+      setRecipientValidation({ errors: {}, resolvedAddresses: {} })
+      return
+    }
+
+    if (
+      addresses.every(recipientAddress =>
+        Boolean(validateCreateProjectRecipientAddress(recipientAddress)),
+      )
+    ) {
+      setIsRecipientValidating(false)
+      setRecipientValidation({ errors: {}, resolvedAddresses: {} })
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsRecipientValidating(true)
+      void runRemoteRecipientValidation(addresses)
+        .then(nextValidation => {
+          if (recipientValidationRequestRef.current !== requestId) return
+          setRecipientValidation(nextValidation)
+        })
+        .finally(() => {
+          if (recipientValidationRequestRef.current !== requestId) return
+          setIsRecipientValidating(false)
+        })
+    }, 350)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [recipientValidationSignature, runRemoteRecipientValidation])
 
   const { data: mainCategoriesData } = useQuery({
     queryKey: ['mainCategories'],
@@ -221,16 +376,92 @@ export function ManualSidebarForm() {
 
   const sectionStatus = {
     projectDetails:
-      draft.title.trim() && draft.description.trim() ? 'Completed' : 'To do',
+      !validateCreateProjectTitle(draft.title) &&
+      !validateCreateProjectDescription(draft.description) &&
+      !titleValidationError
+        ? 'Completed'
+        : 'To do',
     categories: draft.categoryIds.length > 0 ? 'Completed' : 'To do',
-    social: draft.socialMedia.some(s => s.link.trim()) ? 'Completed' : 'To do',
+    social: hasValidSocialSection(draft.socialMedia) ? 'Completed' : 'To do',
     location: draft.impactLocation.trim() ? 'Completed' : 'To do',
-    image: draft.image.trim() ? 'Completed' : 'To do',
-    funds: draft.recipientAddresses.length > 0 ? 'Completed' : 'To do',
+    image:
+      draft.image.trim() && !validateCreateProjectImage(draft.image)
+        ? 'Completed'
+        : 'To do',
+    funds:
+      draft.recipientAddresses.length > 0 &&
+      draft.recipientAddresses.every(
+        recipientAddress =>
+          !validateCreateProjectRecipientAddress(recipientAddress),
+      ) &&
+      !hasRecipientAsyncErrors
+        ? 'Completed'
+        : 'To do',
   } as const
 
   const toggleSection = (key: FormSectionKey) =>
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
+
+  const handlePublish = useCallback(async () => {
+    const ok = validate()
+    if (!ok) return
+
+    setIsTitleValidating(true)
+    setIsRecipientValidating(true)
+
+    const [nextTitleValidationError, nextRecipientValidation] =
+      await Promise.all([
+        runRemoteTitleValidation(draft.title),
+        runRemoteRecipientValidation(draft.recipientAddresses),
+      ])
+
+    setIsTitleValidating(false)
+    setIsRecipientValidating(false)
+    setTitleValidationError(nextTitleValidationError ?? null)
+    setRecipientValidation(nextRecipientValidation)
+
+    if (
+      nextTitleValidationError ||
+      Object.keys(nextRecipientValidation.errors).length > 0
+    ) {
+      return
+    }
+
+    try {
+      const { slug } = await submitCreateProject({
+        draft: {
+          ...draft,
+          recipientAddresses: draft.recipientAddresses.map(
+            recipientAddress => ({
+              ...recipientAddress,
+              address:
+                nextRecipientValidation.resolvedAddresses[
+                  recipientAddress.id
+                ] ?? recipientAddress.address,
+            }),
+          ),
+        },
+      })
+
+      router.push(`/project/${slug}`)
+    } catch {
+      const [nextTitleValidationError, nextRecipientValidation] =
+        await Promise.all([
+          runRemoteTitleValidation(draft.title),
+          runRemoteRecipientValidation(draft.recipientAddresses),
+        ])
+
+      setTitleValidationError(nextTitleValidationError ?? null)
+      setRecipientValidation(nextRecipientValidation)
+    }
+  }, [
+    draft,
+    router,
+    runRemoteRecipientValidation,
+    runRemoteTitleValidation,
+    submitCreateProject,
+    validate,
+  ])
 
   return (
     <div className="flex h-full flex-col">
@@ -260,13 +491,19 @@ export function ManualSidebarForm() {
                 value={draft.title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="Enter project name"
-                aria-invalid={Boolean(errors.title)}
+                maxLength={55}
+                aria-invalid={Boolean(titleErrorMessage)}
                 className={MANUAL_FIELD_BASE_CLASSES}
               />
-              <p className="text-xs text-[#9ca3af]">3-100 characters</p>
-              {errors.title && (
+              <p className="text-xs text-[#9ca3af]">3-55 characters</p>
+              {isTitleValidating && (
+                <p className="text-xs font-medium text-[#7c6af2]">
+                  Checking title availability...
+                </p>
+              )}
+              {titleErrorMessage && (
                 <p className="text-xs font-medium text-red-600">
-                  {errors.title}
+                  {titleErrorMessage}
                 </p>
               )}
             </div>
@@ -280,12 +517,14 @@ export function ManualSidebarForm() {
                 placeholder="Enter a description..."
                 value={draft.description}
                 onChange={e => setDescription(e.target.value)}
-                aria-invalid={Boolean(errors.description)}
+                aria-invalid={Boolean(descriptionErrorMessage)}
               />
-              <p className="text-xs text-[#9ca3af]">Aim for 200-500 words.</p>
-              {errors.description && (
+              <p className="text-xs text-[#9ca3af]">
+                Provide at least 1200 characters.
+              </p>
+              {descriptionErrorMessage && (
                 <p className="text-xs font-medium text-red-600">
-                  {errors.description}
+                  {descriptionErrorMessage}
                 </p>
               )}
             </div>
@@ -361,28 +600,36 @@ export function ManualSidebarForm() {
             onToggle={() => toggleSection('social')}
           >
             <div className="space-y-3">
-              {socialSections.map(item => (
-                <div key={item.key} className="space-y-1">
-                  <label className="text-xs font-medium text-[#374151]">
-                    {item.label}
-                  </label>
-                  <Input
-                    value={
-                      draft.socialMedia.find(s => s.type === item.key)?.link ||
-                      ''
-                    }
-                    onChange={e => setSocialLink(item.key, e.target.value)}
-                    placeholder={item.placeholder}
-                    aria-invalid={Boolean(errors[`socialMedia.${item.key}`])}
-                    className={MANUAL_FIELD_BASE_CLASSES}
-                  />
-                  {errors[`socialMedia.${item.key}`] && (
-                    <p className="text-xs font-medium text-red-600">
-                      {errors[`socialMedia.${item.key}`]}
-                    </p>
-                  )}
-                </div>
-              ))}
+              {CREATE_PROJECT_SOCIAL_FIELDS.map(item => {
+                const socialError =
+                  errors[`socialMedia.${item.key}`] ||
+                  (draft.socialMedia.find(s => s.type === item.key)?.link.trim()
+                    ? liveErrors[`socialMedia.${item.key}`]
+                    : undefined)
+
+                return (
+                  <div key={item.key} className="space-y-1">
+                    <label className="text-xs font-medium text-[#374151]">
+                      {item.label}
+                    </label>
+                    <Input
+                      value={
+                        draft.socialMedia.find(s => s.type === item.key)
+                          ?.link || ''
+                      }
+                      onChange={e => setSocialLink(item.key, e.target.value)}
+                      placeholder={item.placeholder}
+                      aria-invalid={Boolean(socialError)}
+                      className={MANUAL_FIELD_BASE_CLASSES}
+                    />
+                    {socialError && (
+                      <p className="text-xs font-medium text-red-600">
+                        {socialError}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </FormSection>
 
@@ -393,20 +640,14 @@ export function ManualSidebarForm() {
             isOpen={openSections.location}
             onToggle={() => toggleSection('location')}
           >
-            <select
-              className={MANUAL_SELECT_CLASSES}
+            <ImpactLocationAutocomplete
               value={draft.impactLocation}
-              onChange={e => setImpactLocation(e.target.value)}
-            >
-              <option value="">Select…</option>
-              <option value="Worldwide">Worldwide</option>
-              <option value="North America">North America</option>
-              <option value="South America">South America</option>
-              <option value="Europe">Europe</option>
-              <option value="Asia">Asia</option>
-              <option value="Africa">Africa</option>
-              <option value="Oceania">Oceania</option>
-            </select>
+              onChange={setImpactLocation}
+              disabled={isSubmitting}
+            />
+            <p className="text-xs text-[#9ca3af]">
+              Search places for a city, region, country, or choose worldwide.
+            </p>
           </FormSection>
 
           <FormSection
@@ -422,7 +663,7 @@ export function ManualSidebarForm() {
                   value={draft.image}
                   onChange={e => setImage(e.target.value)}
                   placeholder="https://..."
-                  aria-invalid={Boolean(errors.image)}
+                  aria-invalid={Boolean(imageErrorMessage)}
                   className={MANUAL_FIELD_BASE_CLASSES}
                 />
                 <input
@@ -474,9 +715,9 @@ export function ManualSidebarForm() {
                   {imageUploadError}
                 </p>
               )}
-              {errors.image && (
+              {imageErrorMessage && (
                 <p className="text-xs font-medium text-red-600">
-                  {errors.image}
+                  {imageErrorMessage}
                 </p>
               )}
             </div>
@@ -523,6 +764,11 @@ export function ManualSidebarForm() {
                   {recipientSetupError}
                 </p>
               )}
+              {isRecipientValidating && draft.recipientAddresses.length > 0 && (
+                <p className="text-xs font-medium text-[#7c6af2]">
+                  Validating recipient addresses...
+                </p>
+              )}
 
               {draft.recipientAddresses.length === 0 ? (
                 <div className="rounded-md border border-[#eef0f7] bg-[#fbfbff] px-4 py-3 text-sm text-[#6b7280]">
@@ -530,90 +776,125 @@ export function ManualSidebarForm() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {draft.recipientAddresses.map(addr => (
-                    <div
-                      key={addr.id}
-                      className="rounded-md border border-[#eef0f7] bg-white p-3"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                          <select
-                            className="h-9 rounded-md border border-[#D7DDEA] bg-white px-2 text-xs text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]"
-                            value={addr.chainType}
-                            onChange={e =>
-                              updateRecipientAddress(addr.id, {
-                                chainType: e.target
-                                  .value as CreateProjectChainType,
-                              })
-                            }
-                          >
-                            <option value="EVM">EVM</option>
-                            <option value="SOLANA">Solana</option>
-                            <option value="STELLAR">Stellar</option>
-                          </select>
-                          <Input
-                            className={cn(
-                              MANUAL_FIELD_BASE_CLASSES,
-                              'h-9 w-24 text-xs',
-                            )}
-                            inputMode="numeric"
-                            value={String(addr.networkId)}
-                            onChange={e =>
-                              updateRecipientAddress(addr.id, {
-                                networkId: Number(e.target.value || 0),
-                              })
-                            }
-                            placeholder="Network"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          className="inline-flex size-9 items-center justify-center rounded-md border border-[#eef0f7] text-[#9ca3af] hover:text-red-600"
-                          onClick={() => removeRecipientAddress(addr.id)}
-                          aria-label="Remove address"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
-                      </div>
+                  {draft.recipientAddresses.map(addr => {
+                    const localRecipientError =
+                      validateCreateProjectRecipientAddress(addr)
+                    const remoteRecipientError =
+                      recipientValidation.errors[addr.id]
+                    const resolvedRecipientAddress =
+                      recipientValidation.resolvedAddresses[addr.id]
 
-                      <div className="mt-2 space-y-2">
-                        <Input
-                          className={MANUAL_FIELD_BASE_CLASSES}
-                          value={addr.address}
-                          onChange={e =>
-                            updateRecipientAddress(addr.id, {
-                              address: e.target.value,
-                            })
-                          }
-                          placeholder={
-                            addr.chainType === 'EVM'
-                              ? '0x...'
-                              : addr.chainType === 'SOLANA'
-                                ? 'Solana address'
-                                : 'G...'
-                          }
-                        />
-                        {addr.chainType === 'STELLAR' && (
+                    return (
+                      <div
+                        key={addr.id}
+                        className="rounded-md border border-[#eef0f7] bg-white p-3"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <select
+                              className="h-9 rounded-md border border-[#D7DDEA] bg-white px-2 text-xs text-[#111827] shadow-none outline-none transition-[border-color,box-shadow] focus-visible:border-[#B9A7FF] focus-visible:ring-0 focus-visible:shadow-[0px_0px_0px_4px_#F4EBFF,0px_1px_2px_0px_#0A0D120D]"
+                              value={addr.chainType}
+                              onChange={e =>
+                                updateRecipientAddress(addr.id, {
+                                  chainType: e.target
+                                    .value as CreateProjectChainType,
+                                })
+                              }
+                            >
+                              <option value="EVM">EVM</option>
+                              <option value="SOLANA">Solana</option>
+                              <option value="STELLAR">Stellar</option>
+                            </select>
+                            <Input
+                              className={cn(
+                                MANUAL_FIELD_BASE_CLASSES,
+                                'h-9 w-24 text-xs',
+                              )}
+                              inputMode="numeric"
+                              value={String(addr.networkId)}
+                              onChange={e =>
+                                updateRecipientAddress(addr.id, {
+                                  networkId: Number(e.target.value || 0),
+                                })
+                              }
+                              placeholder="Network"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="inline-flex size-9 items-center justify-center rounded-md border border-[#eef0f7] text-[#9ca3af] hover:text-red-600"
+                            onClick={() => removeRecipientAddress(addr.id)}
+                            aria-label="Remove address"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
+
+                        <div className="mt-2 space-y-2">
                           <Input
                             className={MANUAL_FIELD_BASE_CLASSES}
-                            value={addr.memo || ''}
+                            value={addr.address}
                             onChange={e =>
                               updateRecipientAddress(addr.id, {
-                                memo: e.target.value,
+                                address: e.target.value,
                               })
                             }
-                            placeholder="Memo (optional)"
+                            placeholder={
+                              addr.chainType === 'EVM'
+                                ? '0x...'
+                                : addr.chainType === 'SOLANA'
+                                  ? 'Solana address'
+                                  : 'G...'
+                            }
                           />
-                        )}
+                          {addr.chainType === 'EVM' &&
+                            isLikelyEnsName(addr.address) && (
+                              <p className="text-xs text-[#6b7280]">
+                                ENS names are resolved on Ethereum mainnet
+                                before publishing.
+                              </p>
+                            )}
+                          {addr.chainType === 'STELLAR' && (
+                            <Input
+                              className={MANUAL_FIELD_BASE_CLASSES}
+                              value={addr.memo || ''}
+                              onChange={e =>
+                                updateRecipientAddress(addr.id, {
+                                  memo: e.target.value,
+                                })
+                              }
+                              placeholder="Memo (optional)"
+                            />
+                          )}
+                          {localRecipientError && (
+                            <p className="text-xs font-medium text-red-600">
+                              {localRecipientError}
+                            </p>
+                          )}
+                          {!localRecipientError && remoteRecipientError && (
+                            <p className="text-xs font-medium text-red-600">
+                              {remoteRecipientError}
+                            </p>
+                          )}
+                          {!localRecipientError &&
+                            !remoteRecipientError &&
+                            resolvedRecipientAddress &&
+                            resolvedRecipientAddress.toLowerCase() !==
+                              addr.address.trim().toLowerCase() && (
+                              <p className="text-xs text-[#1b7a42]">
+                                Resolved to {resolvedRecipientAddress}
+                              </p>
+                            )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 
-              {errors.recipientAddresses && (
+              {recipientErrorMessage && (
                 <p className="text-xs font-medium text-red-600">
-                  {errors.recipientAddresses}
+                  {recipientErrorMessage}
                 </p>
               )}
             </div>
@@ -632,19 +913,22 @@ export function ManualSidebarForm() {
           variant="secondary"
           disabled={isSubmitting || isAutofillingRecipients || !canPublish}
           className="w-full rounded-xl bg-[#edeefe] text-[#3b2ed0] hover:bg-[#e4e6ff] disabled:bg-[#edeefe] disabled:text-[#9aa0bd] disabled:hover:bg-[#edeefe]"
-          onClick={async () => {
-            const ok = validate()
-            if (!ok) return
-
-            const { slug } = await submitCreateProject()
-
-            router.push(`/project/${slug}`)
-          }}
+          onClick={() => void handlePublish()}
         >
           {isSubmitting ? 'Publishing…' : 'Publish Project'}
         </Button>
       </div>
     </div>
+  )
+}
+
+function hasValidSocialSection(
+  socialMedia: { type: CreateProjectSocialType; link: string }[],
+): boolean {
+  return socialMedia.some(
+    socialLink =>
+      socialLink.link.trim() &&
+      !validateCreateProjectSocialLink(socialLink.type, socialLink.link),
   )
 }
 

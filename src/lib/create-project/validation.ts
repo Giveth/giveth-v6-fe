@@ -60,8 +60,6 @@ const SOCIAL_LINK_PATTERNS: Record<CreateProjectSocialType, RegExp> = {
     /^(https:\/\/)?(www\.)?github\.com\/[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)?\/?$/,
 }
 
-export type CreateProjectQuality = 'LOW' | 'MEDIUM' | 'HIGH' | 'PERFECT'
-
 export function containsHtmlTag(value: string): boolean {
   return HTML_TAG_REGEX.test(value)
 }
@@ -227,47 +225,6 @@ export function validateCreateProjectDraft(
   }
 
   return errors
-}
-
-export function hasValidCreateProjectSocialLink(
-  draft: CreateProjectDraft,
-): boolean {
-  return draft.socialMedia.some(
-    socialLink =>
-      socialLink.link.trim() &&
-      !validateCreateProjectSocialLink(socialLink.type, socialLink.link),
-  )
-}
-
-export function hasCreateProjectDescriptionMedia(description: string): boolean {
-  return /<img|<iframe|!\[[^\]]*\]\([^)]+\)|https?:\/\/\S+\.(png|jpe?g|gif|webp|svg|mp4|mov|webm)/i.test(
-    description,
-  )
-}
-
-export function calculateCreateProjectScore(draft: CreateProjectDraft): {
-  score: number
-  quality: CreateProjectQuality
-} {
-  const score =
-    (validateCreateProjectDescription(draft.description) ? 0 : 51) +
-    (draft.categoryIds.length > 0 ? 7 : 0) +
-    (draft.impactLocation.trim() ? 7 : 0) +
-    (draft.image.trim() ? 15 : 0) +
-    (hasCreateProjectDescriptionMedia(draft.description) ? 8 : 0) +
-    (hasValidCreateProjectSocialLink(draft) ? 12 : 0)
-
-  return {
-    score,
-    quality:
-      score < 50
-        ? 'LOW'
-        : score < 80
-          ? 'MEDIUM'
-          : score < 100
-            ? 'HIGH'
-            : 'PERFECT',
-  }
 }
 
 export function createProjectSlugCandidate(value: string): string {
