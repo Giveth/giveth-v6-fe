@@ -28,7 +28,7 @@ export function GivbacksInfoBox({ projectId }: { projectId?: number }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-giv-neutral-900">
-                Get rewarded with up to 80%
+                Get rewarded for donating
               </p>
               <p className="text-base text-giv-neutral-900 mt-1">
                 Donations of ${GIVBACKS_DONATION_QUALIFICATION_VALUE_USD} or

@@ -10,7 +10,6 @@ import { UserGivbacksBanner } from '@/components/user/UserGivbacksBanner'
 import { myRecurringDonationsLink } from '@/lib/constants/menu-links'
 
 export function DonationsTable() {
-  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('one-time')
@@ -25,11 +24,9 @@ export function DonationsTable() {
       <div className="mb-6">
         <EligibilityBanner />
       </div>
-      {!isProduction && (
-        <div className="mb-12">
-          <UserGivbacksBanner />
-        </div>
-      )}
+      <div className="mb-12">
+        <UserGivbacksBanner />
+      </div>
       <DonationTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="relative">
         {isLoading && (
