@@ -16,11 +16,14 @@ import {
   ProjectSortField,
   SortDirection,
 } from '@/lib/graphql/generated/graphql'
+import { safeDecodeURIComponent } from '@/lib/helpers/url'
 
 export default function QFRoundPage() {
   const PROJECTS_PAGE_SIZE = 15
   const params = useParams<{ slug: string }>()
-  const { slug } = params
+  // Decode defensively: Next.js App Router may surface URL-encoded dynamic
+  // segments (e.g. when slugs contain reserved chars like ":").
+  const slug = params?.slug ? safeDecodeURIComponent(params.slug) : ''
 
   // State for Sorting and Filtering
   const [sortField, setSortField] = useState<ProjectSortField>(
