@@ -267,7 +267,29 @@ export default function ProjectBoostModal({
   }
 
   // Check if the current network is supported for boosting
-  const currentChainId = activeChain?.id
+  const getInjectedChainId = () => {
+    if (typeof window === 'undefined') return null
+    const injectedChainId = (window as typeof window & { ethereum?: unknown })
+      ?.ethereum as { chainId?: string | number } | undefined
+    const chainIdValue = injectedChainId?.chainId
+    if (!chainIdValue) return null
+
+    if (typeof chainIdValue === 'number' && Number.isFinite(chainIdValue)) {
+      return chainIdValue
+    }
+
+    if (typeof chainIdValue === 'string') {
+      const parsed =
+        chainIdValue.startsWith('0x') || chainIdValue.startsWith('0X')
+          ? Number.parseInt(chainIdValue, 16)
+          : Number(chainIdValue)
+      return Number.isFinite(parsed) ? parsed : null
+    }
+
+    return null
+  }
+
+  const currentChainId = activeChain?.id ?? getInjectedChainId()
   const isBoostNetworkSupported =
     currentChainId != null
       ? BOOST_ENABLED_NETWORKS.includes(
@@ -305,6 +327,14 @@ export default function ProjectBoostModal({
       cancelled = true
     }
   }, [needsNetworkSwitch, switchChain])
+
+  // If the wallet reports a supported network, clear switching/error states
+  useEffect(() => {
+    if (!needsNetworkSwitch) {
+      setIsSwitchingNetwork(false)
+      setSwitchNetworkError(null)
+    }
+  }, [needsNetworkSwitch])
 
   const requiresAuth = Boolean(walletAddress) && !isAuthenticated
   const shouldResolveTotalGivpower = open && !requiresAuth && !totalGivpower
