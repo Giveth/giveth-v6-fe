@@ -55,17 +55,47 @@ const parseGivpowerValue = (value?: string | null): number | null => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-const getBoostSubmitErrorMessage = (error: unknown): string => {
+// graphql-request's `ClientError` stringifies the full response (including the
+// request payload) into `error.message`, which looks like a huge JSON blob in
+// the UI. Prefer the first GraphQL error message, then strip any trailing
+// `: {"response": ...}` the library appends.
+const extractCleanErrorMessage = (error: unknown): string => {
+  if (!error) return 'Failed to submit boost'
+
+  if (typeof error === 'object') {
+    const maybeGraphQLErrors = (
+      error as {
+        response?: { errors?: Array<{ message?: string }> }
+      }
+    ).response?.errors
+    const firstGraphQLError = maybeGraphQLErrors?.find(e =>
+      Boolean(e?.message?.trim()),
+    )?.message
+    if (firstGraphQLError) return firstGraphQLError.trim()
+  }
+
   const rawMessage =
-    error instanceof Error ? error.message : 'Failed to submit boost'
+    error instanceof Error && error.message
+      ? error.message
+      : 'Failed to submit boost'
+
+  const jsonStart = rawMessage.search(/:\s*\{/)
+  const trimmed =
+    jsonStart > 0 ? rawMessage.slice(0, jsonStart).trim() : rawMessage.trim()
+
+  return trimmed || 'Failed to submit boost'
+}
+
+const getBoostSubmitErrorMessage = (error: unknown): string => {
+  const message = extractCleanErrorMessage(error)
 
   if (
-    rawMessage.includes('First boosted project percentage must be exactly 100')
+    message.includes('First boosted project percentage must be exactly 100')
   ) {
     return 'For your first (or only) boosted project, allocation must be exactly 100%.'
   }
 
-  return rawMessage
+  return message
 }
 
 type ProjectBoostModalProps = {
