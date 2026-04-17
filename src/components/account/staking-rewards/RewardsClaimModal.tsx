@@ -17,6 +17,7 @@ import { harvestRewards } from '@/lib/helpers/stakeHelper'
 type RewardsClaimModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onClaimSuccess?: () => Promise<void> | void
   account?: Account | null
   chainId?: number
   tokenDistroAddress?: Address
@@ -37,6 +38,7 @@ type RewardsClaimModalProps = {
 export default function RewardsClaimModal({
   open,
   onOpenChange,
+  onClaimSuccess,
   account,
   chainId,
   tokenDistroAddress,
@@ -89,6 +91,7 @@ export default function RewardsClaimModal({
         stakedAmount,
       )
       setClaimTxHash(txHash)
+      await onClaimSuccess?.()
     } catch (error) {
       console.error(error)
     } finally {

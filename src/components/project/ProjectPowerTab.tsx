@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import { type Route } from 'next'
 import { EnsName } from '@/components/account/EnsName'
-import { ProjectImage } from '@/components/project/ProjectImage'
+import { UserImage } from '@/components/user/UserImage'
 import { useProjectBoosters } from '@/hooks/useProject'
 import { USER_AVATAR_FALLBACK_IMAGE } from '@/lib/constants/other-constants'
 import { formatNumber } from '@/lib/helpers/cartHelper'
@@ -138,8 +138,9 @@ export function ProjectPowerTab({ projectId }: ProjectPowerTabProps) {
                 return donorAddress ? (
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full overflow-hidden">
-                      <ProjectImage
+                      <UserImage
                         src={row.avatar || USER_AVATAR_FALLBACK_IMAGE}
+                        userAddress={donorAddress}
                         alt={donorAlt}
                         className="w-full h-full object-cover"
                       />
@@ -154,8 +155,9 @@ export function ProjectPowerTab({ projectId }: ProjectPowerTabProps) {
                 ) : (
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full overflow-hidden">
-                      <ProjectImage
+                      <UserImage
                         src={row.avatar || USER_AVATAR_FALLBACK_IMAGE}
+                        userAddress={donorAddress}
                         alt={donorAlt}
                         className="w-full h-full object-cover"
                       />

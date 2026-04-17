@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import clsx from 'clsx'
 import { MenuIcon, X } from 'lucide-react'
-import { CreateProjectButton } from '@/components/header/CreateProjectButton'
 import { MenuLink } from '@/components/header/MenuLink'
 import { SearchButton } from '@/components/header/SearchButton'
 import { menuItems } from '@/lib/constants/menu-links'
@@ -19,11 +19,18 @@ export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
     <>
       {/* Open button */}
       <button
+        type="button"
         onClick={() => setIsMenuOpen(true)}
-        className="md:hidden flex items-center gap-2 p-3 rounded-lg text-base font-medium text-giv-neutral-900 hover:bg-giv-brand-50 transition"
+        aria-label="Open menu"
+        className={clsx(
+          'md:hidden flex items-center gap-2 p-3 px-4 rounded-lg',
+          'border sm:border-none border-giv-brand-100 rounded-md',
+          'text-base font-medium text-giv-neutral-900',
+          'hover:bg-giv-brand-50 transition',
+        )}
       >
-        <MenuIcon className="h-6 w-6" />
-        Menu
+        <MenuIcon className="h-6 w-6 text-giv-brand-600" />
+        <span className="hidden sm:inline">Menu</span>
       </button>
 
       {/* Overlay */}
@@ -71,9 +78,6 @@ export function MobileNavigation({ hideSearch }: { hideSearch?: boolean }) {
 
           <div className="flex flex-col gap-4 mt-4">
             {!hideSearch && <SearchButton />}
-            <div className="mt-2 ml-2 flex justify-center">
-              <CreateProjectButton />
-            </div>
           </div>
         </div>
       </nav>

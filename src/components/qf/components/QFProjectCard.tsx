@@ -100,7 +100,7 @@ export function QFProjectCard({
 
   const contentContainerHeight = isMobile
     ? isActiveRound
-      ? 'h-[580px]'
+      ? 'h-[510px]'
       : 'h-[485px]'
     : isActiveRound
       ? 'h-[580px] md:h-[505px]'

@@ -27,7 +27,7 @@ import {
 } from '@/lib/helpers/stakeHelper'
 
 type StakeSectionProps = {
-  selectedChain: number
+  selectedChain: number | null
   onSelectChain: (chainId: number) => void
 }
 
@@ -66,9 +66,18 @@ export const StakeSection = ({
     [],
   )
 
+  const fallbackChainId = chains[0]?.id ?? 0
+  const selectedStakingChainId =
+    selectedChain && chains.some(chain => chain.id === selectedChain)
+      ? selectedChain
+      : null
+  const effectiveChainId = selectedStakingChainId ?? fallbackChainId
+  const isStakingSelectionActive = selectedStakingChainId !== null
+
   const tokenDecimals = useMemo(() => {
-    return STAKING_POOLS[selectedChain]?.GIVPOWER?.decimals ?? 18
-  }, [chains, selectedChain])
+    if (!selectedStakingChainId) return 18
+    return STAKING_POOLS[selectedStakingChainId]?.GIVPOWER?.decimals ?? 18
+  }, [selectedStakingChainId])
 
   useEffect(() => {
     if (!account?.address) return
@@ -180,7 +189,7 @@ export const StakeSection = ({
     }
   }, [chains])
 
-  const selectedStake = stakingByChain[selectedChain] ?? {
+  const emptyStakeInfo: ChainStakeInfo = {
     staked: 0n,
     apr: 0,
     boostedAPR: 0,
@@ -190,10 +199,17 @@ export const StakeSection = ({
     wallet: 0n,
     availableToLock: 0n,
   }
+  const selectedStake = selectedStakingChainId
+    ? (stakingByChain[selectedStakingChainId] ?? emptyStakeInfo)
+    : emptyStakeInfo
   const availableToLock = selectedStake.availableToLock
-  const canLock = availableToLock > 0n
-  const canUnstake = selectedStake.availableToLock > 0n
-  const canStake = selectedStake.wallet > 0n
+  const canLock = isStakingSelectionActive && availableToLock > 0n
+  const canUnstake =
+    isStakingSelectionActive && selectedStake.availableToLock > 0n
+  const canStake = isStakingSelectionActive && selectedStake.wallet > 0n
+  const selectedTokenSymbol = selectedStakingChainId
+    ? (STAKING_POOLS[selectedStakingChainId]?.GIVPOWER?.title ?? 'GIV')
+    : 'GIV'
 
   const formatApr = (value: number) =>
     `${new Intl.NumberFormat(undefined, {
@@ -232,6 +248,10 @@ export const StakeSection = ({
     }
     return formatApr(info.boostedAPR ?? info.apr ?? 0)
   }
+  const selectedAprLabel =
+    selectedStakingChainId === null
+      ? '--'
+      : getAprLabel(selectedStakingChainId, selectedStake)
 
   const availableToLockLabel = formatToken(availableToLock, tokenDecimals)
   const totalLockedAmountLabel = formatToken(
@@ -258,7 +278,7 @@ export const StakeSection = ({
             <div className="flex max-h-[450px] md:max-h-[390px] flex-col gap-3 overflow-y-auto md:pr-3">
               {chains.map(chain => {
                 const chainInfo = stakingByChain[chain.id]
-                const isSelected = chain.id === selectedChain
+                const isSelected = chain.id === selectedStakingChainId
                 return (
                   <button
                     key={chain.id}
@@ -293,7 +313,7 @@ export const StakeSection = ({
                           width={40}
                           height={40}
                           tokenSymbol="GIV"
-                          networkId={selectedChain}
+                          networkId={effectiveChainId}
                         />
                         <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
                           <ChainIcon networkId={chain.id} />
@@ -336,7 +356,15 @@ export const StakeSection = ({
             </div>
           </div>
 
-          <div className="flex flex-col rounded-2xl border-2 border-giv-brand-200 bg-white p-6">
+          <div
+            className={clsx(
+              'relative flex flex-col rounded-2xl border-2 border-giv-brand-200 bg-white p-6',
+              !isStakingSelectionActive && 'blur-[1.5px]',
+            )}
+          >
+            {!isStakingSelectionActive && (
+              <div className="absolute inset-0 z-10 rounded-2xl bg-white/40" />
+            )}
             <div className="flex flex-wrap md:flex-nowrap items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="relative h-10 w-10">
@@ -344,14 +372,18 @@ export const StakeSection = ({
                     width={40}
                     height={40}
                     tokenSymbol="GIV"
-                    networkId={selectedChain}
+                    networkId={selectedStakingChainId ?? undefined}
                   />
-                  <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
-                    <ChainIcon networkId={selectedChain} />
-                  </div>
+                  {selectedStakingChainId && (
+                    <div className="absolute right-2 bottom-2 w-[9px] h-[10px] bg-white rounded-md">
+                      <ChainIcon networkId={selectedStakingChainId} />
+                    </div>
+                  )}
                 </div>
                 <div className="text-sm font-bold text-giv-neutral-900">
-                  On {chains.find(chain => chain.id === selectedChain)?.name}
+                  {isStakingSelectionActive
+                    ? `On ${chains.find(chain => chain.id === selectedStakingChainId)?.name}`
+                    : 'Select a staking network'}
                 </div>
               </div>
               <div
@@ -368,7 +400,7 @@ export const StakeSection = ({
                 </span>
                 <IconStars width={24} height={24} />
                 <span className="ml-3 text-lg font-bold text-giv-neutral-900">
-                  {getAprLabel(selectedChain, selectedStake)}
+                  {selectedAprLabel}
                 </span>
                 <HelpTooltip
                   text="This is the weighted average APR for your staked (and locked) GIV. The full range of APRs for staking and/or locking is 5.26%-27.34%. Lock your GIV for longer to earn greater rewards."
@@ -388,8 +420,7 @@ export const StakeSection = ({
                 </span>
               </span>
               <span className="font-medium text-giv-neutral-800">
-                {availableToLockLabel}{' '}
-                {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
+                {availableToLockLabel} {selectedTokenSymbol}
               </span>
             </div>
 
@@ -398,7 +429,7 @@ export const StakeSection = ({
               disabled={!canLock}
               onClick={() => {
                 router.push(
-                  `/account/stake/${selectedChain}?tab=multiple-rewards` as never,
+                  `/account/stake/${effectiveChainId}?tab=multiple-rewards` as never,
                 )
               }}
               className={clsx(
@@ -424,7 +455,7 @@ export const StakeSection = ({
                   type="button"
                   disabled={!canStake}
                   onClick={() => {
-                    router.push(`/account/stake/${selectedChain}` as never)
+                    router.push(`/account/stake/${effectiveChainId}` as never)
                   }}
                   className={clsx(
                     'w-full px-4 py-3',
@@ -437,8 +468,7 @@ export const StakeSection = ({
                   Stake
                 </button>
                 <div className="font-medium text-giv-neutral-800">
-                  {walletDisplayLabel}{' '}
-                  {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
+                  {walletDisplayLabel} {selectedTokenSymbol}
                 </div>
               </div>
               <div className="w-full md:w-1/2 flex flex-col items-center gap-2">
@@ -447,7 +477,7 @@ export const StakeSection = ({
                   disabled={!canUnstake}
                   onClick={() => {
                     router.push(
-                      `/account/stake/${selectedChain}?tab=unstake` as never,
+                      `/account/stake/${effectiveChainId}?tab=unstake` as never,
                     )
                   }}
                   className={clsx(
@@ -462,8 +492,7 @@ export const StakeSection = ({
                 </button>
                 <div className="inline-flex items-center gap-1 font-medium text-giv-neutral-800">
                   <span>
-                    {totalLockedAmountLabel}{' '}
-                    {STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
+                    {totalLockedAmountLabel} {selectedTokenSymbol}
                   </span>
                   <HelpTooltip
                     text="Total locked GIV for this pool."
@@ -478,8 +507,15 @@ export const StakeSection = ({
 
             <div className="mt-6 text-center">
               <button
+                type="button"
+                disabled={!isStakingSelectionActive}
                 onClick={() => setIsLockedDetailsModalOpen(true)}
-                className="text-center text-sm font-bold text-giv-brand-700! hover:text-giv-brand-800! cursor-pointer"
+                className={clsx(
+                  'text-center text-sm font-bold',
+                  isStakingSelectionActive
+                    ? 'text-giv-brand-700! hover:text-giv-brand-800! cursor-pointer'
+                    : 'text-giv-neutral-400 cursor-not-allowed',
+                )}
               >
                 Locked GIV details
               </button>
@@ -490,8 +526,8 @@ export const StakeSection = ({
       <LockedDetailsModal
         open={isLockedDetailsModalOpen}
         onOpenChange={setIsLockedDetailsModalOpen}
-        chainId={Number(selectedChain)}
-        tokenSymbol={STAKING_POOLS[selectedChain]?.GIVPOWER?.title}
+        chainId={Number(effectiveChainId)}
+        tokenSymbol={selectedTokenSymbol}
       />
     </>
   )

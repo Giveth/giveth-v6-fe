@@ -135,6 +135,7 @@ export const qfRoundBySlugQuery = graphql(`
       endDate
       allocatedFundUSD
       allocatedFundUSDPreferred
+      allocatedFund
       allocatedTokenSymbol
       maximumReward
       isActive
@@ -382,6 +383,33 @@ export const qfRoundStatsQuery = graphql(`
         name
         slug
       }
+    }
+  }
+`)
+
+export const currentGivbacksRoundQuery = graphql(`
+  query GetCurrentGivbacksRound {
+    currentGivbacksRound {
+      prizePool
+      prizePoolCap
+      ticketCount
+      imageUrl
+      roundNumber
+      startsAt
+      endsAt
+    }
+  }
+`)
+
+export const currentGivbacksRoundPublicQuery = graphql(`
+  query GetCurrentGivbacksRoundPublic {
+    currentGivbacksRound {
+      prizePool
+      prizePoolCap
+      imageUrl
+      roundNumber
+      startsAt
+      endsAt
     }
   }
 `)
@@ -847,22 +875,6 @@ export const projectBoostersQuery = `
   }
 `
 
-export const syncPowerBoostingTempMutation = `
-  mutation SyncPowerBoostingTemp($input: SyncPowerBoostingBoostTempInput!) {
-    syncPowerBoostingTemp(input: $input) {
-      totalCount
-      powerBoostings {
-        id
-        userId
-        projectId
-        percentage
-        powerRank
-        updatedAt
-      }
-    }
-  }
-`
-
 export const setSinglePowerBoostingMutation = `
   mutation SetSinglePowerBoosting($projectId: Int!, $percentage: Float!) {
     setSinglePowerBoosting(projectId: $projectId, percentage: $percentage) {
@@ -882,6 +894,19 @@ export const setMultiplePowerBoostingMutation = `
     $percentages: [Float!]!
   ) {
     setMultiplePowerBoosting(projectIds: $projectIds, percentages: $percentages) {
+      id
+      userId
+      projectId
+      percentage
+      powerRank
+      updatedAt
+    }
+  }
+`
+
+export const deleteBoostingMutation = `
+  mutation DeleteBoosting($projectId: Int!) {
+    deleteBoosting(projectId: $projectId) {
       id
       userId
       projectId

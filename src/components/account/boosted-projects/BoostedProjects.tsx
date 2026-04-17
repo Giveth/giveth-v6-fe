@@ -8,7 +8,8 @@ import { type Route } from 'next'
 import { useSiweAuth } from '@/context/AuthContext'
 import {
   useBoostModalData,
-  useSyncPowerBoostingTemp,
+  useDeleteBoosting,
+  useSetPowerBoosting,
   useTotalGivpowerAcrossBoostNetworks,
 } from '@/hooks/projectHooks'
 import { useUserByAddress } from '@/hooks/useAccount'
@@ -111,8 +112,10 @@ export const BoostedProjects = () => {
   const [pendingProjectId, setPendingProjectId] = useState<number | null>(null)
 
   // Get the sync power boosting temp mutation
-  const { mutateAsync: syncPowerBoostingTemp, isPending: isSyncingBoost } =
-    useSyncPowerBoostingTemp({ token, userId: connectedUserId })
+  const { mutateAsync: setPowerBoosting, isPending: isSyncingBoost } =
+    useSetPowerBoosting({ token })
+  const { mutateAsync: deleteBoosting, isPending: isDeletingBoost } =
+    useDeleteBoosting({ token })
   const {
     data: totalGivpowerData,
     isLoading: isLoadingTotalGivpower,
@@ -193,7 +196,8 @@ export const BoostedProjects = () => {
   // Get the is sum at hundred, this is used to check if the sum is at hundred
   const isSumAtHundred = Math.abs(sum - 100) < SUM_TOLERANCE
   // Get the is mutation in flight, this is used to check if there is a mutation in flight
-  const isMutationInFlight = isSyncingBoost || pendingProjectId != null
+  const isMutationInFlight =
+    isSyncingBoost || isDeletingBoost || pendingProjectId != null
   const isTableReadOnly = isMutationInFlight || isFetchingBoostData
   // Get the can enter edit mode, this is used to check if the user can enter the edit mode
   const canEnterEditMode = viewRows.length >= 2 && !isTableReadOnly
@@ -429,7 +433,7 @@ export const BoostedProjects = () => {
         percentages[indexOfMax] += floatingError
       }
 
-      await syncPowerBoostingTemp({
+      await setPowerBoosting({
         projectIds,
         percentages,
       })
@@ -459,10 +463,7 @@ export const BoostedProjects = () => {
     setPendingProjectId(projectId)
 
     try {
-      await syncPowerBoostingTemp({
-        projectIds: [projectId],
-        percentages: [0],
-      })
+      await deleteBoosting(projectId)
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : 'Failed to remove boost',

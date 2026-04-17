@@ -160,10 +160,26 @@ export function IncreaseRewardTab({ id }: { id: string }) {
     return fraction ? `${whole}.${fraction}` : whole
   }
 
-  const formatAmountToSixDecimals = (value: number) => {
-    const fixed = value.toFixed(6)
-    return fixed.replace(/\.?0+$/, '')
+  // Truncate numeric string to a fixed number of decimals without rounding up
+  const truncateDecimalString = (valueStr: string, decimalsToKeep = 1) => {
+    const [intPart, decimalPart = ''] = valueStr.split('.')
+    const truncated = decimalPart.slice(0, decimalsToKeep)
+    const trimmed = truncated.replace(/0+$/, '')
+    return trimmed ? `${intPart}.${trimmed}` : intPart
   }
+
+  // Format number downwards (no rounding up)
+  const formatNumberDown = (value: number, decimalsToKeep = 1) => {
+    if (!Number.isFinite(value) || value <= 0) return '0'
+    return truncateDecimalString(value.toString(), decimalsToKeep)
+  }
+
+  // Format bigint downwards (no rounding up)
+  const formatBigintDown = (
+    value: bigint,
+    decimals: number,
+    decimalsToKeep = 1,
+  ) => truncateDecimalString(formatUnits(value, decimals), decimalsToKeep)
 
   const updateRange = (el: HTMLInputElement | null) => {
     if (!el) return
@@ -188,6 +204,9 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   const isAmountValid = amountInBaseUnits > 0n
   const amountLabel = amountToLock || '0'
   const amountToLockValue = Number(amountToLock)
+  const amountDisplayLabel = Number.isFinite(amountToLockValue)
+    ? formatNumberDown(amountToLockValue, 1)
+    : amountLabel
   const amountUsdValue = Number.isFinite(amountToLockValue)
     ? tokenPriceInUSD * amountToLockValue
     : 0
@@ -366,8 +385,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   }, [fireSideCannons, flowStep])
 
   useEffect(() => {
-    updateRange(roundsRangeRef.current)
-  }, [roundsToLock])
+    if (flowStep === 'input') {
+      updateRange(roundsRangeRef.current)
+    }
+  }, [roundsToLock, flowStep])
 
   const hasStake = availableToLock + lockedAmount > 0n
   // Format APR value
@@ -590,11 +611,9 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                           type="button"
                           onClick={() => {
                             const percentage = Number(label.replace('%', ''))
-                            setAmountToLock(
-                              formatAmountToSixDecimals(
-                                availableToLockValue * (percentage / 100),
-                              ),
-                            )
+                            const targetValue =
+                              availableToLockValue * (percentage / 100)
+                            setAmountToLock(formatNumberDown(targetValue, 1))
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
@@ -608,7 +627,9 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                       <button
                         type="button"
                         onClick={() =>
-                          setAmountToLock(availableToLockValue.toString())
+                          setAmountToLock(
+                            formatBigintDown(availableToLock, tokenDecimals, 1),
+                          )
                         }
                         className={clsx(
                           'rounded-xl px-3 py-2 text-xs font-medium',
@@ -625,7 +646,9 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                         type="button"
                         className="ml-1 cursor-pointer hover:underline"
                         onClick={() =>
-                          setAmountToLock(availableToLockValue.toString())
+                          setAmountToLock(
+                            formatBigintDown(availableToLock, tokenDecimals, 1),
+                          )
                         }
                         title="Lock max"
                       >
@@ -737,7 +760,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                       You are locking
                     </div>
                     <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
-                      {amountLabel} {pool?.GIVPOWER.title}
+                      {amountDisplayLabel} {pool?.GIVPOWER.title}
                     </div>
                     <div className="mt-3 text-2xl font-medium text-giv-neutral-900">
                       until {unlockDateLabel}
@@ -745,7 +768,10 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                     <div className="mt-4 text-center">
                       <button
                         type="button"
-                        onClick={() => setFlowStep('input')}
+                        onClick={() => {
+                          setErrorMessage(null)
+                          setFlowStep('input')
+                        }}
                         className={clsx(
                           'inline-flex items-center justify-center gap-2 px-10 py-3',
                           'rounded-md border border-giv-brand-100 bg-giv-brand-050',
@@ -781,6 +807,12 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                     )}
                   </button>
 
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
+                  )}
+
                   <RewardCard
                     multiplier={multiplier}
                     boostedApr={boostedApr}
@@ -800,7 +832,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                       You locked
                     </div>
                     <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
-                      {amountLabel} {pool?.GIVPOWER.title}
+                      {amountDisplayLabel} {pool?.GIVPOWER.title}
                     </div>
                     <div className="mt-3 text-2xl font-medium text-giv-neutral-900">
                       until {unlockDateLabel}

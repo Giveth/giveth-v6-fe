@@ -199,7 +199,7 @@ export const useProjectGivpowerCount = (projectId?: number) => {
           input: {
             projectId,
             skip: 0,
-            take: 1,
+            take: 1000,
           },
         },
       )

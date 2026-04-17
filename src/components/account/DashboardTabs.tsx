@@ -16,22 +16,17 @@ export const DashboardTabs = ({
   activeTab,
   onTabChange,
 }: DashboardTabsProps) => {
-  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const tabs = [
-    ...(!isProduction
-      ? [
-          {
-            id: 'staking',
-            label: 'Staking & Rewards',
-            icon: <IconSparks width={24} height={24} />,
-            href: null,
-          },
-        ]
-      : []),
+    {
+      id: 'staking',
+      label: 'Staking & Rewards',
+      icon: <IconSparks width={24} height={24} />,
+      href: null,
+    },
     {
       id: 'donations',
       label: 'My Donations',

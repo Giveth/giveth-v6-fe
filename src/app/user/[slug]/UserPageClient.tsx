@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { CtaSection } from '@/components/account/CtaGivBacks'
+import { UserBoostedProjects } from '@/components/user/UserBoostTable'
 import { UserDashboardTabs } from '@/components/user/UserDashboardTabs'
 import { UserDonationsTable } from '@/components/user/UserDonationsTable'
 import { UserProfileSection } from '@/components/user/UserProfileSection'
@@ -31,6 +32,9 @@ export default function AccountPageClient() {
     slug || undefined,
   )
   const user = userData?.userByAddress
+  const primaryWalletAddress =
+    user?.wallets?.find(wallet => wallet.isPrimary)?.address ||
+    user?.wallets?.[0]?.address
 
   return (
     <div className="min-h-screen bg-giv-neutral-200">
@@ -42,6 +46,13 @@ export default function AccountPageClient() {
 
         {activeTab === 'donations' && (
           <UserDonationsTable userId={user?.id ? Number(user.id) : undefined} />
+        )}
+        {activeTab === 'boosted' && (
+          <UserBoostedProjects
+            userId={user?.id ? Number(user.id) : undefined}
+            walletAddress={primaryWalletAddress || undefined}
+            isUserLoading={isUserLoading}
+          />
         )}
       </main>
       <CtaSection />

@@ -21,8 +21,12 @@ export const StakingRewards = () => {
   const hasUserSelectedChainRef = useRef(false)
 
   const [claimChain, setClaimChain] = useState(CLAIM_REWARDS_CHAINS[0].id)
-  const [stakingChain, setStakingChain] = useState(STAKING_CHAINS[0].id)
-  const [givstreamChain, setGivstreamChain] = useState(STAKING_CHAINS[0].id)
+  const [stakingChain, setStakingChain] = useState<number | null>(
+    STAKING_CHAINS[0].id,
+  )
+  const [givstreamChain, setGivstreamChain] = useState(
+    CLAIM_REWARDS_CHAINS[0].id,
+  )
   const chainLabel =
     CLAIM_REWARDS_CHAINS.find(chain => chain.id === claimChain)?.name ??
     'Select network'
@@ -42,10 +46,16 @@ export const StakingRewards = () => {
 
     if (isClaimRewardsChain(connectedChainId)) {
       setClaimChain(connectedChainId)
+      setGivstreamChain(connectedChainId)
+      if (!isStakingChain(connectedChainId)) {
+        setStakingChain(null)
+      }
     }
     if (isStakingChain(connectedChainId)) {
       setStakingChain(connectedChainId)
-      setGivstreamChain(connectedChainId)
+      if (isClaimRewardsChain(connectedChainId)) {
+        setGivstreamChain(connectedChainId)
+      }
     }
 
     hasHydratedInitialChainRef.current = true
@@ -55,13 +65,16 @@ export const StakingRewards = () => {
   const handleClaimChainChange = (chainId: number) => {
     hasUserSelectedChainRef.current = true
     setClaimChain(chainId)
+    setGivstreamChain(chainId)
     if (isStakingChain(chainId)) {
       setStakingChain(chainId)
-      setGivstreamChain(chainId)
+      return
     }
+    setStakingChain(null)
   }
 
-  // Change user network to the chainId, if not already on the correct network, and set the claim chain to the same chain
+  // Change user network to the staking chain and sync claim/givstream only when
+  // that chain is part of CLAIM_REWARDS_CHAINS.
   const handleStakingChainChange = async (chainId: number) => {
     try {
       if (activeChain?.id !== chainId) {
@@ -72,8 +85,8 @@ export const StakingRewards = () => {
       }
       hasUserSelectedChainRef.current = true
       setStakingChain(chainId)
-      setGivstreamChain(chainId)
       if (isClaimRewardsChain(chainId)) {
+        setGivstreamChain(chainId)
         setClaimChain(chainId)
       }
     } catch (error) {
@@ -85,10 +98,12 @@ export const StakingRewards = () => {
   const handleGivstreamChainChange = (chainId: number) => {
     hasUserSelectedChainRef.current = true
     setGivstreamChain(chainId)
-    setStakingChain(chainId)
-    if (isClaimRewardsChain(chainId)) {
-      setClaimChain(chainId)
+    setClaimChain(chainId)
+    if (isStakingChain(chainId)) {
+      setStakingChain(chainId)
+      return
     }
+    setStakingChain(null)
   }
 
   return (

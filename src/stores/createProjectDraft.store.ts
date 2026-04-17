@@ -1,186 +1,84 @@
 'use client'
 
-import { isAddress } from 'viem'
-import { z } from 'zod'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { MAX_CATEGORIES } from '@/components/project/CreateProjectFullForm'
-import { looksLikeAiContextLeak } from '@/lib/create-project/ai-context'
+import {
+  createEmptyCreateProjectSocialMedia,
+  CREATE_PROJECT_SOCIAL_TYPES,
+  type CreateProjectDraft,
+  type CreateProjectDraftErrors,
+  type CreateProjectRecipientAddress,
+  type CreateProjectSocialLink,
+  type CreateProjectSocialType,
+} from '@/lib/create-project/types'
+import {
+  buildCreateProjectInput,
+  sanitizeDraftDescription,
+  validateCreateProjectDraft as validateDraft,
+} from '@/lib/create-project/validation'
 import { createGraphQLClient } from '@/lib/graphql/client'
 import { createProjectMutation } from '@/lib/graphql/mutations'
 
+export type {
+  CreateProjectChainType,
+  CreateProjectDraft,
+  CreateProjectDraftErrors,
+  CreateProjectRecipientAddress,
+  CreateProjectSocialLink,
+  CreateProjectSocialType,
+} from '@/lib/create-project/types'
+export { validateCreateProjectDraft } from '@/lib/create-project/validation'
+
 export const CREATE_PROJECT_CHAT_HISTORY_STORAGE_KEY =
   'giveth-create-project-chat-history'
-
-export type CreateProjectSocialType = 'website' | 'facebook' | 'x' | 'linkedin'
-
-export type CreateProjectChainType = 'EVM' | 'SOLANA' | 'STELLAR'
-
-export type CreateProjectSocialLink = {
-  type: CreateProjectSocialType
-  link: string
-}
-
-export type CreateProjectRecipientAddress = {
-  id: string
-  chainType: CreateProjectChainType
-  networkId: number
-  address: string
-  title?: string
-  memo?: string
-}
-
-export type CreateProjectDraft = {
-  title: string
-  description: string
-  image: string
-  impactLocation: string
-  categoryIds: number[]
-  socialMedia: CreateProjectSocialLink[]
-  recipientAddresses: CreateProjectRecipientAddress[]
-}
-
-export type CreateProjectDraftErrors = Partial<
-  Record<
-    | 'title'
-    | 'description'
-    | 'image'
-    | 'impactLocation'
-    | 'categoryIds'
-    | 'recipientAddresses'
-    | `socialMedia.${CreateProjectSocialType}`,
-    string
-  >
->
 
 const createId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2)
 
-const CREATE_PROJECT_MIN_TITLE_LENGTH = 3
-const CREATE_PROJECT_MAX_TITLE_LENGTH = 100
-const CREATE_PROJECT_MIN_DESCRIPTION_LENGTH = 50
-const CREATE_PROJECT_MAX_STELLAR_MEMO_LENGTH = 28
-
-const urlOrEmpty = z
-  .string()
-  .trim()
-  .transform(v => v ?? '')
-  .refine(v => v === '' || safeIsUrl(v), {
-    message: 'Please enter a valid URL',
-  })
-
-function safeIsUrl(value: string): boolean {
-  try {
-    // Accept users pasting without protocol (e.g. example.com)
-    // Normalize later in submit layer.
-    // Here we only enforce URL-ish structure.
-
-    new URL(value.startsWith('http') ? value : `https://${value}`)
-    return true
-  } catch {
-    return false
-  }
-}
-
-function normalizeUrl(value: string): string {
-  const trimmed = value.trim()
-  if (!trimmed) return ''
-
-  return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`
-}
-
-function sanitizeDraftDescription(description: string): string {
-  return looksLikeAiContextLeak(description) ? '' : description
-}
-
 function sanitizePersistedDraft(
   draft: Partial<CreateProjectDraft> | undefined,
 ): CreateProjectDraft {
+  const socialMedia = new Map<
+    CreateProjectSocialType,
+    CreateProjectSocialLink
+  >()
+  for (const socialLink of createEmptyCreateProjectSocialMedia()) {
+    socialMedia.set(socialLink.type, socialLink)
+  }
+
+  if (Array.isArray(draft?.socialMedia)) {
+    for (const socialLink of draft.socialMedia) {
+      if (
+        socialLink &&
+        typeof socialLink.type === 'string' &&
+        typeof socialLink.link === 'string' &&
+        CREATE_PROJECT_SOCIAL_TYPES.includes(
+          socialLink.type as CreateProjectSocialType,
+        )
+      ) {
+        socialMedia.set(socialLink.type as CreateProjectSocialType, {
+          type: socialLink.type as CreateProjectSocialType,
+          link: socialLink.link,
+        })
+      }
+    }
+  }
+
   return {
     ...initialDraft,
     ...draft,
     description: sanitizeDraftDescription(String(draft?.description ?? '')),
+    socialMedia: Array.from(socialMedia.values()),
+    recipientAddresses: Array.isArray(draft?.recipientAddresses)
+      ? draft.recipientAddresses.map(recipientAddress => ({
+          ...recipientAddress,
+          id: recipientAddress.id || createId(),
+        }))
+      : [],
   }
-}
-
-function isBase58(value: string): boolean {
-  // Excludes 0 O I l
-  return /^[1-9A-HJ-NP-Za-km-z]+$/.test(value)
-}
-
-function isSolanaAddress(value: string): boolean {
-  // Minimal validation: base58, common length range for Solana public keys.
-  return isBase58(value) && value.length >= 32 && value.length <= 44
-}
-
-function isStellarAddress(value: string): boolean {
-  // Minimal StrKey format check for public key: starts with 'G' and base32 chars.
-  return /^G[A-Z2-7]{55}$/.test(value)
-}
-
-export function validateCreateProjectDraft(
-  draft: CreateProjectDraft,
-): CreateProjectDraftErrors {
-  const errors: CreateProjectDraftErrors = {}
-
-  const title = draft.title.trim()
-  if (!title) {
-    errors.title = 'Project name is required'
-  } else if (title.length < CREATE_PROJECT_MIN_TITLE_LENGTH) {
-    errors.title = `Project name must be at least ${CREATE_PROJECT_MIN_TITLE_LENGTH} characters`
-  } else if (title.length > CREATE_PROJECT_MAX_TITLE_LENGTH) {
-    errors.title = `Project name must be at most ${CREATE_PROJECT_MAX_TITLE_LENGTH} characters`
-  }
-
-  const description = draft.description.trim()
-  if (!description) {
-    errors.description = 'Description is required'
-  } else if (description.length < CREATE_PROJECT_MIN_DESCRIPTION_LENGTH) {
-    errors.description = `Description must be at least ${CREATE_PROJECT_MIN_DESCRIPTION_LENGTH} characters`
-  } else if (looksLikeAiContextLeak(description)) {
-    errors.description = 'Description contains invalid AI-generated context'
-  }
-
-  const image = draft.image.trim()
-  const parsedImage = urlOrEmpty.safeParse(image)
-  if (!parsedImage.success) {
-    errors.image = parsedImage.error.issues[0]?.message
-  }
-
-  for (const type of ['website', 'facebook', 'x', 'linkedin'] as const) {
-    const link = draft.socialMedia.find(s => s.type === type)?.link ?? ''
-    const parsed = urlOrEmpty.safeParse(link)
-    if (!parsed.success) {
-      errors[`socialMedia.${type}`] = parsed.error.issues[0]?.message
-    }
-  }
-
-  if (!draft.recipientAddresses.length) {
-    errors.recipientAddresses = 'At least one recipient address is required'
-  } else {
-    const invalid = draft.recipientAddresses.find(addr => {
-      const a = addr.address.trim()
-      if (!a) return true
-      if (!Number.isInteger(addr.networkId)) return true
-      if (
-        addr.memo &&
-        addr.memo.trim().length > CREATE_PROJECT_MAX_STELLAR_MEMO_LENGTH
-      )
-        return true
-      if (addr.chainType === 'EVM') return !isAddress(a)
-      if (addr.chainType === 'SOLANA') return !isSolanaAddress(a)
-      if (addr.chainType === 'STELLAR') return !isStellarAddress(a)
-      return true
-    })
-    if (invalid) {
-      errors.recipientAddresses =
-        'One or more recipient addresses are invalid or incomplete'
-    }
-  }
-
-  return errors
 }
 
 export type CreateProjectDraftState = {
@@ -207,7 +105,9 @@ export type CreateProjectDraftState = {
     options?: { autoFilled?: boolean },
   ) => void
   validate: () => boolean
-  submitCreateProject: () => Promise<{ id: string; slug: string }>
+  submitCreateProject: (options?: {
+    draft?: CreateProjectDraft
+  }) => Promise<{ id: string; slug: string }>
   reset: () => void
 }
 
@@ -217,12 +117,7 @@ const initialDraft: CreateProjectDraft = {
   image: '',
   impactLocation: '',
   categoryIds: [],
-  socialMedia: [
-    { type: 'website', link: '' },
-    { type: 'facebook', link: '' },
-    { type: 'x', link: '' },
-    { type: 'linkedin', link: '' },
-  ],
+  socialMedia: createEmptyCreateProjectSocialMedia(),
   recipientAddresses: [],
 }
 
@@ -254,7 +149,18 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
             >()
             for (const item of state.draft.socialMedia)
               byType.set(item.type, item)
-            for (const item of patch.socialMedia) byType.set(item.type, item)
+            for (const item of patch.socialMedia) {
+              if (
+                CREATE_PROJECT_SOCIAL_TYPES.includes(
+                  item.type as CreateProjectSocialType,
+                )
+              ) {
+                byType.set(item.type as CreateProjectSocialType, {
+                  type: item.type as CreateProjectSocialType,
+                  link: item.link,
+                })
+              }
+            }
             next.socialMedia = Array.from(byType.values())
           }
 
@@ -362,21 +268,23 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
         })),
 
       validate: () => {
-        const nextErrors = validateCreateProjectDraft(get().draft)
+        const nextErrors = validateDraft(get().draft)
         set({ errors: nextErrors })
         return Object.keys(nextErrors).length === 0
       },
 
-      submitCreateProject: async () => {
+      submitCreateProject: async options => {
         set({ submitError: undefined })
-        const ok = get().validate()
+        const draftToSubmit = options?.draft ?? get().draft
+        const nextErrors = validateDraft(draftToSubmit)
+        set({ errors: nextErrors })
+        const ok = Object.keys(nextErrors).length === 0
         if (!ok) {
           throw new Error(
             'Please fix the highlighted fields before publishing.',
           )
         }
 
-        const { draft } = get()
         set({ isSubmitting: true })
         try {
           const token = localStorage.getItem('giveth_token')
@@ -384,33 +292,8 @@ export const useCreateProjectDraftStore = create<CreateProjectDraftState>()(
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           })
 
-          // NOTE: v6-core schema is being extended (socialMedia + memo + Stellar).
-          // We build variables in a forward-compatible shape and keep typing loose.
           const variables: unknown = {
-            input: {
-              title: draft.title.trim(),
-              description: draft.description.trim(),
-              image: draft.image.trim() ? normalizeUrl(draft.image) : undefined,
-              impactLocation: draft.impactLocation.trim()
-                ? draft.impactLocation.trim()
-                : undefined,
-              categoryIds: draft.categoryIds.length
-                ? draft.categoryIds
-                : undefined,
-              addresses: draft.recipientAddresses.map(a => ({
-                address: a.address.trim(),
-                networkId: a.networkId,
-                chainType: a.chainType,
-                title: a.title?.trim() || undefined,
-                memo: a.memo?.trim() || undefined,
-              })),
-              socialMedia: draft.socialMedia
-                .map(s => ({
-                  type: s.type,
-                  link: normalizeUrl(s.link),
-                }))
-                .filter(s => s.link),
-            },
+            input: buildCreateProjectInput(draftToSubmit),
           }
 
           const res = await client.request(

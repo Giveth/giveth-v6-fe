@@ -16,7 +16,7 @@ import { IconBoost } from '@/components/icons/IconBoost'
 import { useSiweAuth } from '@/context/AuthContext'
 import {
   useBoostModalData,
-  useSyncPowerBoostingTemp,
+  useSetPowerBoosting,
   useTotalGivpowerAcrossBoostNetworks,
 } from '@/hooks/projectHooks'
 import { useUserByAddress } from '@/hooks/useAccount'
@@ -96,6 +96,8 @@ export default function ProjectBoostModal({
   const [switchNetworkError, setSwitchNetworkError] = useState<string | null>(
     null,
   )
+  const { mutateAsync: setPowerBoosting, isPending: isSubmittingBoost } =
+    useSetPowerBoosting({ token })
   const { data: userByAddressData } = useUserByAddress(
     open ? walletAddress : undefined,
   )
@@ -103,8 +105,6 @@ export default function ProjectBoostModal({
     Number(user?.id) ||
     Number(userByAddressData?.userByAddress?.id) ||
     undefined
-  const { mutateAsync: syncPowerBoostingTemp, isPending: isSubmittingBoost } =
-    useSyncPowerBoostingTemp({ token, userId: connectedUserId })
   const {
     data: totalGivpowerData,
     isLoading: isLoadingTotalGivpower,
@@ -211,9 +211,8 @@ export default function ProjectBoostModal({
 
     setSubmitBoostError(null)
 
-    // Sync the power boosting temp
     try {
-      await syncPowerBoostingTemp({
+      await setPowerBoosting({
         projectId,
         percentage: percentageToSubmit,
       })
@@ -410,7 +409,6 @@ export default function ProjectBoostModal({
               </a>
               <Link
                 href={myGIVPowerLink.href as Route}
-                target={myGIVPowerLink.target}
                 className="mt-6 inline-flex w-full items-center justify-center text-giv-brand-500! text-sm font-bold hover:opacity-80!"
               >
                 See Your GIVpower Allocations
@@ -603,7 +601,6 @@ export default function ProjectBoostModal({
                     You can review and manage your GIVpower allocations in{' '}
                     <Link
                       href={myGIVPowerLink.href as Route}
-                      target={myGIVPowerLink.target}
                       className="font-bold hover:underline"
                     >
                       My GIVpower
@@ -676,7 +673,6 @@ export default function ProjectBoostModal({
                   </button>
                   <Link
                     href={myGIVPowerLink.href as Route}
-                    target={myGIVPowerLink.target}
                     className="mt-4 inline-flex w-full items-center justify-center text-giv-brand-500! text-sm font-bold hover:opacity-80!"
                   >
                     Manage your GIVpower

@@ -24,6 +24,8 @@ import { useAAWalletBalance } from '@/hooks/useAAWalletBalance'
 import { useProfile } from '@/hooks/useAccount'
 import {
   createProjectLink,
+  myGIVPowerLink,
+  myGIVRewardsLink,
   myProjectsLink,
   reportBugLink,
   supportLink,
@@ -103,7 +105,9 @@ export function HeaderConnectWallet() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={clsx(
-              'flex items-center gap-1 md:gap-3 px-2 md:px-4 py-[6px] md:py-[10px] lg:py-3 bg-white rounded-md',
+              'flex items-center gap-1 md:gap-3',
+              'px-4 md:px-4 py-3 md:py-[10px] lg:py-3',
+              'bg-white rounded-md',
               'hover:opacity-85 transition-all duration-200',
               'border border-giv-brand-100 cursor-pointer',
               'text-xs lg:text-sm text-giv-brand-600! font-bold',
@@ -113,7 +117,9 @@ export function HeaderConnectWallet() {
             {wallet && <CryptoWalletIcon walletId={wallet?.id || ''} />}
 
             {/* Cain Icon */}
-            <ChainIcon networkId={chain?.id || 0} />
+            <span className="inline-block relative ms:normal ms-[-5px] sm:ms-0">
+              <ChainIcon networkId={chain?.id || 0} />
+            </span>
 
             {/* Address and Network Info */}
             <div className="hidden md:flex flex-col items-start">
@@ -230,13 +236,21 @@ export function HeaderConnectWallet() {
                 My Donations
               </Link>
 
-              {/* <Link
-              href={myGIVPowerLink.href as Route}
-              onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              {myGIVPowerLink.label}
-            </Link> */}
+              <Link
+                href={myGIVPowerLink.href as Route}
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                {myGIVPowerLink.label}
+              </Link>
+
+              <Link
+                href={myGIVRewardsLink.href as Route}
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+              >
+                {myGIVRewardsLink.label}
+              </Link>
 
               <Link
                 href={createProjectLink.href as Route}

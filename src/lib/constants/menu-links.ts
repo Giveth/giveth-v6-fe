@@ -28,17 +28,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     label: 'GIVeconomy',
-    href: oldFrontendPath('/givfarm', '/givfarm'),
-    submenu: [
-      {
-        label: 'Stake GIV',
-        href: oldFrontendPath('/givfarm', '/givfarm'),
-      },
-      {
-        label: 'GIVbacks',
-        href: oldFrontendPath('/givbacks', '/givbacks'),
-      },
-    ],
+    href: '/account?tab=staking',
   },
   {
     label: 'Community',
@@ -227,9 +217,13 @@ export const myCausesLink = {
 }
 
 export const myGIVPowerLink = {
-  label: 'My GIVPower',
+  label: 'My GIVpower',
   href: '/account?tab=boosted',
-  target: '_self',
+}
+
+export const myGIVRewardsLink = {
+  label: 'My GIV Rewards',
+  href: '/account?tab=staking',
 }
 
 export const myRecurringDonationsLink = {

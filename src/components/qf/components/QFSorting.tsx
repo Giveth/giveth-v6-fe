@@ -97,12 +97,13 @@ export function QFSorting({
   }, [])
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative w-[81%] md:w-auto" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={clsx(
+          'w-full sm:w-auto min-w-[200px]',
           'flex items-center gap-2 px-4 py-2 bg-white',
-          'rounded-sm text-base font-medium text-giv-neutral-900 min-w-[200px]',
+          'rounded-sm text-base font-medium text-giv-neutral-900',
           'justify-between transition-colors cursor-pointer',
         )}
       >

@@ -153,7 +153,10 @@ export default function QFRoundPage() {
       />
 
       <QFStats
-        matchingPool={qfRound.allocatedFundUSD || 0}
+        allocatedFundUSD={qfRound.allocatedFundUSD}
+        allocatedFundUSDPreferred={qfRound.allocatedFundUSDPreferred}
+        allocatedFund={qfRound.allocatedFund}
+        allocatedTokenSymbol={qfRound.allocatedTokenSymbol}
         totalDonations={stats?.totalDonationsUsd || 0}
         donationsCount={stats?.donationsCount || 0}
         beginDate={qfRound.beginDate}

@@ -156,6 +156,27 @@ export function StakingTab({ id }: { id: string }) {
     return fraction ? `${whole}.${fraction}` : whole
   }
 
+  // Truncate a numeric string to a fixed number of decimal places without rounding up
+  const truncateDecimalString = (valueStr: string, decimalsToKeep = 1) => {
+    const [intPart, decimalPart = ''] = valueStr.split('.')
+    const truncated = decimalPart.slice(0, decimalsToKeep)
+    const trimmed = truncated.replace(/0+$/, '')
+    return trimmed ? `${intPart}.${trimmed}` : intPart
+  }
+
+  // Format a number downwards (no rounding up) to keep at most N decimals
+  const formatNumberDown = (value: number, decimalsToKeep = 1) => {
+    if (!Number.isFinite(value) || value <= 0) return '0'
+    return truncateDecimalString(value.toString(), decimalsToKeep)
+  }
+
+  // Format a bigint token amount downwards to keep at most N decimals
+  const formatBigintDown = (
+    value: bigint,
+    decimals: number,
+    decimalsToKeep = 1,
+  ) => truncateDecimalString(formatUnits(value, decimals), decimalsToKeep)
+
   // Convert amount to stake to base units
   const amountInBaseUnits = useMemo(() => {
     const decimals = pool?.GIVPOWER?.decimals ?? 18
@@ -170,6 +191,9 @@ export function StakingTab({ id }: { id: string }) {
   const isAmountValid = amountInBaseUnits > 0n
   const amountLabel = amountToStake || '0'
   const amountToStakeValue = Number(amountToStake)
+  const amountDisplayLabel = Number.isFinite(amountToStakeValue)
+    ? formatNumberDown(amountToStakeValue, 1)
+    : amountLabel
   const amountUsdValue = Number.isFinite(amountToStakeValue)
     ? tokenPriceInUSD * amountToStakeValue
     : 0
@@ -187,6 +211,7 @@ export function StakingTab({ id }: { id: string }) {
     }
 
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
+    setErrorMessage(null)
     setFlowStep('approving')
     try {
       // Change user network to the chainId
@@ -201,6 +226,11 @@ export function StakingTab({ id }: { id: string }) {
       setFlowStep('approved')
     } catch (error) {
       console.error('Approve failed:', error)
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Approve failed. Try again.'
+      setErrorMessage(message)
       setFlowStep('input')
     }
   }
@@ -215,6 +245,7 @@ export function StakingTab({ id }: { id: string }) {
       return
     }
     if (!account || !pool?.GIVPOWER?.network || !isAmountValid) return
+    setErrorMessage(null)
     setFlowStep('staking')
     try {
       // Change user network to the chainId
@@ -225,11 +256,17 @@ export function StakingTab({ id }: { id: string }) {
       setFlowStep('staked')
     } catch (error) {
       console.error('Stake failed:', error)
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Stake failed. Try again.'
+      setErrorMessage(message)
       setFlowStep('approved')
     }
   }
 
   const handleCancel = () => {
+    setErrorMessage(null)
     setFlowStep('input')
   }
 
@@ -576,11 +613,9 @@ export function StakingTab({ id }: { id: string }) {
                           }
                           onClick={() => {
                             const percentage = Number(label.replace('%', ''))
-                            setAmountToStake(
-                              String(
-                                availableToStakeValue * (percentage / 100),
-                              ),
-                            )
+                            const targetValue =
+                              availableToStakeValue * (percentage / 100)
+                            setAmountToStake(formatNumberDown(targetValue, 1))
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
@@ -598,17 +633,23 @@ export function StakingTab({ id }: { id: string }) {
                       ))}
                       <button
                         type="button"
-                        disabled={isControlsDisabled}
-                        onClick={() =>
-                          setAmountToStake(availableToStakeValue.toString())
+                        disabled={
+                          flowStep === 'approving' || isControlsDisabled
                         }
+                        onClick={() => {
+                          setAmountToStake(
+                            formatBigintDown(walletBalance, tokenDecimals, 1),
+                          )
+                        }}
                         className={clsx(
                           'rounded-xl px-3 py-2 text-xs font-medium',
                           'bg-giv-brand-050 text-giv-brand-700 transition-colors',
                           'border border-giv-brand-100',
                           !isControlsDisabled &&
+                            flowStep !== 'approving' &&
                             'hover:bg-giv-brand-200 cursor-pointer',
-                          isControlsDisabled && 'cursor-not-allowed opacity-50',
+                          (flowStep === 'approving' || isControlsDisabled) &&
+                            'cursor-not-allowed opacity-50',
                         )}
                       >
                         Max
@@ -626,7 +667,9 @@ export function StakingTab({ id }: { id: string }) {
                           isControlsDisabled && 'cursor-not-allowed opacity-50',
                         )}
                         onClick={() =>
-                          setAmountToStake(availableToStakeValue.toString())
+                          setAmountToStake(
+                            formatBigintDown(walletBalance, tokenDecimals, 1),
+                          )
                         }
                         title="Stake max"
                       >
@@ -698,7 +741,7 @@ export function StakingTab({ id }: { id: string }) {
                       You are staking
                     </div>
                     <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
-                      {amountLabel} {pool?.GIVPOWER.title}
+                      {amountDisplayLabel} {pool?.GIVPOWER.title}
                     </div>
                   </div>
                   <button
@@ -721,11 +764,6 @@ export function StakingTab({ id }: { id: string }) {
                       'Stake'
                     )}
                   </button>
-                  {errorMessage && (
-                    <div className="mt-4 text-sm text-red-500 text-center">
-                      {errorMessage}
-                    </div>
-                  )}
                   <button
                     type="button"
                     onClick={handleCancel}
@@ -737,6 +775,11 @@ export function StakingTab({ id }: { id: string }) {
                   >
                     Cancel
                   </button>
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                      {errorMessage}
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -745,7 +788,7 @@ export function StakingTab({ id }: { id: string }) {
                       You have staked
                     </div>
                     <div className="mt-2 text-3xl font-bold text-giv-neutral-900">
-                      {amountLabel} {pool?.GIVPOWER.title}
+                      {amountDisplayLabel} {pool?.GIVPOWER.title}
                     </div>
                   </div>
                   <button

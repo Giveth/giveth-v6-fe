@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import clsx from 'clsx'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 
 interface QFHeroProps {
@@ -68,7 +69,7 @@ export function QFHero({
 
   return (
     <div className="relative">
-      <div className="relative max-w-7xl mx-auto px-6 py-12">
+      <div className="relative max-w-7xl mx-auto px-6 py-6 sm:py-12">
         <div className="relative overflow-hidden rounded-2xl min-h-[200px] sm:min-h-[240px] lg:min-h-[280px]">
           {/* Background with gradient and decorative elements */}
           <div
@@ -138,7 +139,7 @@ export function QFHero({
           </div>
 
           <div
-            className={`absolute bottom-2 md:bottom-4 left-1 md:left-2 md:left-4 rounded-2xl p-4 md:p-8 text-white ${
+            className={`absolute bottom-2 md:bottom-4 left-1 md:left-4 rounded-2xl p-4 md:p-8 text-white ${
               hasBanner ? 'bg-transparent' : 'bg-giv-brand-500'
             }`}
           >
@@ -170,7 +171,14 @@ export function QFHero({
 
             <div>
               <h1 className="text-base md:text-3xl font-bold mb-4">{title}</h1>
-              <div className="inline-flex flex-col items-start gap-1 px-4 md:px-8 py-2 md:py-4 bg-giv-brand-500 rounded-full text-xs md:text-sm font-bold border-2 border-white">
+              <div
+                className={clsx(
+                  'inline-flex flex-col items-start gap-1',
+                  'px-6 sm:px-4 md:px-8 py-4 sm:py-2 md:py-4',
+                  'bg-giv-brand-500 border-2 border-white rounded-lg sm:rounded-full',
+                  'text-sm font-bold text-center sm:text-left',
+                )}
+              >
                 {heroText}
               </div>
             </div>

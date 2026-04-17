@@ -91,20 +91,15 @@ export function EligibilityBanner() {
     return parsed < new Date()
   }, [userPassportData?.expirationDate, isEligibilityLoading])
 
-  let isUserEligible = false // By default, user is not eligible
   const userMBDScore = Number(userPassportData?.mbdScore ?? 0)
   const userPassportScore = Number(userPassportData?.passportScore ?? 0)
 
-  // First we check MBD Score
-  if (userMBDScore >= globalSettingScore.globalMinimumMBDScore) {
-    isUserEligible = true
-  }
-  // Second if MBD score less than global minimum, we check Passport Score
-  else if (userPassportScore >= globalSettingScore.globalMinimumPassportScore) {
-    isUserEligible = true
-  } else {
-    isUserEligible = false
-  }
+  const meetsScoreThresholds =
+    userMBDScore >= globalSettingScore.globalMinimumMBDScore ||
+    userPassportScore >= globalSettingScore.globalMinimumPassportScore
+
+  // Backend `isEligible` also accounts for NFT-based eligibility.
+  const isUserEligible = userPassportData.isEligible || meetsScoreThresholds
 
   const showLoading = useMemo(
     () => isChecking || isEligibilityLoading || isAuthLoading,

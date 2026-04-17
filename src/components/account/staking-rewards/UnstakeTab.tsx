@@ -81,6 +81,27 @@ export function UnstakeTab({ id }: { id: string }) {
 
   const tokenDecimals = pool?.GIVPOWER?.decimals ?? 18
 
+  // Truncate numeric string to a fixed number of decimals without rounding up
+  const truncateDecimalString = (valueStr: string, decimalsToKeep = 1) => {
+    const [intPart, decimalPart = ''] = valueStr.split('.')
+    const truncated = decimalPart.slice(0, decimalsToKeep)
+    const trimmed = truncated.replace(/0+$/, '')
+    return trimmed ? `${intPart}.${trimmed}` : intPart
+  }
+
+  // Format number downwards (no rounding up)
+  const formatNumberDown = (value: number, decimalsToKeep = 1) => {
+    if (!Number.isFinite(value) || value <= 0) return '0'
+    return truncateDecimalString(value.toString(), decimalsToKeep)
+  }
+
+  // Format bigint downwards (no rounding up)
+  const formatBigintDown = (
+    value: bigint,
+    decimals: number,
+    decimalsToKeep = 1,
+  ) => truncateDecimalString(formatUnits(value, decimals), decimalsToKeep)
+
   // Convert amount to base units, used for the unstake amount
   const amountInBaseUnits = useMemo(() => {
     if (!amountToUnstake || Number(amountToUnstake) <= 0) return 0n
@@ -97,6 +118,11 @@ export function UnstakeTab({ id }: { id: string }) {
 
   const hasEnough = amountInBaseUnits <= availableToUnstake
   const isAmountValid = amountInBaseUnits > 0n
+  const amountLabel = amountToUnstake || '0'
+  const amountToUnstakeValue = Number(amountToUnstake)
+  const amountDisplayLabel = Number.isFinite(amountToUnstakeValue)
+    ? formatNumberDown(amountToUnstakeValue, 1)
+    : amountLabel
   const canSubmit = isAmountValid && hasEnough
   const isControlsDisabled =
     isLoadingData || isRefreshingAvailable || !account?.address
@@ -209,12 +235,6 @@ export function UnstakeTab({ id }: { id: string }) {
       setIsRefreshingAvailable(false)
       setIsLoadingData(false)
     }
-  }
-
-  // Format amount to six decimals, used for the unstake amount
-  const formatAmountToSixDecimals = (value: number) => {
-    const fixed = value.toFixed(6)
-    return fixed.replace(/\.?0+$/, '')
   }
 
   // Handle unstake, used to unstake the GIV power
@@ -501,11 +521,9 @@ export function UnstakeTab({ id }: { id: string }) {
                             const availableValue = parseFloat(
                               formatUnits(availableToUnstake, tokenDecimals),
                             )
-                            setAmountToUnstake(
-                              formatAmountToSixDecimals(
-                                availableValue * (percentage / 100),
-                              ),
-                            )
+                            const targetValue =
+                              availableValue * (percentage / 100)
+                            setAmountToUnstake(formatNumberDown(targetValue, 1))
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
@@ -525,10 +543,10 @@ export function UnstakeTab({ id }: { id: string }) {
                         disabled={isControlsDisabled}
                         onClick={() =>
                           setAmountToUnstake(
-                            formatAmountToSixDecimals(
-                              parseFloat(
-                                formatUnits(availableToUnstake, tokenDecimals),
-                              ),
+                            formatBigintDown(
+                              availableToUnstake,
+                              tokenDecimals,
+                              1,
                             ),
                           )
                         }
@@ -555,7 +573,15 @@ export function UnstakeTab({ id }: { id: string }) {
                             'cursor-pointer hover:underline',
                           isControlsDisabled && 'cursor-not-allowed opacity-60',
                         )}
-                        onClick={() => setAmountToUnstake(availableLabel)}
+                        onClick={() =>
+                          setAmountToUnstake(
+                            formatBigintDown(
+                              availableToUnstake,
+                              tokenDecimals,
+                              1,
+                            ),
+                          )
+                        }
                         title="Unstake max"
                       >
                         {availableLabel} {pool?.GIVPOWER.title}
@@ -619,7 +645,7 @@ export function UnstakeTab({ id }: { id: string }) {
                       You are unstaking
                     </div>
                     <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
-                      {amountToUnstake} {pool?.GIVPOWER.title}
+                      {amountDisplayLabel} {pool?.GIVPOWER.title}
                     </div>
                   </div>
                   <button
@@ -660,7 +686,7 @@ export function UnstakeTab({ id }: { id: string }) {
                       You have unstaked
                     </div>
                     <div className="mt-3 text-3xl font-bold text-giv-neutral-900">
-                      {amountToUnstake} {pool?.GIVPOWER.title}
+                      {amountDisplayLabel} {pool?.GIVPOWER.title}
                     </div>
                   </div>
                   <div className="mt-6 rounded-xl border border-giv-brand-200 bg-giv-neutral-200 p-4 text-sm text-giv-neutral-700">
