@@ -16,7 +16,7 @@ import {
   projectBySlugQuery,
   similarProjectsBySlugQuery,
 } from '@/lib/graphql/queries'
-import { fetchUserOpGivPowerFromSubgraph } from '@/lib/helpers/opGivPowerSubgraph'
+import { fetchUsersOpGivPowerFromSubgraph } from '@/lib/helpers/opGivPowerSubgraph'
 
 /**
  * Hook to get a project by its slug
@@ -160,7 +160,7 @@ type ProjectBoostersResponse = {
 const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development'
 const BOOST_TOTAL_GIVPOWER_CHAIN_IDS =
   VERCEL_ENV === 'production'
-    ? ([10, 100] as const)
+    ? ([10, 100, 1101] as const)
     : ([100, 11155420] as const)
 
 /**
@@ -257,44 +257,50 @@ export const useProjectBoosters = ({
         ),
       )
       const walletGivpowerMap = new Map<string, number>()
+      const walletBalanceWeiMap = new Map<string, bigint>()
+      uniqueWalletAddresses.forEach(address =>
+        walletBalanceWeiMap.set(address, 0n),
+      )
 
       await Promise.all(
-        uniqueWalletAddresses.map(async address => {
-          const totalBalanceWei = await BOOST_TOTAL_GIVPOWER_CHAIN_IDS.reduce<
-            Promise<bigint>
-          >(async (sumPromise, chainId) => {
-            const sum = await sumPromise
-            const config = STAKING_POOLS_FOR_BOOSTING[chainId]
-            const subgraphUrl = config?.subgraphUrl
-            const lmAddress = config?.GIVPOWER?.LM_ADDRESS
+        BOOST_TOTAL_GIVPOWER_CHAIN_IDS.map(async chainId => {
+          const config = STAKING_POOLS_FOR_BOOSTING[chainId]
+          const subgraphUrl = config?.subgraphUrl
+          const lmAddress = config?.GIVPOWER?.LM_ADDRESS
 
-            if (!subgraphUrl || !lmAddress) return sum
+          if (!subgraphUrl || !lmAddress) return
 
-            try {
-              const chainBalance = await fetchUserOpGivPowerFromSubgraph({
-                subgraphUrl,
-                lmAddress,
-                userAddress: address,
-              })
-              return sum + BigInt(chainBalance.balanceWei || '0')
-            } catch (error) {
-              console.warn(
-                `[ProjectBoosters] Failed to fetch GIVpower for wallet ${address} on chain ${chainId}`,
-                error,
+          try {
+            const chainBalances = await fetchUsersOpGivPowerFromSubgraph({
+              subgraphUrl,
+              lmAddress,
+              userAddresses: uniqueWalletAddresses,
+            })
+
+            uniqueWalletAddresses.forEach(address => {
+              const balanceWei = chainBalances.get(address)?.balanceWei ?? '0'
+              const current = walletBalanceWeiMap.get(address) ?? 0n
+              walletBalanceWeiMap.set(
+                address,
+                current + BigInt(balanceWei || '0'),
               )
-              return sum
-            }
-          }, Promise.resolve(0n))
-
-          const totalBalance = Number(
-            formatUnitsFromWei(totalBalanceWei.toString()),
-          )
-          walletGivpowerMap.set(
-            address,
-            Number.isFinite(totalBalance) ? totalBalance : 0,
-          )
+            })
+          } catch (error) {
+            console.warn(
+              `[ProjectBoosters] Failed to fetch GIVpower balances on chain ${chainId}`,
+              error,
+            )
+          }
         }),
       )
+
+      walletBalanceWeiMap.forEach((balanceWei, address) => {
+        const totalBalance = Number(formatUnitsFromWei(balanceWei.toString()))
+        walletGivpowerMap.set(
+          address,
+          Number.isFinite(totalBalance) ? totalBalance : 0,
+        )
+      })
 
       const boostersWithAmount = powerBoostings.map(boost => {
         const percentage = Number(boost.percentage || 0)

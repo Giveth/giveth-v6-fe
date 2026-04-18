@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import {
   SubgraphFetchError,
   fetchUserOpGivPowerFromSubgraphDirect,
+  fetchUsersOpGivPowerFromSubgraphDirect,
 } from '@/lib/helpers/opGivPowerSubgraph'
 
 export const runtime = 'nodejs'
@@ -20,6 +21,7 @@ type RequestBody = {
   subgraphUrl?: unknown
   lmAddress?: unknown
   userAddress?: unknown
+  userAddresses?: unknown
 }
 
 const getApiKey = () => process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY
@@ -71,8 +73,14 @@ export async function POST(req: Request) {
     typeof body.lmAddress === 'string' ? body.lmAddress : undefined
   const userAddress =
     typeof body.userAddress === 'string' ? body.userAddress : undefined
+  const userAddresses =
+    Array.isArray(body.userAddresses) &&
+    body.userAddresses.every(address => typeof address === 'string')
+      ? (body.userAddresses as string[])
+      : undefined
+  const hasUserAddresses = Boolean(userAddresses?.length)
 
-  if (!subgraphUrl || !lmAddress || !userAddress) {
+  if (!subgraphUrl || !lmAddress || (!userAddress && !hasUserAddresses)) {
     return NextResponse.json(
       { error: 'Missing required fields', requestId },
       { status: 400 },
@@ -93,12 +101,42 @@ export async function POST(req: Request) {
     )
   }
 
+  if (hasUserAddresses) {
+    const invalid = userAddresses!.find(
+      address => !EVM_ADDRESS_REGEX.test(address),
+    )
+    if (invalid) {
+      return NextResponse.json(
+        { error: 'Invalid userAddresses format', requestId },
+        { status: 400 },
+      )
+    }
+  }
+
   try {
     const apiKey = getApiKey()
+    if (hasUserAddresses) {
+      const balances = await fetchUsersOpGivPowerFromSubgraphDirect({
+        subgraphUrl,
+        lmAddress,
+        userAddresses: userAddresses!,
+        apiKey,
+      })
+
+      return NextResponse.json({
+        balances: Array.from(balances.entries()).map(
+          ([address, balanceData]) => ({
+            userAddress: address,
+            ...balanceData,
+          }),
+        ),
+      })
+    }
+
     const response = await fetchUserOpGivPowerFromSubgraphDirect({
       subgraphUrl,
       lmAddress,
-      userAddress,
+      userAddress: userAddress!,
       apiKey,
     })
     return NextResponse.json(response)
@@ -120,7 +158,8 @@ export async function POST(req: Request) {
         subgraphPath: subgraphInfo.pathname,
         hasApiKey: Boolean(apiKey),
         lmAddress: shortenAddress(lmAddress),
-        userAddress: shortenAddress(userAddress),
+        userAddress: userAddress ? shortenAddress(userAddress) : undefined,
+        userAddresses: hasUserAddresses ? userAddresses?.length : undefined,
         referrer: req.headers.get('referer') ?? undefined,
       })
     } else {
@@ -131,7 +170,8 @@ export async function POST(req: Request) {
         subgraphPath: subgraphInfo.pathname,
         hasApiKey: Boolean(apiKey),
         lmAddress: shortenAddress(lmAddress),
-        userAddress: shortenAddress(userAddress),
+        userAddress: userAddress ? shortenAddress(userAddress) : undefined,
+        userAddresses: hasUserAddresses ? userAddresses?.length : undefined,
         referrer: req.headers.get('referer') ?? undefined,
       })
     }
