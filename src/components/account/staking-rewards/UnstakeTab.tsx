@@ -121,7 +121,7 @@ export function UnstakeTab({ id }: { id: string }) {
   const amountLabel = amountToUnstake || '0'
   const amountToUnstakeValue = Number(amountToUnstake)
   const amountDisplayLabel = Number.isFinite(amountToUnstakeValue)
-    ? formatNumberDown(amountToUnstakeValue, 1)
+    ? formatNumberDown(amountToUnstakeValue, 2)
     : amountLabel
   const canSubmit = isAmountValid && hasEnough
   const isControlsDisabled =
@@ -523,7 +523,7 @@ export function UnstakeTab({ id }: { id: string }) {
                             )
                             const targetValue =
                               availableValue * (percentage / 100)
-                            setAmountToUnstake(formatNumberDown(targetValue, 1))
+                            setAmountToUnstake(formatNumberDown(targetValue, 2))
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
@@ -546,7 +546,7 @@ export function UnstakeTab({ id }: { id: string }) {
                             formatBigintDown(
                               availableToUnstake,
                               tokenDecimals,
-                              1,
+                              2,
                             ),
                           )
                         }
@@ -578,7 +578,7 @@ export function UnstakeTab({ id }: { id: string }) {
                             formatBigintDown(
                               availableToUnstake,
                               tokenDecimals,
-                              1,
+                              2,
                             ),
                           )
                         }

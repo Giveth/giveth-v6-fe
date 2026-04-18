@@ -205,7 +205,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
   const amountLabel = amountToLock || '0'
   const amountToLockValue = Number(amountToLock)
   const amountDisplayLabel = Number.isFinite(amountToLockValue)
-    ? formatNumberDown(amountToLockValue, 1)
+    ? formatNumberDown(amountToLockValue, 2)
     : amountLabel
   const amountUsdValue = Number.isFinite(amountToLockValue)
     ? tokenPriceInUSD * amountToLockValue
@@ -613,7 +613,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                             const percentage = Number(label.replace('%', ''))
                             const targetValue =
                               availableToLockValue * (percentage / 100)
-                            setAmountToLock(formatNumberDown(targetValue, 1))
+                            setAmountToLock(formatNumberDown(targetValue, 2))
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
@@ -628,7 +628,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                         type="button"
                         onClick={() =>
                           setAmountToLock(
-                            formatBigintDown(availableToLock, tokenDecimals, 1),
+                            formatBigintDown(availableToLock, tokenDecimals, 2),
                           )
                         }
                         className={clsx(
@@ -647,7 +647,7 @@ export function IncreaseRewardTab({ id }: { id: string }) {
                         className="ml-1 cursor-pointer hover:underline"
                         onClick={() =>
                           setAmountToLock(
-                            formatBigintDown(availableToLock, tokenDecimals, 1),
+                            formatBigintDown(availableToLock, tokenDecimals, 2),
                           )
                         }
                         title="Lock max"

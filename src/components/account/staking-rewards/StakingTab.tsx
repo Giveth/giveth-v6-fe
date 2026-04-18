@@ -192,7 +192,7 @@ export function StakingTab({ id }: { id: string }) {
   const amountLabel = amountToStake || '0'
   const amountToStakeValue = Number(amountToStake)
   const amountDisplayLabel = Number.isFinite(amountToStakeValue)
-    ? formatNumberDown(amountToStakeValue, 1)
+    ? formatNumberDown(amountToStakeValue, 2)
     : amountLabel
   const amountUsdValue = Number.isFinite(amountToStakeValue)
     ? tokenPriceInUSD * amountToStakeValue
@@ -615,7 +615,7 @@ export function StakingTab({ id }: { id: string }) {
                             const percentage = Number(label.replace('%', ''))
                             const targetValue =
                               availableToStakeValue * (percentage / 100)
-                            setAmountToStake(formatNumberDown(targetValue, 1))
+                            setAmountToStake(formatNumberDown(targetValue, 2))
                           }}
                           className={clsx(
                             'rounded-xl px-3 py-2 text-xs font-medium',
@@ -638,7 +638,7 @@ export function StakingTab({ id }: { id: string }) {
                         }
                         onClick={() => {
                           setAmountToStake(
-                            formatBigintDown(walletBalance, tokenDecimals, 1),
+                            formatBigintDown(walletBalance, tokenDecimals, 2),
                           )
                         }}
                         className={clsx(
@@ -668,7 +668,7 @@ export function StakingTab({ id }: { id: string }) {
                         )}
                         onClick={() =>
                           setAmountToStake(
-                            formatBigintDown(walletBalance, tokenDecimals, 1),
+                            formatBigintDown(walletBalance, tokenDecimals, 2),
                           )
                         }
                         title="Stake max"
