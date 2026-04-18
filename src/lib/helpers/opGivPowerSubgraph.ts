@@ -16,6 +16,16 @@ type FetchOpGivPowerOutput = {
   rewardPerTokenPaid: string
 }
 
+type FetchOpGivPowerBatchInput = {
+  subgraphUrl: string
+  lmAddress: string // OP GIVPOWER LM address
+  userAddresses: string[]
+}
+
+type FetchOpGivPowerBatchDirectInput = FetchOpGivPowerBatchInput & {
+  apiKey?: string
+}
+
 type SubgraphResponse = {
   data?: {
     unipoolBalance?: {
@@ -28,7 +38,24 @@ type SubgraphResponse = {
   errors?: Array<{ message?: string }>
 }
 
+type SubgraphBatchResponse = {
+  data?: {
+    unipoolBalances?: Array<{
+      balance?: string
+      rewards?: string
+      rewardPerTokenPaid?: string
+      user?: { id?: string } | null
+    }> | null
+  }
+  errors?: Array<{ message?: string }>
+}
+
 type ProxyResponse = FetchOpGivPowerOutput & {
+  error?: string
+}
+
+type ProxyBatchResponse = {
+  balances?: Array<FetchOpGivPowerOutput & { userAddress: string }>
   error?: string
 }
 
@@ -256,6 +283,159 @@ export async function fetchUserOpGivPowerFromSubgraphDirect({
   }
 }
 
+export async function fetchUsersOpGivPowerFromSubgraphDirect({
+  subgraphUrl,
+  lmAddress,
+  userAddresses,
+  apiKey,
+}: FetchOpGivPowerBatchDirectInput): Promise<
+  Map<string, FetchOpGivPowerOutput>
+> {
+  const normalizedSubgraphUrl = normalizeGraphGatewaySubgraphUrl(subgraphUrl)
+  const isGraphGatewayRequiringHeader =
+    GRAPH_GATEWAY_REQUIRES_AUTH_HEADER_REGEX.test(normalizedSubgraphUrl)
+
+  if (isGraphGatewayRequiringHeader && !apiKey) {
+    throw new SubgraphFetchError(
+      'Missing NEXT_PUBLIC_SUBGRAPH_API_KEY for The Graph gateway request',
+      { subgraphUrl: normalizedSubgraphUrl },
+    )
+  }
+
+  const normalizedAddresses = userAddresses
+    .map(address => address?.toLowerCase())
+    .filter((address): address is string => Boolean(address))
+
+  if (!normalizedAddresses.length) return new Map()
+
+  const query = `
+    query unipoolBalances($addresses: [String!]!, $contract: String!, $length: Int!) {
+      unipoolBalances(first: $length, where: { unipool: $contract, user_in: $addresses }) {
+        balance
+        rewards
+        rewardPerTokenPaid
+        user {
+          id
+        }
+      }
+    }
+  `
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+  }
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    SUBGRAPH_FETCH_TIMEOUT_MS,
+  )
+
+  let res: Response
+  try {
+    res = await fetch(normalizedSubgraphUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        query,
+        variables: {
+          addresses: normalizedAddresses,
+          contract: lmAddress.toLowerCase(),
+          length: normalizedAddresses.length,
+        },
+      }),
+      signal: controller.signal,
+    })
+  } catch (error) {
+    const isAbortError =
+      typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      (error as { name?: string }).name === 'AbortError'
+
+    if (isAbortError) {
+      throw new SubgraphFetchError(
+        `Subgraph request timed out after ${SUBGRAPH_FETCH_TIMEOUT_MS}ms`,
+        {
+          subgraphUrl: normalizedSubgraphUrl,
+          timedOut: true,
+        },
+      )
+    }
+
+    throw new SubgraphFetchError(
+      error instanceof Error
+        ? `Subgraph request failed: ${error.message}`
+        : 'Subgraph request failed',
+      { subgraphUrl: normalizedSubgraphUrl },
+    )
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  const responseText = await res.text()
+  let json: SubgraphBatchResponse = {}
+  if (responseText) {
+    try {
+      json = JSON.parse(responseText) as SubgraphBatchResponse
+    } catch {
+      json = {}
+    }
+  }
+
+  if (!res.ok) {
+    const graphErrors = getGraphErrorMessages(json?.errors)
+    const graphError = graphErrors[0]
+    throw new SubgraphFetchError(
+      graphError
+        ? `Subgraph request failed: ${res.status} - ${graphError}`
+        : `Subgraph request failed: ${res.status}`,
+      {
+        status: res.status,
+        subgraphUrl: normalizedSubgraphUrl,
+        graphErrors,
+        responseSnippet: getResponseSnippet(responseText),
+      },
+    )
+  }
+  if (json?.errors?.length) {
+    const graphErrors = getGraphErrorMessages(json?.errors)
+    throw new SubgraphFetchError(graphErrors[0] || 'Subgraph GraphQL error', {
+      status: res.status,
+      subgraphUrl: normalizedSubgraphUrl,
+      graphErrors,
+      responseSnippet: getResponseSnippet(responseText),
+    })
+  }
+
+  const rows = json?.data?.unipoolBalances ?? []
+  const balances = new Map<string, FetchOpGivPowerOutput>()
+
+  for (const row of rows) {
+    const userAddress = row?.user?.id?.toLowerCase()
+    if (!userAddress) continue
+
+    const existing = balances.get(userAddress)
+    const balanceWeiRaw = row?.balance ?? '0'
+    const balanceWei = existing
+      ? (
+          BigInt(existing.balanceWei || '0') + BigInt(balanceWeiRaw || '0')
+        ).toString()
+      : balanceWeiRaw
+
+    balances.set(userAddress, {
+      id: `${lmAddress.toLowerCase()}-${userAddress}`,
+      balanceWei,
+      balance: formatUnits(balanceWei, 18),
+      rewardsWei: row?.rewards ?? '0',
+      rewardPerTokenPaid: row?.rewardPerTokenPaid ?? '0',
+    })
+  }
+
+  return balances
+}
+
 /**
  * Fetch the user's GIVpower from the subgraph.
  * In browser context, Graph gateway requests are proxied via server route
@@ -308,6 +488,65 @@ export async function fetchUserOpGivPowerFromSubgraph({
     subgraphUrl,
     lmAddress,
     userAddress,
+    apiKey: process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY,
+  })
+}
+
+export async function fetchUsersOpGivPowerFromSubgraph({
+  subgraphUrl,
+  lmAddress,
+  userAddresses,
+}: FetchOpGivPowerBatchInput): Promise<Map<string, FetchOpGivPowerOutput>> {
+  const normalizedAddresses = userAddresses
+    .map(address => address?.toLowerCase())
+    .filter((address): address is string => Boolean(address))
+
+  if (!normalizedAddresses.length) return new Map()
+
+  const shouldProxyGatewayRequest =
+    typeof window !== 'undefined' &&
+    GRAPH_GATEWAY_PROXYABLE_REGEX.test(subgraphUrl)
+
+  if (shouldProxyGatewayRequest) {
+    const res = await fetch(OP_GIVPOWER_PROXY_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subgraphUrl,
+        lmAddress,
+        userAddresses: normalizedAddresses,
+      }),
+    })
+
+    const json = (await res.json().catch(() => ({}))) as ProxyBatchResponse
+
+    if (!res.ok) {
+      throw new Error(
+        json.error || `GIVpower proxy request failed: ${res.status}`,
+      )
+    }
+
+    const balances = new Map<string, FetchOpGivPowerOutput>()
+    json.balances?.forEach(item => {
+      const address = item.userAddress?.toLowerCase()
+      if (!address) return
+      balances.set(address, {
+        id: item.id,
+        balanceWei: item.balanceWei,
+        balance: item.balance,
+        rewardsWei: item.rewardsWei,
+        rewardPerTokenPaid: item.rewardPerTokenPaid,
+      })
+    })
+    return balances
+  }
+
+  return fetchUsersOpGivPowerFromSubgraphDirect({
+    subgraphUrl,
+    lmAddress,
+    userAddresses: normalizedAddresses,
     apiKey: process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY,
   })
 }
