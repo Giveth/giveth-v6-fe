@@ -1,10 +1,13 @@
 /**
- * Normalize a decimal input string
- * This function ensures that the input string only contains digits, a single decimal point, and no thousands separators.
- * It also ensures that the input string is not empty.
+ * Normalize a decimal input string.
  *
- * @param raw - The raw input string
- * @returns The normalized decimal input string
+ * Keeps digits plus a single decimal point (dot or comma), converts commas to
+ * dots, strips thousands separators, and returns the cleaned string. May return
+ * an empty string if the input is empty or all characters are removed during
+ * normalization.
+ *
+ * @param raw - Raw user input containing a decimal number
+ * @returns Normalized decimal string with digits and at most one dot, or an empty string
  */
 export function normalizeDecimalInput(raw: string): string {
   let s = raw.trim()
