@@ -1,3 +1,11 @@
+/**
+ * Normalize a decimal input string
+ * This function ensures that the input string only contains digits, a single decimal point, and no thousands separators.
+ * It also ensures that the input string is not empty.
+ *
+ * @param raw - The raw input string
+ * @returns The normalized decimal input string
+ */
 export function normalizeDecimalInput(raw: string): string {
   let s = raw.trim()
   if (!s) return ''
@@ -49,4 +57,21 @@ export function roundAmount(value: number): number {
   const rounded = value < 10 ? Math.round(value) : Math.round(value / 10) * 10
 
   return rounded === 0 ? 1 : rounded
+}
+
+/**
+ * Round a value to the nearest whole number.
+ *
+ * Returns null for non-numeric inputs.
+ */
+export function roundToWholeNumber(
+  value?: number | string | null,
+): number | null {
+  if (value === null || value === undefined) return null
+  if (typeof value === 'string' && value.trim() === '') return null
+
+  const numeric = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(numeric)) return null
+
+  return Math.round(numeric)
 }

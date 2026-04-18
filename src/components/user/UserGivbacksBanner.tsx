@@ -11,6 +11,7 @@ import { GivBacksEligible } from '@/components/icons/GivBacksEligible'
 import { useSiweAuth } from '@/context/AuthContext'
 import { useCurrentGivbacksRound } from '@/hooks/useCurrentGivbacksRound'
 import { projectsLink } from '@/lib/constants/menu-links'
+import { roundToWholeNumber } from '@/lib/helpers/numbersHelper'
 
 const EMPTY_VALUE = '--'
 const COUNTDOWN_TICK_MS = 30_000
@@ -21,15 +22,27 @@ const formatTokenAmount = (value?: number | string | null) => {
   return `${amount.toLocaleString()} GIV`
 }
 
+/**
+ * Format a count to a human readable string
+ * @param value - The value to format
+ * @param fallback - The fallback value to return if the value is not a number
+ * @returns The formatted count
+ */
 const formatCount = (
   value?: number | string | null,
   fallback = EMPTY_VALUE,
 ) => {
-  const count = Number(value)
-  if (!Number.isFinite(count)) return fallback
-  return count.toLocaleString()
+  const roundedCount = roundToWholeNumber(value)
+  if (roundedCount === null) return fallback
+  return roundedCount.toLocaleString()
 }
 
+/**
+ * Format a date to a human readable string
+ *
+ * @param value - The value to format
+ * @returns The formatted date
+ */
 const formatDate = (value?: string | null) => {
   if (!value) return EMPTY_VALUE
   const date = new Date(value)
@@ -45,6 +58,13 @@ const formatDate = (value?: string | null) => {
   return formatted.replace(',', '')
 }
 
+/**
+ * Format the ends in time for a given date
+ *
+ * @param value - The value to format
+ * @param nowMs - The current time in milliseconds
+ * @returns The formatted ends in time
+ */
 const formatEndsIn = (value?: string | null, nowMs: number = Date.now()) => {
   if (!value) return EMPTY_VALUE
 
