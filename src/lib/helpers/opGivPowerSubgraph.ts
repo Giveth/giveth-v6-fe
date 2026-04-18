@@ -497,6 +497,12 @@ export async function fetchUsersOpGivPowerFromSubgraph({
   lmAddress,
   userAddresses,
 }: FetchOpGivPowerBatchInput): Promise<Map<string, FetchOpGivPowerOutput>> {
+  const normalizedAddresses = userAddresses
+    .map(address => address?.toLowerCase())
+    .filter((address): address is string => Boolean(address))
+
+  if (!normalizedAddresses.length) return new Map()
+
   const shouldProxyGatewayRequest =
     typeof window !== 'undefined' &&
     GRAPH_GATEWAY_PROXYABLE_REGEX.test(subgraphUrl)
@@ -510,7 +516,7 @@ export async function fetchUsersOpGivPowerFromSubgraph({
       body: JSON.stringify({
         subgraphUrl,
         lmAddress,
-        userAddresses,
+        userAddresses: normalizedAddresses,
       }),
     })
 
@@ -540,7 +546,7 @@ export async function fetchUsersOpGivPowerFromSubgraph({
   return fetchUsersOpGivPowerFromSubgraphDirect({
     subgraphUrl,
     lmAddress,
-    userAddresses,
+    userAddresses: normalizedAddresses,
     apiKey: process.env.NEXT_PUBLIC_SUBGRAPH_API_KEY,
   })
 }
